@@ -1,0 +1,65 @@
+
+Instructions for Installing R and RStudio 
+------------------------------------------
+
+To install R, follow the instructions from the official R documentation here
+https://cran.r-project.org/doc/manuals/r-release/R-admin.html
+
+In addition, if using Windows, Rtools needs to be installed following these instructions
+https://cran.r-project.org/bin/windows/Rtools/
+
+Finally, it is recommended to install Rstudio (free desktop version) from
+https://www.rstudio.com/products/rstudio/download/
+
+Both R and RStudio are available for windows, Linux and MacOS.
+ 
+With R and RStudio installed, you need to install a number of packages before running SARI.
+In Rstudio, go to Tools -> Install Packages.
+
+Install all the packages indicated below and their dependencies from CRAN.
+If using Windows, in order to use Rtools, you need first to install and load the package devtools:
+`library(devtools)`
+
+All packages can be installed at once from CRAN by adding their names separated by spaces or commas, except for mvcwt which needs to be downloaded and installed manually from here:
+https://cran.r-project.org/src/contrib/Archive/mvcwt/
+To install this package, simply go to Tools -> Install Packages and select the downloaded file.
+
+Alternatively, the following R command will install all the necessary packages (except mvcwt):
+`install.packages(c("data.table", "dlm", "doParallel", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries"))`
+
+I also provide the current package versions for which SARI runs without problems (note: package versions may evolve from these).
+
+  (data.table) #v1.14.0
+  (dlm) #v1.1-5
+  (doParallel) #v1.0.16
+  (fields) #v12.5
+  (lubridate) #v1.7.10
+  (magrittr) #v2.0.1
+  (markdown) #v1.1
+  (matrixStats) #v0.59.0
+  (mvcwt) #v1.3.1
+  (numDeriv) #v2016.8-1.1
+  (psych) #v2.1.6
+  (RColorBrewer) #v1.1-2
+  (shinyBS) #v0.61
+  (shinycssloaders) #v1.0.0
+  (shinyjs) #v2.0
+  (shinythemes) #v1.2.0
+  (shiny) #v1.6.0
+  (spectral) #v2.0
+  (strucchange) #v1.5-2
+  (tseries) #v0.10-48
+  (pracma) #v2.3.8
+
+
+Once all the packages are installed, open the app.R script with RStudio.
+Set the working directory to the same location.
+Then click on RunApp (run external) or go to Code -> Source or push Ctrl+Shift+S.
+
+Enjoy!
+
+
+Best regards,
+
+Alvaro Santamaria
+alvaro.santamaria@get.omp.eu
