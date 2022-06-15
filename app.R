@@ -1420,7 +1420,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
                                       tabPanel(div(style = "display: inline-block; font-size: 40px; color: black", "SARI"), value = 0, id = "SARI"),
                                       tabPanel(div(style = "margin-top:-3.5em; font-size: 20px; display: inline-block;","Help"), value = 4, icon = icon("info-circle", class = "fas fa-2x"),
-                                               withMathJax(includeMarkdown("about.md"))
+                                               withMathJax(includeMarkdown("www/about.md"))
                                       ),
                                       
                                       # * component 1 ####
