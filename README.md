@@ -1,6 +1,8 @@
 # sari
 SARI is an R/Shiny app to visualize and analyze GNSS time series data interactively.
 
+![SARI screenshot](/www/screenshot.png)
+
 SARI allows you to visualize discrete time series data, analyse them individually, fit unidimensional models interactively and save the results using a WYSIWYG web interface.
 
 It has been developed in the R programming language, under the interactive framework of the Shiny R package. Currently tested in R version 4.1.0.
