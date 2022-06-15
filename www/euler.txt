@@ -1,0 +1,16 @@
+# The tectonic plate model file must provide the station ID, the station coordinates and the Euler's pole parameters in any of the following formats.
+# Different formats can be mixed in the same file.
+# If the same station ID is provided in different formats or for different Euler's poles, only the last one will be used.
+# See the SARI documentation for the units.
+
+# ID X Y Z RX RY RZ
+TLSE 4627851.610 119640.364 4372993.759 -0.0235 -0.1476 0.2140
+
+# ID X Y Z P_lat P_lon P_rot
+TLSE 4627851.610 119640.364 4372993.759 55.38 -95.41 0.271
+
+# ID Lat Lon P_lat P_lon P_rot
+TLSE 43.560697 1.480895 55.38 -95.41 0.271
+
+# ID Lat Lon RX RY RZ
+TLSE 43.560697 -358.519105 -0.0235 -0.1476 0.2140
