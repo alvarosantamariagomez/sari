@@ -1,4 +1,4 @@
-# sari
+# ![SARI logo](/www/favicon.png) sari 
 SARI is an R/Shiny app that allows you to visualize discrete time series data, analyse them individually, fit unidimensional models interactively and save the results using a WYSIWYG web interface.
 
 
