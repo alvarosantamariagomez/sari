@@ -1,15 +1,28 @@
 # **SARI changelog**
 
+# julio 2022 [2022.07]
+
+### Fixed
+
+### Changed
+	- Organization, translation and cleaning of the code.
+	- Faster estimation of the instantaneous rate from the Kalman filter fit.
+	- Improved implementation of the MIDAS algorithm.
+
+### Added
+	- Adding information of the Kalman filter parameters in the downloaded results file.
+	- When zooming in, the histogram & statistics are limited to the series within the zoom-in window.
+
 # abril 2022 [2022.04]
 
 ### Fixed
 - Reading and extracting information from the customized offset file.
 	
-### Changed:
+### Changed
 - Improved performance by reducing the number of times some reactive functions are called unnecessarily.
 - Adding more checks for PBO and NGL input formats.
 
-### Added:
+### Added
 - Option to show or remove the trend from a tectonic plate motion model.
 - Showing Pearson's correlation coefficient between primary and secondary series.
 - Option to show the secondary series on the same y-axis of the primary series.

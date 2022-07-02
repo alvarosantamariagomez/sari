@@ -46,10 +46,12 @@ GUI options are given in this `red lettering`.
 GUI specific input values and files are given in *italics*.  
 Local and external links are given in this <a href="#" target="_self">blue</a>.  
 
-Further details, the code source with installation instructions and some examples can be found in  
+Further details and some examples can be found in  
 Santamar&#237;a-G&#243;mez, A. (2019) SARI: interactive GNSS position time series analysis software. GPS solutions, 23:52. DOI: [10.1007/s10291-019-0846-y](https://link.springer.com/article/10.1007/s10291-019-0846-y)
 
-A SARI docker image is also available and updated [here](https://hub.docker.com/r/alvarosg/sari).
+A SARI prebuilt Docker image is available at https://hub.docker.com/r/alvarosg/sari
+
+The code source and installation instructions can be found at https://github.com/alvarosantamariagomez/sari
 
 A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc). This tutorial was made with SARI version "mayo 2021".
 

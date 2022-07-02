@@ -4359,94 +4359,73 @@ server <- function(input,output,session) {
     req(input$header, file$primary)
     noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
   })
-  observeEvent(c(info$log, input$printLog),{
-    req(file$primary, file$sitelog)
-    epochs <- ReadLog(file$sitelog)
-    output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
-      if (length(epochs[[1]]) > 0) {
-        sprintf("Antenna changes from log file at\n%s",paste(unlist(epochs[[1]]), collapse = ", "))
-      } else {
-        NULL
-      }
-    })
-    output$changes_rec1 <- output$changes_rec2 <- output$changes_rec3 <- renderText({
-      if (length(epochs[[2]]) > 0) {
-        sprintf("Receiver changes from log file at\n%s",paste(unlist(epochs[[2]]), collapse = ", "))
-      } else {
-        NULL
-      }
-    })
-  })
-  observeEvent(c(input$printSinfo,input$optionSecondary,file$id1,file$id2),{
-    req(file$primary, input$sinfo)
-    id1 <- file$id1
-    if (length(file$secondary) > 0) {
-      if (input$optionSecondary < 2) {
-        id2 <- NULL
-      } else {
-        id2 <- file$id2
-      }
-    } else {
-      id2 <- NULL
-    }
-    epochs <- ReadInfo(id1,id2,input$sinfo)
-    output$changes_ant1s <- output$changes_ant2s <- output$changes_ant3s <- renderText({
-      if (length(epochs[[1]]) > 0) {
-        sprintf("Antenna changes from station.info at\n%s",paste(unlist(epochs[[1]]), collapse = ", "))
-      } else {
-        NULL
-      }
-    })
-    output$changes_rec1s <- output$changes_rec2s <- output$changes_rec3s <- renderText({
-      if (length(epochs[[2]]) > 0) {
-        sprintf("Receiver changes from station.info at\n%s",paste(unlist(epochs[[2]]), collapse = ", "))
-      } else {
-        NULL
-      }
-    })
-  })
-  observeEvent(c(input$printSoln,input$optionSecondary,file$id1,file$id2),{
-    req(file$primary, input$soln)
-    id1 <- file$id1
-    if (length(file$secondary) > 0) {
-      if (input$optionSecondary < 2) {
-        id2 <- NULL
-      } else {
-        id2 <- file$id2
-      }
-    } else {
-      id2 <- NULL
-    }
-    epochs <- ReadSoln(id1,id2,input$soln)
-    output$changes_ant1so <- output$changes_ant2so <- output$changes_ant3so <- renderText({
-      if (length(epochs) > 0) {
-        sprintf("Discontinuities from soln file at\n%s",paste(unlist(epochs), collapse = ", "))
-      } else {
-        NULL
-      }
-    })
-  })
-  observeEvent(c(input$printCustom,input$optionSecondary,file$id1,file$id2),{
-    req(file$primary, input$custom)
-    id1 <- file$id1
-    if (length(file$secondary) > 0) {
-      if (input$optionSecondary < 2) {
-        id2 <- NULL
-      } else {
-        id2 <- file$id2
-      }
-    } else {
-      id2 <- NULL
-    }
-    epochs <- ReadCustom(id1,id2,input$custom)
-    output$changes_ant1c <- output$changes_ant2c <- output$changes_ant3c <- renderText({
-      if (length(epochs) > 0) {
-        sprintf("Changes from custom file at\n%s",paste(unlist(epochs), collapse = ", "))
-      } else {
-        NULL
-      }
-    })
-  })
+  # observeEvent(c(info$log, input$printLog),{
+  #   req(file$primary, file$sitelog)
+  #   epochs <- ReadLog(file$sitelog)
+  #   output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
+  #     if (length(epochs[[1]]) > 0) {
+  #       sprintf("Antenna changes from log file at\n%s",paste(unlist(epochs[[1]]), collapse = ", "))
+  #     } else {
+  #       NULL
+  #     }
+  #   })
+  #   output$changes_rec1 <- output$changes_rec2 <- output$changes_rec3 <- renderText({
+  #     if (length(epochs[[2]]) > 0) {
+  #       sprintf("Receiver changes from log file at\n%s",paste(unlist(epochs[[2]]), collapse = ", "))
+  #     } else {
+  #       NULL
+  #     }
+  #   })
+  # })
+  # observeEvent(c(input$printSinfo,input$optionSecondary,file$id1,file$id2),{
+  #   req(file$primary, input$sinfo)
+  #   id1 <- file$id1
+  #   if (length(file$secondary) > 0) {
+  #     if (input$optionSecondary < 2) {
+  #       id2 <- NULL
+  #     } else {
+  #       id2 <- file$id2
+  #     }
+  #   } else {
+  #     id2 <- NULL
+  #   }
+  #   epochs <- ReadInfo(id1,id2,input$sinfo)
+  #   output$changes_ant1s <- output$changes_ant2s <- output$changes_ant3s <- renderText({
+  #     if (length(epochs[[1]]) > 0) {
+  #       sprintf("Antenna changes from station.info at\n%s",paste(unlist(epochs[[1]]), collapse = ", "))
+  #     } else {
+  #       NULL
+  #     }
+  #   })
+  #   output$changes_rec1s <- output$changes_rec2s <- output$changes_rec3s <- renderText({
+  #     if (length(epochs[[2]]) > 0) {
+  #       sprintf("Receiver changes from station.info at\n%s",paste(unlist(epochs[[2]]), collapse = ", "))
+  #     } else {
+  #       NULL
+  #     }
+  #   })
+  # })
+  # observeEvent(c(input$printCustom,input$optionSecondary,file$id1,file$id2),{
+  #   req(file$primary, input$custom)
+  #   id1 <- file$id1
+  #   if (length(file$secondary) > 0) {
+  #     if (input$optionSecondary < 2) {
+  #       id2 <- NULL
+  #     } else {
+  #       id2 <- file$id2
+  #     }
+  #   } else {
+  #     id2 <- NULL
+  #   }
+  #   epochs <- ReadCustom(id1,id2,input$custom)
+  #   output$changes_ant1c <- output$changes_ant2c <- output$changes_ant3c <- renderText({
+  #     if (length(epochs) > 0) {
+  #       sprintf("Changes from custom file at\n%s",paste(unlist(epochs), collapse = ", "))
+  #     } else {
+  #       NULL
+  #     }
+  #   })
+  # })
   observeEvent(input$remove3D, {
     values$used1 <- values$used_all
     values$used2 <- values$used_all
@@ -5642,6 +5621,23 @@ server <- function(input,output,session) {
     }
     info$sinfo <- ReadInfo(id1,id2,input$sinfo)
   }, priority = 4)
+  observeEvent(c(input$printSinfo),{
+    req(file$primary, input$sinfo)
+    output$changes_ant1s <- output$changes_ant2s <- output$changes_ant3s <- renderText({
+      if (length(info$sinfo[[1]]) > 0) {
+        sprintf("Antenna changes from station.info at\n%s",paste(unlist(info$sinfo[[1]]), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+    output$changes_rec1s <- output$changes_rec2s <- output$changes_rec3s <- renderText({
+      if (length(info$sinfo[[2]]) > 0) {
+        sprintf("Receiver changes from station.info at\n%s",paste(unlist(info$sinfo[[2]]), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+  })
   
   # Observe soln.snx ####
   observeEvent(c(input$soln, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
@@ -5659,6 +5655,16 @@ server <- function(input,output,session) {
     }
     info$soln <- ReadSoln(id1,id2,input$soln)
   }, priority = 4)
+  observeEvent(c(input$printSoln),{
+    req(file$primary, input$soln)
+    output$changes_ant1so <- output$changes_ant2so <- output$changes_ant3so <- renderText({
+      if (length(info$soln) > 0) {
+        sprintf("Discontinuities from soln file at\n%s",paste(unlist(info$soln), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+  })
   
   # Observe custom ####
   observeEvent(c(input$custom, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
@@ -5676,12 +5682,39 @@ server <- function(input,output,session) {
     }
     info$custom <- ReadCustom(id1,id2,input$custom)
   }, priority = 4)
+  observeEvent(c(input$printCustom),{
+    req(file$primary, input$custom)
+    output$changes_ant1c <- output$changes_ant2c <- output$changes_ant3c <- renderText({
+      if (length(info$custom) > 0) {
+        sprintf("Changes from custom file at\n%s",paste(unlist(info$custom), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+  })
   
   # Observe sitelog ####
   observeEvent(file$sitelog, {
     if (isTruthy(messages)) cat(file = stderr(), "Reading sitelog", "\n")
     info$log <- ReadLog(file$sitelog)
   }, priority = 1)
+  observeEvent(c(input$printLog),{
+    req(file$primary, file$sitelog)
+    output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
+      if (length(info$log[[1]]) > 0) {
+        sprintf("Antenna changes from log file at\n%s",paste(unlist(info$log[[1]]), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+    output$changes_rec1 <- output$changes_rec2 <- output$changes_rec3 <- renderText({
+      if (length(info$log[[2]]) > 0) {
+        sprintf("Receiver changes from log file at\n%s",paste(unlist(info$log[[2]]), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+  })
   
   # Observe reset ####
   observeEvent(input$reset, {
@@ -5983,10 +6016,10 @@ server <- function(input,output,session) {
           showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
         if (input$average) {
-          if (nchar(inputs$step) > 0 && is.na(inputs$step)) {
+          if (nchar(input$step) > 0 && is.na(inputs$step)) {
             showNotification("Time window length is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
-          if (nchar(inputs$step) > 0 && !is.na(inputs$step)) {
+          if (nchar(input$step) > 0 && !is.na(inputs$step)) {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
               showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
               if (input$format == 4) {
@@ -6980,6 +7013,8 @@ server <- function(input,output,session) {
             }
           }
         }
+      } else {
+        showNotification("The input station.info file is empty or has a wrong format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
       reces <- unique(reces)
       antes <- unique(antes)
@@ -7037,46 +7072,46 @@ server <- function(input,output,session) {
     req(x,z)
     changes <- c()
     cols <- range(count.fields(z$datapath, comment.char = "#"))
-    if (cols[1] > 1) {
-      col <- 2
-    } else {
-      col <- 1
-    }
-    table <- try(read.table(z$datapath, comment.char = "#", fill = T, col.names = c(1:cols[2]))[,1:col], silent = F)
-    if (isTruthy(table)) {
-      if (col == 2) {
-        if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$X2, ignore.case = F, perl = T))) { #NGL steps file
-          table$dyear <- decimal_date(as.Date(ymd(table$X2)))
-          if (any(table$X1 == x)) {
-            changes <- as.numeric(unlist(unique(table$dyear[table$X1 == x])))
-          }
-          if (!is.null(y)) {
-            if (any(table$X1 == y)) {
-              changes <- unique(c(changes, as.numeric(unlist(table$dyear[table$X1 == y]))))
+    if (!is.na(cols)) {
+      if (cols[1] > 1) {
+        col <- 2
+      } else {
+        col <- 1
+      }
+      table <- try(read.table(z$datapath, comment.char = "#", fill = T, col.names = c(1:cols[2]))[,1:col], silent = F)
+      if (isTruthy(table)) {
+        if (col == 2) {
+          if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$X2, ignore.case = F, perl = T))) { #NGL steps file
+            table$dyear <- decimal_date(as.Date(ymd(table$X2)))
+            if (any(table$X1 == x)) {
+              changes <- as.numeric(unlist(unique(table$dyear[table$X1 == x])))
+            }
+            if (!is.null(y)) {
+              if (any(table$X1 == y)) {
+                changes <- unique(c(changes, as.numeric(unlist(table$dyear[table$X1 == y]))))
+              }
+            }
+          } else {
+            if (cols[2] > 2 && info$custom_warn == 0) {
+              info$custom_warn <- 1
+              showNotification("The input custom discontinuity file contains more than 2 columns. Only the first 2 will be used.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            }
+            if (length(table[table$X2 == x]) > 0) {
+              changes <- as.numeric(unique(unlist(table$X1[table$X2 == x])))
+            }
+            if (!is.null(y)) {
+              if (length(table[table$X2 == y]) > 0) {
+                changes <- unique(c(changes, as.numeric(unlist(table$X1[table$X2 == y]))))
+              }
             }
           }
         } else {
-          if (cols[2] > 2 && info$custom_warn == 0) {
-            info$custom_warn <- 1
-            showNotification("The input custom discontinuity file contains more than 2 columns. Only the first 2 will be used.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
-          }
-          if (length(table[table$X2 == x]) > 0) {
-            changes <- as.numeric(unique(unlist(table$X1[table$X2 == x])))
-          }
-          if (!is.null(y)) {
-            if (length(table[table$X2 == y]) > 0) {
-              changes <- unique(c(changes, as.numeric(unlist(table$X1[table$X2 == y]))))
-            }
-          }
+          changes <- as.numeric(unique(unlist(table)))
         }
-      } else {
-        changes <- as.numeric(unique(unlist(table)))
+        changes <- na.omit(changes)
       }
-      changes <- na.omit(changes)
-      return(changes)
-    } else {
-      #  
     }
+    return(changes)
   }
   plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol) {
     options(digits = 10)
