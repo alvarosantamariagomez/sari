@@ -1424,7 +1424,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       ),
                                       
                                       # * component 1 ####
-                                      # tabPanel(div(style = "font-size: 20px;","1st component"), value = 1,
                                       tabPanel(div(style = "font-size: 20px;",uiOutput("tabName")), value = 1,
                                                tags$style(type = "text/css", "body {padding-top: 60px;}"),
                                                withSpinner(
@@ -1537,10 +1536,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                    custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
                                                  ),
                                                  verbatimTextOutput("wavelet1_info", placeholder = F)
-                                                 # ),
-                                                 # conditionalPanel(
-                                                 #   condition = "input.wavelet == true && input.waveletType.length > 0 && ( input.largo_wavelet > 0 || input.corto_wavelet > 0 )",
-                                                 #   downloadLink('descarga_wavelet1', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get reconstructed wavelet"))
                                                )
                                       ),
                                       
@@ -1658,10 +1653,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                  ),
                                                  verbatimTextOutput("wavelet2_info", placeholder = F)
                                                  # )
-                                                 # ),
-                                                 # conditionalPanel(
-                                                 #   condition = "input.wavelet == true && input.waveletType.length > 0 && ( input.largo_wavelet > 0 || input.corto_wavelet > 0 )",
-                                                 #   downloadLink('descarga_wavelet2', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get reconstructed wavelet"))
                                                )
                                       ),
                                       
@@ -1777,10 +1768,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                    custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
                                                  ),
                                                  verbatimTextOutput("wavelet3_info", placeholder = F)
-                                                 # ),
-                                                 # conditionalPanel(
-                                                 #   condition = "input.wavelet == true && input.waveletType.length > 0 && ( input.largo_wavelet > 0 || input.corto_wavelet > 0 )",
-                                                 #   downloadLink('descarga_wavelet3', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get reconstructed wavelet"))
                                                )
                                       ),
                                       tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 20px; display: inline-block; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
@@ -1854,8 +1841,8 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
-  welcome <- T # activate welcoming message for a remote connection
-  debug <- F # save the environment 
+  welcome <- F # welcoming message for a remote connection
+  debug <- F # saving the environment 
   messages <- T # print step by step messages on the console
   
   # Welcome ####
@@ -3028,25 +3015,6 @@ server <- function(input,output,session) {
           trans$kalman_unc <- kfs_unc
           if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
             trans$rate_inst <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
-            # trans$rate_inst <- as.data.frame(unlist(sapply(2:length(trans$x), function(i) (e[i,2]*(trans$x[i+1]-trans$x[1]) - e[i-1,2]*(trans$x[i]-trans$x[1])) / (trans$x[i+1] - trans$x[i]))))
-            # trans$rate_inst <- rbind(e[1,2], trans$rate_inst)
-            
-            # if (!is.na(inputs$trendRef)) {
-            #   reft <- inputs$trendRef
-            # } else {
-            #   reft <- x[1]
-            # }
-            # y_from_rate <- rep(NA_real_,length(x))
-            # y_from_rate[1] <- y[1]
-            # xx <- x - reft
-            # for (i in 2:length(x)) y_from_rate[i] <- (e[i,2]*(i*sum((x[1:i]-reft)^2)-sum(x[1:i]-reft)^2)-i*sum((x[1:i-1]-reft)*y_from_rate[1:i-1])+sum(x[1:i]-reft)*sum(y_from_rate[1:i-1])/(i*(x[i]-reft)-sum(x[1:i]-reft)))
-            # for (i in 2:length(x)) y_from_rate[i] <- (e[i,2]*(i*sum(xx[1:i]^2)-sum(xx[1:i])^2)-i*sum(xx[1:i-1]*y_from_rate[1:i-1])+sum(xx[1:i])*sum(y_from_rate[1:i-1])/(i*xx[i]-sum(xx[1:i])))
-            # 
-            # trans$rate_inst <- predict(smooth.spline(x = x, y = y_from_rate, w = NULL, cv = T, all.knots = T, 
-            #                                          nknots = NULL, keep.data = F, df.offset = 0, penalty = 1,
-            #                                          control.spar = NULL, tol = 1e-6 * IQR(x), keep.stuff = F),
-            #                            deriv = 1)$y
-            
             names(trans$rate_inst) <- "Rate_inst"
           }
           trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
@@ -3702,8 +3670,6 @@ server <- function(input,output,session) {
       trans$wavelet$x <- trans$wavelet$x/t
       trans$wavelet$y <- trans$wavelet$y/t
       if (num_scale > 10) {
-        # image(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1])*(pi/2)*trans$wavelet$y^(-1/2), col = pal, xlab = "", ylab = "", log = "y")
-        # image.plot(zlim = range(z.fun(trans$wavelet$z[,,1])), legend.only = T, col = pal, legend.args=list(text="Amplitude", cex=1, side=2, las=2, line=1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
         image(trans$wavelet$x, trans$wavelet$y, amplitude_approx[,,1], col = pal, xlab = "", ylab = "", log = "y")
         image.plot(zlim = range(amplitude_approx[,,1]), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
       } else {
@@ -4343,9 +4309,6 @@ server <- function(input,output,session) {
       collect_periodogram(file)
     }
   )
-  #nueva version en linux: usar markdown2pdf.sh
-  #usa primero esto en ms-dos
-  #"C:/Program Files/RStudio/bin/pandoc/pandoc" +RTS -K512m -RTS about.md --to latex --from markdown+ascii_identifiers+tex_math_single_backslash --output about.pdf --template "C:\Users\alvarosg\Documents\R\win-library\3.5\rmarkdown\rmd\latex\default-1.17.0.2.tex" --highlight-style tango --latex-engine pdflatex --variable graphics=yes --variable "geometry:margin=1in" --variable "compact-title:yes" --variable urlcolor=blue
   #Based on https://stackoverflow.com/questions/40420450/how-to-download-a-pdf-file-in-a-shiny-app
   output$print_out <- downloadHandler(
     filename = paste0(gsub(" ", "_", version),".pdf"),
@@ -4359,73 +4322,6 @@ server <- function(input,output,session) {
     req(input$header, file$primary)
     noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
   })
-  # observeEvent(c(info$log, input$printLog),{
-  #   req(file$primary, file$sitelog)
-  #   epochs <- ReadLog(file$sitelog)
-  #   output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
-  #     if (length(epochs[[1]]) > 0) {
-  #       sprintf("Antenna changes from log file at\n%s",paste(unlist(epochs[[1]]), collapse = ", "))
-  #     } else {
-  #       NULL
-  #     }
-  #   })
-  #   output$changes_rec1 <- output$changes_rec2 <- output$changes_rec3 <- renderText({
-  #     if (length(epochs[[2]]) > 0) {
-  #       sprintf("Receiver changes from log file at\n%s",paste(unlist(epochs[[2]]), collapse = ", "))
-  #     } else {
-  #       NULL
-  #     }
-  #   })
-  # })
-  # observeEvent(c(input$printSinfo,input$optionSecondary,file$id1,file$id2),{
-  #   req(file$primary, input$sinfo)
-  #   id1 <- file$id1
-  #   if (length(file$secondary) > 0) {
-  #     if (input$optionSecondary < 2) {
-  #       id2 <- NULL
-  #     } else {
-  #       id2 <- file$id2
-  #     }
-  #   } else {
-  #     id2 <- NULL
-  #   }
-  #   epochs <- ReadInfo(id1,id2,input$sinfo)
-  #   output$changes_ant1s <- output$changes_ant2s <- output$changes_ant3s <- renderText({
-  #     if (length(epochs[[1]]) > 0) {
-  #       sprintf("Antenna changes from station.info at\n%s",paste(unlist(epochs[[1]]), collapse = ", "))
-  #     } else {
-  #       NULL
-  #     }
-  #   })
-  #   output$changes_rec1s <- output$changes_rec2s <- output$changes_rec3s <- renderText({
-  #     if (length(epochs[[2]]) > 0) {
-  #       sprintf("Receiver changes from station.info at\n%s",paste(unlist(epochs[[2]]), collapse = ", "))
-  #     } else {
-  #       NULL
-  #     }
-  #   })
-  # })
-  # observeEvent(c(input$printCustom,input$optionSecondary,file$id1,file$id2),{
-  #   req(file$primary, input$custom)
-  #   id1 <- file$id1
-  #   if (length(file$secondary) > 0) {
-  #     if (input$optionSecondary < 2) {
-  #       id2 <- NULL
-  #     } else {
-  #       id2 <- file$id2
-  #     }
-  #   } else {
-  #     id2 <- NULL
-  #   }
-  #   epochs <- ReadCustom(id1,id2,input$custom)
-  #   output$changes_ant1c <- output$changes_ant2c <- output$changes_ant3c <- renderText({
-  #     if (length(epochs) > 0) {
-  #       sprintf("Changes from custom file at\n%s",paste(unlist(epochs), collapse = ", "))
-  #     } else {
-  #       NULL
-  #     }
-  #   })
-  # })
   observeEvent(input$remove3D, {
     values$used1 <- values$used_all
     values$used2 <- values$used_all
