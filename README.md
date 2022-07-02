@@ -12,9 +12,9 @@ Currently tested in R version 4.1.0.
 SARI can be used:  
 - remotelly from the shinyapps server at this link https://alvarosg.shinyapps.io/sari
 - locally on your machine using a prebuilt Docker image available at https://hub.docker.com/r/alvarosg/sari  
-- locally on your machine after installing R, RStudio and all the R dependencies given in the INSTALL file.  
+- locally on your machine using the source code and after installing R, RStudio and all the R dependencies given in the ![INSTALL](INSTALL) file.  
 
-The about.pdf file contains all the details to run SARI including the description of all functionalities.  
+The ![about.pdf](/www/about.pdf) file contains all the details to run SARI including the description of all functionalities.  
 This file is accessed from the main interface on the `Help` button or locally in the /www directory.  
 Further details and some examples can be found in:
 
