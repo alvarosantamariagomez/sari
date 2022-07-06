@@ -1843,7 +1843,7 @@ server <- function(input,output,session) {
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   welcome <- F # welcoming message for a remote connection
   debug <- F # saving the environment 
-  messages <- T # print step by step messages on the console
+  messages <- 1 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
   
   # Welcome ####
   observe({
@@ -1876,7 +1876,7 @@ server <- function(input,output,session) {
     } else {
       if (isTruthy(input$tactile)) {
         if (input$tactile > 0) {
-          if (isTruthy(messages)) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+          if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
           showModal(modalDialog(
             title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
             size = "m",
@@ -1893,12 +1893,12 @@ server <- function(input,output,session) {
         # This will probably work only for local Linux machines 
         registerDoParallel(cores = 4)
       } else {
-        if (isTruthy(messages)) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
-        if (isTruthy(messages)) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+        if (messages > 1) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
+        if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
         shinyjs::hide("localDir")
         if (isTRUE(welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "message", session = getDefaultReactiveDomain())
-          if (isTruthy(messages)) cat(file = stderr(), "Warning", "\n")
+          if (messages > 1) cat(file = stderr(), "Warning", "\n")
           welcome <- F
         }
       }
@@ -2234,7 +2234,7 @@ server <- function(input,output,session) {
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
                  input$eulerType, input$neuenu), {
     req(obs(), values$used1)
-    if (isTruthy(messages)) cat(file = stderr(), "Updating dataset", "\n")
+    if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
     trans$x0 <- data$x
     if (isTruthy(input$remove3D)) {
@@ -2375,7 +2375,7 @@ server <- function(input,output,session) {
     req(file$primary, obs())
     comments <- grep("^#", readLines(con = input$loadSARI$datapath, n = 100, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T, fixed = F, useBytes = F, invert = F)
     if (isTruthy(comments) && grepl("^# SARI ", comments[1], ignore.case = F, perl = T)) {
-      if (isTruthy(messages)) cat(file = stderr(), "Loading SARI file", "\n")
+      if (messages > 0) cat(file = stderr(), "Loading SARI file", "\n")
       if (!grepl(version, comments[1], ignore.case = F, perl = T)) {
         showNotification("The SARI version used in the uploaded file is not the same as the current version", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
@@ -2446,7 +2446,7 @@ server <- function(input,output,session) {
   # Plot series ####
   output$plot1 <- output$plot2 <- output$plot3 <- renderPlot({
     req(obs(), trans$x, trans$y, trans$sy)
-    if (isTruthy(messages)) cat(file = stderr(), "Plotting the series", "\n")
+    if (messages > 0) cat(file = stderr(), "Plotting the series", "\n")
     title <- ""
     if (length(isolate(file$secondary)) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
       if (input$symbol == 0) {
@@ -2551,7 +2551,7 @@ server <- function(input,output,session) {
         updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
         req(info$stop)
       }
-      if (isTruthy(messages)) cat(file = stderr(), "Computing MIDAS", "\n")
+      if (messages > 0) cat(file = stderr(), "Computing MIDAS", "\n")
       if (length(trans$x) > 6) {
         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0))
         vel <- c(vel[1,],vel[2,])
@@ -2597,7 +2597,7 @@ server <- function(input,output,session) {
   # Plot MIDAS histogram ####
   output$midas_hist1 <- output$midas_hist2 <- output$midas_hist3 <- renderPlot({
     req(obs(), input$midas, trans$midas_all)
-    if (isTruthy(messages)) cat(file = stderr(), "MIDAS histogram", "\n")
+    if (messages > 0) cat(file = stderr(), "MIDAS histogram", "\n")
     values <- trans$midas_all
     hist(values, breaks = "FD", freq = F, xlab = "Selected interannual velocities", ylab = "", main = "MIDAS velocity histogram", col = "lightpink")
     dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
@@ -2610,7 +2610,7 @@ server <- function(input,output,session) {
   observeEvent(input$runVerif, {
     req(input$verif_offsets, trans$res, trans$x, trans$offsetEpochs)
     if ((nchar(inputs$verif_white) > 0 && !is.na(inputs$verif_white) && inputs$verif_white > 0) || (nchar(input$verif_pl) > 0 && nchar(input$verif_k) > 0 && !is.na(inputs$verif_pl) && !is.na(inputs$verif_k) && inputs$verif_pl > 0 && inputs$verif_k <= 0)) {
-      if (isTruthy(messages)) cat(file = stderr(), "Verifying offsets", "\n")
+      if (messages > 0) cat(file = stderr(), "Verifying offsets", "\n")
       n <- length(trans$res)
       C <- matrix(0,n,n)
       scaling <- 1000 # making things much bigger
@@ -2738,12 +2738,12 @@ server <- function(input,output,session) {
           trans$run <- F
           trans$mle <- F
           trans$verif <- NULL
-          if (isTruthy(messages)) cat(file = stderr(), "LS fit", "\n")
+          if (messages > 0) cat(file = stderr(), "LS fit", "\n")
           model <- m$model
           model_lm <- m$model_lm
           apriori <- m$apriori
           req(model, apriori)
-          # if (isTruthy(messages)) cat(file = stderr(), model, "\n")
+          if (messages > 1) cat(file = stderr(), model, "\n")
           if (any(is.na(x))) {
             showNotification("Some epoch values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           } else if (any(is.na(y))) {
@@ -2903,7 +2903,7 @@ server <- function(input,output,session) {
         }
         start.time <- Sys.time()
         llikss <- function(x, data) {
-          # if (isTruthy(messages)) cat(file = stderr(), "This iteration = ", sqrt(exp(x[1])), "\n")
+          if (messages > 2) cat(file = stderr(), "This iteration = ", sqrt(exp(x[1])), "\n")
           mod <- NULL
           mod <- list(
             m0 = apriori,
@@ -2923,7 +2923,7 @@ server <- function(input,output,session) {
             max_optirange <- inputs$max_optirange
           }
           if (nchar(min_optirange) > 0 && nchar(max_optirange) > 0 && min_optirange > 0 && !is.na(as.numeric(min_optirange)) && max_optirange > 0 && !is.na(as.numeric(max_optirange))) {
-            if (isTruthy(messages)) cat(file = stderr(), "Optimizing measurement noise", "\n")
+            if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
             mod <- optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
             if (mod$convergence == 0) {
               sigmaR <- sqrt(exp(mod$par))
@@ -2952,7 +2952,7 @@ server <- function(input,output,session) {
           req(info$stop)
         }
         if (input$kf == 1) {
-          if (isTruthy(messages)) cat(file = stderr(), "EKF fit", "\n")
+          if (messages > 0) cat(file = stderr(), "EKF fit", "\n")
           kf <- NULL
           kf <- try(dlmExtFilter(y = y, mod = ex1, GGfunction = GGfunction, FFfunction = FFfunction), silent = F)
           if (!inherits(kf,"try-error") && !is.null(kf)) {
@@ -2967,7 +2967,7 @@ server <- function(input,output,session) {
             showNotification("Unable to fit the EKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         } else if (input$kf == 2) {
-          if (isTruthy(messages)) cat(file = stderr(), "UKF fit", "\n")
+          if (messages > 0) cat(file = stderr(), "UKF fit", "\n")
           kf <- NULL
           kf <- try(UKF(y = y, mod = ex1, sqrtMethod = "svd", GGfunction = GGfunction, FFfunction = FFfunction), silent = F)
           if (!inherits(kf,"try-error") && !is.null(kf)) {
@@ -2992,7 +2992,7 @@ server <- function(input,output,session) {
         }
         end.time <- Sys.time()
         time.taken <- end.time - start.time
-        # if (isTruthy(messages)) cat(file = stderr(), "Total time = ", time.taken, "\n")
+        if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
         if (!inherits(kf,"try-error") && length(kfs) > 0) {
           e <- kfs$s[2:nrow(kfs$s),]
           mod <- sapply(1:length(x), function(l) eval(parse(text = model_kf)))
@@ -3033,7 +3033,7 @@ server <- function(input,output,session) {
   # Plot residuals ####
   output$res1 <- output$res2 <- output$res3 <- renderPlot({
     req(obs(), trans$res, trans$x, trans$sy, trans$run)
-    if (isTruthy(messages)) cat(file = stderr(), "Plotting residual series", "\n")
+    if (messages > 0) cat(file = stderr(), "Plotting residual series", "\n")
     if (!is.null(trans$filter)) {
       title <- "Obs-Model residuals & Filter-Model residuals (blue)"
     } else {
@@ -3108,7 +3108,7 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
       req(info$stop)
     }
-    if (isTruthy(messages)) cat(file = stderr(), "Plotting histogram", "\n")
+    if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
     if (sd(values) > 0) {
       hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
       dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
@@ -3142,7 +3142,7 @@ server <- function(input,output,session) {
     } else {
       req(info$stop)
     }
-    if (isTruthy(messages)) cat(file = stderr(), "Computing statistics", "\n")
+    if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
     adf <- suppressWarnings(adf.test(values, alternative = "stationary"))
     kpss <- suppressWarnings(kpss.test(values, null = "Level"))
     if (isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
@@ -3228,7 +3228,7 @@ server <- function(input,output,session) {
           result <- merge(serie,average, by = "z")
           result <- result[order(result$x0),]
           trans$pattern <- result$avg
-          if (isTruthy(messages)) cat(file = stderr(), "Computing periodic waveform", "\n")
+          if (messages > 0) cat(file = stderr(), "Computing periodic waveform", "\n")
           if (length(trans$res) > 0) {
             trans$mod <- trans$mod + trans$pattern
             trans$res <- trans$res - trans$pattern  
@@ -3293,7 +3293,7 @@ server <- function(input,output,session) {
       showNotification("The oversampling value is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
-    if (isTruthy(messages)) cat(file = stderr(), "Computing periodogram", "\n")
+    if (messages > 0) cat(file = stderr(), "Computing periodogram", "\n")
     trans$fs <- NULL
     trans$title <- c("Lomb-Scargle periodogram:")
     max_period <- info$rangex
@@ -3455,7 +3455,7 @@ server <- function(input,output,session) {
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
     req(obs(), input$spectrum, trans$fs, trans$psd)
-    if (isTruthy(messages)) cat(file = stderr(), "Plotting periodogram", "\n")
+    if (messages > 0) cat(file = stderr(), "Plotting periodogram", "\n")
     if (length(trans$fs) > 0) {
       marks <- c(1 %o% 10^(-20:20))
       if (input$units == 1) {
@@ -3644,14 +3644,14 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
       req(info$stop)
     }
-    if (isTruthy(messages)) cat(file = stderr(), "Computing wavelet", "\n")
+    if (messages > 0) cat(file = stderr(), "Computing wavelet", "\n")
     # start.time <- Sys.time()
     suppressWarnings({
       trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
     })
-    # end.time <- Sys.time()
-    # time.taken <- difftime(end.time, start.time, units = "secs")
-    # if (isTruthy(messages)) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+    end.time <- Sys.time()
+    time.taken <- difftime(end.time, start.time, units = "secs")
+    if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
     isolate({
       levels <- suppressWarnings(signif(sd(trans$wavelet$z), 4))
       z.fun <- match.fun("Mod")
@@ -3750,7 +3750,7 @@ server <- function(input,output,session) {
             low <- high <- 0
           }
           if (low > 0) {
-            if (isTruthy(messages)) cat(file = stderr(), "Vondrak low ", low, "\n")
+            if (messages > 0) cat(file = stderr(), "Vondrak low ", low, "\n")
             filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
             if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
               trans$vondrak[1] <- low
@@ -3761,7 +3761,7 @@ server <- function(input,output,session) {
             trans$vondrak[1] <- NA
           }
           if (high > 0) {
-            if (isTruthy(messages)) cat(file = stderr(), "Vondrak high ", high, "\n")
+            if (messages > 0) cat(file = stderr(), "Vondrak high ", high, "\n")
             filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
             if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
               trans$vondrak[2] <- high
@@ -3807,7 +3807,7 @@ server <- function(input,output,session) {
   output$vondrak1 <- output$vondrak2 <- output$vondrak3 <- output$Vondrak1 <- output$Vondrak2 <- output$Vondrak3 <- renderPlot({
     req(obs(),input$filter)
     if (length(trans$filterRes) > 0) {
-      if (isTruthy(messages)) cat(file = stderr(), "Plotting Vondrak", "\n")
+      if (messages > 0) cat(file = stderr(), "Plotting Vondrak", "\n")
       if ((length(inputs$low) > 0 && inputs$low > 0 && !is.na(inputs$low)) || (length(inputs$high) > 0 && inputs$high > 0 && !is.na(inputs$high))) {
         title <- "Filter residuals"
         if (input$series2filter == 1) {
@@ -3986,13 +3986,13 @@ server <- function(input,output,session) {
         }
         y <- new_series - mean(new_series)
         ll <- -0.5*(length(n)*log(2*pi) + determinant(C)$modulus[[1]] + ( crossprod(y,solve(C)) %*% y) )
-        # if (isTruthy(messages)) cat(file = stderr(), "Std Dev noises = ", exp(x)/scaling, " Index = ", k, " loglik = ", sprintf("%f",ll), "\n")
+        if (messages > 2) cat(file = stderr(), "Std Dev noises = ", exp(x)/scaling, " Index = ", k, " loglik = ", sprintf("%f",ll), "\n")
         ll
       }
-      if (isTruthy(messages)) cat(file = stderr(), "MLE fit start", "\n")
-      # start.time <- Sys.time()
+      if (messages > 0) cat(file = stderr(), "MLE fit start", "\n")
+      start.time <- Sys.time()
       if (component > 0) {
-        # print(paste0("Inicio optimizacion ",Sys.time()))
+        if (messages > 2) print(paste0("Inicio optimizacion ",Sys.time()))
         withBusyIndicatorServer("runmle", {
           modmle <- optim(par = log(variances),
                           fn = loglik,
@@ -4002,10 +4002,10 @@ server <- function(input,output,session) {
                           hessian = T,
                           control = c(fnscale = -1, factr = 1e11)
           )
-          # print(paste0("Fin optimizacion ",Sys.time()))
+          if (messages > 2) print(paste0("Fin optimizacion ",Sys.time()))
           end.time <- Sys.time()
           time.taken <- end.time - start.time
-          # if (isTruthy(messages)) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+          if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
           if (modmle$convergence == 0) {
             trans$mle <- 1
             sd_noises <- sqrt(diag(solve(-modmle$hessian)))
@@ -4209,7 +4209,7 @@ server <- function(input,output,session) {
             trans$mle <- NULL
             showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
-          if (isTruthy(messages)) cat(file = stderr(), "MLE fit end", "\n")
+          if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
         })
       }
     }
@@ -4219,7 +4219,7 @@ server <- function(input,output,session) {
   observeEvent(input$search, {
     req(file$primary)
     if (length(trans$res) > 0) {
-      if (isTruthy(messages)) cat(file = stderr(), "Searching offsets", "\n")
+      if (messages > 0) cat(file = stderr(), "Searching offsets", "\n")
       output$offsetFound <- renderUI({
         NULL
       })
@@ -5003,11 +5003,11 @@ server <- function(input,output,session) {
   # Observe format ####
   observeEvent(c(input$separator, input$tab, input$format, input$units, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
     if (input$tab == "4") {
-      if (isTruthy(messages)) cat(file = stderr(), "Showing help file", "\n")
+      if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
       req(obs())
       info$tab <- input$tab
-      if (isTruthy(messages)) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", 
+      if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", 
           input$tab,"   Average: ", inputs$step,"   Separator: ", input$separator,"   Sampling: ",
           input$units,"   Sigmas: ",input$sigmas,"   Sitelog: ", file$sitelog$name, "   station.info: ",
           input$sinfo$name,"   soln: ",input$soln$name,"   custom: ", input$custom$name, "   Secondary: ",
@@ -5092,7 +5092,7 @@ server <- function(input,output,session) {
   }, priority = 6)
   observeEvent(c(inputs$step), {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Averaging series", "\n")
+    if (messages > 0) cat(file = stderr(), "Averaging series", "\n")
     if (input$fitType == 2) {
       trans$run <- NULL
       trans$res <- NULL
@@ -5132,14 +5132,14 @@ server <- function(input,output,session) {
   # Observe secondary series ####
   observeEvent(input$series2, {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Loading secondary series", "\n")
+    if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
     info$input_warn <- 0
     data <- digest()
     obs(data)
   }, priority = 6)
   observeEvent(input$optionSecondary, {
     req(file$primary)
-    if (isTruthy(messages)) {
+    if (messages > 0) {
       if (input$optionSecondary == 0) {
         cat(file = stderr(), "Hidding secondary series", "\n")
       } else if (input$optionSecondary == 1) {
@@ -5201,7 +5201,7 @@ server <- function(input,output,session) {
   # Observe remove fit ####
   observeEvent(c(input$series, input$separator, input$format, input$format2, inputs$epoch, inputs$epoch2, input$separator2), {
     req(trans$res)
-    if (isTruthy(messages)) cat(file = stderr(), "Deleting fit", "\n")
+    if (messages > 0) cat(file = stderr(), "Deleting fit", "\n")
     info$input_warn <- 0
     trans$res <- NULL
     trans$reserror <- NULL
@@ -5260,7 +5260,7 @@ server <- function(input,output,session) {
   # Observe fit type ####
   observeEvent(input$fitType, {
     req(trans$res)
-    if (isTruthy(messages)) cat(file = stderr(), "Deleting fit", "\n")
+    if (messages > 0) cat(file = stderr(), "Deleting fit", "\n")
     trans$res <- NULL
     trans$reserror <- NULL
     trans$results <- NULL
@@ -5288,7 +5288,7 @@ server <- function(input,output,session) {
     if (isTruthy(input$model)) {
       # NA
     } else {
-      if (isTruthy(messages)) cat(file = stderr(), "Deleting model", "\n")
+      if (messages > 0) cat(file = stderr(), "Deleting model", "\n")
       trans$run <- F
       trans$res <- NULL
       trans$reserror <- NULL
@@ -5324,7 +5324,7 @@ server <- function(input,output,session) {
   # Observe plotting ####
   observeEvent(input$plot, {
     req(file$primary)
-    if (isTruthy(messages)) cat( file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,"   Sampling: ",input$units,"   Sigmas: ",input$sigmas, "\n")
+    if (messages > 0) cat( file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,"   Sampling: ",input$units,"   Sigmas: ",input$sigmas, "\n")
     info$input_warn <- 0
     data <- digest()
     if (!is.null(data)) {
@@ -5344,7 +5344,7 @@ server <- function(input,output,session) {
   # Observe removing points manual ####
   observeEvent(input$remove, {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Removing points, manually", "\n")
+    if (messages > 0) cat(file = stderr(), "Removing points, manually", "\n")
     brush1 <- input$plot_brush
     brush2 <- NULL
     if (isTruthy(input$res_brush)) {
@@ -5416,7 +5416,7 @@ server <- function(input,output,session) {
   # Observe removing points auto ####
   observeEvent(input$removeAuto, {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Removing points, automatically", "\n")
+    if (messages > 0) cat(file = stderr(), "Removing points, automatically", "\n")
     excluding <- rep(F,length(values$used1))
     series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     if (length(trans$res) > 0) {
@@ -5434,7 +5434,7 @@ server <- function(input,output,session) {
     }
     if (nchar(input$thresholdResN) > 0) {
       if (!is.na(inputs$thresholdResN)) {
-        if (isTruthy(messages)) cat(file = stderr(), "Limit normalized residual ", inputs$thresholdResN, "\n")
+        if (messages > 0) cat(file = stderr(), "Limit normalized residual ", inputs$thresholdResN, "\n")
         excluding_plot <- abs(joint$res/joint$sy) > abs(inputs$thresholdResN)
         excluding <- excluding_plot
       } else {
@@ -5446,7 +5446,7 @@ server <- function(input,output,session) {
         if (abs(inputs$thresholdRes) < min(abs(residuals))) {
           showNotification("The residual threshold will remove all data from the residual series. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())	        
         } else {
-          if (isTruthy(messages)) cat(file = stderr(), "Limit absolute residual ", inputs$thresholdRes, "\n")
+          if (messages > 0) cat(file = stderr(), "Limit absolute residual ", inputs$thresholdRes, "\n")
           excluding_res <- abs(joint$res) > abs(inputs$thresholdRes)
           excluding <- excluding + excluding_res > 0
         }
@@ -5478,7 +5478,7 @@ server <- function(input,output,session) {
   # Observe restore removed ####
   observeEvent(input$delete_excluded, {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Restoring points", "\n")
+    if (messages > 0) cat(file = stderr(), "Restoring points", "\n")
     if (isTruthy(input$remove3D)) {
       values$used_all <- rep(T, length(trans$x0))
       values$excluded_all <- rep(F, length(trans$x0))
@@ -5501,7 +5501,7 @@ server <- function(input,output,session) {
   # Observe station.info ####
   observeEvent(c(input$sinfo, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
     req(input$sinfo,file$id1)
-    if (isTruthy(messages)) cat(file = stderr(), "Reading station.info", "\n")
+    if (messages > 0) cat(file = stderr(), "Reading station.info", "\n")
     id1 <- file$id1
     if (length(file$secondary) > 0) {
       if (input$optionSecondary < 2) {
@@ -5535,7 +5535,7 @@ server <- function(input,output,session) {
   # Observe soln.snx ####
   observeEvent(c(input$soln, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
     req(input$soln,file$id1)
-    if (isTruthy(messages)) cat(file = stderr(), "Reading soln", "\n")
+    if (messages > 0) cat(file = stderr(), "Reading soln", "\n")
     id1 <- file$id1
     if (length(file$secondary) > 0) {
       if (input$optionSecondary < 2) {
@@ -5562,7 +5562,7 @@ server <- function(input,output,session) {
   # Observe custom ####
   observeEvent(c(input$custom, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
     req(input$custom,file$id1)
-    if (isTruthy(messages)) cat(file = stderr(), "Reading custom", "\n")
+    if (messages > 0) cat(file = stderr(), "Reading custom", "\n")
     id1 <- file$id1
     if (length(file$secondary) > 0) {
       if (input$optionSecondary < 2) {
@@ -5588,7 +5588,7 @@ server <- function(input,output,session) {
   
   # Observe sitelog ####
   observeEvent(file$sitelog, {
-    if (isTruthy(messages)) cat(file = stderr(), "Reading sitelog", "\n")
+    if (messages > 0) cat(file = stderr(), "Reading sitelog", "\n")
     info$log <- ReadLog(file$sitelog)
   }, priority = 1)
   observeEvent(c(input$printLog),{
@@ -5612,7 +5612,7 @@ server <- function(input,output,session) {
   # Observe reset ####
   observeEvent(input$reset, {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Reset all", "\n")
+    if (messages > 0) cat(file = stderr(), "Reset all", "\n")
     reset("side-panel")
     reset("main-panel")
     obs(NULL)
@@ -5734,7 +5734,7 @@ server <- function(input,output,session) {
   # Functions ####
   digest <- function() {
     req(file$primary)
-    if (isTruthy(messages)) cat(file = stderr(), "Reading input series", "\n")
+    if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
     if (input$separator == "1") {
       sep <- ""
     } else if (input$separator == "2") {
@@ -7028,7 +7028,7 @@ server <- function(input,output,session) {
     }
   }
   periodogram <- function(serie) {
-    if (isTruthy(messages)) cat(file = stderr(), "Computing periodogram ", serie, "\n")
+    if (messages > 0) cat(file = stderr(), "Computing periodogram ", serie, "\n")
     if (input$spectrumOriginal && any("all" %in% serie || "original" %in% serie)) {
       trans$title[2] <- "original (black), "
       lombscargle <- spec.lomb(y = trans$y, x = trans$x - trans$x[1], f = trans$fs, w = trans$sy, mode = "normal")
@@ -7197,7 +7197,7 @@ server <- function(input,output,session) {
   }
   trimmer <- function(x) gsub("^\\s+|\\s+$", "", x)
   collect <- function(file_out) {
-    if (isTruthy(messages)) cat(file = stderr(), "Downloading results", "\n")
+    if (messages > 0) cat(file = stderr(), "Downloading results", "\n")
     now <- paste0(" run on ",Sys.time()," ",Sys.timezone())
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
     cat(paste0("# Original series: ",file$primary$name), file = file_out, sep = "\n", fill = F, append = T)
@@ -7356,7 +7356,7 @@ server <- function(input,output,session) {
     suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
   }
   collect_periodogram <- function(file_out) {
-    if (isTruthy(messages)) cat(file = stderr(), "Downloading periodogram", "\n")
+    if (messages > 0) cat(file = stderr(), "Downloading periodogram", "\n")
     now <- paste0(" run on ",Sys.time()," ",Sys.timezone())
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
     cat(paste0("# Original series: ",file$primary$name), file = file_out, sep = "\n", fill = F, append = T)
