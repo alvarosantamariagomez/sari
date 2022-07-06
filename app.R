@@ -191,7 +191,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             div(style = "font-weight: bold", "Input series",
                                                                                 helpPopup("Column-based format allowed; comments start with '#'")
                                                                             ),
-                                                                            div(style = "margin-right: -1em", tags$a(href = "TLSE.enu", "Show file example", targe = "_blank"))
+                                                                            div(style = "margin-right: -1em", tags$a(href = "TLSE.neu", "Show file example", targe = "_blank"))
                                                                      ),
                                                                      column(8,
                                                                             fileInput(inputId = "series", label = "", multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
