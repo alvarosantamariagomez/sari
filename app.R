@@ -2553,8 +2553,6 @@ server <- function(input,output,session) {
       }
       if (isTruthy(messages)) cat(file = stderr(), "Computing MIDAS", "\n")
       if (length(trans$x) > 6) {
-        # pairs <- sum((trans$x - trans$x[1]) >= period)
-        # vel <- sapply(1:pairs, function(x) midas_vel(m = x, t = period, disc = 0))
         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0))
         vel <- c(vel[1,],vel[2,])
         vel <- vel[vel > -999999]
@@ -2571,7 +2569,6 @@ server <- function(input,output,session) {
           updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
         }
         if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
-          # vel <- sapply(1:pairs, function(x) midas_vel(m = x, t = period, disc = 1))
           vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1))
           vel <- c(vel[1,],vel[2,])
           vel <- vel[vel > -999999]
@@ -7786,7 +7783,7 @@ server <- function(input,output,session) {
     if (abs(trans$x[index_f] - trans$x[m] - t) < trans$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(trans$x[m] < as.numeric(p) & trans$x[index_f] > as.numeric(p))) {
+          if (!any(trans$x[m] < as.numeric(trans$offsetEpochs) & trans$x[index_f] > as.numeric(trans$offsetEpochs))) {
             vel_f <- (trans$y[index_f] - trans$y[m]) / (trans$x[index_f] - trans$x[m])
           }
         }
@@ -7798,7 +7795,7 @@ server <- function(input,output,session) {
     if (abs(trans$x[m] - trans$x[index_b] - t) < trans$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(trans$x[index_b] < as.numeric(p) & trans$x[m] > as.numeric(p))) {
+          if (!any(trans$x[index_b] < as.numeric(trans$offsetEpochs) & trans$x[m] > as.numeric(trans$offsetEpochs))) {
             vel_b <- (trans$y[m] - trans$y[index_b]) / (trans$x[m] - trans$x[index_b])
           }
         }

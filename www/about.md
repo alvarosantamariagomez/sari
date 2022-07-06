@@ -4,7 +4,7 @@ urlcolor: blue
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version abril 2022'
+title: 'SARI documentation - version julio 2022'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
