@@ -1,5 +1,18 @@
 # **SARI changelog**
 
+# agosto 2022 [2022.08]
+
+### Fixed:
+- Checking the number of common points between the primary and secondary series before computing the Pearson's correlation coefficient
+- Allowing for several words in the last column (variable number of columns) of the PBO format
+- Removing fixed number of expected header lines in NGL and PBO series
+	
+### Changed:
+- Adding different levels of console verbosity
+
+### Added:
+- Checking number of columns in input PBO and NGL series
+
 # julio 2022 [2022.07]
 
 ### Fixed

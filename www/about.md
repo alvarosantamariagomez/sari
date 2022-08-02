@@ -57,7 +57,7 @@ A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).
 
 The changelog is available [here](./changelog.md) (only available from the online help).
 
-Current SARI version: *julio 2022*  --  "Before you get all teary, try to remember that as a robot, I have to do anything you say."
+Current SARI version: *agosto 2022*  --  "How did the machines really know what Tasty Wheat tasted like, huh?"
 
 -----------------
 
@@ -76,7 +76,10 @@ This block allows uploading and setting the series format before plotting. The i
 The user can upload GNSS series in the standard *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension .pos, version 1.1.0) and *NGL* (with extension .tenv3). The user only needs to set the time unit of the input series (days, weeks or years). The three coordinates components will be shown in separate tabs: 1st, 2nd and 3rd component, respectively. The components are plotted in the same order as the columns in the input file (i.e. NEU or ENU for instance). For PBO series it is NEU-like and for NGL series it is ENU-like.  
 For series in a different format, the user needs to check the *1D* option and then set the column separator (blanks, commas or semi-colons) and the column number containing the epochs, the variable and the error bars if available.
 
-The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. Any non numeric value in a NEU/ENU or 1D series will also make the full line to be skipped. The headers in the PBO and NGL files are recognized and skipped too, but any non numeric value elsewhere in these files will stop the app. Data records having a NA, NaN or Inf/inf entries will be treated as valid not-available or not-a-number numeric values and will be automatically skipped, but na, Na, nan, NAN or any other string will be considered as unwanted text.  
+The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. For uncommented text, the behaviour depends on the requested series format:  
+Any non numeric value in a NEU/ENU or 1D series will make the full line to be skipped.  
+For the PBO and NGL series, the headers are recognized and skipped, also the first 2 columns of the NGL files and last column of the PBO files. However, any other non numeric value in these files will stop the app.  
+Data records having a NA, NaN or Inf/inf entries will be treated as valid not-available or not-a-number numeric values and will be automatically skipped, but na, Na, nan, NAN or any other string will be considered as unwanted text.  
 
 For GNSS time series, the station ID is extracted from the first characters of the input file name and will be shown in the `series ID` box under the loaded series. The station ID can be modified by the user if necessary (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block). For other type of series, this feature can be neglected.  
 

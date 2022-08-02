@@ -3171,7 +3171,9 @@ server <- function(input,output,session) {
       serie1 <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
       serie2 <- data.frame(x = trans$x0[!is.na(trans$z)], y = trans$z[!is.na(trans$z)])
       common <- merge(serie1, serie2, by.x = "x", by.y = "x")
-      cat("Pearson's correlation = ", sprintf("%.3f",cor(common$y.x,common$y.y)),"\n\n")
+      if (length(common$x) > 30) {
+        cat("Pearson's correlation = ", sprintf("%.3f",cor(common$y.x,common$y.y)), "from ", length(common$x)," points at common epochs\n\n")
+      }
     }
     if (isTruthy(input$midas)) {
       cat("MIDAS rate estimate ")
@@ -5749,30 +5751,16 @@ server <- function(input,output,session) {
     } else if (input$separator2 == "3") {
       sep2 <- ";"
     }
-    if (input$format == 1) {
-      skip <- 0
-    } else if (input$format == 2) {
-      skip <- 37
-    } else if (input$format == 3) {
-      skip <- 1
-    } else if (input$format == 4) {
-      skip <- 0
+    columns <- get_columns(input$series$datapath, sep, input$format)
+    if (input$format == 4) {
       updateTabsetPanel(session, inputId = "tab", selected = "1")
     }
-    columns <- get_columns(input$series$datapath, sep, skip, input$format)
     if (columns > 0) {
       if (!isTruthy(inputs$ids)) {
         file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
       }
       if (length(file$secondary) > 1) {
-        if (input$format2 == 2) {
-          skip2 <- 37
-        } else if (input$format2 == 3) {
-          skip2 <- 1
-        } else {
-          skip2 <- 0
-        }
-        columns2 <- get_columns(file$secondary$datapath, sep2, skip2, input$format2)
+        columns2 <- get_columns(file$secondary$datapath, sep2, input$format2)
         if (columns2 > 0) {
           if (!isTruthy(inputs$ids)) {
             file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-")[[1]][1]
@@ -5957,45 +5945,63 @@ server <- function(input,output,session) {
       NULL
     }
   }
-  get_columns <- function(file,sep,skip,format) {
+  get_columns <- function(file,sep,format) {
+    if (format == 1) { #NEU/ENU
+      skip <- 0
+    } else if (format == 2) { #PBO
+      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
+    } else if (format == 3) { #NGL
+      skip <- which(grepl("site YYMMMDD", readLines(file)))
+    } else if (format == 4) { #1D
+      skip <- 0
+    }
     columns <- try(range(count.fields(file, sep = sep, comment.char = "#", skip = skip)), silent = F)
     if (isTruthy(columns))  {
-      if (columns[1] != columns[2]) {
-        columns <- 0
+      if (format != 2 && columns[1] != columns[2]) {
         showNotification("The input file contains different number of columns per row. Check the requested input file format. It may contain uncommented text strings.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-      } else {
-        columns <- columns[1]
+        req(info$stop)
       }
+      columns <- columns[1]
       if (isTruthy(columns)) {
-        if (format == 4) {
-          if (isTruthy(input$sigmas)) {
-            if (columns < 3) {
-              columns <- 0
-              showNotification("The number of columns in the input file is less than 3. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            if (columns < 2) {
-              columns <- 0
-              showNotification("The number of columns in the input file is less than 2. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            }
-          }
-        } else {
+        if (format == 1) { #NEU/ENU
           if (isTruthy(input$sigmas)) {
             if (columns < 7) {
-              columns <- 0
-              showNotification("The number of columns in the input file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
             }
           } else {
             if (columns < 4) {
-              columns <- 0
-              showNotification("The number of columns in the input file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
             }
           }
-        }
+        } else if (format == 2) { #PBO
+          if (columns < 24) {
+            showNotification("The number of columns in the input PBO file is less than 24. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            req(info$stop)
+          }
+        } else if (format == 3) { #NGL
+          if (columns < 23) {
+            showNotification("The number of columns in the input NGL file is less than 23. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            req(info$stop)
+          }
+        } else if (format == 4) { # 1D
+          if (isTruthy(input$sigmas)) {
+            if (columns < 3) {
+              showNotification("The number of columns in the input file is less than 3. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          } else {
+            if (columns < 2) {
+              showNotification("The number of columns in the input file is less than 2. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          }
+        } 
       }
     } else {
-      columns <- 0
       showNotification("Impossible to read the columns from the input file. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
     }
     columns
   }
@@ -6022,8 +6028,9 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 2) { #PBO
-      skip <- 37
-      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = c(rep("numeric", 24), "character")), silent = F)
+      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
+      # tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = c(rep("numeric", 24), "character")), silent = F)
+      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         extracted <- tableAll[,c(16,17,18)]
         names(extracted) <- c("y1","y2","y3")
@@ -6044,8 +6051,9 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 3) { #NGL
-      skip <- 1
-      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = c(rep("character", 2), rep("numeric", 18))), silent = F)
+      skip <- which(grepl("site YYMMMDD", readLines(file)))
+      # tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = c(rep("character", 2), rep("numeric", 18))), silent = F)
+      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         if (input$units == 1) {
           extracted <- data.frame( x = tableAll[,4] )
