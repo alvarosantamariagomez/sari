@@ -294,7 +294,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                
                                                # * Plot controls ####
                                                bsCollapsePanel(value = 2,
-                                                               tags$h4(style = "color:white", icon("gamepad", class = NULL, lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                               tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                fluidRow(
                                                                  column(6,
                                                                         radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T)
@@ -349,7 +349,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                
                                                # * Ancillary information ####
                                                bsCollapsePanel(value = 3,
-                                                               tags$h4(style = "color:white", icon("life-ring", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                               tags$h4(style = "color:white", icon("life-ring", class = "fa-spin", lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                
                                                                # % sitelog ####
                                                                div(style = "padding: 0px 0px; margin-top:0em",
@@ -658,7 +658,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                        column(7,
                                                                               checkboxInput(inputId = "errorm",
                                                                                             div("Compute measurement noise",
-                                                                                                helpPopup("To estimate the measurement noise within the provided bounds (WARNING: slow optimization fit)")),
+                                                                                                helpPopup("To estimate the measurement noise within the provided bounds (WARNING: slower KF fit)")),
                                                                                             value = F)
                                                                        ),
                                                                        conditionalPanel(
@@ -1427,7 +1427,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       tabPanel(div(style = "font-size: 20px;",uiOutput("tabName")), value = 1,
                                                tags$style(type = "text/css", "body {padding-top: 60px;}"),
                                                withSpinner(
-                                                 plotOutput("plot1", click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)), 
+                                                 plotOutput("plot1", click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)),
                                                  type = getOption("spinner.type", default = 1),
                                                  color = getOption("spinner.color", default = "#0080ff"),
                                                  size = getOption("spinner.size", default = 2),
@@ -1808,7 +1808,7 @@ server <- function(input,output,session) {
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, sigmas = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, 
-                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL)
+                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width) )
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -1843,7 +1843,7 @@ server <- function(input,output,session) {
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   welcome <- F # welcoming message for a remote connection
   debug <- F # saving the environment 
-  messages <- 1 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
+  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
   
   # Welcome ####
   observe({
@@ -1851,8 +1851,7 @@ server <- function(input,output,session) {
       class = "disabled",
       selector = "#tab li a[data-value=0]"
     )
-  })
-  observe({
+    if (messages > 2) cat(file = stderr(), paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio), "\n")
     req(input$size)
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), "Mobil connection ", "\n")
@@ -1893,12 +1892,13 @@ server <- function(input,output,session) {
         # This will probably work only for local Linux machines 
         registerDoParallel(cores = 4)
       } else {
-        if (messages > 1) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
-        if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+        if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
+        if (messages > 2) cat(file = stderr(), "Pixel ratio ", pixelratio, "\n")
+        if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
         shinyjs::hide("localDir")
         if (isTRUE(welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "message", session = getDefaultReactiveDomain())
-          if (messages > 1) cat(file = stderr(), "Warning", "\n")
+          if (messages > 2) cat(file = stderr(), "Warning", "\n")
           welcome <- F
         }
       }
@@ -2236,6 +2236,16 @@ server <- function(input,output,session) {
     req(obs(), values$used1)
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
+    
+    # data$y    = all points from input series
+    # trans$y0  = all points from input series
+    # trans$y   = points used
+    # trans$sy  = sigmas used
+    # trans$ye  = points excluded
+    # trans$sye = sigmas excluded
+    # trans$z   = points from secondary series (independent)
+    # trans$sz  = sigmas from secondary series (independent)
+    
     trans$x0 <- data$x
     if (isTruthy(input$remove3D)) {
       if ((input$tab == 1) || (input$format == 4)) {
@@ -2275,6 +2285,28 @@ server <- function(input,output,session) {
       trans$x <- data$x[!is.na(trans$y0)]
       trans$xe <- trans$x[values$excluded_all]
       trans$x <- trans$x[values$used_all]
+      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+        if (sum(values$used_all) <= length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used_all]
+          trans$res <- trans$res0[values$used_all]
+          trans$kalman <- trans$kalman0[values$used_all]
+          trans$kalman_unc <- trans$kalman_unc0[values$used_all]
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0[values$used_all]
+          }
+          if (length(trans$mod) != length(trans$mod0)) {
+            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$mod <- trans$mod0 <- NULL
+          trans$res <- trans$res0 <- NULL
+          trans$kalman <- trans$kalman0 <- NULL
+          trans$kalman_unc <- trans$kalman_unc0 <- NULL
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0 <- NULL
+          }
+        }
+      }
     } else {
       if ((input$tab == 1) || (input$format == 4)) {
         trans$y0 <- data$y1
@@ -2290,6 +2322,26 @@ server <- function(input,output,session) {
         trans$sy <- trans$sy[values$used1]
         trans$z <- data$z1
         trans$sz <- data$sz1
+        if (sum(values$used1) <= length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used1]
+          trans$res <- trans$res0[values$used1]
+          trans$kalman <- trans$kalman0[values$used1]
+          trans$kalman_unc <- trans$kalman_unc0[values$used1]
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0[values$used1]
+          }
+          if (length(trans$mod) != length(trans$mod0)) {
+            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$mod <- trans$mod0 <- NULL
+          trans$res <- trans$res0 <- NULL
+          trans$kalman <- trans$kalman0 <- NULL
+          trans$kalman_unc <- trans$kalman_unc0 <- NULL
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0 <- NULL
+          }
+        }
       } else if (input$tab == 2) {
         trans$y0 <- data$y2
         trans$sy0 <- data$sy2
@@ -2304,6 +2356,26 @@ server <- function(input,output,session) {
         trans$sy <- trans$sy[values$used2]
         trans$z <- data$z2
         trans$sz <- data$sz2
+        if (sum(values$used2) <= length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used2]
+          trans$res <- trans$res0[values$used2]
+          trans$kalman <- trans$kalman0[values$used2]
+          trans$kalman_unc <- trans$kalman_unc0[values$used2]
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0[values$used2]
+          }
+          if (length(trans$mod) != length(trans$mod0)) {
+            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$mod <- trans$mod0 <- NULL
+          trans$res <- trans$res0 <- NULL
+          trans$kalman <- trans$kalman0 <- NULL
+          trans$kalman_unc <- trans$kalman_unc0 <- NULL
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0 <- NULL
+          }
+        }
       } else if (input$tab == 3) {
         trans$y0 <- data$y3
         trans$sy0 <- data$sy3
@@ -2318,6 +2390,26 @@ server <- function(input,output,session) {
         trans$sy <- trans$sy[values$used3]
         trans$z <- data$z3
         trans$sz <- data$sz3
+        if (sum(values$used3) <= length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used3]
+          trans$res <- trans$res0[values$used3]
+          trans$kalman <- trans$kalman0[values$used3]
+          trans$kalman_unc <- trans$kalman_unc0[values$used3]
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0[values$used3]
+          }
+          if (length(trans$mod) != length(trans$mod0)) {
+            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$mod <- trans$mod0 <- NULL
+          trans$res <- trans$res0 <- NULL
+          trans$kalman <- trans$kalman0 <- NULL
+          trans$kalman_unc <- trans$kalman_unc0 <- NULL
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0 <- NULL
+          }
+        }
       }
     }
     info$miny <- min(trans$y0, na.rm = T)
@@ -2533,7 +2625,7 @@ server <- function(input,output,session) {
         paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
       }
     })
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
@@ -2604,7 +2696,7 @@ server <- function(input,output,session) {
     xfit <- seq(min(values),max(values),length = 40) 
     yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
     lines(xfit, yfit, col = "red", lwd = 2)
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # Offset verification ####
   observeEvent(input$runVerif, {
@@ -2779,17 +2871,22 @@ server <- function(input,output,session) {
                 info_out <- c()
                 for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
                   ss <- ss + 1
-                  seno <- synthesis$coefficients[s,1]
-                  coseno <- synthesis$coefficients[s + 1,1]
-                  seno_err <- synthesis$coefficients[s,2]
-                  coseno_err <- synthesis$coefficients[s + 1,2]
-                  a <- 1/( 1 + coseno^2/seno^2)
-                  amp <- sqrt(seno^2 + coseno^2)
-                  fase <- atan2(coseno,seno)
-                  amp_err <- try(sqrt(seno^2*seno_err^2/amp^2 + coseno^2*coseno_err^2/amp^2 + 2*seno*coseno*synthesis$cov.unscaled[s,s + 1]/amp^2), silent = F)
-                  fase_err <- try(sqrt(a^2*(coseno_err^2 + coseno^2*seno_err^2/seno^2 - 2*coseno*synthesis$cov.unscaled[s,s + 1]/seno)/seno^2), silent = F)
-                  if (isTruthy(amp_err) && isTruthy(fase_err)) {
-                    info_out <- c(info_out, amp, amp_err, fase, fase_err)
+                  sine <- synthesis$coefficients[s,1]
+                  cosine <- synthesis$coefficients[s + 1,1]
+                  sine_err <- synthesis$coefficients[s,2]
+                  cosine_err <- synthesis$coefficients[s + 1,2]
+                  if (sine == 0) {
+                    a <- 1
+                  } else {
+                    a <- 1/( 1 + cosine^2/sine^2)
+                  }
+                  amp <- sqrt(sine^2 + cosine^2)
+                  phase <- atan2(cosine,sine)
+                  if (messages > 2) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
+                  amp_err <- try(sqrt(sine^2*sine_err^2/amp^2 + cosine^2*cosine_err^2/amp^2 + 2*sine*cosine*synthesis$cov.unscaled[s,s + 1]/amp^2), silent = F)
+                  phase_err <- try(sqrt(a^2*(cosine_err^2 + cosine^2*sine_err^2/sine^2 - 2*cosine*synthesis$cov.unscaled[s,s + 1]/sine)/sine^2), silent = F)
+                  if (isTruthy(amp_err) && isTruthy(phase_err)) {
+                    info_out <- c(info_out, amp, amp_err, phase, phase_err)
                   } else {
                     showNotification(paste0("Unable to compute the amplitude and/or phase error of sinusoidal ",ss,". Check the LS fit and the input sinusoidal parameters."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
                     ss <- ss - 1
@@ -2875,6 +2972,8 @@ server <- function(input,output,session) {
         model <- m$model
         model_kf <- m$model_kf
         apriori <- m$apriori
+        e <- matrix(unlist(m$apriori), nrow = 1, ncol = 2)
+        apriori[1] <- sapply(1:1, function(l) eval(parse(text = m$model_kf)))
         nouns <- m$nouns
         processNoise <- m$processNoise
         error <- m$error
@@ -2949,6 +3048,7 @@ server <- function(input,output,session) {
         kfs <- NULL
         if (any(is.na(ex1$C0))) {
           showNotification("Missing information required on the a priori state to run the Kalman filter. Check the input values", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          trans$run <- F
           req(info$stop)
         }
         if (input$kf == 1) {
@@ -2974,6 +3074,7 @@ server <- function(input,output,session) {
             kfs <- NULL
             kfs <- try(UKFsmooth(kf, GGfunction = GGfunction), silent = F)
             if (!inherits(kfs,"try-error") && !is.null(kfs)) {
+              trans$run <- T
               kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
               for (component in seq_len(ncol(kfs$s))) {
                 kfs_unc[,component] <- unlist(sapply(kfs$S[2:length(kfs$S)], function(x) diag(x)[component]))
@@ -2982,50 +3083,59 @@ server <- function(input,output,session) {
                 kfs_unc[kfs_unc < 0] <- NA
                 showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the UKF fit.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
               }
+              e <- kfs$s[2:nrow(kfs$s),]
+              mod <- sapply(1:length(x), function(l) eval(parse(text = model_kf)))
+              res <- y - mod
+              mod <- mod + trans$ordinate
+              if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
+                mod <- mod + trans$pattern
+              }
+              m$apriori[1] <- unlist(m$apriori)[1] + trans$ordinate
+              trans$kalman_info <- m
+              trans$res <- res
+              trans$res0 <- trans$res
+              trans$mod <- mod
+              trans$mod0 <- trans$mod
+              trans$equation <- model
+              colnames(e) <- nouns
+              trans$kalman <- e
+              trans$kalman[,1] <- trans$kalman[,1] + trans$ordinate
+              trans$kalman0 <- trans$kalman
               kfs_unc <- sqrt(kfs_unc)
+              colnames(kfs_unc) <- nouns
+              trans$kalman_unc <- kfs_unc
+              trans$kalman_unc0 <- trans$kalman_unc
+              if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+                trans$rate_inst <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
+                trans$rate_inst0 <- trans$rate_inst
+                names(trans$rate_inst) <- "Rate_inst"
+              }
+              trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
+              if (isTruthy(inputs$waveformPeriod)) {
+                save_value <- inputs$waveformPeriod
+                updateTextInput(session, "waveformPeriod", value = "")
+                updateTextInput(session, "waveformPeriod", value = save_value)
+              }
             } else {
-              showNotification("Unable to run the RTS smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              trans$results <- NULL
+              trans$res <- NULL
+              trans$mod <- NULL
+              trans$run <- F
+              showNotification("Unable to run the KF smoother. The error covariances of the initial state may be zero or too large.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              # showNotification("Unable to run the RTS smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              # req(info$stop)
             }
           } else {
+            trans$results <- NULL
+            trans$res <- NULL
+            trans$mod <- NULL
+            trans$run <- F
             showNotification("Unable to fit the UKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
         end.time <- Sys.time()
         time.taken <- end.time - start.time
         if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
-        if (!inherits(kf,"try-error") && length(kfs) > 0) {
-          e <- kfs$s[2:nrow(kfs$s),]
-          mod <- sapply(1:length(x), function(l) eval(parse(text = model_kf)))
-          res <- y - mod
-          mod <- mod + trans$ordinate
-          if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
-            mod <- mod + trans$pattern
-          }
-          trans$kalman_info <- m
-          trans$res <- res
-          trans$mod <- mod
-          trans$equation <- model
-          colnames(e) <- nouns
-          trans$kalman <- e
-          trans$kalman[,1] <- trans$kalman[,1] + trans$ordinate
-          colnames(kfs_unc) <- nouns
-          trans$kalman_unc <- kfs_unc
-          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-            trans$rate_inst <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
-            names(trans$rate_inst) <- "Rate_inst"
-          }
-          trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
-          if (isTruthy(inputs$waveformPeriod)) {
-            save_value <- inputs$waveformPeriod
-            updateTextInput(session, "waveformPeriod", value = "")
-            updateTextInput(session, "waveformPeriod", value = save_value)
-          }
-        } else {
-          trans$results <- NULL
-          trans$res <- NULL
-          trans$mod <- NULL
-          showNotification("Unable to fit the KF model. Change the model components. The error covariances of the initial state may be too large.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-        }
       })
     }
   })
@@ -3084,7 +3194,7 @@ server <- function(input,output,session) {
         lines(trans$x,trans$filter, col = "blue", lwd = 3)
       }
     }
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # Plot histogram ####
   output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
@@ -3119,7 +3229,7 @@ server <- function(input,output,session) {
       showNotification("Unable to compute the histogram. Check the input series.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
     }
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # Stats ####
   output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
@@ -3257,7 +3367,7 @@ server <- function(input,output,session) {
               waveform <- waveform[order(waveform$x),]
               plot(waveform$x,waveform$y, type = symbol, pch = 20, xlab = "Epoch of period", ylab = "Average value", main = title)
             }
-          })
+          }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
         } else {
           showNotification("The period of the waveform is not valid. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           if (length(trans$pattern) > 0) {
@@ -3581,7 +3691,7 @@ server <- function(input,output,session) {
         }
       })
     }
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # Plot wavelet ####
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
@@ -3704,7 +3814,7 @@ server <- function(input,output,session) {
         paste0("\tEpoch = ", input$wavelet_1click$x, "\tPeriod (", period, ") = ", input$wavelet_1click$y, "\t\tAmplitude = ", amplitude_approx[idx,idy,1])  
       }
     })
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # Compute smoother ####
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
@@ -3824,7 +3934,7 @@ server <- function(input,output,session) {
         }
       }
     }
-  })
+  }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } })
   
   # Noise analysis ####
   observeEvent(input$runmle, {
@@ -4745,7 +4855,8 @@ server <- function(input,output,session) {
             disable("downloadAs")
             disable("autoDownload")
           }
-          if ((input$fitType == 1 && length(trans$mod) > 0 && length(trans$res) > 0) || (input$fitType == 0 && length(trans$filter) > 0)) {
+          # if ((input$fitType == 1 && length(trans$mod) > 0 && length(trans$res) > 0) || (input$fitType == 0 && length(trans$filter) > 0)) {
+          if ((length(trans$mod) > 0 && length(trans$res) > 0) || (input$fitType == 0 && length(trans$filter) > 0)) {
             if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0) {
               enable("remove")
             } else {
@@ -4756,7 +4867,6 @@ server <- function(input,output,session) {
             } else {
               disable("delete_excluded")
             }
-            enable("removeAuto")
             enable("thresholdRes")
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
               if (input$sigmas == T) {
@@ -4767,19 +4877,22 @@ server <- function(input,output,session) {
             } else {
               disable("thresholdResN")
             }
-          } else if (input$fitType == 2) {
-            disable("remove")
-            disable("delete_excluded")
-            disable("thresholdRes")
-            disable("thresholdResN")
+          # } else if (input$fitType == 2) {
+          # disable("remove")
+          # disable("delete_excluded")
+          # disable("thresholdRes")
+          # disable("thresholdResN")
           } else if (length(trans$filter) > 0) {
-            enable("removeAuto")
             enable("thresholdRes")
             disable("thresholdResN")
           } else {
-            disable("removeAuto")
             disable("thresholdRes")
             disable("thresholdResN")
+          }
+          if (!is.na(inputs$thresholdRes) || !is.na(inputs$thresholdResN)) {
+            enable("removeAuto")
+          } else {
+            disable("removeAuto")
           }
           if (!isTruthy(input$wavelet)) {
             updateTextInput(session, "corto_wavelet", value = "")
@@ -4966,6 +5079,34 @@ server <- function(input,output,session) {
         info$sigmas <- F
       }
     }
+  }, priority = 100)
+  
+  # Observe tab ####
+  observeEvent(input$tab, {
+    ranges$y1 <- NULL
+    ranges$y2 <- NULL
+    ranges$y12 <- NULL
+    trans$midas_vel <- NULL
+    trans$midas_all <- NULL
+    trans$res <- trans$res0 <- NULL
+    trans$reserror <- NULL
+    trans$results <- NULL
+    trans$mod <- trans$mod0 <- NULL
+    trans$kalman <- trans$kalman0 <- NULL
+    trans$kalman_unc <- trans$kalman_unc0 <- NULL
+    trans$rate_inst <- trans$rate_inst0 <- NULL
+    trans$equation <- NULL
+    trans$mle <- F
+    trans$run <- F
+    trans$verif <- NULL
+    trans$pattern <- NULL
+    trans$names <- NULL
+    trans$noise <- NULL
+    updateTextInput(session, "ObsError", value = "")
+    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 100)
   
   # Observe download ####
@@ -5233,32 +5374,6 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 5)
   
-  # Observe tab ####
-  observeEvent(input$tab, {
-    ranges$y1 <- NULL
-    ranges$y2 <- NULL
-    ranges$y12 <- NULL
-    trans$midas_vel <- NULL
-    trans$midas_all <- NULL
-    trans$res <- NULL
-    trans$reserror <- NULL
-    trans$results <- NULL
-    trans$mod <- NULL
-    trans$kalman <- NULL
-    trans$rate_inst <- NULL
-    trans$equation <- NULL
-    trans$mle <- F
-    trans$verif <- NULL
-    trans$pattern <- NULL
-    trans$names <- NULL
-    trans$noise <- NULL
-    updateTextInput(session, "ObsError", value = "")
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
-  }, priority = 5)
-  
   # Observe fit type ####
   observeEvent(input$fitType, {
     req(trans$res)
@@ -5419,19 +5534,23 @@ server <- function(input,output,session) {
   observeEvent(input$removeAuto, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Removing points, automatically", "\n")
-    excluding <- rep(F,length(values$used1))
     series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     if (length(trans$res) > 0) {
-      residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$reserror)
+      if (length(trans$reserror) > 0) {
+        residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$reserror)
+      } else {
+        residuals <- data.frame(x = trans$x, res = trans$res)
+      }
       # residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$sy)
     } else if (length(trans$filterRes) > 0) {
       residuals <- data.frame(x = trans$x, res = trans$filterRes)
     } else {
       req(info$stop)
     }
+    excluding <- rep(F,length(residuals$res))
     joint <- merge(series, residuals, by = "x", all.x = T)
     joint$res <- sapply(1:length(series$x), function(x) if (is.na(joint$res[x])) 0 else joint$res[x])
-    if (length(trans$res) > 0) {
+    if (length(trans$reserror) > 0) {
       joint$sy <- sapply(1:length(series$x), function(x) if (is.na(joint$sy[x])) 1 else joint$sy[x])
     }
     if (nchar(input$thresholdResN) > 0) {
@@ -5488,14 +5607,20 @@ server <- function(input,output,session) {
       values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
     } else {
       if (input$tab == 1 || is.null(input$tab)) {
-        values$used1 <- rep(T, info$points)
-        values$excluded1 <- rep(F, info$points)
+        # values$used1 <- rep(T, info$points)
+        # values$excluded1 <- rep(F, info$points)
+        values$used1 <- rep(T, length(trans$x0))
+        values$excluded1 <- rep(F, length(trans$x0))
       } else if (input$tab == 2) {
-        values$used2 <- rep(T, info$points)
-        values$excluded2 <- rep(F, info$points)
+        # values$used2 <- rep(T, info$points)
+        # values$excluded2 <- rep(F, info$points)
+        values$used2 <- rep(T, length(trans$x0))
+        values$excluded2 <- rep(F, length(trans$x0))
       } else if (input$tab == 3) {
-        values$used3 <- rep(T, info$points)
-        values$excluded3 <- rep(F, info$points)
+        # values$used3 <- rep(T, info$points)
+        # values$excluded3 <- rep(F, info$points)
+        values$used3 <- rep(T, length(trans$x0))
+        values$excluded3 <- rep(F, length(trans$x0))
       }
     }
   }, priority = 4)
@@ -6229,12 +6354,19 @@ server <- function(input,output,session) {
               ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
               sigma_rate <- ap_rate * 5
             }
+          }
+          if (input$fitType == 2) {
             updateTextInput(session, "Trend0", value = ap_rate)
             updateTextInput(session, "eTrend0", value = sigma_rate)
           }
         } else {
           ap_rate <- as.numeric(input$Trend0)
-          sigma_rate <- as.numeric(input$eTrend0)
+          if (input$eTrend0 == 0) {
+            showNotification("The a priori trend error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            req(info$stop)
+          } else {
+            sigma_rate <- as.numeric(input$eTrend0)  
+          }
         }
         if (identical(input$Intercept0,character(0)) || is.na(input$Intercept0) || input$Intercept0 == "" || input$Intercept0 == " ") {
           if (isTruthy(match("Intercept", trans$names))) {
@@ -6254,7 +6386,12 @@ server <- function(input,output,session) {
           }
         } else {
           ap_intercept <- as.numeric(input$Intercept0) - trans$ordinate
-          sigma_intercept <- as.numeric(input$eIntercept0)
+          if (input$eIntercept0 == 0) {
+            showNotification("The a priori intercept error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            req(info$stop)
+          } else {
+            sigma_intercept <- as.numeric(input$eIntercept0)
+          }
         }
         if (!is.na(as.numeric(input$TrendDev))) {
           noise <- as.numeric(input$TrendDev)
@@ -6272,7 +6409,8 @@ server <- function(input,output,session) {
         model_kf <- paste(model_kf, "e[l,",j,"]", sep = " ")
         j <- j + 1
         if (isTruthy(match("Intercept", trans$names))) {
-          ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
+          # ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
+          ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate
           sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
         } else {
           ap_intercept <- mean(y, na.rm = T)
@@ -6369,9 +6507,7 @@ server <- function(input,output,session) {
                 y_now <- y
               }
               if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
-                # S0[i] <- (range(y_now)[2]-range(y_now)[1])/(4*sqrt(2))
                 S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
-                # eS0[i] <- (range(y_now)[2]-range(y_now)[1])/(8*sqrt(2)) 
                 eS0[i] <- quantile(y_now, probs = 0.95)/(8*sqrt(2)) 
                 if (input$fitType == 2) {
                   if (isTruthy(match(paste0("S",i), trans$names))) {
@@ -6390,7 +6526,13 @@ server <- function(input,output,session) {
               error[[label_sin]] <- eS0[i]
               nouns <- c(nouns, label_sin)
               apriori[[label_cos]] <- S0[i]
-              error[[label_cos]] <- eS0[i]
+              if (eS0[i] == 0) {
+                trans$run <- F
+                showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                req(info$stop)
+              } else {
+                error[[label_cos]] <- eS0[i]
+              }
               nouns <- c(nouns, label_cos)
               if (input$fitType == 2) {
                 if (input$SineCosine == 1) {
@@ -7028,11 +7170,9 @@ server <- function(input,output,session) {
     l <- formatC(p, format = "g", digits = 12)
     axis(2, las = 2, at = p, labels = l)
     if (sigma == T) {
-      alfa <- .2
-      shade <- adjustcolor("black", alpha.f = alfa)
       ba <- y + z
       bb <- y - z
-      polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+      polygon(c(x, rev(x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
     }
   }
   periodogram <- function(serie) {

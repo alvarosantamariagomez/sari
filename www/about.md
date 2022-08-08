@@ -276,11 +276,12 @@ One click and drag will brush/select an area on any plot. Once the area is selec
 Points of the series inside the red brushed area on the series plot (top) or the blue brushed area on the model/filter residuals plot (bottom) can be excluded using the `toggle points` button. This is useful for removing outliers or for limiting the series to a period of interest. The removed points will turn into solid red on the series plot as a remainder, but they will disappear on the model/filter residual plot. If the series has more than one dimension, the removed points for each dimension will be kept when changing tabs.  
 Any point toggled twice on the series plot (top) will be restored as a valid point again. All *toggled* points in the tab can be restored at once with the `reset toggle` button. If the `reset toggle` button is not active, it means there are no points to be restored.
 
-Note: the options to exclude points from the series will not be available if a Kalman filter has been run. This is because the filter is updated only when the `run KF` button is hit (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block). If you need to remove outliers after running the Kalman filter, set the `fit control` option to *none* or *LS*, do your cleaning and then re-run the filter.
+Note: when points are removed from the series after fitting a Kalman filter, the KF results will still be available for the remaining points, but these results will not represent the actual series after the points were removed. This is because the Kalman filter is updated only when the `run KF` button is hit (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block). A warning asking to run the KF again will be shown on screen.  
+For the same reason, when previously removed points are included back again into the series (restored) after fitting a Kalman filter, since there is no solution estimated for these points, the full Kalman filter results will be deleted and the user will need to run the KF again.
 
 In addition to using the brushed areas, large residuals can be automatically excluded using the `auto toggle` button. Large is defined by providing the absolute *residual threshold* or the absolute *normalized residual*, i.e., the residual divided by its own error bar.
 
-The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously, which is useful if you want to join the results from each coordinate component into a single file afterwards (a NEU/ENU file for instance). It also works for different column numbers from a 1D series format.  
+The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously, which is useful if you want to join the results from each coordinate component into a single file afterwards (a NEU/ENU file for instance). It also works when analyzing many different columns using the 1D series format.  
 
 The `include in file` option will keep the removed points in the downloaded results file as commented lines.  
 
@@ -330,7 +331,7 @@ This is how I usually estimate the linear trend in a NEU GNSS time series (the s
 
 # Known issues
 
-There is a finite number of parallel connections that can be run by the online server. That number depends on the user load. For standard user loads (i.e., excluding noise analysis with spectral index, automatic discontinuity search and large wavelet analysis), up to 24 parallel users can be sustained, probably a few more than that. Contact the author if you have additional needs.
+There is a finite number of parallel connections that can be run by the online server. That number depends on the user load. For standard user loads (i.e., excluding noise analysis with spectral index, automatic discontinuity search and large wavelet analysis), up to 24 parallel users can be sustained, probably a few more than that. Contact the [<a href="#author" target="_self">author</a>](#author) if you have additional needs.
 
 The Kalman filter/smoother is significantly slower than the least-squares fit, at least for typical GNSS position series I have tested. Between EKF and UKF, the tests I have performed with typical GNSS series and my own EKF/UKF implementation indicate that UKF is 2---3 times faster than EKF. This may be probably due to the fact that there is no need to estimate the Jacobians with the UKF. Therefore, the UKF is the preferred option by default and it is also the algorithm behind the measurement noise optimization (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block).
 
@@ -339,6 +340,12 @@ In my tests, the state itself looks good so at this point I'm not really sure wh
 The uncertainty of the estimated state parameters at the affected epochs will be set to *NA* in the downloaded file. If you encounter this problem, you can use the slower EKF implementation.
 
 At this moment, I have not found the way to select the output directory on the client's side, where the user downloads the processed series, from the online server side in order to avoid the repetitive, and sometimes annoying, download prompt. This is related to server/client standard secure browsing, so not entirely my fault. At least, some web browsers provide extensions to automatically download to a specific directory given the file extension or to avoid the unnecessary *(1)*, *(2)*, ... added to the file name if downloaded several times.
+
+Special considerations only for Windows users:
+
+On high-resolution screens, the plot width attribute that requested by the client changes by just a few pixels at times when the user is clicking and selecting an area on a plot. The change of the plot width is barely perceptible, but Shiny reacts to these requests and updates the plot, which is unexpected and quite annoying. This happens for both local (from RStudio) and remote (from shinyapps) connections. To avoid this, the width of all the plots in SARI are hold fixed to the first plot width attribute requested by the client when connecting to the server. The limitation of this patch is that the plots width will not change if the user changes the pixel ratio or the browser scaling during a SARI session. If that happens, it is recommended to open a new session on the server. Contact the [<a href="#author" target="_self">author</a>](#author) if you have any problem with the plot width or the plots updating themselves with no reason.
+
+When running SARI locally from RStudio on a Windows machine (true for Windows 10 at least), the series error bars may not be plotted. They are still being considered in the analysis (if `use error bars` is activated), but most likely, the user will not see them on the plots. Please be nice and let's empathize with our Windows colleagues till RStudio fixes this.
 
 -----------------
 
