@@ -1,5 +1,25 @@
 # **SARI changelog**
 
+# septiembre 2022 [2022.09]
+
+### Fixed:
+- Estimation of the sinusoid phase error when the sine component is zero
+- Restoring removed points in primary series when a longer secondary series was uploaded
+- Updating the periodogram limits when the series sampling is reduced
+
+### Changed:
+- Checking for non-zero a priori state covariances in the KF fit
+- Checking for numeric values provided by the user in the a priori state of offset parameters
+- Improved guess of the a priori KF state obtained from a previous LS fit
+- Preventing the client to change the plots width when the user interacts with them
+- Showing transparent error bars when running local on Windows machines
+- Disable auto toogle by default until the user provides a residual threshold
+- Showing compact ordinate axis on the series plots
+- Some variables translated into English
+
+### Added:
+- Enabling the possibility to remove outliers from the KF residuals
+
 # agosto 2022 [2022.08]
 
 ### Fixed:
@@ -18,13 +38,13 @@
 ### Fixed
 
 ### Changed
-	- Organization, translation and cleaning of the code.
-	- Faster estimation of the instantaneous rate from the Kalman filter fit.
-	- Improved implementation of the MIDAS algorithm.
+- Organization, translation and cleaning of the code.
+- Faster estimation of the instantaneous rate from the Kalman filter fit.
+- Improved implementation of the MIDAS algorithm.
 
 ### Added
-	- Adding information of the Kalman filter parameters in the downloaded results file.
-	- When zooming in, the histogram & statistics are limited to the series within the zoom-in window.
+- Adding information of the Kalman filter parameters in the downloaded results file.
+- When zooming in, the histogram & statistics are limited to the series within the zoom-in window.
 
 # abril 2022 [2022.04]
 

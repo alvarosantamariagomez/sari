@@ -25,13 +25,12 @@ https://cran.r-project.org/src/contrib/Archive/mvcwt/
 To install this package, simply go to Tools -> Install Packages and select the downloaded file.
 
 Alternatively, the following R command will install all the necessary packages (except mvcwt):
-`install.packages(c("data.table", "dlm", "doParallel", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries"))`
+`install.packages(c("data.table", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries"))`
 
 I also provide the current package versions for which SARI runs without problems (note: package versions may evolve from these).
 
   (data.table) #v1.14.0
   (dlm) #v1.1-5
-  (doParallel) #v1.0.16
   (fields) #v12.5
   (lubridate) #v1.7.10
   (magrittr) #v2.0.1

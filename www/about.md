@@ -4,7 +4,7 @@ urlcolor: blue
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version julio 2022'
+title: 'SARI documentation - version septiembre 2022'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -57,7 +57,7 @@ A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).
 
 The changelog is available [here](./changelog.md) (only available from the online help).
 
-Current SARI version: *agosto 2022*  --  "How did the machines really know what Tasty Wheat tasted like, huh?"
+Current SARI version: *septiembre 2022*  --  "Not random at all, maybe. Like there's some pattern here? But there is no pattern, or the computers would've nailed it."
 
 -----------------
 
@@ -110,7 +110,7 @@ This block allows uploading files containing complementary information related t
 * an IGS-like soln discontinuity file (an example of this file can be found [here](./soln.snx) (only available from the online help))
 * a customized offset file to plot specific dates (for instance, earthquakes)
 * a secondary series that can be `shown` next to the primary series in dark green color, for comparison purposes and detection of common features, or used to either `correct` the primary series to analyse the difference or `average` both the primary and secondary series values. For instance, a model can be subtracted a posteriori from the series (loading, post-seismic, etc.) or even the series of a nearby station in order to remove the spatially-correlated signal/noise and better detect the individual equipment changes, relative motion or common variations.
-* <b><span style="color: red;">NEW FEATURE:</span></b> a plate tectonic model to be `shown` on top of the series or `removed` from the series. The user can enter the station coordinates and the [Euler's pole](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) parameters manually or by uploading a file (an example of this file can be found [here](./euler.txt) (only available from the online help)).  
+* a plate tectonic model to be `shown` on top of the series or `removed` from the series. The user can enter the station coordinates and the [Euler's pole](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) parameters manually or by uploading a file (an example of this file can be found [here](./euler.txt) (only available from the online help)).  
 
 Notes on the ancillary information:  
 
@@ -341,11 +341,7 @@ The uncertainty of the estimated state parameters at the affected epochs will be
 
 At this moment, I have not found the way to select the output directory on the client's side, where the user downloads the processed series, from the online server side in order to avoid the repetitive, and sometimes annoying, download prompt. This is related to server/client standard secure browsing, so not entirely my fault. At least, some web browsers provide extensions to automatically download to a specific directory given the file extension or to avoid the unnecessary *(1)*, *(2)*, ... added to the file name if downloaded several times.
 
-Special considerations only for Windows users:
-
-On high-resolution screens, the plot width attribute that requested by the client changes by just a few pixels at times when the user is clicking and selecting an area on a plot. The change of the plot width is barely perceptible, but Shiny reacts to these requests and updates the plot, which is unexpected and quite annoying. This happens for both local (from RStudio) and remote (from shinyapps) connections. To avoid this, the width of all the plots in SARI are hold fixed to the first plot width attribute requested by the client when connecting to the server. The limitation of this patch is that the plots width will not change if the user changes the pixel ratio or the browser scaling during a SARI session. If that happens, it is recommended to open a new session on the server. Contact the [<a href="#author" target="_self">author</a>](#author) if you have any problem with the plot width or the plots updating themselves with no reason.
-
-When running SARI locally from RStudio on a Windows machine (true for Windows 10 at least), the series error bars may not be plotted. They are still being considered in the analysis (if `use error bars` is activated), but most likely, the user will not see them on the plots. Please be nice and let's empathize with our Windows colleagues till RStudio fixes this.
+When running SARI on a Windows machine with a high-resolution screen, the plot width requested by the client changes by just a few pixels at times when the user is clicking and selecting an area on a plot. The change of the plot width is barely perceptible, but Shiny reacts to these attribute requests and updates the plot, which is unexpected and quite annoying. This happens for both local (from RStudio) and remote (from shinyapps) connections. To avoid this, the width of all the plots in SARI are hold fixed to the first plot width attribute requested by the client when connecting to the server. The limitation of this patch is that the plots width will not change if the user changes the pixel ratio or the browser scaling during a SARI session. If that happens, it is recommended to open a new session on the server. Contact the [<a href="#author" target="_self">author</a>](#author) if you have any problem with the plot width or the plots updating themselves with no reason.
 
 -----------------
 
