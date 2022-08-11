@@ -13,7 +13,7 @@ Currently tested in R version 4.1.0.
 SARI can be run:  
 - remotelly from the shinyapps server at this link https://alvarosg.shinyapps.io/sari
 - locally on your machine using a prebuilt Docker image available at https://hub.docker.com/r/alvarosg/sari  
-- locally on your machine using the [source code](app.R) after installing R, RStudio and all the R dependencies given in the [INSTALL](INSTALL) file.  
+- locally on your machine after installing R, RStudio and all the R dependencies given in the [INSTALL](INSTALL) file. Once all this is set up, then just clone, open and run the [source code](app.R) in RStudio or simply execute `library(shiny)` and then `runGitHub("sari","alvarosantamariagomez",launch.browser=T)`  
 
 The [about.pdf](/www/about.pdf) file contains all the details to run SARI including the description of all the implemented functionalities.  
 This file is accessed on the main web interface with the `Help` button or locally in the /www directory.  
