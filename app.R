@@ -6432,8 +6432,8 @@ server <- function(input,output,session) {
           noise <- 0
         }
         processNoise <- c(processNoise, as.numeric(noise)^2)
-        apriori <- c(apriori, Intercept = ap_intercept, Rate = ap_rate)
-        error <- c(error, Intercept = sigma_intercept, Rate = sigma_rate)
+        apriori <- c(apriori, Intercept = as.numeric(ap_intercept), Rate = as.numeric(ap_rate))
+        error <- c(error, Intercept = as.numeric(sigma_intercept), Rate = as.numeric(sigma_rate))
         nouns <- c(nouns, "Intercept", "Rate")
         trans$run <- T
       } else {
@@ -6449,8 +6449,8 @@ server <- function(input,output,session) {
           ap_intercept <- mean(y, na.rm = T)
           sigma_intercept <- sd(y, na.rm = T)
         }
-        apriori <- c(apriori, Intercept = ap_intercept)
-        error <- c(error, Intercept = sigma_intercept)
+        apriori <- c(apriori, Intercept = as.numeric(ap_intercept))
+        error <- c(error, Intercept = as.numeric(sigma_intercept))
         nouns <- c(nouns, "Intercept")
       }
       # * Sinusoidal model ####
@@ -6558,16 +6558,16 @@ server <- function(input,output,session) {
                   updateTextInput(session, "eS0", value = line_eS0)
                 }
               }
-              apriori[[label_sin]] <- S0[i]
-              error[[label_sin]] <- eS0[i]
+              apriori[[label_sin]] <- as.numeric(S0[i])
+              error[[label_sin]] <- as.numeric(eS0[i])
               nouns <- c(nouns, label_sin)
-              apriori[[label_cos]] <- S0[i]
+              apriori[[label_cos]] <-as.numeric(S0[i])
               if (eS0[i] == 0) {
                 trans$run <- F
                 showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               } else {
-                error[[label_cos]] <- eS0[i]
+                error[[label_cos]] <- as.numeric(eS0[i])
               }
               nouns <- c(nouns, label_cos)
               if (input$fitType == 2) {
@@ -6791,11 +6791,11 @@ server <- function(input,output,session) {
               model <- paste(model, paste(label1,"*I(x>",text_exp,")*(exp((",text_exp,"-x)/",label2,"))"), sep = " + ")
               model_kf <- paste(model_kf, paste("e[l,",j,"]","*I(x[l]>",text_exp,")*(exp((",text_exp,"-x[l])/e[l,",j + 1,"]))"), sep = " + ")
               j <- j + 2
-              apriori[[label1]] <- E0[i]
-              error[[label1]] <- eE0[i]
+              apriori[[label1]] <- as.numeric(E0[i])
+              error[[label1]] <- as.numeric(eE0[i])
               nouns <- c(nouns, label1)
-              apriori[[label2]] <- TE0[i]
-              error[[label2]] <- eTE0[i]
+              apriori[[label2]] <- as.numeric(TE0[i])
+              error[[label2]] <- as.numeric(eTE0[i])
               nouns <- c(nouns, label2)
               if (input$fitType == 2) {
                 processNoise <- c(processNoise, 0)
@@ -6950,11 +6950,11 @@ server <- function(input,output,session) {
               model <- paste(model, paste(label1,"*log1p(I(x>",text_log,")*(x-",text_log,")/",label2,")"), sep = " + ")
               model_kf <- paste(model_kf, paste0("e[l,",j,"]*log1p(I(x[l] > ",text_log,")*(x[l]-",text_log,")/e[l,",j + 1,"])"), sep = " + ")
               j <- j + 2
-              apriori[[label1]] <- L0[i]
-              error[[label1]] <- eL0[i]
+              apriori[[label1]] <- as.numeric(L0[i])
+              error[[label1]] <- as.numeric(eL0[i])
               nouns <- c(nouns, label1)
-              apriori[[label2]] <- TL0[i]
-              error[[label2]] <- eTL0[i]
+              apriori[[label2]] <- as.numeric(TL0[i])
+              error[[label2]] <- as.numeric(eTL0[i])
               nouns <- c(nouns, label2)
               if (input$fitType == 2) {
                 processNoise <- c(processNoise, 0)
@@ -7018,8 +7018,8 @@ server <- function(input,output,session) {
             model_lm <- paste(model_lm, paste0("x^",degree), sep = " + ")
             model_kf <- paste(model_kf, paste0("e[l,",j,"]*(x[l]-",text_rate,")^",degree), sep = " + ")
             j <- j + 1
-            apriori[[label]] <- P0[i]
-            error[[label]] <- eP0[i]
+            apriori[[label]] <- as.numeric(P0[i])
+            error[[label]] <- as.numeric(eP0[i])
             nouns <- c(nouns, label)
             processNoise <- c(processNoise, 0)
           }
