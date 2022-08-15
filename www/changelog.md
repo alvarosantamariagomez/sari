@@ -13,7 +13,7 @@
 - Improved guess of the a priori KF state obtained from a previous LS fit
 - Preventing the client to change the plots width when the user interacts with them
 - Showing transparent error bars when running local on Windows machines
-- Disable auto toogle by default until the user provides a residual threshold
+- Disable auto toggle by default until the user provides a residual threshold
 - Showing compact ordinate axis on the series plots
 - Some variables translated into English
 
