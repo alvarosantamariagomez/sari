@@ -3786,7 +3786,7 @@ server <- function(input,output,session) {
       req(info$stop)
     }
     if (messages > 0) cat(file = stderr(), "Computing wavelet", "\n")
-    # start.time <- Sys.time()
+    start.time <- Sys.time()
     suppressWarnings({
       trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
     })
