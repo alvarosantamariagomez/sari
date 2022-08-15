@@ -5578,7 +5578,7 @@ server <- function(input,output,session) {
     } else {
       req(info$stop)
     }
-    excluding <- rep(F,length(residuals$res))
+    excluding <- rep(F,length(series$x))
     joint <- merge(series, residuals, by = "x", all.x = T)
     joint$res <- sapply(1:length(series$x), function(x) if (is.na(joint$res[x])) 0 else joint$res[x])
     if (length(trans$reserror) > 0) {
