@@ -2307,6 +2307,7 @@ server <- function(input,output,session) {
             showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
+          trans$run <- F
           trans$mod <- trans$mod0 <- NULL
           trans$res <- trans$res0 <- NULL
           trans$kalman <- trans$kalman0 <- NULL
@@ -2343,6 +2344,7 @@ server <- function(input,output,session) {
             showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
+          trans$run <- F
           trans$mod <- trans$mod0 <- NULL
           trans$res <- trans$res0 <- NULL
           trans$kalman <- trans$kalman0 <- NULL
@@ -2377,6 +2379,7 @@ server <- function(input,output,session) {
             showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
+          trans$run <- F
           trans$mod <- trans$mod0 <- NULL
           trans$res <- trans$res0 <- NULL
           trans$kalman <- trans$kalman0 <- NULL
@@ -2411,6 +2414,7 @@ server <- function(input,output,session) {
             showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
+          trans$run <- F
           trans$mod <- trans$mod0 <- NULL
           trans$res <- trans$res0 <- NULL
           trans$kalman <- trans$kalman0 <- NULL
