@@ -57,7 +57,7 @@ helpPopup <- function(content, title = NULL) {
     `data-container` = "body",
     `data-animation` = "true",
     `data-delay` = "show: 100, hide: 500",
-    icon("question-circle")
+    icon("circle-question")
   )
 }
 # Working spinner (based on https://github.com/daattali/advanced-shiny/blob/master/busy-indicator/helpers.R)
@@ -79,7 +79,7 @@ withBusyIndicatorUI <- function(button) {
     ),
     shinyjs::hidden(
       div(class = "btn-err",
-          div(icon("exclamation-circle"),
+          div(icon("circle-exclamation"),
               tags$b("Error: "),
               span(class = "btn-err-msg")
           )
@@ -648,7 +648,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                
                                                # * Fit controls ####
                                                bsCollapsePanel(value = 4,
-                                                               tags$h4(style = "color:white", icon("magic", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                               tags$h4(style = "color:white", icon("wand-magic-sparkles", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                div(style = "padding: 0px 0px; margin-top:0em",
                                                                    radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T),
                                                                    conditionalPanel(
@@ -854,7 +854,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                    fluidRow(
                                                                      column(6,
                                                                             withBusyIndicatorUI(
-                                                                              actionButton(inputId = "search", label = "Search discontinuities", icon = icon("search", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                              actionButton(inputId = "search", label = "Search discontinuities", icon = icon("magnifying-glass", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                             )
                                                                      ),
                                                                      column(6,
@@ -876,7 +876,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             conditionalPanel(
                                                                               condition = "input.verif_offsets == true",
                                                                               withBusyIndicatorUI(
-                                                                                actionButton(inputId = "runVerif", label = "Run verification", icon = icon("random", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                actionButton(inputId = "runVerif", label = "Run verification", icon = icon("shuffle", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                               )
                                                                             )
                                                                      )
@@ -1043,7 +1043,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                
                                                # * Additional fit ####
                                                bsCollapsePanel(value = 5,
-                                                               tags$h4(style = "color:white", icon("search-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                               tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                
                                                                # % Histogram ####
                                                                fluidRow(
@@ -1261,7 +1261,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             conditionalPanel(
                                                                               condition = "input.mle == true",
                                                                               withBusyIndicatorUI(
-                                                                                actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass-half", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                               )
                                                                             )
                                                                      )
@@ -1383,7 +1383,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     # * Local download ####
                                     bsCollapse(id = "localDir", open = "", multiple = F,
                                                bsCollapsePanel(value = 6,
-                                                               tags$h4(style = "color:white", icon("archive", class = NULL, lib = "font-awesome"), "Save results"),
+                                                               tags$h4(style = "color:white", icon("box-archive", class = NULL, lib = "font-awesome"), "Save results"),
                                                                fluidRow(
                                                                  column(2,
                                                                         downloadButton(outputId = "downloadAs", label = "Save as")
@@ -1402,7 +1402,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                      ),
                                                                      column(4,
                                                                             div(style = "padding: 0px 0px; margin-top:2em",
-                                                                                actionButton(inputId = "autoDownload", label = "Automatic save", icon = icon("save", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                actionButton(inputId = "autoDownload", label = "Automatic save", icon = icon("floppy-disk", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                             )
                                                                      )
                                                                    )
@@ -1428,7 +1428,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       windowTitle = version,
                                       id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
                                       tabPanel(div(style = "display: inline-block; font-size: 40px; color: black", "SARI"), value = 0, id = "SARI"),
-                                      tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("info-circle", class = "fas fa-2x"),
+                                      tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
                                                withMathJax(includeMarkdown("www/about.md"))
                                       ),
                                       
