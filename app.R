@@ -1821,7 +1821,7 @@ server <- function(input,output,session) {
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
-                           used3 = NULL, excluded3 = NULL, used_all = NULL, excluded_all = NULL)
+                           used3 = NULL, excluded3 = NULL, used_all = NULL, excluded_all = NULL, used_all_kf = NULL)
   
   # 5. user input
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL, 
@@ -1838,7 +1838,7 @@ server <- function(input,output,session) {
                           run = F, mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL, 
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL, 
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL, 
-                          model_old = NULL, plate = NULL, offsetEpochs = NULL)
+                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL)
   
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -2295,16 +2295,24 @@ server <- function(input,output,session) {
       trans$xe <- trans$x[values$excluded_all]
       trans$x <- trans$x[values$used_all]
       if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        if (sum(values$used_all) <= length(trans$mod0)) {
+        if (sum(values$used_all) < length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used_all_kf]
+          trans$res <- trans$res0[values$used_all_kf]
+          trans$kalman <- trans$kalman0[values$used_all_kf]
+          trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf]
+          if (length(trans$rate_inst) > 0) {
+            trans$rate_inst <- trans$rate_inst0[values$used_all_kf]
+          }
+          if (length(trans$mod) != length(trans$mod0)) {
+            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          }
+        } else if (sum(values$used_all) == length(trans$mod0)) {
           trans$mod <- trans$mod0[values$used_all]
           trans$res <- trans$res0[values$used_all]
           trans$kalman <- trans$kalman0[values$used_all]
           trans$kalman_unc <- trans$kalman_unc0[values$used_all]
           if (length(trans$rate_inst) > 0) {
             trans$rate_inst <- trans$rate_inst0[values$used_all]
-          }
-          if (length(trans$mod) != length(trans$mod0)) {
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
           trans$run <- F
@@ -2332,25 +2340,35 @@ server <- function(input,output,session) {
         trans$sy <- trans$sy[values$used1]
         trans$z <- data$z1
         trans$sz <- data$sz1
-        if (sum(values$used1) <= length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used1]
-          trans$res <- trans$res0[values$used1]
-          trans$kalman <- trans$kalman0[values$used1]
-          trans$kalman_unc <- trans$kalman_unc0[values$used1]
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0[values$used1]
-          }
-          if (length(trans$mod) != length(trans$mod0)) {
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
-          }
-        } else {
-          trans$run <- F
-          trans$mod <- trans$mod0 <- NULL
-          trans$res <- trans$res0 <- NULL
-          trans$kalman <- trans$kalman0 <- NULL
-          trans$kalman_unc <- trans$kalman_unc0 <- NULL
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0 <- NULL
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          if (sum(values$used1) < length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf1]
+            trans$res <- trans$res0[values$used_kf1]
+            trans$kalman <- trans$kalman0[values$used_kf1]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_kf1]
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0[values$used_kf1]
+            }
+            if (length(trans$mod) != length(trans$mod0)) {
+              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            }
+          } else if (sum(values$used1) == length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used1]
+            trans$res <- trans$res0[values$used1]
+            trans$kalman <- trans$kalman0[values$used1]
+            trans$kalman_unc <- trans$kalman_unc0[values$used1]
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0[values$used1]
+            }
+          } else {
+            trans$run <- F
+            trans$mod <- trans$mod0 <- NULL
+            trans$res <- trans$res0 <- NULL
+            trans$kalman <- trans$kalman0 <- NULL
+            trans$kalman_unc <- trans$kalman_unc0 <- NULL
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0 <- NULL
+            }
           }
         }
       } else if (input$tab == 2) {
@@ -2367,25 +2385,35 @@ server <- function(input,output,session) {
         trans$sy <- trans$sy[values$used2]
         trans$z <- data$z2
         trans$sz <- data$sz2
-        if (sum(values$used2) <= length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used2]
-          trans$res <- trans$res0[values$used2]
-          trans$kalman <- trans$kalman0[values$used2]
-          trans$kalman_unc <- trans$kalman_unc0[values$used2]
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0[values$used2]
-          }
-          if (length(trans$mod) != length(trans$mod0)) {
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
-          }
-        } else {
-          trans$run <- F
-          trans$mod <- trans$mod0 <- NULL
-          trans$res <- trans$res0 <- NULL
-          trans$kalman <- trans$kalman0 <- NULL
-          trans$kalman_unc <- trans$kalman_unc0 <- NULL
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0 <- NULL
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          if (sum(values$used2) < length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf2]
+            trans$res <- trans$res0[values$used_kf2]
+            trans$kalman <- trans$kalman0[values$used_kf2]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_kf2]
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0[values$used_kf2]
+            }
+            if (length(trans$mod) != length(trans$mod0)) {
+              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            }
+          } else if (sum(values$used2) == length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used2]
+            trans$res <- trans$res0[values$used2]
+            trans$kalman <- trans$kalman0[values$used2]
+            trans$kalman_unc <- trans$kalman_unc0[values$used2]
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0[values$used2]
+            }
+          } else {
+            trans$run <- F
+            trans$mod <- trans$mod0 <- NULL
+            trans$res <- trans$res0 <- NULL
+            trans$kalman <- trans$kalman0 <- NULL
+            trans$kalman_unc <- trans$kalman_unc0 <- NULL
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0 <- NULL
+            }
           }
         }
       } else if (input$tab == 3) {
@@ -2402,25 +2430,35 @@ server <- function(input,output,session) {
         trans$sy <- trans$sy[values$used3]
         trans$z <- data$z3
         trans$sz <- data$sz3
-        if (sum(values$used3) <= length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used3]
-          trans$res <- trans$res0[values$used3]
-          trans$kalman <- trans$kalman0[values$used3]
-          trans$kalman_unc <- trans$kalman_unc0[values$used3]
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0[values$used3]
-          }
-          if (length(trans$mod) != length(trans$mod0)) {
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
-          }
-        } else {
-          trans$run <- F
-          trans$mod <- trans$mod0 <- NULL
-          trans$res <- trans$res0 <- NULL
-          trans$kalman <- trans$kalman0 <- NULL
-          trans$kalman_unc <- trans$kalman_unc0 <- NULL
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0 <- NULL
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          if (sum(values$used3) < length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf3]
+            trans$res <- trans$res0[values$used_kf3]
+            trans$kalman <- trans$kalman0[values$used_kf3]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_kf3]
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0[values$used_kf3]
+            }
+            if (length(trans$mod) != length(trans$mod0)) {
+              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            }
+          } else if (sum(values$used3) == length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used3]
+            trans$res <- trans$res0[values$used3]
+            trans$kalman <- trans$kalman0[values$used3]
+            trans$kalman_unc <- trans$kalman_unc0[values$used3]
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0[values$used3]
+            }
+          } else {
+            trans$run <- F
+            trans$mod <- trans$mod0 <- NULL
+            trans$res <- trans$res0 <- NULL
+            trans$kalman <- trans$kalman0 <- NULL
+            trans$kalman_unc <- trans$kalman_unc0 <- NULL
+            if (length(trans$rate_inst) > 0) {
+              trans$rate_inst <- trans$rate_inst0 <- NULL
+            }
           }
         }
       }
@@ -3106,10 +3144,20 @@ server <- function(input,output,session) {
               }
               m$apriori[1] <- unlist(m$apriori)[1] + trans$ordinate
               trans$kalman_info <- m
-              trans$res <- res
-              trans$res0 <- trans$res
-              trans$mod <- mod
-              trans$mod0 <- trans$mod
+              trans$res <- trans$res0 <- res
+              trans$mod <- trans$mod0 <- mod
+              trans$x0_kf <- x
+              if (isTruthy(input$remove3D)) {
+                values$used_all_kf <- rep(T, length(res))
+              } else {
+                if (input$tab == 1 || is.null(input$tab)) {
+                  values$used_kf1 <- rep(T, length(res))
+                } else if (input$tab == 2) {
+                  values$used_kf2 <- rep(T, length(res))
+                } else if (input$tab == 3) {
+                  values$used_kf3 <- rep(T, length(res))
+                }
+              }
               trans$equation <- model
               colnames(e) <- nouns
               trans$kalman <- e
@@ -3117,11 +3165,9 @@ server <- function(input,output,session) {
               trans$kalman0 <- trans$kalman
               kfs_unc <- sqrt(kfs_unc)
               colnames(kfs_unc) <- nouns
-              trans$kalman_unc <- kfs_unc
-              trans$kalman_unc0 <- trans$kalman_unc
+              trans$kalman_unc <- trans$kalman_unc0 <- kfs_unc
               if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-                trans$rate_inst <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
-                trans$rate_inst0 <- trans$rate_inst
+                trans$rate_inst <- trans$rate_inst0 <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
                 names(trans$rate_inst) <- "Rate_inst"
               }
               trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
@@ -4461,6 +4507,7 @@ server <- function(input,output,session) {
     noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
   })
   observeEvent(input$remove3D, {
+    if (messages > 0) cat(file = stderr(), "Removing from all series is", input$remove3D, "\n")
     values$used1 <- values$used_all
     values$used2 <- values$used_all
     values$used3 <- values$used_all
@@ -5504,6 +5551,14 @@ server <- function(input,output,session) {
     } else if (isTruthy(input$vondrak_brush)) {
       brush2 <- input$vondrak_brush
     }
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      if (isTruthy(brush1)) {
+        showNotification("It is not possible to toggle points from the series plot after running a Kalman filter. Consider removing points from the residuals plot or restoring points by reseting all the toggled points.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        req(info$stop)
+      } else {
+        series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
+      }
+    }
     series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     if (isTruthy(brush1) || isTruthy(brush2)) {
       if (length(brush1) > 0) {
@@ -5518,6 +5573,10 @@ server <- function(input,output,session) {
           req(info$stop)
         }
         excluding_res <- brushedPoints(residuals, brush2, xvar = "x", yvar = "y", allRows = T)
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          excluding_plotres_kf <- merge(series_kf, excluding_res, by = "x", all.x = T)
+          excluding_plotres_kf$selected_ <- sapply(1:length(excluding_plotres_kf$x), function(x) if (isTRUE(excluding_plotres_kf$selected_[x])) T else F)
+        }
         excluding_plotres <- merge(series, excluding_res, by = "x", all.x = T)
         excluding_plotres$selected_ <- sapply(1:length(excluding_plotres$x), function(x) if (isTRUE(excluding_plotres$selected_[x])) T else F)
       }
@@ -5529,6 +5588,9 @@ server <- function(input,output,session) {
         if (length(brush2) > 0) {
           values$used_all <- xor(values$used_all, excluding_plotres$selected_)
           values$excluded_all <- (values$excluded_all + excluding_plotres$selected_) == 1
+          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+            values$used_all_kf <- xor(values$used_all_kf, excluding_plotres_kf$selected_)
+          }
         }
         values$used1 <- values$used2 <- values$used3 <- values$used_all
         values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
@@ -5541,6 +5603,9 @@ server <- function(input,output,session) {
           if (length(brush2) > 0) {
             values$used1 <- xor(values$used1, excluding_plotres$selected_)
             values$excluded1 <- (values$excluded1 + excluding_plotres$selected_) == 1
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              values$used_kf1 <- xor(values$used_kf1, excluding_plotres_kf$selected_)
+            }
           }
         } else if (input$tab == 2) {
           if (length(brush1) > 0) {
@@ -5550,6 +5615,9 @@ server <- function(input,output,session) {
           if (length(brush2) > 0) {
             values$used2 <- xor(values$used2, excluding_plotres$selected_)
             values$excluded2 <- (values$excluded2 + excluding_plotres$selected_) == 1
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              values$used_kf2 <- xor(values$used_kf2, excluding_plotres_kf$selected_)
+            }
           }
         } else if (input$tab == 3) {
           if (length(brush1) > 0) {
@@ -5559,6 +5627,9 @@ server <- function(input,output,session) {
           if (length(brush2) > 0) {
             values$used3 <- xor(values$used3, excluding_plotres$selected_)
             values$excluded3 <- (values$excluded3 + excluding_plotres$selected_) == 1
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              values$used_kf3 <- xor(values$used_kf3, excluding_plotres_kf$selected_)
+            }
           }
         }
       }
@@ -5636,26 +5707,18 @@ server <- function(input,output,session) {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Restoring points", "\n")
     if (isTruthy(input$remove3D)) {
-      # values$used_all <- rep(T, length(trans$x0))
       values$used_all <- rep(T, length(trans$y0[!is.na(trans$y0)]))
-      # values$excluded_all <- rep(F, length(trans$x0))
       values$excluded_all <- rep(F, sum(values$used_all))
       values$used1 <- values$used2 <- values$used3 <- values$used_all
       values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
     } else {
       if (input$tab == 1 || is.null(input$tab)) {
-        # values$used1 <- rep(T, info$points)
-        # values$excluded1 <- rep(F, info$points)
         values$used1 <- rep(T, length(trans$x0))
         values$excluded1 <- rep(F, length(trans$x0))
       } else if (input$tab == 2) {
-        # values$used2 <- rep(T, info$points)
-        # values$excluded2 <- rep(F, info$points)
         values$used2 <- rep(T, length(trans$x0))
         values$excluded2 <- rep(F, length(trans$x0))
       } else if (input$tab == 3) {
-        # values$used3 <- rep(T, info$points)
-        # values$excluded3 <- rep(F, info$points)
         values$used3 <- rep(T, length(trans$x0))
         values$excluded3 <- rep(F, length(trans$x0))
       }
@@ -7209,8 +7272,8 @@ server <- function(input,output,session) {
     } else if (symbol == 2) {
       s <- 'o'
     }
-    mini <- min(y)
-    maxi <- max(y)
+    mini <- min(y, na.rm = T)
+    maxi <- max(y, na.rm = T)
     if ((abs(mini) > 999 || abs(maxi) > 999) && abs(maxi - mini) < 999) {
       if (mini < 0) {
         const <- ylab <- maxi
