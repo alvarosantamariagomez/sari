@@ -358,7 +358,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                
                                                # * Ancillary information ####
                                                bsCollapsePanel(value = 3,
-                                                               tags$h4(style = "color:white", icon("life-ring", class = "fa-spin", lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                               tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                
                                                                # % sitelog ####
                                                                div(style = "padding: 0px 0px; margin-top:0em",
@@ -4507,6 +4507,7 @@ server <- function(input,output,session) {
     noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
   })
   observeEvent(input$remove3D, {
+    req(file$primary)
     if (messages > 0) cat(file = stderr(), "Removing from all series is", input$remove3D, "\n")
     values$used1 <- values$used_all
     values$used2 <- values$used_all
