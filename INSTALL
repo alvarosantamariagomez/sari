@@ -29,25 +29,25 @@ Alternatively, the following R command will install all the necessary packages (
 
 I also provide the current package versions for which SARI runs without problems (note: package versions may evolve from these).
 
-  (data.table) #v1.14.0
+  (data.table) #v1.14.2
   (dlm) #v1.1-5
-  (fields) #v12.5
-  (lubridate) #v1.7.10
-  (magrittr) #v2.0.1
+  (fields) #v13.3
+  (lubridate) #v1.8.0
+  (magrittr) #v2.0.3
   (markdown) #v1.1
-  (matrixStats) #v0.59.0
+  (matrixStats) #v0.61.0
   (mvcwt) #v1.3.1
   (numDeriv) #v2016.8-1.1
-  (psych) #v2.1.6
+  (psych) #v2.1.9
   (RColorBrewer) #v1.1-2
   (shinyBS) #v0.61
-  (shinycssloaders) #v1.0.0
+  (shinycssloaders) #v1.0.0.9000
   (shinyjs) #v2.0
   (shinythemes) #v1.2.0
-  (shiny) #v1.6.0
+  (shiny) #v1.7.2
   (spectral) #v2.0
   (strucchange) #v1.5-2
-  (tseries) #v0.10-48
+  (tseries) #v0.10-49
   (pracma) #v2.3.8
 
 
