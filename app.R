@@ -5641,22 +5641,29 @@ server <- function(input,output,session) {
   observeEvent(input$removeAuto, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Removing points, automatically", "\n")
-    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
+    }
+    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])  
     if (length(trans$res) > 0) {
       if (length(trans$reserror) > 0) {
         residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$reserror)
       } else {
         residuals <- data.frame(x = trans$x, res = trans$res)
       }
-      # residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$sy)
     } else if (length(trans$filterRes) > 0) {
       residuals <- data.frame(x = trans$x, res = trans$filterRes)
     } else {
       req(info$stop)
     }
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      excluding_kf <- rep(F,length(trans$res0))
+      joint_kf <- merge(series_kf, residuals, by = "x", all.x = T)
+      joint_kf$res <- sapply(1:length(joint_kf$x), function(x) if (is.na(joint_kf$res[x])) 0 else joint_kf$res[x])
+    }
     excluding <- rep(F,length(series$x))
     joint <- merge(series, residuals, by = "x", all.x = T)
-    joint$res <- sapply(1:length(series$x), function(x) if (is.na(joint$res[x])) 0 else joint$res[x])
+    joint$res <- sapply(1:length(joint$x), function(x) if (is.na(joint$res[x])) 0 else joint$res[x])
     if (length(trans$reserror) > 0) {
       joint$sy <- sapply(1:length(series$x), function(x) if (is.na(joint$sy[x])) 1 else joint$sy[x])
     }
@@ -5675,6 +5682,10 @@ server <- function(input,output,session) {
           showNotification("The residual threshold will remove all data from the residual series. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())	        
         } else {
           if (messages > 0) cat(file = stderr(), "Limit absolute residual ", inputs$thresholdRes, "\n")
+          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+            excluding_res_kf <- abs(joint_kf$res) > abs(inputs$thresholdRes)
+            excluding_kf <- excluding_kf + excluding_res_kf > 0
+          }
           excluding_res <- abs(joint$res) > abs(inputs$thresholdRes)
           excluding <- excluding + excluding_res > 0
         }
@@ -5688,16 +5699,28 @@ server <- function(input,output,session) {
         values$excluded_all <- (values$excluded_all + excluding) > 0
         values$used1 <- values$used2 <- values$used3 <- values$used_all
         values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          values$used_all_kf <- (values$used_all_kf - excluding_kf) > 0
+        }
       } else {
         if (input$tab == 1 || is.null(input$tab)) {
           values$used1 <- (values$used1 - excluding) > 0
           values$excluded1 <- (values$excluded1 + excluding) > 0
+          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+            values$used_kf1 <- (values$used_kf1 - excluding_kf) > 0
+          }
         } else if (input$tab == 2) {
           values$used2 <- (values$used2 - excluding) > 0
           values$excluded2 <- (values$excluded2 + excluding) > 0
+          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+            values$used_kf2 <- (values$used_kf2 - excluding_kf) > 0
+          }
         } else if (input$tab == 3) {
           values$used3 <- (values$used3 - excluding) > 0
           values$excluded3 <- (values$excluded3 + excluding) > 0
+          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+            values$used_kf3 <- (values$used_kf3 - excluding_kf) > 0
+          }
         }
       }
     }
