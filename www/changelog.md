@@ -6,6 +6,8 @@
 - Estimation of the sinusoid phase error when the sine component is zero
 - Restoring removed points in primary series when a longer secondary series was uploaded
 - Updating the periodogram limits when the series sampling is reduced
+- Indexing automatically removed points
+- Unexpected line commented when setting start.time in the wavelet
 
 ### Changed:
 - Checking for non-zero a priori state covariances in the KF fit
@@ -15,6 +17,7 @@
 - Showing transparent error bars when running local on Windows machines
 - Disable auto toggle by default until the user provides a residual threshold
 - Showing compact ordinate axis on the series plots
+- Removing KF fit results when restoring a previously removed point for which there is no solution
 - Some variables translated into English
 
 ### Added:
