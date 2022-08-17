@@ -50,6 +50,8 @@ I also provide the current package versions for which SARI runs without problems
   (tseries) #v0.10-49
   (pracma) #v2.3.8
 
+If the installed shinycssloaders package is not version 1.0.0.9 (or later), you need to install this version from the github repo using
+`devtools::install_github("daattali/shinycssloaders")`
 
 Once all the packages are installed, open the app.R script with RStudio.
 Set the working directory to the same location.
