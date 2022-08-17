@@ -2520,65 +2520,198 @@ server <- function(input,output,session) {
     if (isTruthy(comments) && grepl("^# SARI ", comments[1], ignore.case = F, perl = T)) {
       if (messages > 0) cat(file = stderr(), "Loading SARI file", "\n")
       if (!grepl(version, comments[1], ignore.case = F, perl = T)) {
-        showNotification("The SARI version used in the uploaded file is not the same as the current version", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("Warning: the SARI version used in the uploaded file is not the same as the current version", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
       if (sum(grepl("^# Model", comments, ignore.case = F, perl = T)) > 1) {
         showNotification("The format of the uploaded file is not compatible.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
       } else if (sum(grepl("^# Model", comments, ignore.case = F, perl = T)) < 1) {
         showNotification("No model found in the uploaded file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
       } else {
-        line <- grep("^# Model", comments, ignore.case = F, perl = T, value = T)
-        if (length(line) > 0) {
-          text <- strsplit(line, ")\\*|-|)|>|\\^")[[1]]
-          components <- c()
-          if (grepl(" \\+ Rate", line, ignore.case = F, perl = T)) {
-            updateTextInput(session, "trendRef", value = text[2])
-            components <- c(components, "Linear")
-          }
-          if (grepl(" \\+ P", line, ignore.case = F, perl = T)) {
-            index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-            updateTextInput(session, "PolyRef", value = text[index[1] + 1])
-            updateTextInput(session, "PolyCoef", value = text[index[1] + 3])
-            components <- c(components, "Polynomial")
-          }
-          if (grepl(" \\+ S", line, ignore.case = F, perl = T)) {
-            index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-            updateTextInput(session, "periodRef", value = unique(text[index + 1]))
-            if (input$units == 1) {
-              units <- "d"
-            } else if (input$units == 2) {
-              units <- "w"
-            } else if (input$units == 3) {
-              units <- "y"
+        if (sum(grepl("^# Model .KF", comments, ignore.case = F, perl = T)) > 0) {
+          #This is a KF fit
+          model <- grep("^# Model .KF", comments, ignore.case = F, perl = T, value = T)
+          if (nchar(model) > 18) {
+            text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
+            aprioris <- grep("^# A priori: ", comments, ignore.case = F, perl = T, value = T)
+            process_noises <- grep("^# Process noise: ", comments, ignore.case = F, perl = T, value = T)
+            measurement_noise <- strsplit(grep("^# Measurement noise: ", comments, ignore.case = F, perl = T, value = T), ":")[[1]][2]
+            components <- c()
+            # Extracting Intercept info
+            if (grepl("Intercept", model, ignore.case = F, perl = T)) {
+              index <- grep(" Intercept", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")[[1]]
+              updateTextInput(inputId = "Intercept0", value = values[2])
+              updateTextInput(inputId = "eIntercept0", value = values[3])
             }
-            updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), sep = ","))
-            components <- c(components, "Sinusoidal")
+            # Extracting Rate info
+            if (grepl(" \\+ Rate", model, ignore.case = F, perl = T)) {
+              updateTextInput(session, "trendRef", value = text[2])
+              index <- grep(" Rate", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")[[1]]
+              updateTextInput(inputId = "Trend0", value = values[2])
+              updateTextInput(inputId = "eTrend0", value = values[3])
+              index <- grep(" Rate", process_noises, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(process_noises[index], "=")[[1]]
+              if (isTruthy(values)) {
+                updateTextInput(inputId = "TrendDev", value = values[2])
+              } else {
+                updateTextInput(inputId = "TrendDev", value = "0.0")
+              }
+              components <- c(components, "Linear")
+            }
+            # Extracting Polynomial info
+            if (grepl(" \\+ P", model, ignore.case = F, perl = T)) {
+              index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "PolyRef", value = text[index[1] + 1])
+              updateTextInput(session, "PolyCoef", value = text[index[length(index)] + 3])
+              index <- grep(" A priori: P", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(inputId = "P0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(inputId = "eP0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              components <- c(components, "Polynomial")
+            }
+            # Extracting Sinusoidal info
+            if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
+              index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "periodRef", value = unique(text[index + 1]))
+              if (input$units == 1) {
+                units <- "d"
+              } else if (input$units == 2) {
+                units <- "w"
+              } else if (input$units == 3) {
+                units <- "y"
+              }
+              updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
+              index <- grep(" A priori: S", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(inputId = "S0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(inputId = "eS0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              index <- grep(" Process noise: S", process_noises, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(process_noises[index], "=")
+              if (isTruthy(values)) {
+                updateTextInput(inputId = "SinusoidalDev", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              } else {
+                updateTextInput(inputId = "SinusoidalDev", value = paste(rep("0.0", length(index)), collapse = ","))
+              }
+              components <- c(components, "Sinusoidal")
+            }
+            # Extracting Offset info
+            if (grepl(" \\+ O", model, ignore.case = F, perl = T)) {
+              index <- grep("A priori: O", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(inputId = "O0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(inputId = "eO0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              index <- grep(" + O", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "offsetEpoch", value = paste(text[index + 1], collapse = ", "))
+              components <- c(components, "Offset")
+            }
+            # Extracting Exponential info
+            if (grepl(" \\+ E", model, ignore.case = F, perl = T)) {
+              index <- grep(" + E", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "ExponenRef", value = paste(text[index + 1], collapse = ","))
+              index <- grep(" A priori: E", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(session, "E0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "eE0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              index <- grep(" A priori: TauE", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(session, "TE0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "eTE0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              components <- c(components, "Exponential")
+            }
+            # Extracting Logarithmic info
+            if (grepl(" \\+ L", model, ignore.case = F, perl = T)) {
+              index <- grep(" + L", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "LogariRef", value = paste(text[index + 1], collapse = ","))
+              index <- grep(" A priori: L", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(session, "L0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "eL0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              index <- grep(" A priori: TauL", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              updateTextInput(session, "TL0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "eTL0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              components <- c(components, "Logarithmic")
+            }
+            updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = components, inline = T)
+            updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 2, inline = T, choiceNames = NULL, choiceValues = NULL)
+            if (grepl("^# Model EKF", model, ignore.case = F, perl = T)) {
+              updateRadioButtons(session, inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 1, inline = T)
+            } else if (grepl("^# Model UKF", model, ignore.case = F, perl = T)) {
+              updateRadioButtons(session, inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T)
+            }
+            updateTextInput(session, inputId = "ObsError", value = measurement_noise)
+            info$menu <- unique(c(info$menu, 4))
+            updateCollapse(session, id = "menu", open = info$menu)
           }
-          if (grepl(" \\+ O", line, ignore.case = F, perl = T)) {
-            index <- grep(" + O", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-            updateTextInput(session, "offsetEpoch", value = paste(text[index + 1], collapse = ", "))
-            components <- c(components, "Offset")
+        } else {
+          #This is a LS fit
+          model <- grep("^# Model LS:", comments, ignore.case = F, perl = T, value = T)
+          if (nchar(model) > 18) {
+            text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
+            parameters <- grep("^# Parameter: ", comments, ignore.case = F, perl = T, value = T)
+            components <- c()
+            # Extracting Rate info
+            if (grepl(" \\+ Rate", model, ignore.case = F, perl = T)) {
+              updateTextInput(session, "trendRef", value = text[2])
+              components <- c(components, "Linear")
+            }
+            # Extracting Polynomial info
+            if (grepl(" \\+ P", model, ignore.case = F, perl = T)) {
+              index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "PolyRef", value = text[index[1] + 1])
+              updateTextInput(session, "PolyCoef", value = text[index[length(index)] + 3])
+              components <- c(components, "Polynomial")
+            }
+            # Extracting Sinusoidal info
+            if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
+              index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "periodRef", value = unique(text[index + 1]))
+              if (input$units == 1) {
+                units <- "d"
+              } else if (input$units == 2) {
+                units <- "w"
+              } else if (input$units == 3) {
+                units <- "y"
+              }
+              updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
+              components <- c(components, "Sinusoidal")
+            }
+            # Extracting Offset info
+            if (grepl(" \\+ O", model, ignore.case = F, perl = T)) {
+              index <- grep(" + O", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "offsetEpoch", value = paste(text[index + 1], collapse = ", "))
+              components <- c(components, "Offset")
+            }
+            # Extracting Exponential info
+            if (grepl(" \\+ E", model, ignore.case = F, perl = T)) {
+              index <- grep(" + E", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "ExponenRef", value = paste(text[index + 1], collapse = ","))
+              index <- grep(" Parameter: E", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(parameters[index], "=|\\+\\/-")
+              updateTextInput(session, "E0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              index <- grep(" Parameter: TauE", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(parameters[index], "=|\\+\\/-")
+              updateTextInput(session, "TE0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              components <- c(components, "Exponential")
+            }
+            # Extracting Logarithmic info
+            if (grepl(" \\+ L", model, ignore.case = F, perl = T)) {
+              index <- grep(" + L", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              updateTextInput(session, "LogariRef", value = paste(text[index + 1], collapse = ","))
+              index <- grep(" Parameter: L", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(parameters[index], "=|\\+\\/-")
+              updateTextInput(session, "L0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              index <- grep(" Parameter: TauL", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              values <- strsplit(parameters[index], "=|\\+\\/-")
+              updateTextInput(session, "TL0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              components <- c(components, "Logarithmic")
+            }
+            updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = components, inline = T)
+            updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 1, inline = T, choiceNames = NULL, choiceValues = NULL)
+            info$menu <- unique(c(info$menu, 4))
+            updateCollapse(session, id = "menu", open = info$menu)
           }
-          if (grepl(" \\+ E", line, ignore.case = F, perl = T)) {
-            index <- grep(" + E", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-            updateTextInput(session, "ExponenRef", value = paste(text[index + 1], sep = ","))
-            values1 <- unlist(lapply(strsplit(comments[grep("# Parameter: E", comments[4:length(comments) - 1], value = F, ignore.case = F, perl = F, fixed = T, useBytes = F) + 2], " "), '[[', 5))
-            updateTextInput(session, "E0", value = paste(values1, sep = ","))
-            values2 <- unlist(lapply(strsplit(comments[grep("# Parameter: TauE", comments[4:length(comments) - 1], value = F, ignore.case = F, perl = F, fixed = T, useBytes = F) + 2], " "), '[[', 5))
-            updateTextInput(session, "TE0", value = paste(values2, sep = ","))
-            components <- c(components, "Exponential")
-          }
-          if (grepl(" \\+ L", line, ignore.case = F, perl = T)) {
-            index <- grep(" + L", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-            updateTextInput(session, "LogariRef", value = paste(text[index + 1], sep = ","))
-            components <- c(components, "Logarithmic")
-          }
-          updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = components, inline = T)
-          updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 1, inline = T, choiceNames = NULL, choiceValues = NULL)
-          info$menu <- unique(c(info$menu, 4))
-          updateCollapse(session, id = "menu", open = info$menu)
-        } else if (grepl("^# Model KF: y ", line, ignore.case = F, perl = T)) {
-          showNotification("KF model found in the uploaded file, but loading a KF model is not implemented yet", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
     } else {
@@ -3030,6 +3163,7 @@ server <- function(input,output,session) {
         processNoise <- m$processNoise
         error <- m$error
         req(model, model_kf, apriori, nouns, processNoise, error)
+        if (messages > 1) cat(file = stderr(), model, "\n")
         apriori <- unlist(as.numeric(apriori),use.names = F)
         unc_ini <- unlist(as.numeric(error)^2, use.names = F)
         if (isTruthy(input$ObsError)) {
@@ -4216,8 +4350,8 @@ server <- function(input,output,session) {
               output$est.white <- renderUI({
                 if (isTruthy(trans$mle)) {
                   line1 <- "White noise:"
-                  line2 <- sprintf("%g",sigmaWH)
-                  line3 <- sprintf("+/- %g",seParmsWH)
+                  line2 <- sprintf("%f",sigmaWH)
+                  line3 <- sprintf("+/- %f",seParmsWH)
                   HTML(paste(line1,'<br/>',line2,'<br/>',line3))
                 } else {
                   NULL
@@ -4241,8 +4375,8 @@ server <- function(input,output,session) {
               output$est.flicker <- renderUI({
                 if (isTruthy(trans$mle)) {
                   line1 <- "Flicker noise:"
-                  line2 <- sprintf("%g",sigmaFL)
-                  line3 <- sprintf("+/- %g",seParmsFL)
+                  line2 <- sprintf("%f",sigmaFL)
+                  line3 <- sprintf("+/- %f",seParmsFL)
                   HTML(paste(line1,'<br/>',line2,'<br/>',line3))
                 } else {
                   NULL
@@ -4266,8 +4400,8 @@ server <- function(input,output,session) {
               output$est.randomw <- renderUI({
                 if (isTruthy(trans$mle)) {
                   line1 <- "Random walk:"
-                  line2 <- sprintf("%g",sigmaRW)
-                  line3 <- sprintf("+/- %g",seParmsRW)
+                  line2 <- sprintf("%f",sigmaRW)
+                  line3 <- sprintf("+/- %f",seParmsRW)
                   HTML(paste(line1,'<br/>',line2,'<br/>',line3))
                 } else {
                   NULL
@@ -4291,8 +4425,8 @@ server <- function(input,output,session) {
               output$est.powerl <- renderUI({
                 if (isTruthy(trans$mle)) {
                   line1 <- "Power-law:"
-                  line2 <- sprintf("%g",sigmaPL)
-                  line3 <- sprintf("+/- %g",seParmsPL)
+                  line2 <- sprintf("%f",sigmaPL)
+                  line3 <- sprintf("+/- %f",seParmsPL)
                   HTML(paste(line1,'<br/>',line2,'<br/>',line3))
                 } else {
                   NULL
@@ -4311,8 +4445,8 @@ server <- function(input,output,session) {
               output$est.index <- renderUI({
                 if (isTruthy(trans$mle)) {
                   line1 <- "Spectral index:"
-                  line2 <- sprintf("%g",sigmaK)
-                  line3 <- sprintf("+/- %g",seParmsK)
+                  line2 <- sprintf("%f",sigmaK)
+                  line3 <- sprintf("+/- %f",seParmsK)
                   HTML(paste(line1,'<br/>',line2,'<br/>',line3))
                 } else {
                   NULL
@@ -6459,7 +6593,7 @@ server <- function(input,output,session) {
             req(info$stop)
           }
         }
-        text_rate <- sprintf("%g",as.numeric(reft))
+        text_rate <- sprintf("%f",as.numeric(reft))
         model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")
         model_lm <- paste(model_lm, "x", sep = " ")
         model_kf <- paste(model_kf, paste0("e[l,",j,"] + e[l,",j + 1,"]*(x[l]-",text_rate,")"), sep = " ")
@@ -6615,12 +6749,12 @@ server <- function(input,output,session) {
               trans$run <- T
               label_sin <- paste("S",i,sep = "")
               label_cos <- paste("C",i,sep = "")
-              text_sin <- sprintf("I(sin(2*pi*(x-%g)*%g))",as.numeric(refs),f)
-              text_cos <- sprintf("I(cos(2*pi*(x-%g)*%g))",as.numeric(refs),f)
-              text_sin_kf <- sprintf("sin(2*pi*(x[l]-%g)*%g)",as.numeric(refs),f)
-              text_cos_kf <- sprintf("cos(2*pi*(x[l]-%g)*%g)",as.numeric(refs),f)
-              text_sin_lm <- sprintf("sin(2*pi*x*%g)",f)
-              text_cos_lm <- sprintf("cos(2*pi*x*%g)",f)
+              text_sin <- sprintf("I(sin(2*pi*(x-%f)*%f))",as.numeric(refs),f)
+              text_cos <- sprintf("I(cos(2*pi*(x-%f)*%f))",as.numeric(refs),f)
+              text_sin_kf <- sprintf("sin(2*pi*(x[l]-%f)*%f)",as.numeric(refs),f)
+              text_cos_kf <- sprintf("cos(2*pi*(x[l]-%f)*%f)",as.numeric(refs),f)
+              text_sin_lm <- sprintf("sin(2*pi*x*%f)",f)
+              text_cos_lm <- sprintf("cos(2*pi*x*%f)",f)
               model <- paste(model, paste(label_sin,text_sin,sep = "*"), sep = " + ")
               model_lm <- paste(model_lm, text_sin_lm, text_cos_lm, sep = " + ")
               model_kf <- paste(model_kf, paste(paste0("e[l,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
@@ -6878,7 +7012,7 @@ server <- function(input,output,session) {
               trans$run <- T
               label1 <- paste0("E",i)
               label2 <- paste0("TauE",i)
-              text_exp <- sprintf("%g",as.numeric(expos[i]))
+              text_exp <- sprintf("%f",as.numeric(expos[i]))
               model <- paste(model, paste(label1,"*I(x>",text_exp,")*(exp((",text_exp,"-x)/",label2,"))"), sep = " + ")
               model_kf <- paste(model_kf, paste("e[l,",j,"]","*I(x[l]>",text_exp,")*(exp((",text_exp,"-x[l])/e[l,",j + 1,"]))"), sep = " + ")
               j <- j + 2
@@ -7037,7 +7171,7 @@ server <- function(input,output,session) {
               trans$run <- T
               label1 <- paste0("L",i)
               label2 <- paste0("TauL",i)
-              text_log <- sprintf("%g",as.numeric(logas[i]))
+              text_log <- sprintf("%f",as.numeric(logas[i]))
               model <- paste(model, paste(label1,"*log1p(I(x>",text_log,")*(x-",text_log,")/",label2,")"), sep = " + ")
               model_kf <- paste(model_kf, paste0("e[l,",j,"]*log1p(I(x[l] > ",text_log,")*(x[l]-",text_log,")/e[l,",j + 1,"])"), sep = " + ")
               j <- j + 2
@@ -7084,7 +7218,7 @@ server <- function(input,output,session) {
               req(info$stop)
             }
           }
-          text_rate <- sprintf("%g",as.numeric(refp))
+          text_rate <- sprintf("%f",as.numeric(refp))
           i <- 0
           for (degree in 2:inputs$PolyCoef) {
             i <- i + 1
@@ -7097,8 +7231,8 @@ server <- function(input,output,session) {
                 } else {
                   eP0[i] <- 1
                 }
-                line_P0 <- paste(sprintf("%g",as.numeric(P0)), collapse = ", ")
-                line_eP0 <- paste(sprintf("%g",as.numeric(eP0)), collapse = ", ")
+                line_P0 <- paste(sprintf("%f",as.numeric(P0)), collapse = ", ")
+                line_eP0 <- paste(sprintf("%f",as.numeric(eP0)), collapse = ", ")
                 updateTextInput(session, "P0", value = line_P0)
                 updateTextInput(session, "eP0", value = line_eP0)
               }
@@ -7508,33 +7642,37 @@ server <- function(input,output,session) {
       }
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      cat(sprintf('# Plate model rate removed: %g',trans$plate[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Plate model rate removed: %f',trans$plate[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$results$formula), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
-        cat(sprintf('# Parameter: %s = %g +/- %g',dimnames(trans$LScoefs)[[1]][i],trans$LScoefs[i,1],trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Parameter: %s = %f +/- %f',dimnames(trans$LScoefs)[[1]][i],trans$LScoefs[i,1],trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
       }
     } else if (input$fitType == 2 && length(trans$kalman) > 0) {
-      cat(paste0("# Model KF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# Parameter: %s = %g +/- %g', colnames(trans$kalman), colMeans(trans$kalman), colMeans(trans$kalman_unc)), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# A priori: %s = %g +/- %g', trans$kalman_info$nouns, trans$kalman_info$apriori, trans$kalman_info$error), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# Process noise: %s = %g', trans$kalman_info$nouns, as.list(sqrt(trans$kalman_info$processNoise))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# Measurement noise: %g', inputs$ObsError), file = file_out, sep = "\n", fill = F, append = T)
+      if (input$kf == 1) {
+        cat(paste0("# Model EKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+      } else if (input$kf == 2) {
+        cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+      }
+      cat(sprintf('# Parameter: %s = %f +/- %f', colnames(trans$kalman), colMeans(trans$kalman), colMeans(trans$kalman_unc)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# A priori: %s = %f +/- %f', trans$kalman_info$nouns, trans$kalman_info$apriori, trans$kalman_info$error), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Process noise: %s = %f', trans$kalman_info$nouns, as.list(sqrt(trans$kalman_info$processNoise))), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Measurement noise: %f', inputs$ObsError), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (length(trans$offsetEpochs) > 0) {
       cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
       if (isTruthy(trans$midas_vel2)) {
-        cat(sprintf('# MIDAS: %g +/- %g #discontinuities included',trans$midas_vel,trans$midas_sig), file = file_out, sep = "\n", fill = F, append = T)
-        cat(sprintf('# MIDAS: %g +/- %g #discontinuities skipped',trans$midas_vel2,trans$midas_sig2), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# MIDAS: %f +/- %f #discontinuities included',trans$midas_vel,trans$midas_sig), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# MIDAS: %f +/- %f #discontinuities skipped',trans$midas_vel2,trans$midas_sig2), file = file_out, sep = "\n", fill = F, append = T)
       } else {
-        cat(sprintf('# MIDAS: %g +/- %g #discontinuities included',trans$midas_vel,trans$midas_sig), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# MIDAS: %f +/- %f #discontinuities included',trans$midas_vel,trans$midas_sig), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (input$waveform && inputs$waveformPeriod > 0) {
-      cat(sprintf('# Waveform: %g',as.numeric(inputs$waveformPeriod)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Waveform: %f',as.numeric(inputs$waveformPeriod)), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(input$filter)) {
       if (isTruthy(trans$vondrak) && (isTruthy(inputs$low) || isTruthy(inputs$high))) {
@@ -7544,36 +7682,36 @@ server <- function(input,output,session) {
           origen <- " from residual series"
         }
         if (isTruthy(trans$vondrak[1]) && isTruthy(trans$vondrak[2])) {
-          cat(paste0(sprintf('# Vondrak: %g (low) %g (high)',as.numeric(trans$vondrak[1]),as.numeric(trans$vondrak[2])), origen), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste0(sprintf('# Vondrak: %f (low) %f (high)',as.numeric(trans$vondrak[1]),as.numeric(trans$vondrak[2])), origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[1])) {
-          cat(paste0(sprintf('# Vondrak: %g (low)',as.numeric(trans$vondrak[1])), origen), file = file_out, sep = "\n", fill = F, append = T) 
+          cat(paste0(sprintf('# Vondrak: %f (low)',as.numeric(trans$vondrak[1])), origen), file = file_out, sep = "\n", fill = F, append = T) 
         } else if (isTruthy(trans$vondrak[2])) {
-          cat(sprintf('# Vondrak: %g (high)',as.numeric(trans$vondrak[2])), file = file_out, sep = "\n", fill = F, append = T) 
+          cat(sprintf('# Vondrak: %f (high)',as.numeric(trans$vondrak[2])), file = file_out, sep = "\n", fill = F, append = T) 
         }
       }
     }
     if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
       if (isTruthy(trans$noise[1])) {
-        cat(sprintf('# Noise: WH %g +/- %g ',as.numeric(trans$noise[1]),as.numeric(trans$noise[2])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: WH %f +/- %f ',as.numeric(trans$noise[1]),as.numeric(trans$noise[2])), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[3])) {
-        cat(sprintf('# Noise: FL %g +/- %g ',as.numeric(trans$noise[3]),as.numeric(trans$noise[4])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: FL %f +/- %f ',as.numeric(trans$noise[3]),as.numeric(trans$noise[4])), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[5])) {
-        cat(sprintf('# Noise: RW %g +/- %g ',as.numeric(trans$noise[5]),as.numeric(trans$noise[6])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: RW %f +/- %f ',as.numeric(trans$noise[5]),as.numeric(trans$noise[6])), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[7])) {
-        cat(sprintf('# Noise: PL %g +/- %g ',as.numeric(trans$noise[7]),as.numeric(trans$noise[8])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: PL %f +/- %f ',as.numeric(trans$noise[7]),as.numeric(trans$noise[8])), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[9])) {
-        cat(sprintf('# Noise: K  %g +/- %g ',as.numeric(trans$noise[9]),as.numeric(trans$noise[10])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: K  %f +/- %f ',as.numeric(trans$noise[9]),as.numeric(trans$noise[10])), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[11])) {
-        cat(sprintf('# Noise: MLE %g ',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: MLE %f ',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (isTruthy(inputs$step) && inputs$step > 0) {
-      cat(sprintf('# Resampling: %g ',inputs$step), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Resampling: %f ',inputs$step), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
       cat(sprintf('# Corrected with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
