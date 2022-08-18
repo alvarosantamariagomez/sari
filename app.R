@@ -3714,12 +3714,16 @@ server <- function(input,output,session) {
           ps_largo <- head(ps, n = 1)
           ps_corto <- tail(ps, n = 1)
           cruce <- 0
-          if (b0 > 0 && bk > 0) {
-            cruce <- f_scale * ( (b0^2/bk^2) * 2*pi*sqrt(f_scale)/sqrt(fs_hz) )^(-1) #following Williams 2003
-          } else if (b0 > 0) {
-            cruce <- 1/(inputs$long_period + 1)
-          } else if (bk > 0) {
-            cruce <- 2/inputs$short_period
+          if (isTruthy(b0) && isTruthy(bk)) {
+            if (b0 > 0 && bk > 0) {
+              cruce <- f_scale * ( (b0^2/bk^2) * 2*pi*sqrt(f_scale)/sqrt(fs_hz) )^(-1) #following Williams 2003
+            } else if (b0 > 0) {
+              cruce <- 1/(inputs$long_period + 1)
+            } else if (bk > 0) {
+              cruce <- 2/inputs$short_period
+            }
+          } else {
+            showNotification("Unable to plot the noise power spectrum on top of the periodogram. Check the noise analysis results.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
           if (cruce > 0) {
             if (1/cruce <= inputs$short_period) {
