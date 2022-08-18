@@ -8,6 +8,7 @@
 - Updating the periodogram limits when the series sampling is reduced
 - Indexing automatically removed points
 - Unexpected line commented when setting start.time in the wavelet
+- Checking noise analysis results before plotting the noise power spectrum
 
 ### Changed:
 - Checking for non-zero a priori state covariances in the KF fit
