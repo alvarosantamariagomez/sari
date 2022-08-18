@@ -3079,7 +3079,7 @@ server <- function(input,output,session) {
                 }
                 if (isTruthy(info_out)) {
                   synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 4, byrow = T)
-                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Amplitude","Amp. Error","Phase","Phase Error"))
+                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Amplitude","Amp. Error","Phase (rad)","Phase Error (rad)"))
                 }
               }
               trans$results <- synthesis
