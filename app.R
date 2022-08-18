@@ -1779,8 +1779,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                  verbatimTextOutput("wavelet3_info", placeholder = F)
                                                )
                                       ),
-                                      tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 20px; display: inline-block; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
-                                      tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 20px; display: inline-block; font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;","Save"), class = "fa fa-save", style = "font-size:30px; margin-top:-0.9em"), value = 5)
+                                      tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
+                                      tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Save"), class = "fa-solid fa-floppy-disk", style = "font-size:30px; margin-top:-0.9em"), value = 5)
                                     )
                                   )
                     )
