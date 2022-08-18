@@ -1817,7 +1817,8 @@ server <- function(input,output,session) {
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, sigmas = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, 
-                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width) )
+                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
+                         step = 0)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -5487,6 +5488,7 @@ server <- function(input,output,session) {
     values$excluded3 <- rep(F, info$points)
     values$excluded_all <- rep(F, info$points)
     updateTextInput(session, "ObsError", value = "")
+    info$step <- inputs$step
   }, priority = 6)
   
   # Observe secondary series ####
@@ -6290,12 +6292,21 @@ server <- function(input,output,session) {
           if (nchar(input$step) > 0 && !is.na(inputs$step)) {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
               showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
+              tolerance <- min(diff(table$x,1))/3
               if (input$format == 4) {
-                averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x[values$used1], y1 = table$y1[values$used1], y2 = NULL, y3 = NULL, sy1 = table$sy1[values$used1], sy2 = NULL, sy3 = NULL, tol = info$sampling/3 ), simplify = T)
+                if (info$step == inputs$step) {
+                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T)
+                } else {
+                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x[values$used1], y1 = table$y1[values$used1], y2 = NULL, y3 = NULL, sy1 = table$sy1[values$used1], sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T) 
+                }
                 removeNotification(id = "averaging", session = getDefaultReactiveDomain())
                 table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]) 
               } else {
-                averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x[values$used1], y1 = table$y1[values$used1], y2 = table$y2[values$used2], y3 = table$y3[values$used3], sy1 = table$sy1[values$used1], sy2 = table$sy2[values$used2], sy3 = table$sy3[values$used3], tol = info$sampling/3 ), simplify = T)
+                if (info$step == inputs$step) {
+                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance ), simplify = T)
+                } else {
+                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x[values$used1], y1 = table$y1[values$used1], y2 = table$y2[values$used2], y3 = table$y3[values$used3], sy1 = table$sy1[values$used1], sy2 = table$sy2[values$used2], sy3 = table$sy3[values$used3], tol = tolerance ), simplify = T)  
+                }
                 removeNotification(id = "averaging", session = getDefaultReactiveDomain())
                 table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])  
               }
