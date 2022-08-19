@@ -1,5 +1,17 @@
 # **SARI changelog**
 
+# octubre 2022 [2022.10]
+
+### Fixed:
+- Error when changing from LS to KF and the series were previously resampled
+
+### Changed:
+- Adding units for the sinusoidal phase and phase error estimates
+
+### Added:
+- Uploading a SARI file with a previous Kalman filter fit
+- Adding error bars info to the KF fit
+
 # septiembre 2022 [2022.09]
 
 ### Fixed:

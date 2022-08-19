@@ -3167,11 +3167,22 @@ server <- function(input,output,session) {
         if (messages > 1) cat(file = stderr(), model, "\n")
         apriori <- unlist(as.numeric(apriori),use.names = F)
         unc_ini <- unlist(as.numeric(error)^2, use.names = F)
-        if (isTruthy(input$ObsError)) {
-          sigmaR <- as.numeric(input$ObsError)
+        if (isTruthy(input$sigmas)) {
+          if (isTruthy(input$ObsError)) {
+            sigmaR <- as.numeric(input$ObsError) * trans$sy / median(trans$sy)
+          } else {
+            sigmaR <- info$noise/5
+            updateTextInput(session, "ObsError", value = sigmaR)
+            sigmaR <- sigmaR * trans$sy / median(trans$sy)
+          }
         } else {
-          sigmaR <- info$noise/5
-          updateTextInput(session, "ObsError", value = sigmaR)
+          if (isTruthy(input$ObsError)) {
+            sigmaR <- rep(as.numeric(input$ObsError), length(trans$sy))
+          } else {
+            sigmaR <- info$noise/5
+            updateTextInput(session, "ObsError", value = sigmaR)
+            sigmaR <- rep(sigmaR, length(trans$sy))
+          }
         }
         #Measurement function
         FFfunction <- function(x, k) {
@@ -3210,7 +3221,7 @@ server <- function(input,output,session) {
           }
           if (nchar(min_optirange) > 0 && nchar(max_optirange) > 0 && min_optirange > 0 && !is.na(as.numeric(min_optirange)) && max_optirange > 0 && !is.na(as.numeric(max_optirange))) {
             if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
-            mod <- optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
+            mod <- optim(log(median(sigmaR)^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
             if (mod$convergence == 0) {
               sigmaR <- sqrt(exp(mod$par))
               seParms <- sqrt(diag(solve(mod$hessian)))
@@ -4898,15 +4909,15 @@ server <- function(input,output,session) {
           }
           enable("fitType")
           enable("model")
-          if (input$fitType == 2) {
-            disable("sigmas")
-            updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
-          } else {
-            if (isTRUE(info$sigmas)) {
-              updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = T)
-            }
+          # if (input$fitType == 2) {
+          #   disable("sigmas")
+          #   updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
+          # } else {
+          #   if (isTRUE(info$sigmas)) {
+          #     updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = T)
+          #   }
             enable("sigmas")
-          }
+          # }
           if (input$fitType == 1 || input$fitType == 2) {
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
               enable("spectrumModel")
@@ -7915,7 +7926,7 @@ server <- function(input,output,session) {
       tmpy <- matrix(sapply(1:nrow(sigmay), function(x) FFfunction(x = sigmay[x,], k = i)), nrow = ym)
       f[i, ] <- tcrossprod(w, tmpy)
       #covariance of predicted measurement
-      Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V
+      Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V[i]
       #cross covariance between a priori state estimate and predicted measurement
       Qxy <- tcrossprod(crossprod(t(t(sigmay) - a[i, ]), diag(w)), tmpy - f[i, ])
       
