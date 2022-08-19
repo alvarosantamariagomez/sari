@@ -7499,6 +7499,7 @@ server <- function(input,output,session) {
   trimmer <- function(x) gsub("^\\s+|\\s+$", "", x)
   collect <- function(file_out) {
     if (messages > 0) cat(file = stderr(), "Downloading results", "\n")
+    id <- showNotification("Preparing file to download ...", action = NULL, duration = NULL, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
     now <- paste0(" run on ",Sys.time()," ",Sys.timezone())
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
     cat(paste0("# Original series: ",file$primary$name), file = file_out, sep = "\n", fill = F, append = T)
@@ -7655,6 +7656,7 @@ server <- function(input,output,session) {
     }
     colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
     suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
+    shinyjs::delay(2000, removeNotification(id = id, session = getDefaultReactiveDomain()))
   }
   collect_periodogram <- function(file_out) {
     if (messages > 0) cat(file = stderr(), "Downloading periodogram", "\n")
