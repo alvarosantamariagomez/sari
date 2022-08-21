@@ -5815,8 +5815,12 @@ server <- function(input,output,session) {
     }
     series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])  
     if (length(trans$res) > 0) {
-      if (length(trans$reserror) > 0) {
-        residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$reserror)
+      if (isTruthy(input$sigmas)) {
+        if (length(trans$reserror) > 0) {
+          residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$reserror)
+        } else {
+          residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$sy)
+        }
       } else {
         residuals <- data.frame(x = trans$x, res = trans$res)
       }
@@ -5829,16 +5833,24 @@ server <- function(input,output,session) {
       excluding_kf <- rep(F,length(trans$res0))
       joint_kf <- merge(series_kf, residuals, by = "x", all.x = T)
       joint_kf$res <- sapply(1:length(joint_kf$x), function(x) if (is.na(joint_kf$res[x])) 0 else joint_kf$res[x])
+      if (isTruthy(input$sigmas)) {
+        joint_kf$sy <- sapply(1:length(joint_kf$x), function(x) if (is.na(joint_kf$sy[x])) 1 else joint_kf$sy[x])
+      }
     }
     excluding <- rep(F,length(series$x))
     joint <- merge(series, residuals, by = "x", all.x = T)
     joint$res <- sapply(1:length(joint$x), function(x) if (is.na(joint$res[x])) 0 else joint$res[x])
-    if (length(trans$reserror) > 0) {
+    if (isTruthy(input$sigmas)) {
+    # if (length(trans$reserror) > 0) {
       joint$sy <- sapply(1:length(series$x), function(x) if (is.na(joint$sy[x])) 1 else joint$sy[x])
     }
-    if (nchar(input$thresholdResN) > 0) {
+    if (nchar(input$thresholdResN) > 0 && length(joint$sy) > 0) {
       if (!is.na(inputs$thresholdResN)) {
         if (messages > 0) cat(file = stderr(), "Limit normalized residual ", inputs$thresholdResN, "\n")
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          excluding_plot_kf <- abs(joint_kf$res/joint_kf$sy) > abs(inputs$thresholdResN)
+          excluding_kf <- excluding_plot_kf
+        }
         excluding_plot <- abs(joint$res/joint$sy) > abs(inputs$thresholdResN)
         excluding <- excluding_plot
       } else {
@@ -5904,16 +5916,28 @@ server <- function(input,output,session) {
       values$excluded_all <- rep(F, sum(values$used_all))
       values$used1 <- values$used2 <- values$used3 <- values$used_all
       values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
+      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+        values$used_kf1 <- values$used_kf2 <- values$used_kf3 <- values$used_all_kf <- rep(T, length(trans$res0))
+      }
     } else {
       if (input$tab == 1 || is.null(input$tab)) {
         values$used1 <- rep(T, length(trans$x0))
         values$excluded1 <- rep(F, length(trans$x0))
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          values$used_kf1 <- rep(T, length(trans$res0))
+        }
       } else if (input$tab == 2) {
         values$used2 <- rep(T, length(trans$x0))
         values$excluded2 <- rep(F, length(trans$x0))
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          values$used_kf2 <- rep(T, length(trans$res0))
+        }
       } else if (input$tab == 3) {
         values$used3 <- rep(T, length(trans$x0))
         values$excluded3 <- rep(F, length(trans$x0))
+        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          values$used_kf3 <- rep(T, length(trans$res0))
+        }
       }
     }
   }, priority = 4)
