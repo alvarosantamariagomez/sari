@@ -3249,6 +3249,7 @@ server <- function(input,output,session) {
           trans$run <- F
           req(info$stop)
         }
+        #EKF
         if (input$kf == 1) {
           if (messages > 0) cat(file = stderr(), "EKF fit", "\n")
           kf <- NULL
@@ -3257,13 +3258,30 @@ server <- function(input,output,session) {
             kfs <- NULL
             kfs <- try(dlmExtSmooth(kf), silent = F)
             if (!inherits(kfs,"try-error") && !is.null(kfs)) {
-              kfs_unc <- kfs$D.S[1:nrow(kfs$s) - 1,]
+              varcov_kfs <- dlmSvd2var(kfs$U.S, kfs$D.S)
+              kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
+              for (component in seq_len(ncol(kfs$s))) {
+                kfs_unc[,component] <- unlist(sapply(varcov_kfs[2:length(varcov_kfs)], function(x) diag(x)[component]))
+              }
+              if (any(kfs_unc < 0)) {
+                kfs_unc[kfs_unc < 0] <- NA
+                showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the EKF fit.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              }
             } else {
-              showNotification("Unable to run the RTS smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              trans$results <- NULL
+              trans$res <- NULL
+              trans$mod <- NULL
+              trans$run <- F
+              showNotification("Unable to run the EKF smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
             }
           } else {
+            trans$results <- NULL
+            trans$res <- NULL
+            trans$mod <- NULL
+            trans$run <- F
             showNotification("Unable to fit the EKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
+        #UKF
         } else if (input$kf == 2) {
           if (messages > 0) cat(file = stderr(), "UKF fit", "\n")
           kf <- NULL
@@ -3272,7 +3290,6 @@ server <- function(input,output,session) {
             kfs <- NULL
             kfs <- try(UKFsmooth(kf, GGfunction = GGfunction), silent = F)
             if (!inherits(kfs,"try-error") && !is.null(kfs)) {
-              trans$run <- T
               kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
               for (component in seq_len(ncol(kfs$s))) {
                 kfs_unc[,component] <- unlist(sapply(kfs$S[2:length(kfs$S)], function(x) diag(x)[component]))
@@ -3281,55 +3298,12 @@ server <- function(input,output,session) {
                 kfs_unc[kfs_unc < 0] <- NA
                 showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the UKF fit.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
               }
-              e <- kfs$s[2:nrow(kfs$s),]
-              mod <- sapply(1:length(x), function(l) eval(parse(text = model_kf)))
-              res <- y - mod
-              mod <- mod + trans$ordinate
-              if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
-                mod <- mod + trans$pattern
-              }
-              m$apriori[1] <- unlist(m$apriori)[1] + trans$ordinate
-              trans$kalman_info <- m
-              trans$res <- trans$res0 <- res
-              trans$mod <- trans$mod0 <- mod
-              trans$x0_kf <- x
-              if (isTruthy(input$remove3D)) {
-                values$used_all_kf <- rep(T, length(res))
-              } else {
-                if (input$tab == 1 || is.null(input$tab)) {
-                  values$used_kf1 <- rep(T, length(res))
-                } else if (input$tab == 2) {
-                  values$used_kf2 <- rep(T, length(res))
-                } else if (input$tab == 3) {
-                  values$used_kf3 <- rep(T, length(res))
-                }
-              }
-              trans$equation <- model
-              colnames(e) <- nouns
-              trans$kalman <- e
-              trans$kalman[,1] <- trans$kalman[,1] + trans$ordinate
-              trans$kalman0 <- trans$kalman
-              kfs_unc <- sqrt(kfs_unc)
-              colnames(kfs_unc) <- nouns
-              trans$kalman_unc <- trans$kalman_unc0 <- kfs_unc
-              if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-                trans$rate_inst <- trans$rate_inst0 <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
-                names(trans$rate_inst) <- "Rate_inst"
-              }
-              trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
-              if (isTruthy(inputs$waveformPeriod)) {
-                save_value <- inputs$waveformPeriod
-                updateTextInput(session, "waveformPeriod", value = "")
-                updateTextInput(session, "waveformPeriod", value = save_value)
-              }
             } else {
               trans$results <- NULL
               trans$res <- NULL
               trans$mod <- NULL
               trans$run <- F
-              showNotification("Unable to run the KF smoother. The error covariances of the initial state may be zero or too large.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              # showNotification("Unable to run the RTS smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              # req(info$stop)
+              showNotification("Unable to run the UKF smoother. The error covariances of the initial state may be zero or too large.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$results <- NULL
@@ -3339,9 +3313,53 @@ server <- function(input,output,session) {
             showNotification("Unable to fit the UKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
-        end.time <- Sys.time()
-        time.taken <- end.time - start.time
-        if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
+        if (isTruthy(kfs$s)) {
+          trans$run <- T
+          e <- kfs$s[2:nrow(kfs$s),]
+          mod <- sapply(1:length(x), function(l) eval(parse(text = model_kf)))
+          res <- y - mod
+          mod <- mod + trans$ordinate
+          if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
+            mod <- mod + trans$pattern
+          }
+          m$apriori[1] <- unlist(m$apriori)[1] + trans$ordinate
+          trans$kalman_info <- m
+          trans$res <- trans$res0 <- res
+          trans$mod <- trans$mod0 <- mod
+          trans$x0_kf <- x
+          if (isTruthy(input$remove3D)) {
+            values$used_all_kf <- rep(T, length(res))
+          } else {
+            if (input$tab == 1 || is.null(input$tab)) {
+              values$used_kf1 <- rep(T, length(res))
+            } else if (input$tab == 2) {
+              values$used_kf2 <- rep(T, length(res))
+            } else if (input$tab == 3) {
+              values$used_kf3 <- rep(T, length(res))
+            }
+          }
+          trans$equation <- model
+          colnames(e) <- nouns
+          trans$kalman <- e
+          trans$kalman[,1] <- trans$kalman[,1] + trans$ordinate
+          trans$kalman0 <- trans$kalman
+          kfs_unc <- sqrt(kfs_unc)
+          colnames(kfs_unc) <- nouns
+          trans$kalman_unc <- trans$kalman_unc0 <- kfs_unc
+          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+            trans$rate_inst <- trans$rate_inst0 <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
+            names(trans$rate_inst) <- "Rate_inst"
+          }
+          trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
+          if (isTruthy(inputs$waveformPeriod)) {
+            save_value <- inputs$waveformPeriod
+            updateTextInput(session, "waveformPeriod", value = "")
+            updateTextInput(session, "waveformPeriod", value = save_value)
+          }
+          end.time <- Sys.time()
+          time.taken <- end.time - start.time
+          if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
+        }
       })
     }
   })
