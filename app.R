@@ -3857,44 +3857,44 @@ server <- function(input,output,session) {
           pln <- pl * f_hz^k
           ps <- pmax(pwn, pln)
           ps <- ps*trans$var/sum(ps)
-          ps_largo <- head(ps, n = 1)
-          ps_corto <- tail(ps, n = 1)
-          cruce <- 0
+          ps_long <- head(ps, n = 1)
+          ps_short <- tail(ps, n = 1)
+          crossover <- 0
           if (isTruthy(b0) && isTruthy(bk)) {
             if (b0 > 0 && bk > 0) {
-              cruce <- f_scale * ( (b0^2/bk^2) * 2*pi*sqrt(f_scale)/sqrt(fs_hz) )^(-1) #following Williams 2003
+              crossover <- f_scale * ( (b0^2/bk^2) * 2*pi*sqrt(f_scale)/sqrt(fs_hz) )^(-1) #following Williams 2003
             } else if (b0 > 0) {
-              cruce <- 1/(inputs$long_period + 1)
+              crossover <- 1/(inputs$long_period + 1)
             } else if (bk > 0) {
-              cruce <- 2/inputs$short_period
+              crossover <- 2/inputs$short_period
             }
           } else {
             showNotification("Unable to plot the noise power spectrum on top of the periodogram. Check the noise analysis results.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
-          if (cruce > 0) {
-            if (1/cruce <= inputs$short_period) {
+          if (crossover > 0) {
+            if (1/crossover <= inputs$short_period) {
               lombx <- c(inputs$long_period,inputs$short_period)
-              lomby <- c(ps_largo,ps_largo*(lombx[2]/inputs$long_period)^(-k))
-            } else if (1/cruce >= inputs$long_period) {
+              lomby <- c(ps_long,ps_long*(lombx[2]/inputs$long_period)^(-k))
+            } else if (1/crossover >= inputs$long_period) {
               lombx <- c(inputs$long_period,inputs$short_period)
-              lomby <- c(ps_corto,ps_corto)
+              lomby <- c(ps_short,ps_short)
             } else {
-              lombx <- c(inputs$long_period,1/cruce,1/cruce,inputs$short_period)
-              lomby <- c(ps_largo,ps_corto,ps_corto,ps_corto)
+              lombx <- c(inputs$long_period,1/crossover,1/crossover,inputs$short_period)
+              lomby <- c(ps_long,ps_short,ps_short,ps_short)
             }
             lines(lombx,lomby, col = "red", lty = 2, lwd = 2)
           }
         } else {
           c <- max(which(trans$spectra_old))
           p <- trans$psd[,c]
-          pendiente <- lm(log10(p) ~ log10(1/trans$fs))
-          pendiente$coef[2] <- -1*pendiente$coef[2]
-          regresion <- 10^(predict(pendiente, newdata = list(x = 1/trans$fs)))
-          lines(1/trans$fs, regresion, col = c)
-          text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",pendiente$coef[2])," +- ",sprintf("%3.2f",summary(pendiente)$coefficients[2,2])), col = c)
+          slope <- lm(log10(p) ~ log10(1/trans$fs))
+          slope$coef[2] <- -1*slope$coef[2]
+          regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
+          lines(1/trans$fs, regression, col = c)
+          text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = c)
           lombx <- c(inputs$long_period,inputs$short_period)
-          sesgo <- 0.01
-          lomby_flicker <- c(sesgo*(10^(pendiente$coef[1])*(inputs$long_period/inputs$short_period)),sesgo*10^(pendiente$coef[1]))
+          bias <- 0.01
+          lomby_flicker <- c(bias*(10^(slope$coef[1])*(inputs$long_period/inputs$short_period)),bias*10^(slope$coef[1]))
           lines(lombx,lomby_flicker, col = "hotpink", lty = 2, lwd = 2)
           text(inputs$long_period/10,min(p),"Slope = -1",col = "hotpink")
         }
