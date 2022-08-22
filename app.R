@@ -18,7 +18,6 @@
 suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(data.table, verbose = F, quietly = T) #v1.14.0
   library(dlm, verbose = F, quietly = T) #v1.1-5
-  # library(doParallel, verbose = F, quietly = T) #v1.0.16
   library(fields, verbose = F, quietly = T) #v12.5
   library(lubridate, verbose = F, quietly = T) #v1.7.10
   library(magrittr, verbose = F, quietly = T) #v2.0.1
@@ -369,7 +368,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                      ),
                                                                      column(6, align = "right",
-                                                                            # tags$a(href = "https://www.sonel.org/gpslog/old/lroc_20150724.log", "Show file example", target = "_blank")
                                                                             tags$a(href = "iraf00fra_20201021.log", "Show file example", target = "_blank")
                                                                      )
                                                                    ),
@@ -398,7 +396,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                      ),
                                                                      column(6, align = "right",
-                                                                            # tags$a(href = "ftp://garner.ucsd.edu/pub/gamit/setup/station.info", "Show file example", target = "_blank")
                                                                             tags$a(href = "station.info", "Show file example", target = "_blank")
                                                                      )
                                                                    ),
@@ -427,7 +424,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                      ),
                                                                      column(6, align = "right",
-                                                                            # tags$a(href = "ftp://igs-rf.ign.fr/pub/discontinuities/soln.snx", "Show file example", target = "_blank")
                                                                             tags$a(href = "soln.snx", "Show file example", target = "_blank")
                                                                      )
                                                                    ),
@@ -1458,7 +1454,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                conditionalPanel(
                                                  condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
                                                  withSpinner(
-                                                   # plotOutput("vondrak1", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
                                                    plotOutput("vondrak1", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
                                                    type = getOption("spinner.type", default = 1),
                                                    color = getOption("spinner.color", default = "#0080ff"),
@@ -1816,9 +1811,8 @@ server <- function(input,output,session) {
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
-                         decimalsy = NULL, sigmas = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, 
-                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         step = 0)
+                         decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
+                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width))
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -1899,8 +1893,6 @@ server <- function(input,output,session) {
       if (local) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
-        # This will probably work only for local Linux machines 
-        # registerDoParallel(cores = 4)
       } else {
         if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
         if (messages > 2) cat(file = stderr(), "Pixel ratio ", pixelratio, "\n")
@@ -2238,7 +2230,7 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
   
   # Update data ####
-  observeEvent(c(input$plot, input$series2, input$tab, input$sigmas, input$remove, input$removeAuto, 
+  observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, input$remove, input$removeAuto, 
                  input$delete_excluded, input$format, input$units, input$optionSecondary, values, 
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
@@ -2463,6 +2455,12 @@ server <- function(input,output,session) {
           }
         }
       }
+    }
+    if (!isTruthy(input$sigmas)) {
+      trans$sy <- rep(1, length(trans$sy))
+      trans$sy0 <- rep(1, length(trans$sy0))
+      trans$sye <- rep(1, length(trans$sye))
+      trans$sz <- rep(1, length(trans$sz))
     }
     info$miny <- min(trans$y0, na.rm = T)
     info$maxy <- max(trans$y0, na.rm = T)
@@ -2725,6 +2723,10 @@ server <- function(input,output,session) {
     req(obs(), trans$x, trans$y, trans$sy)
     if (messages > 0) cat(file = stderr(), "Plotting the series", "\n")
     title <- ""
+    sigmas <- F
+    if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
+      sigmas <- T
+    }
     if (length(isolate(file$secondary)) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
       if (input$symbol == 0) {
         symbol <- 'p'
@@ -2747,7 +2749,7 @@ server <- function(input,output,session) {
         ranges$y12 <- NULL
       }
       plot(trans$x0[!is.na(trans$z)], trans$z[!is.na(trans$z)], type = symbol, pch = 20, col = "#59b300", axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
-      if (isTruthy(input$sigmas)) {
+      if (isTruthy(sigmas)) {
         color <- "#59b300"
         alfa <- 0.2
         shade <- adjustcolor(color, alpha.f = alfa)
@@ -2757,9 +2759,9 @@ server <- function(input,output,session) {
       }
       axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
       par(new = T)
-      plot_series(trans$x0[!is.na(trans$y0)],trans$y0[!is.na(trans$y0)],trans$sy0[!is.na(trans$y0)],ranges$x1,ranges$y1,input$sigmas,title,input$symbol)
+      plot_series(trans$x0[!is.na(trans$y0)],trans$y0[!is.na(trans$y0)],trans$sy0[!is.na(trans$y0)],ranges$x1,ranges$y1,sigmas,title,input$symbol)
     } else {
-      plot_series(trans$x0,trans$y0,trans$sy0,ranges$x1,ranges$y1,input$sigmas,title,input$symbol)
+      plot_series(trans$x0,trans$y0,trans$sy0,ranges$x1,ranges$y1,sigmas,title,input$symbol)
     }
     points(isolate(trans$xe), isolate(trans$ye), type = "p", col = 'red', bg = 'red', pch = 21)
     if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
@@ -2810,7 +2812,6 @@ server <- function(input,output,session) {
         paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
       }
     })
-  # }, width = function() { if (isTruthy(info$width)) { return(info$width) } else { return("auto") } }, type = "cairo-png")
 }, width = reactive(info$width), type = "cairo-png")
   
   # MIDAS ####
@@ -2970,7 +2971,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$model, input$sigmas, inputs$LogariRef, inputs$L0, inputs$TL0, inputs$ExponenRef, inputs$E0, 
                  inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType, 
                  trans$y, input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, 
-                 input$units), {
+                 input$units, trans$sy), {
     req(trans$x, trans$y, trans$sy, trans$ordinate)
     if (input$tab == 4) {
       req(info$stop)
@@ -3003,12 +3004,10 @@ server <- function(input,output,session) {
           }
         }
         sy <- trans$sy
-        if (!isTruthy(input$sigmas)) {
-          sy <- rep(1, length(y))
-        }
         if (any(sy <= 0) || any(is.na(sy))) {
           showNotification("Some errorbar values are not valid. No weighting applied.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           sy <- rep(1, length(y))
+          updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
         }
         weights <- 1/(sy^2)
         m <- model(x,y)
@@ -3150,6 +3149,12 @@ server <- function(input,output,session) {
             y <- y - trans$pattern
           }
         }
+        sy <- trans$sy
+        if (any(sy <= 0) || any(is.na(sy))) {
+          showNotification("Some errorbar values are not valid. No weighting applied.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          sy <- rep(1, length(y))
+          updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
+        }
         m <- model(x,y)
         if (length(m$apriori) < 2) {
           showNotification("Not enough model components to run the KF. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
@@ -3169,19 +3174,19 @@ server <- function(input,output,session) {
         unc_ini <- unlist(as.numeric(error)^2, use.names = F)
         if (isTruthy(input$sigmas)) {
           if (isTruthy(input$ObsError)) {
-            sigmaR <- as.numeric(input$ObsError) * trans$sy / median(trans$sy)
+            sigmaR <- as.numeric(input$ObsError) * sy / median(sy)
           } else {
             sigmaR <- info$noise/5
             updateTextInput(session, "ObsError", value = sigmaR)
-            sigmaR <- sigmaR * trans$sy / median(trans$sy)
+            sigmaR <- sigmaR * sy / median(sy)
           }
         } else {
           if (isTruthy(input$ObsError)) {
-            sigmaR <- rep(as.numeric(input$ObsError), length(trans$sy))
+            sigmaR <- rep(as.numeric(input$ObsError), length(trans$y))
           } else {
             sigmaR <- info$noise/5
             updateTextInput(session, "ObsError", value = sigmaR)
-            sigmaR <- rep(sigmaR, length(trans$sy))
+            sigmaR <- rep(sigmaR, length(trans$y))
           }
         }
         #Measurement function
@@ -3249,7 +3254,7 @@ server <- function(input,output,session) {
           trans$run <- F
           req(info$stop)
         }
-        #EKF
+        # EKF
         if (input$kf == 1) {
           if (messages > 0) cat(file = stderr(), "EKF fit", "\n")
           kf <- NULL
@@ -3281,7 +3286,7 @@ server <- function(input,output,session) {
             trans$run <- F
             showNotification("Unable to fit the EKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
-        #UKF
+        # UKF
         } else if (input$kf == 2) {
           if (messages > 0) cat(file = stderr(), "UKF fit", "\n")
           kf <- NULL
@@ -3313,6 +3318,7 @@ server <- function(input,output,session) {
             showNotification("Unable to fit the UKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
+        # Common EKF & UKF
         if (isTruthy(kfs$s)) {
           trans$run <- T
           e <- kfs$s[2:nrow(kfs$s),]
@@ -3378,7 +3384,11 @@ server <- function(input,output,session) {
     } else {
       ey <- trans$sy
     }
-    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,input$sigmas,title,input$symbol)
+    sigmas <- F
+    if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
+      sigmas <- T
+    }
+    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,title,input$symbol)
     abline(h = 0, col = "red", lwd = 2)
     if (input$traceLog && length(info$log) > 0) {
       for (r in info$log[[2]]) {
@@ -3818,12 +3828,10 @@ server <- function(input,output,session) {
       }
       if (input$spectrumType == 0) {
         spectrum_y <- trans$amp
-        # trans$spectra <- cbind(1/trans$fs, trans$amp)
         trans$spectra <- cbind(1/trans$fs, trans$amp[,!is.na(colSums(trans$amp))])
         ylab <- "Amplitude"
       } else if (input$spectrumType == 1) {
         spectrum_y <- trans$psd
-        # trans$spectra <- cbind(1/trans$fs, trans$psd)
         trans$spectra <- cbind(1/trans$fs, trans$psd[,!is.na(colSums(trans$psd))])
         ylab <- "Power"
       } else {
@@ -4025,7 +4033,6 @@ server <- function(input,output,session) {
         image(trans$wavelet$x, trans$wavelet$y, amplitude_approx[,,1], col = pal, xlab = "", ylab = "", log = "y")
         image.plot(zlim = range(amplitude_approx[,,1]), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
       } else {
-        # image.plot(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), col = pal, axes = F, legend.lab = "Amplitude", legend.line = -3, legend.shrink = 1, legend.mar = 0, smallplot= c(0.98, 1, 0, 0.82))
         image(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), col = pal, xlab = "", ylab = "")
         image.plot(zlim = range(z.fun(trans$wavelet$z[,,1])), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
       }
@@ -4092,10 +4099,8 @@ server <- function(input,output,session) {
             y <- trans$y - ordinate
             sy <- trans$sy
           } else if (input$series2filter == 2 && length(trans$res) > 0) {
-            # y <- trans$res
             ordinate <- mean(trans$res)
             y <- trans$res - ordinate
-            # ordinate <- 0
             if (input$fitType == 1) {
               sy <- trans$reserror
             } else if (input$fitType == 2) {
@@ -4165,14 +4170,17 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "Plotting Vondrak", "\n")
       if ((length(inputs$low) > 0 && inputs$low > 0 && !is.na(inputs$low)) || (length(inputs$high) > 0 && inputs$high > 0 && !is.na(inputs$high))) {
         title <- "Filter residuals"
+        sigmas <- F
+        if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
+          sigmas <- T
+        }
         if (input$series2filter == 1) {
-          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,input$sigmas,title,input$symbol)  
+          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol)  
         } else if (input$series2filter == 2 && length(trans$res) > 0) {
           if (input$fitType == 1) {
-            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,input$sigmas,title,input$symbol)
-            # plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,input$sigmas,title,input$symbol)
+            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,title,input$symbol)
           } else if (input$fitType == 2) {
-            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,input$sigmas,title,input$symbol) 
+            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol) 
           }
         }
       }
@@ -4869,7 +4877,12 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
         }
         enable("plot")
-        enable("sigmas")
+        if (isTruthy(info$errorbars)) {
+          enable("sigmas") 
+        } else {
+          updateCheckboxInput(session, inputId = "sigmas", value = F)
+          disable("sigmas")
+        }
         if (input$sigmas == T) {
           enable("errorBar")
           enable("errorBar2")
@@ -4927,15 +4940,6 @@ server <- function(input,output,session) {
           }
           enable("fitType")
           enable("model")
-          # if (input$fitType == 2) {
-          #   disable("sigmas")
-          #   updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
-          # } else {
-          #   if (isTRUE(info$sigmas)) {
-          #     updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = T)
-          #   }
-            enable("sigmas")
-          # }
           if (input$fitType == 1 || input$fitType == 2) {
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
               enable("spectrumModel")
@@ -5100,7 +5104,6 @@ server <- function(input,output,session) {
             disable("downloadAs")
             disable("autoDownload")
           }
-          # if ((input$fitType == 1 && length(trans$mod) > 0 && length(trans$res) > 0) || (input$fitType == 0 && length(trans$filter) > 0)) {
           if ((length(trans$mod) > 0 && length(trans$res) > 0) || (input$fitType == 0 && length(trans$filter) > 0)) {
             if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0) {
               enable("remove")
@@ -5122,11 +5125,6 @@ server <- function(input,output,session) {
             } else {
               disable("thresholdResN")
             }
-          # } else if (input$fitType == 2) {
-          # disable("remove")
-          # disable("delete_excluded")
-          # disable("thresholdRes")
-          # disable("thresholdResN")
           } else if (length(trans$filter) > 0) {
             enable("thresholdRes")
             disable("thresholdResN")
@@ -5174,6 +5172,7 @@ server <- function(input,output,session) {
         shinyjs::delay(100, disable("waveletType"))
         updateTextInput(session, "corto_wavelet", value = "")
         updateTextInput(session, "largo_wavelet", value = "")
+        enable("series")
         disable("fitType")
         disable("autoDownload")
         disable("white")
@@ -5198,7 +5197,6 @@ server <- function(input,output,session) {
         disable("remove")
         disable("remove3D")
         disable("removeAuto")
-        enable("series")
         disable("filter")
         disable("flicker")
         disable("format")
@@ -5256,37 +5254,37 @@ server <- function(input,output,session) {
       record <- grep(pattern, readLines(con = input$eulers$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
       for (l in seq_len(length(record))) {
         elements <- unlist(strsplit(record[[l]], "\\s+", fixed = F, perl = T, useBytes = F))
-        if (length(elements) == 7) { # Cartesianas
+        if (length(elements) == 7) { # Cartesian
           stationCartesian <- c(elements[2],elements[3],elements[4])
           updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
           updateTextInput(session, inputId = "station_x", value = stationCartesian[1])
           updateTextInput(session, inputId = "station_y", value = stationCartesian[2])
           updateTextInput(session, inputId = "station_z", value = stationCartesian[3])
-          if (sqrt(as.numeric(elements[5])^2 + as.numeric(elements[6])^2 + as.numeric(elements[7])^2) > 2) { #Geograficas
+          if (sqrt(as.numeric(elements[5])^2 + as.numeric(elements[6])^2 + as.numeric(elements[7])^2) > 2) { #Geographic
             polo_geo <- c(elements[5],elements[6],elements[7])
             updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
             updateTextInput(session, inputId = "pole_lat", value = polo_geo[1])
             updateTextInput(session, inputId = "pole_lon", value = polo_geo[2])
             updateTextInput(session, inputId = "pole_rot", value = polo_geo[3])
-          } else { # Cartesianas
+          } else { # Cartesian
             poleCartesian <- c(elements[5],elements[6],elements[7])
             updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
             updateTextInput(session, inputId = "pole_x", value = poleCartesian[1])
             updateTextInput(session, inputId = "pole_y", value = poleCartesian[2])
             updateTextInput(session, inputId = "pole_z", value = poleCartesian[3])
           }
-        } else if (length(elements) == 6) { #Geograficas
+        } else if (length(elements) == 6) { #Geographic
           stationGeo <- c(elements[2],elements[3])
           updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
           updateTextInput(session, inputId = "station_lat", value = stationGeo[1])
           updateTextInput(session, inputId = "station_lon", value = stationGeo[2])
-          if (sqrt(as.numeric(elements[4])^2 + as.numeric(elements[5])^2 + as.numeric(elements[6])^2) > 2) { #Geograficas
+          if (sqrt(as.numeric(elements[4])^2 + as.numeric(elements[5])^2 + as.numeric(elements[6])^2) > 2) { #Geographic
             polo_geo <- c(elements[4],elements[5],elements[6])
             updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
             updateTextInput(session, inputId = "pole_lat", value = polo_geo[1])
             updateTextInput(session, inputId = "pole_lon", value = polo_geo[2])
             updateTextInput(session, inputId = "pole_rot", value = polo_geo[3])
-          } else { # Cartesianas
+          } else { # Cartesian
             poleCartesian <- c(elements[4],elements[5],elements[6])
             updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
             updateTextInput(session, inputId = "pole_x", value = poleCartesian[1])
@@ -5314,17 +5312,6 @@ server <- function(input,output,session) {
       showNotification(paste0("Invalid bounds to compute the wavelet. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
     }
   })
-  
-  # Observe sigmas ####
-  observeEvent(input$sigmas, {
-    if (input$fitType != 2) {
-      if (input$sigmas) {
-        info$sigmas <- T
-      } else {
-        info$sigmas <- F
-      }
-    }
-  }, priority = 100)
   
   # Observe tab ####
   observeEvent(input$tab, {
@@ -5473,7 +5460,7 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe new series format ####
-  observeEvent(c(input$separator, input$separator2, input$format, input$format2, input$sigmas, input$units, input$eulerType, input$neuenu), {
+  observeEvent(c(input$separator, input$separator2, input$format, input$format2, input$units, input$eulerType, input$neuenu), {
     req(obs())
     data <- digest()
     obs(data)
@@ -5833,15 +5820,14 @@ server <- function(input,output,session) {
       excluding_kf <- rep(F,length(trans$res0))
       joint_kf <- merge(series_kf, residuals, by = "x", all.x = T)
       joint_kf$res <- sapply(1:length(joint_kf$x), function(x) if (is.na(joint_kf$res[x])) 0 else joint_kf$res[x])
-      if (isTruthy(input$sigmas)) {
+      if (length(joint_kf$sy) > 0) {
         joint_kf$sy <- sapply(1:length(joint_kf$x), function(x) if (is.na(joint_kf$sy[x])) 1 else joint_kf$sy[x])
       }
     }
     excluding <- rep(F,length(series$x))
     joint <- merge(series, residuals, by = "x", all.x = T)
     joint$res <- sapply(1:length(joint$x), function(x) if (is.na(joint$res[x])) 0 else joint$res[x])
-    if (isTruthy(input$sigmas)) {
-    # if (length(trans$reserror) > 0) {
+    if (length(joint$sy) > 0) {
       joint$sy <- sapply(1:length(series$x), function(x) if (is.na(joint$sy[x])) 1 else joint$sy[x])
     }
     if (nchar(input$thresholdResN) > 0 && length(joint$sy) > 0) {
@@ -6109,6 +6095,7 @@ server <- function(input,output,session) {
     info$log <- NULL
     info$rangex <- NULL
     info$sampling <- NULL
+    info$errorbars <- T
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
@@ -6179,6 +6166,7 @@ server <- function(input,output,session) {
   digest <- function() {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
+    # Setting column separation
     if (input$separator == "1") {
       sep <- ""
     } else if (input$separator == "2") {
@@ -6193,10 +6181,12 @@ server <- function(input,output,session) {
     } else if (input$separator2 == "3") {
       sep2 <- ";"
     }
-    columns <- get_columns(input$series$datapath, sep, input$format)
+    
     if (input$format == 4) {
       updateTabsetPanel(session, inputId = "tab", selected = "1")
     }
+    # Getting number of columns in file and setting station ID
+    columns <- get_columns(input$series$datapath, sep, input$format)
     if (columns > 0) {
       if (!isTruthy(inputs$ids)) {
         file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
@@ -6226,6 +6216,7 @@ server <- function(input,output,session) {
         showNotification("Problem extracting the series ID from the file name. No series ID will be used", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
       updateTextInput(session, inputId = "ids", value = ids_info)
+      # Getting data series from input file
       table <- NULL
       table2 <- NULL
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
@@ -6327,6 +6318,7 @@ server <- function(input,output,session) {
         }
         showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
+      # Checking series values and time order 
       if (!is.null(table)) {
         table <- table[order(table$x),]
         table <- table[!is.infinite(rowSums(table)),]
@@ -6338,6 +6330,7 @@ server <- function(input,output,session) {
           table2 <- na.omit(table2)
           showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
+        # Resampling the series
         if (input$average) {
           if (nchar(input$step) > 0 && is.na(inputs$step)) {
             showNotification("Time window length is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
@@ -6369,6 +6362,7 @@ server <- function(input,output,session) {
             }
           }
         }
+        # Checking for simultaneous values and setting series limits
         if (nrow(table) > 0) {
           if (input$tab == 4) {
             NULL
@@ -6461,30 +6455,29 @@ server <- function(input,output,session) {
     extracted <- NULL
     if (format == 1) { #NEU/ENU
       skip <- 0
-      # try(tableAll <- read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = "numeric"), silent = F)
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         extracted <- tableAll[,c(1,2,3,4)]
         names(extracted) <- c("x","y1","y2","y3")
         if (length(extracted) > 0) {
-          if (input$sigmas == T) {
+          if (columns > 4) {
             extracted$sy1 <- tableAll[,5]
             extracted$sy2 <- tableAll[,6]
             extracted$sy3 <- tableAll[,7]
           } else {
             extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
+            info$errorbars <- F
           }
-          # extracted <- suppressWarnings(extracted <- extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
           extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
         }
       }
     } else if (format == 2) { #PBO
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
-      # tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = c(rep("numeric", 24), "character")), silent = F)
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
-        extracted <- tableAll[,c(16,17,18)]
-        names(extracted) <- c("y1","y2","y3")
+        # extracted <- tableAll[,c(16,17,18)]
+        extracted <- tableAll[,c(16,17,18,19,20,21)]
+        names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
         if (input$units == 1) {
           extracted$x <- tableAll[,3]
         } else if (input$units == 2) {
@@ -6493,17 +6486,9 @@ server <- function(input,output,session) {
         } else if (input$units == 3) {
           extracted$x <- decimal_date(strptime(paste(tableAll[,1],tableAll[,2]),format = '%Y%m%d %H%M%S'))
         }
-        if (input$sigmas == T) {
-          extracted$sy1 <- tableAll[,19] #Norte
-          extracted$sy2 <- tableAll[,20] #Este
-          extracted$sy3 <- tableAll[,21] #Vertical
-        } else {
-          extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
-        }
       }
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file)))
-      # tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = c(rep("character", 2), rep("numeric", 18))), silent = F)
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         if (input$units == 1) {
@@ -6513,36 +6498,36 @@ server <- function(input,output,session) {
         } else if (input$units == 3) {
           extracted <- data.frame( x = tableAll[,3] )
         }
-        extracted$y1 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East (the coordinate integer portion seems to be fixed, but just in case)
+        extracted$y1 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East (the coordinate integer portion seems to be constant, but just in case)
         extracted$y2 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
         extracted$y3 <- tableAll[,12] - tableAll[1,12] + tableAll[,13] #Up
-        if (input$sigmas == T) {
-          extracted$sy1 <- tableAll[,15]
-          extracted$sy2 <- tableAll[,16]
-          extracted$sy3 <- tableAll[,17]
-        } else {
-          extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
-        }
+        extracted$sy1 <- tableAll[,15]
+        extracted$sy2 <- tableAll[,16]
+        extracted$sy3 <- tableAll[,17]
       }
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && epoch <= columns && !is.na(variable) && is.numeric(variable) && variable > 0 && variable <= columns && epoch != variable) {
         skip <- 0
-        # try(tableAll <- read.table(file, comment.char = "#", sep = sep, skip = skip, colClasses = rep("numeric", columns)), silent = F)
         tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
         if (isTruthy(tableAll)) {
           extracted <- data.frame( x = tableAll[[epoch]] )
           extracted$y1 <- tableAll[[variable]]
-          if (input$sigmas == T) {
-            if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
-              extracted$sy1 <- tableAll[[errorBar]]
+          if (columns > 2) {
+            if (input$sigmas == T) {
+              if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
+                extracted$sy1 <- tableAll[[errorBar]]
+              } else {
+                showNotification("Invalid column number for the series error bars. Provide a valid column number or uncheck the error bars option.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                req(info$stop)
+              }
             } else {
-              extracted <- NULL
+              extracted$sy1 <- rep(1,length(extracted$x))
             }
           } else {
             extracted$sy1 <- rep(1,length(extracted$x))
+            info$errorbars <- F
           }
           if (isTruthy(extracted)) {
-            # extracted <- suppressWarnings(extracted <- extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
           }
         }
@@ -6735,7 +6720,6 @@ server <- function(input,output,session) {
         model_kf <- paste(model_kf, "e[l,",j,"]", sep = " ")
         j <- j + 1
         if (isTruthy(match("Intercept", trans$names))) {
-          # ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
           ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate
           sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
         } else {
@@ -6854,7 +6838,7 @@ server <- function(input,output,session) {
               apriori[[label_sin]] <- as.numeric(S0[i])
               error[[label_sin]] <- as.numeric(eS0[i])
               nouns <- c(nouns, label_sin)
-              apriori[[label_cos]] <-as.numeric(S0[i])
+              apriori[[label_cos]] <- as.numeric(S0[i])
               if (eS0[i] == 0) {
                 trans$run <- F
                 showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
@@ -7512,12 +7496,9 @@ server <- function(input,output,session) {
       ylab <- ""
     }
     plot(x,y, type = s, pch = 20, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
-    # p <- pretty(par("usr")[3:4]) # round min/max Y-axis values
     p <- par("usr")[3:4] # min/max Y-axis values
-    # l <- formatC(p, format = "g", digits = 12)
     pout <- pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
-    # axis(2, las = 2, at = p, labels = l)
     axis(2, at = pin, labels = pout)
     if (sigma == T) {
       ba <- y + z
@@ -7539,7 +7520,6 @@ server <- function(input,output,session) {
     }
     if (input$spectrumModel && length(trans$mod) > 0 && length(trans$res) > 0 && any("all" %in% serie || "model" %in% serie)) {
       trans$title[3] <- "model (red), "
-      # ideal <- trans$mod + rnorm(n = length(trans$mod), mean = 0, sd = sd(trans$res))
       ideal <- trans$mod
       lombscargle <- spec.lomb(y = ideal, x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
       trans$fs <- lombscargle$f
@@ -7549,10 +7529,13 @@ server <- function(input,output,session) {
       trans$var <- var(ideal)
     } 
     if (input$periodogram_residuals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
-      # trans$title <- paste0(trans$title," model residuals (green)")
       trans$title[4] <- "model residuals (green), "
-      lombscargle <- spec.lomb(y = as.vector(trans$res), x = trans$x - trans$x[1], f = trans$fs, w = trans$reserror, mode = "normal")
-      # lombscargle <- spec.lomb(y = as.vector(trans$res), x = trans$x-trans$x[1], f = f, w = trans$sy, mode = "normal")
+      if (length(trans$reserror) > 0) {
+        sy <- trans$reserror
+      } else {
+        sy <- trans$sy
+      }
+      lombscargle <- spec.lomb(y = as.vector(trans$res), x = trans$x - trans$x[1], f = trans$fs, w = sy, mode = "normal")
       trans$fs <- lombscargle$f
       trans$spectra <- 1/lombscargle$f
       trans$amp[,3] <- lombscargle$A
@@ -8253,30 +8236,6 @@ server <- function(input,output,session) {
       value
     })
   }
-  # errorFunc <- function(err, buttonId) {
-  #   errEl <- sprintf("[data-for-btn=%s] .btn-err", buttonId)
-  #   errElMsg <- sprintf("[data-for-btn=%s] .btn-err-msg", buttonId)
-  #   errMessage <- err$message
-  #   shinyjs::html(html = errMessage, selector = errElMsg)
-  #   shinyjs::show(selector = errEl, anim = TRUE, animType = "fade", time = 5)
-  # }
-  # midas_vel <- function(m,t,disc) {
-  #   vel <- -999999
-  #   index <- which.min(abs(trans$x - (trans$x[m] + t)))
-  #   if (disc == 1) {
-  #     if (length(trans$offsetEpochs > 0)) {
-  #       for (p in trans$offsetEpochs) {
-  #         if (trans$x[m] < as.numeric(p) && as.numeric(p) < trans$x[index]) {
-  #           return(vel)
-  #         }
-  #       }
-  #     }
-  #   }
-  #   if (abs(trans$x[index] - trans$x[m] - t) < trans$tol) {
-  #     vel <- (trans$y[index] - trans$y[m]) / (trans$x[index] - trans$x[m])
-  #   }
-  #   return(vel)
-  # }
   midas_vel <- function(m,t,disc) {
     vel_f <- -999999
     vel_b <- -999999
@@ -8351,13 +8310,6 @@ server <- function(input,output,session) {
     }
     return(out)
   }
-  # gcd <- function(x) { # greatest common divisor
-  #   m = min(x)
-  #   while (any(x %% m > 0)) {
-  #     m = m - 1
-  #   }
-  #   return(m)
-  # }
 }
 
 shinyApp(ui = ui, server = server)
