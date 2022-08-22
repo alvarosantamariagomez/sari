@@ -6400,6 +6400,10 @@ server <- function(input,output,session) {
     } else if (format == 4) { #1D
       skip <- 0
     }
+    if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
+      showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
+    }
     columns <- try(range(count.fields(file, sep = sep, comment.char = "#", skip = skip)), silent = F)
     if (isTruthy(columns))  {
       if (format != 2 && columns[1] != columns[2]) {
