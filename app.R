@@ -5504,7 +5504,11 @@ server <- function(input,output,session) {
     values$excluded3 <- rep(F, info$points)
     values$excluded_all <- rep(F, info$points)
     updateTextInput(session, "ObsError", value = "")
-    info$step <- inputs$step
+    if (isTruthy(inputs$step)) {
+      info$step <- inputs$step
+    } else {
+      info$step <- 0
+    }
   }, priority = 6)
   
   # Observe secondary series ####
@@ -6334,8 +6338,7 @@ server <- function(input,output,session) {
         if (input$average) {
           if (nchar(input$step) > 0 && is.na(inputs$step)) {
             showNotification("Time window length is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          }
-          if (nchar(input$step) > 0 && !is.na(inputs$step)) {
+          } else {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
               showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
               tolerance <- min(diff(table$x,1))/3
