@@ -3190,14 +3190,11 @@ server <- function(input,output,session) {
           }
         }
         #Measurement function
-        FFfunction <- function(x, k) {
-          x <- matrix(x, nrow = 1, ncol = length(x))
-          k <- matrix(k, nrow = 1, ncol = 1)
-          e <- x
+        FFfunction <- function(x,k) {
+          e <- matrix(x, nrow = 1, ncol = length(x))
           x <- trans$x[k]
           l <- 1
-          obs <- eval(parse(text = model_kf))
-          c(obs)
+          c(eval(parse(text = model_kf)))
         }
         #State transition
         GGfunction <- function(x, k) {
