@@ -45,7 +45,7 @@ version <- "SARI septiembre 2022"
 
 # Help popup (based on https://github.com/daattali/ddpcr/blob/master/inst/shiny/ui/helpers.R)
 helpPopup <- function(content, title = NULL) {
-  a(href = "#",
+  a(#href = "#",
     class = "popover-link",
     `data-toggle` = "popover",
     `data-title` = title,
