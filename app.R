@@ -5376,17 +5376,16 @@ server <- function(input,output,session) {
   }, priority = 8)
   
   # Observe format ####
-  observeEvent(c(input$separator, input$tab, input$format, input$units, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
+  observeEvent(c(input$tab, input$format, input$units, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
       req(obs())
       info$tab <- input$tab
       if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                            "   Sampling: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Separator: ", 
-                            input$separator,"   Sitelog: ", file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ",
-                            input$soln$name,"   custom: ", input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ",
-                            input$optionSecondary, "\n")
+                            "   Sampling: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
+                            file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
+                            input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     }
   }, priority = 7)
   
@@ -5681,10 +5680,9 @@ server <- function(input,output,session) {
   observeEvent(input$plot, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                          "   Sampling: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Separator: ", 
-                          input$separator,"   Sitelog: ", file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ",
-                          input$soln$name,"   custom: ", input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ",
-                          input$optionSecondary, "\n")
+                          "   Sampling: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
+                          file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
+                          input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     info$input_warn <- 0
     data <- digest()
     if (!is.null(data)) {
