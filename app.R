@@ -5928,6 +5928,8 @@ server <- function(input,output,session) {
         }
       }
     }
+    updateTextInput(session, "thresholdRes", value = "")
+    updateTextInput(session, "thresholdResN", value = "")
   }, priority = 4)
   
   # Observe station.info ####
