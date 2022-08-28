@@ -6834,10 +6834,6 @@ server <- function(input,output,session) {
                     S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
                     eS0[i] <- abs(as.numeric(S0[i]))
                   }
-                  line_S0 <- paste(sprintf("%.7f",as.numeric(S0)), collapse = ", ")
-                  line_eS0 <- paste(sprintf("%.7f",as.numeric(eS0)), collapse = ", ")
-                  updateTextInput(session, "S0", value = line_S0)
-                  updateTextInput(session, "eS0", value = line_eS0)
                 }
               }
               apriori[[label_sin]] <- as.numeric(S0[i])
@@ -6865,6 +6861,10 @@ server <- function(input,output,session) {
               showNotification("At least one of the input sinusoidal periods is out of the data bounds and has been neglected.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
             }
           }
+          line_S0 <- paste(sprintf("%.7f",as.numeric(S0)), collapse = ", ")
+          line_eS0 <- paste(sprintf("%.7f",as.numeric(eS0)), collapse = ", ")
+          updateTextInput(session, "S0", value = line_S0)
+          updateTextInput(session, "eS0", value = line_eS0)
         }
       }
       # * Offset model ####
