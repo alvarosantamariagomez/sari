@@ -4851,6 +4851,7 @@ server <- function(input,output,session) {
           shinyjs::delay(100, disable("format2"))
         } else {
           enable("format2")
+          enable("euler")
         }
         enable("units")
         enable("log")
@@ -4878,9 +4879,6 @@ server <- function(input,output,session) {
           disable("sameScale")
           disable("same_axis")
         }
-        if (input$format < 4) {
-          enable("euler")
-        }
         if (!isTruthy(input$euler)) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
         }
@@ -4904,6 +4902,7 @@ server <- function(input,output,session) {
         if (isTruthy(obs())) {
           disable("plot")
           disable("series")
+          disable("format")
           enable("average")
           enable("loadSARI")
           enable("midas")
@@ -5172,6 +5171,7 @@ server <- function(input,output,session) {
           disable("spectrumFilterRes")
           enable("plot")
           enable("series")
+          enable("format")
           disable("average")
         }
       } else {
@@ -5432,6 +5432,7 @@ server <- function(input,output,session) {
   # Observe format 1D ####
   observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(obs())
+    obs(NULL)
     data <- digest()
     obs(data)
     if (!isTruthy(input$remove3D)) {
@@ -5469,6 +5470,7 @@ server <- function(input,output,session) {
   # Observe new series format ####
   observeEvent(c(input$separator, input$separator2, input$format, input$format2, input$units, input$eulerType, input$neuenu), {
     req(obs())
+    obs(NULL)
     data <- digest()
     obs(data)
   }, priority = 6)
@@ -5499,6 +5501,7 @@ server <- function(input,output,session) {
     trans$pattern <- NULL
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
     updateTextInput(session, "short_period", value = "")
+    obs(NULL)
     data <- digest()
     obs(data)
     info$points <- length(data$x[!is.na(data$y1)])
