@@ -1812,7 +1812,8 @@ server <- function(input,output,session) {
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
-                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width))
+                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
+                         tunits = NULL)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -2501,6 +2502,13 @@ server <- function(input,output,session) {
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
+    if (input$units == 1) {
+      info$tunits <- "days"
+    } else if (input$units == 2) {
+      info$tunits <- "weeks"
+    } else if (input$units == 3) {
+      info$tunits <- "years"
+    }
     trans$ordinate <- median(trans$y)
     trans$tol <- min(diff(isolate(trans$x),1)) / 1.5
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
@@ -6803,7 +6811,7 @@ server <- function(input,output,session) {
             }
             if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
               if (f < 1/abs(info$rangex)) {
-                showNotification("At least one of the input sinusoidal periods is larger than the series length. Fitting results may be unreliable.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
               }
               trans$run <- T
               label_sin <- paste("S",i,sep = "")
