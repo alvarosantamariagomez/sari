@@ -7906,7 +7906,7 @@ server <- function(input,output,session) {
       column <- column + 1
     }
     colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
-    write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T)
+    suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
   }
   #Based on www.datall-analyse.nl/R/UKF.R
   UKF <- function(y, mod, GGfunction, FFfunction, kappa=0, sqrtMethod="Cholesky", logLik=FALSE, simplify=FALSE) {
