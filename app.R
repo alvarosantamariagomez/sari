@@ -5391,7 +5391,7 @@ server <- function(input,output,session) {
       req(obs())
       info$tab <- input$tab
       if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                            "   Sampling: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
+                            "   Units: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     }
@@ -5691,7 +5691,7 @@ server <- function(input,output,session) {
   observeEvent(input$plot, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                          "   Sampling: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
+                          "   Units: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                           file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     info$input_warn <- 0
