@@ -1979,19 +1979,19 @@ server <- function(input,output,session) {
   
   # Debouncers for reactive inputs ####
   reactive({
-    inputs$ObsError <- as.numeric(trimws(input$ObsError, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$ObsError <- suppressWarnings(as.numeric(trimws(input$ObsError, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
   
   reactive({
-    inputs$thresholdRes <- as.numeric(trimws(input$thresholdRes, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$thresholdRes <- suppressWarnings(as.numeric(trimws(input$thresholdRes, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$thresholdResN <- as.numeric(trimws(input$thresholdResN, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$thresholdResN <- suppressWarnings(as.numeric(trimws(input$thresholdResN, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$trendRef <- as.numeric(trimws(input$trendRef, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$trendRef <- suppressWarnings(as.numeric(trimws(input$trendRef, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
@@ -1999,7 +1999,7 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$periodRef <- as.numeric(trimws(input$periodRef, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$periodRef <- suppressWarnings(as.numeric(trimws(input$periodRef, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
@@ -2047,127 +2047,127 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$PolyRef <- as.numeric(trimws(input$PolyRef, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$PolyRef <- suppressWarnings(as.numeric(trimws(input$PolyRef, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$PolyCoef <- as.numeric(trimws(input$PolyCoef, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$PolyCoef <- suppressWarnings((trimws(input$PolyCoef, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$ofac <- as.numeric(trimws(input$ofac, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$ofac <- suppressWarnings(as.numeric(trimws(input$ofac, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$long_period <- as.numeric(trimws(input$long_period, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$long_period <- suppressWarnings(as.numeric(trimws(input$long_period, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$short_period <- as.numeric(trimws(input$short_period, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$short_period <- suppressWarnings(as.numeric(trimws(input$short_period, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$low <- as.numeric(trimws(input$low, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$low <- suppressWarnings(as.numeric(trimws(input$low, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$high <- as.numeric(trimws(input$high, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$high <- suppressWarnings(as.numeric(trimws(input$high, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$step <- as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$step <- suppressWarnings(as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_wavelet <- as.numeric(trimws(input$min_wavelet, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_wavelet <- suppressWarnings(as.numeric(trimws(input$min_wavelet, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_wavelet <- as.numeric(trimws(input$max_wavelet, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_wavelet <- suppressWarnings(as.numeric(trimws(input$max_wavelet, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$res_wavelet <- as.numeric(trimws(input$res_wavelet, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$res_wavelet <- suppressWarnings(as.numeric(trimws(input$res_wavelet, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$loc_wavelet <- as.numeric(trimws(input$loc_wavelet, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$loc_wavelet <- suppressWarnings(as.numeric(trimws(input$loc_wavelet, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$verif_white <- as.numeric(trimws(input$verif_white, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$verif_white <- suppressWarnings(as.numeric(trimws(input$verif_white, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$verif_pl <- as.numeric(trimws(input$verif_pl, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$verif_pl <- suppressWarnings(as.numeric(trimws(input$verif_pl, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$verif_k <- as.numeric(trimws(input$verif_k, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$verif_k <- suppressWarnings(as.numeric(trimws(input$verif_k, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_white <- as.numeric(trimws(input$max_white, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_white <- suppressWarnings(as.numeric(trimws(input$max_white, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_white <- as.numeric(trimws(input$min_white, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_white <- suppressWarnings(as.numeric(trimws(input$min_white, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_fl <- as.numeric(trimws(input$min_fl, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_fl <- suppressWarnings(as.numeric(trimws(input$min_fl, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_pl <- as.numeric(trimws(input$min_pl, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_pl <- suppressWarnings(as.numeric(trimws(input$min_pl, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_fl <- as.numeric(trimws(input$max_fl, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_fl <- suppressWarnings(as.numeric(trimws(input$max_fl, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_pl <- as.numeric(trimws(input$max_pl, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_pl <- suppressWarnings(as.numeric(trimws(input$max_pl, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_rw <-  as.numeric(trimws(input$min_rw, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_rw <-  suppressWarnings(as.numeric(trimws(input$min_rw, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_k <-  as.numeric(trimws(input$min_k, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_k <-  suppressWarnings(as.numeric(trimws(input$min_k, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_rw <-  as.numeric(trimws(input$max_rw, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_rw <-  suppressWarnings(as.numeric(trimws(input$max_rw, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_k <-  as.numeric(trimws(input$max_k, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_k <-  suppressWarnings(as.numeric(trimws(input$max_k, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$waveformPeriod <-  as.numeric(trimws(input$waveformPeriod, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$waveformPeriod <-  suppressWarnings(as.numeric(trimws(input$waveformPeriod, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$min_optirange <-  as.numeric(trimws(input$min_optirange, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$min_optirange <-  suppressWarnings(as.numeric(trimws(input$min_optirange, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$max_optirange <-  as.numeric(trimws(input$max_optirange, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$max_optirange <-  suppressWarnings(as.numeric(trimws(input$max_optirange, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$epoch <-  as.numeric(trimws(input$epoch, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$epoch <-  suppressWarnings(as.numeric(trimws(input$epoch, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$variable <-  as.numeric(trimws(input$variable, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$variable <-  suppressWarnings(as.numeric(trimws(input$variable, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$errorBar <-  as.numeric(trimws(input$errorBar, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$errorBar <-  suppressWarnings(as.numeric(trimws(input$errorBar, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
@@ -2175,59 +2175,59 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$epoch2 <-  as.numeric(trimws(input$epoch2, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$epoch2 <-  suppressWarnings(as.numeric(trimws(input$epoch2, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$variable2 <-  as.numeric(trimws(input$variable2, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$variable2 <-  suppressWarnings(as.numeric(trimws(input$variable2, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$errorBar2 <-  as.numeric(trimws(input$errorBar2, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$errorBar2 <-  suppressWarnings(as.numeric(trimws(input$errorBar2, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$station_x <- as.numeric(trimws(input$station_x, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$station_x <- suppressWarnings(as.numeric(trimws(input$station_x, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$station_y <- as.numeric(trimws(input$station_y, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$station_y <- suppressWarnings(as.numeric(trimws(input$station_y, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$station_z <- as.numeric(trimws(input$station_z, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$station_z <- suppressWarnings(as.numeric(trimws(input$station_z, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$station_lat <- as.numeric(trimws(input$station_lat, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$station_lat <- suppressWarnings(as.numeric(trimws(input$station_lat, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$station_lon <- as.numeric(trimws(input$station_lon, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$station_lon <- suppressWarnings(as.numeric(trimws(input$station_lon, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$pole_x <- as.numeric(trimws(input$pole_x, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$pole_x <- suppressWarnings(as.numeric(trimws(input$pole_x, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$pole_y <- as.numeric(trimws(input$pole_y, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$pole_y <- suppressWarnings(as.numeric(trimws(input$pole_y, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$pole_z <- as.numeric(trimws(input$pole_z, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$pole_z <- suppressWarnings(as.numeric(trimws(input$pole_z, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$pole_lat <- as.numeric(trimws(input$pole_lat, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$pole_lat <- suppressWarnings(as.numeric(trimws(input$pole_lat, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$pole_lon <- as.numeric(trimws(input$pole_lon, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$pole_lon <- suppressWarnings(as.numeric(trimws(input$pole_lon, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$pole_rot <- as.numeric(trimws(input$pole_rot, which = "both", whitespace = "[ \t\r\n]"))
+    inputs$pole_rot <- suppressWarnings(as.numeric(trimws(input$pole_rot, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
   
   # Update data ####
@@ -3080,8 +3080,8 @@ server <- function(input,output,session) {
                   if (isTruthy(amp_err) && isTruthy(phase_err)) {
                     info_out <- c(info_out, amp, amp_err, phase, phase_err)
                   } else {
-                    if (messages > 2) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
-                    showNotification(paste0("Unable to reconstruct the amplitude and/or phase error from the sine and cosine factors of sinusoid ",ss,". Check the input sinusoidal parameters."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                    if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
+                    showNotification(paste0("Unable to compute the amplitude and/or phase error from the sine and cosine factors of sinusoid ",ss,". Check the input sinusoidal parameters or the time series length and its time units."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
                     ss <- ss - 1
                   }
                 }
