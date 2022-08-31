@@ -1878,19 +1878,6 @@ server <- function(input,output,session) {
         tags$h3(style = "color: blue; text-align: center;", "https://alvarosg.shinyapps.io/sari")
       ))
     } else {
-      if (isTruthy(input$tactile)) {
-        if (input$tactile > 0) {
-          if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
-          showModal(modalDialog(
-            title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
-            size = "m",
-            easyClose = T,
-            fade = F,
-            tags$h3(style = "color: black; font-weight: bold; text-align: center;", "It is strongly discouraged to use the touchscreen with SARI."),
-            tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Please, consider using the mouse instead.")
-          ))
-        }
-      }
       if (local) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
@@ -1902,6 +1889,19 @@ server <- function(input,output,session) {
         if (isTRUE(welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "message", session = getDefaultReactiveDomain())
           if (messages > 2) cat(file = stderr(), "Warning", "\n")
+          if (isTruthy(input$tactile)) {
+            if (input$tactile > 0) {
+              if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+              showModal(modalDialog(
+                title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
+                size = "m",
+                easyClose = T,
+                fade = F,
+                tags$h3(style = "color: black; font-weight: bold; text-align: center;", "It is strongly discouraged to use the touchscreen with SARI."),
+                tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Please, consider using the mouse instead.")
+              ))
+            }
+          }
           welcome <- F
         }
       }
