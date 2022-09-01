@@ -1866,6 +1866,7 @@ server <- function(input,output,session) {
       shinyjs::hide(selector = "#tab li a[data-value=1]")
       shinyjs::hide(selector = "#tab li a[data-value=2]")
       shinyjs::hide(selector = "#tab li a[data-value=3]")
+      shinyjs::hide(selector = "#tab li a[data-value=6]")
       updateNavbarPage(session, "tab", selected = "4")
       shinyjs::hide(selector = "#tab li a[data-value=4]")
       showModal(modalDialog(
@@ -5350,26 +5351,33 @@ server <- function(input,output,session) {
   }, priority = 100)
   
   # Observe download ####
-  observeEvent(input$tab, {
-    if (input$tab == 5) {
-      downloadHandler(
-        filename = function() {
-          if (input$format != 4) {
-            paste0(file$primary$name, "_", input$tab, ".sari")
-          } else {
-            paste0(file$primary$name, ".sari")
-          }
-        },
-        content = function(file) {
-          collect(file)
-        }
-      )
-      updateTabsetPanel(session, input$tab, selected = info$tab)
-    }
-    output$offsetFound <- renderUI({
-      NULL
-    })
-  }, priority = 8)
+#   observeEvent(input$tab, {
+#     if (input$tab == 5) {
+#       downloadHandler(
+#         filename = function() {
+#           if (input$format != 4) {
+#             paste0(file$primary$name, "_", input$tab, ".sari")
+#           } else {
+#             paste0(file$primary$name, ".sari")
+#           }
+#         },
+#         content = function(file) {
+#           collect(file)
+#         }
+#       )
+#       updateTabsetPanel(session, input$tab, selected = info$tab)
+#     } else if (input$tab == 7) {
+#       if (input$format != 4) {
+#         filename <- paste0(file$primary$name, "_", input$tab, ".png")
+#       } else {
+#         filename <- paste0(file$primary$name, ".png")
+#       }
+#       screenshot(selector = "body", filename = filename, scale = 1, timer = 0, download = T)
+#     }
+#     output$offsetFound <- renderUI({
+#       NULL
+#     })
+#   }, priority = 8)
   
   # Observe sitelog ####
   observeEvent(input$log, {
