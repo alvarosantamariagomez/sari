@@ -6870,16 +6870,20 @@ server <- function(input,output,session) {
               }
               nouns <- c(nouns, label_cos)
               if (input$fitType == 2) {
-                if (input$SineCosine == 1) {
-                  processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
-                  processNoise <- c(processNoise, 0)
-                } else if (input$SineCosine == 2) {
-                  processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
-                  processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                if (nchar(sigamp[i]) > 0 && !is.na(as.numeric(sigamp[i]))) {
+                  if (input$SineCosine == 1) {
+                    processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                    processNoise <- c(processNoise, 0)
+                  } else if (input$SineCosine == 2) {
+                    processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                    processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                  }
+                } else {
+                  showNotification(paste("The process noise value for the sinusoid ",i," is missing or is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
                 }
               }
             } else {
-              showNotification("At least one of the input sinusoidal periods is out of the data bounds and has been neglected.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
             }
           }
           line_S0 <- paste(sprintf("%.7f",as.numeric(S0)), collapse = ", ")
