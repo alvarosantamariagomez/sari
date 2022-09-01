@@ -291,6 +291,12 @@ After finishing a series and before uploading a new one, it is mandatory to `res
 
 Some features require intensive and time-consuming processing (*noise analysis*, *automatic offset detection*, *wavelet*). In order to save server resources, after 15 min without user interaction, the server will kill the connection and go to sleep, and may even dream of electric sheep!  
 
+<b><span style="color: red;">NEW FEATURE:</span></b> the user can download the full SARI interface from the web browser (usually by pressing Ctrl+s) into a static HTML file together with the corresponding web files (separate directory with a similar name). The downloaded file(s) represents a screenshot of the SARI session with the different plots and all the input parameters that were used to make the plots, which is very convenient for sharing a specific analysis, making reports or marking assignments. The screenshot allows selecting & copying the input values, so the same analysis can be replicated.  
+Adding the possibility to download a single PNG file is currently being considered. This would make even easier to share the SARI analysis.  
+Note that in order to open the downloaded HTML file in a web browser, it needs to be modified first. A BASH script called `SARIwebpage.sh` and available [here](https://github.com/alvarosantamariagomez/sari/blob/main/SARIwebpage.sh) does this automatically.  
+Note: when using Microsoft Edge, all the input parameters may be deleted in the downloaded screenshot. This feature works well in Mozilla Firefox.  
+
+
 -----------------
 
 <p id="example-use">
