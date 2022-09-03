@@ -114,6 +114,7 @@ css <- '
 .disabled {
 background: default !important;
 cursor: not-allowed !important;
+pointer-events: none; 
 color: gray !important;
 }'
 
@@ -1420,9 +1421,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       tableOutput('debug')
                                     ),
                                     navbarPage(
-                                      title = "",
-                                      windowTitle = version,
-                                      id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
+                                      title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
                                       tabPanel(div(style = "display: inline-block; font-size: 40px; color: black", "SARI"), value = 0, id = "SARI"),
                                       tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
                                                withMathJax(includeMarkdown("www/about.md"))
@@ -1853,6 +1852,7 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     if (messages > 2) cat(file = stderr(), paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio), "\n")
+    updateNavbarPage(session, inputId = "tab", selected = "1")
     req(input$size)
     toggleClass( # disabling clicking on SARI name (panic button)
       class = "disabled",
