@@ -1816,7 +1816,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F)
+                         run = F, regular = NULL)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -2468,6 +2468,7 @@ server <- function(input,output,session) {
     }
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
+    info$regular <- (median(diff(trans$x))/info$sampling < 1.25)
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
     trans$ordinate <- median(trans$y)
     trans$tol <- min(diff(isolate(trans$x),1)) / 1.5
@@ -3149,6 +3150,9 @@ server <- function(input,output,session) {
             updateTextInput(session, "ObsError", value = sigmaR)
             sigmaR <- rep(sigmaR, length(trans$y))
           }
+        }
+        if (!isTruthy(info$regular)) {
+          showNotification("The series is not evenly sampled. The KF process noise will not change after a data gap.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
         #Measurement function
         FFfunction <- function(x,k) {
@@ -7923,7 +7927,7 @@ server <- function(input,output,session) {
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
       ## This implies the series must be sampled regularly with data gaps
       gapFactor <- 1
-      if (i > 1) {
+      if (i > 1 && info$regular == T) {
         gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
       }
       #compute sigma points
@@ -8100,7 +8104,7 @@ server <- function(input,output,session) {
       Dv.inv[abs(Dv.inv) == Inf] <- 0
       sqrtVinv <- Dv.inv * svdV$vt
       gapFactor <- 1
-      if (i > 1) {
+      if (i > 1 && info$regular == T) {
         gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
       }
       svdW <- La.svd(mod$W * gapFactor, nu = 0)
@@ -8228,7 +8232,7 @@ server <- function(input,output,session) {
       for (i in n:1) {
         
         gapFactor <- 1
-        if (i > 1) {
+        if (i > 1 && info$regular == T) {
           gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
         }
         svdW <- La.svd(mod$W * gapFactor, nu = 0)
