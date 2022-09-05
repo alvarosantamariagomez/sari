@@ -1815,7 +1815,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         tunits = NULL)
+                         run = F, regular = NULL, tunits = NULL)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -1833,7 +1833,7 @@ server <- function(input,output,session) {
                           sye = NULL, z = NULL, sz = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL, 
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL, 
                           midas_sig = NULL, midas_all = NULL, tol = NULL, midas_vel2 = NULL, midas_sig2 = NULL, 
-                          run = F, mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL, 
+                          mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL, 
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL, 
                           model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL)
@@ -1850,7 +1850,7 @@ server <- function(input,output,session) {
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   welcome <- F # welcoming message for a remote connection
   debug <- F # saving the environment 
-  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
+  messages <- 4 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
   
   # Welcome ####
   observe({
@@ -1939,7 +1939,7 @@ server <- function(input,output,session) {
   outputOptions(output, "series2", suspendWhenHidden = F)
   
   output$run <- reactive({
-    return(isTRUE(trans$run))
+    return(isTRUE(info$run))
   })
   outputOptions(output, "run", suspendWhenHidden = F)
   
@@ -2298,9 +2298,6 @@ server <- function(input,output,session) {
           trans$res <- trans$res0[values$used_all_kf]
           trans$kalman <- trans$kalman0[values$used_all_kf]
           trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf]
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0[values$used_all_kf]
-          }
           if (length(trans$mod) != length(trans$mod0)) {
             showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
           }
@@ -2309,18 +2306,12 @@ server <- function(input,output,session) {
           trans$res <- trans$res0[values$used_all]
           trans$kalman <- trans$kalman0[values$used_all]
           trans$kalman_unc <- trans$kalman_unc0[values$used_all]
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0[values$used_all]
-          }
         } else {
-          trans$run <- F
+          info$run <- F
           trans$mod <- trans$mod0 <- NULL
           trans$res <- trans$res0 <- NULL
           trans$kalman <- trans$kalman0 <- NULL
           trans$kalman_unc <- trans$kalman_unc0 <- NULL
-          if (length(trans$rate_inst) > 0) {
-            trans$rate_inst <- trans$rate_inst0 <- NULL
-          }
         }
       }
     } else {
@@ -2344,9 +2335,6 @@ server <- function(input,output,session) {
             trans$res <- trans$res0[values$used_kf1]
             trans$kalman <- trans$kalman0[values$used_kf1]
             trans$kalman_unc <- trans$kalman_unc0[values$used_kf1]
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0[values$used_kf1]
-            }
             if (length(trans$mod) != length(trans$mod0)) {
               showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
             }
@@ -2355,18 +2343,12 @@ server <- function(input,output,session) {
             trans$res <- trans$res0[values$used1]
             trans$kalman <- trans$kalman0[values$used1]
             trans$kalman_unc <- trans$kalman_unc0[values$used1]
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0[values$used1]
-            }
           } else {
-            trans$run <- F
+            info$run <- F
             trans$mod <- trans$mod0 <- NULL
             trans$res <- trans$res0 <- NULL
             trans$kalman <- trans$kalman0 <- NULL
             trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0 <- NULL
-            }
           }
         }
       } else if (input$tab == 2) {
@@ -2389,9 +2371,6 @@ server <- function(input,output,session) {
             trans$res <- trans$res0[values$used_kf2]
             trans$kalman <- trans$kalman0[values$used_kf2]
             trans$kalman_unc <- trans$kalman_unc0[values$used_kf2]
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0[values$used_kf2]
-            }
             if (length(trans$mod) != length(trans$mod0)) {
               showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
             }
@@ -2400,18 +2379,12 @@ server <- function(input,output,session) {
             trans$res <- trans$res0[values$used2]
             trans$kalman <- trans$kalman0[values$used2]
             trans$kalman_unc <- trans$kalman_unc0[values$used2]
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0[values$used2]
-            }
           } else {
-            trans$run <- F
+            info$run <- F
             trans$mod <- trans$mod0 <- NULL
             trans$res <- trans$res0 <- NULL
             trans$kalman <- trans$kalman0 <- NULL
             trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0 <- NULL
-            }
           }
         }
       } else if (input$tab == 3) {
@@ -2434,9 +2407,6 @@ server <- function(input,output,session) {
             trans$res <- trans$res0[values$used_kf3]
             trans$kalman <- trans$kalman0[values$used_kf3]
             trans$kalman_unc <- trans$kalman_unc0[values$used_kf3]
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0[values$used_kf3]
-            }
             if (length(trans$mod) != length(trans$mod0)) {
               showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
             }
@@ -2445,18 +2415,12 @@ server <- function(input,output,session) {
             trans$res <- trans$res0[values$used3]
             trans$kalman <- trans$kalman0[values$used3]
             trans$kalman_unc <- trans$kalman_unc0[values$used3]
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0[values$used3]
-            }
           } else {
-            trans$run <- F
+            info$run <- F
             trans$mod <- trans$mod0 <- NULL
             trans$res <- trans$res0 <- NULL
             trans$kalman <- trans$kalman0 <- NULL
             trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            if (length(trans$rate_inst) > 0) {
-              trans$rate_inst <- trans$rate_inst0 <- NULL
-            }
           }
         }
       }
@@ -2505,6 +2469,7 @@ server <- function(input,output,session) {
     }
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
+    info$regular <- (median(diff(trans$x))/info$sampling < 1.25)
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
     if (input$units == 1) {
       info$tunits <- "days"
@@ -2538,9 +2503,9 @@ server <- function(input,output,session) {
       } else if (sum(grepl("^# Model", comments, ignore.case = F, perl = T)) < 1) {
         showNotification("No model found in the uploaded file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
       } else {
-        if (sum(grepl("^# Model .KF", comments, ignore.case = F, perl = T)) > 0) {
+        if (sum(grepl("^# Model .*KF", comments, ignore.case = F, perl = T)) > 0) {
           #This is a KF fit
-          model <- grep("^# Model .KF", comments, ignore.case = F, perl = T, value = T)
+          model <- grep("^# Model .*KF", comments, ignore.case = F, perl = T, value = T)
           if (nchar(model) > 18) {
             text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
             aprioris <- grep("^# A priori: ", comments, ignore.case = F, perl = T, value = T)
@@ -3023,8 +2988,8 @@ server <- function(input,output,session) {
         }
         weights <- 1/(sy^2)
         m <- model(x,y)
-        if (isTruthy(trans$run) && isTruthy(m)) {
-          trans$run <- F
+        if (isTruthy(info$run) && isTruthy(m)) {
+          info$run <- F
           trans$mle <- F
           trans$verif <- NULL
           if (messages > 0) cat(file = stderr(), "LS fit", "\n")
@@ -3045,7 +3010,7 @@ server <- function(input,output,session) {
             fit <- NULL
             fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
             if (!inherits(fit,"try-error") && !is.null(fit)) {
-              trans$run <- T
+              info$run <- T
               jacobian <- fit$m$gradient()/sqrt(weights)
               synthesis <- summary(fit,correlation = T, signif.stars = T)
               synthesis$coefficients[1] <- coef(synthesis)[1] + trans$ordinate
@@ -3094,6 +3059,7 @@ server <- function(input,output,session) {
                   dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Amplitude","Amp. Error","Phase (rad)","Phase Error (rad)"))
                 }
               }
+              trans$equation <- sub("y ~","Model =",m$model)
               trans$results <- synthesis
               trans$LScoefs <- synthesis$coefficients
               trans$res <- res
@@ -3146,7 +3112,7 @@ server <- function(input,output,session) {
   
   # KF fit ####
   observeEvent(input$runKF, {
-    req(input$model, trans$x, trans$y, trans$ordinate)
+    req(input$model, trans$x, trans$y)
     output$offsetFound <- renderUI({
       NULL
     })
@@ -3155,7 +3121,7 @@ server <- function(input,output,session) {
       trans$verif <- NULL
       withBusyIndicatorServer("runKF", {
         x <- trans$x
-        y <- trans$y - trans$ordinate
+        y <- trans$y
         if (isTruthy(input$correct_waveform)) {
           if (length(trans$pattern) > 0) {
             y <- y - trans$pattern
@@ -3172,18 +3138,10 @@ server <- function(input,output,session) {
           showNotification("Not enough model components to run the KF. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           req(info$stop)
         }
-        model <- m$model
-        model_kf <- m$model_kf
-        apriori <- m$apriori
-        e <- matrix(as.numeric(unlist(m$apriori)), nrow = 1, ncol = length(m$apriori))
-        apriori[1] <- sapply(1:1, function(l) eval(parse(text = m$model_kf)))
-        nouns <- m$nouns
-        processNoise <- m$processNoise
-        error <- m$error
-        req(model, model_kf, apriori, nouns, processNoise, error)
-        if (messages > 1) cat(file = stderr(), model, "\n")
-        apriori <- unlist(as.numeric(apriori),use.names = F)
-        unc_ini <- unlist(as.numeric(error)^2, use.names = F)
+        req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
+        if (messages > 1) cat(file = stderr(), m$model, "\n")
+        apriori <- as.numeric(m$apriori)
+        unc_ini <- as.numeric(m$error)^2
         if (isTruthy(input$sigmas)) {
           if (isTruthy(input$ObsError)) {
             sigmaR <- as.numeric(input$ObsError) * sy / median(sy)
@@ -3201,19 +3159,35 @@ server <- function(input,output,session) {
             sigmaR <- rep(sigmaR, length(trans$y))
           }
         }
+        if (!isTruthy(info$regular)) {
+          showNotification("The series is not evenly sampled. The KF process noise will not change after a data gap.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        }
         #Measurement function
-        FFfunction <- function(x, k) {
-          x <- matrix(x, nrow = 1, ncol = length(x))
-          k <- matrix(k, nrow = 1, ncol = 1)
-          e <- x
-          x <- trans$x[k]
-          l <- 1
-          obs <- eval(parse(text = model_kf))
+        FFfunction <- function(x,k) {
+          e <- matrix(0, nrow = k, ncol = length(x))
+          e[k,] <- x
+          x <- trans$x
+          if (k == 1) {
+            obs <- e[1,1]
+          } else {
+            obs <- eval(parse(text = model_kf)) 
+          }
           c(obs)
         }
         #State transition
-        GGfunction <- function(x, k) {
-          c(x)
+        if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+          model_kf <- m$model_kf_inst
+          GGfunction <- function(x, k) {
+            if (k != 1) {
+              x[1] <- x[1] + x[2] * (trans$x[k] - trans$x[k - 1])
+            }
+            c(x)
+          }
+        } else {
+          model_kf <- m$model_kf_mean
+          GGfunction <- function(x, k) {
+            c(x)
+          }
         }
         start.time <- Sys.time()
         llikss <- function(x, data) {
@@ -3223,7 +3197,7 @@ server <- function(input,output,session) {
             m0 = apriori,
             C0 = diag(unc_ini),
             V = exp(x[1]),
-            W = diag(processNoise))
+            W = diag(m$processNoise))
           UKF(y = data, mod = mod, FFfunction = FFfunction, GGfunction = GGfunction, simplify = T, logLik = T)$logLik
         }
         if (input$errorm) {
@@ -3259,11 +3233,11 @@ server <- function(input,output,session) {
             showNotification("The input measurement error bounds are not valid. Skipping optimization.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
-        ex1 <- list(m0 = apriori, C0 = diag(unc_ini), V = sigmaR^2, W = diag(processNoise))
+        ex1 <- list(m0 = apriori, C0 = diag(unc_ini), V = sigmaR^2, W = diag(m$processNoise))
         kfs <- NULL
         if (any(is.na(ex1$C0))) {
           showNotification("Missing information required on the a priori state to run the Kalman filter. Check the input values", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          trans$run <- F
+          info$run <- F
           req(info$stop)
         }
         # EKF
@@ -3288,14 +3262,14 @@ server <- function(input,output,session) {
               trans$results <- NULL
               trans$res <- NULL
               trans$mod <- NULL
-              trans$run <- F
+              info$run <- F
               showNotification("Unable to run the EKF smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$results <- NULL
             trans$res <- NULL
             trans$mod <- NULL
-            trans$run <- F
+            info$run <- F
             showNotification("Unable to fit the EKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         # UKF
@@ -3319,56 +3293,59 @@ server <- function(input,output,session) {
               trans$results <- NULL
               trans$res <- NULL
               trans$mod <- NULL
-              trans$run <- F
+              info$run <- F
               showNotification("Unable to run the UKF smoother. The error covariances of the initial state may be zero or too large.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$results <- NULL
             trans$res <- NULL
             trans$mod <- NULL
-            trans$run <- F
+            info$run <- F
             showNotification("Unable to fit the UKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
         # Common EKF & UKF
         if (isTruthy(kfs$s)) {
-          trans$run <- T
+          info$run <- T
           e <- kfs$s[2:nrow(kfs$s),]
-          mod <- sapply(1:length(x), function(l) eval(parse(text = model_kf)))
-          res <- y - mod
-          mod <- mod + trans$ordinate
-          if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
-            mod <- mod + trans$pattern
+          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) { 
+            trans$mod <- trans$mod0 <- sapply(1:length(x), function(k) if (k == 1) { e[1,1] } else { eval(parse(text = sub("+ e[k,2]*(x[k] - x[k-1])", "", model_kf, fixed = T))) })
+          } else {
+            trans$mod <- trans$mod0 <- sapply(1:length(x), function(k) eval(parse(text = model_kf)) )
           }
-          m$apriori[1] <- unlist(m$apriori)[1] + trans$ordinate
+          trans$res <- trans$res0 <- y - trans$mod
+          if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
+            trans$mod <- trans$mod + trans$pattern
+          }
+          # Computing time-variable mean rate
+          # if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+          #   mean_rate <- lapply(1:length(x), function(i) coefficients(summary(lm(e[1:i,2]~1,weights = 1/kfs_unc[1:i,1])))[1:2])
+          #   mean_rate[[1]][2] <- kfs_unc[1,2]
+          #   e <- cbind(e,sapply(mean_rate, "[", 1))
+          #   colnames(e) <- c(m$nouns, "MeanRate")
+          #   kfs_unc <- cbind(kfs_unc,sapply(mean_rate, "[", 2))
+          #   colnames(kfs_unc) <- c(m$nouns, "MeanRate")
+          # } else {
+            colnames(e) <- m$nouns
+            colnames(kfs_unc) <- m$nouns
+          # }
+          trans$kalman <- trans$kalman0 <- e
+          trans$kalman_unc <- trans$kalman_unc0 <- sqrt(kfs_unc)
+          trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
           trans$kalman_info <- m
-          trans$res <- trans$res0 <- res
-          trans$mod <- trans$mod0 <- mod
+          trans$equation <- sub("y ~","Model =",m$model)
           trans$x0_kf <- x
           if (isTruthy(input$remove3D)) {
-            values$used_all_kf <- rep(T, length(res))
+            values$used_all_kf <- rep(T, length(x))
           } else {
             if (input$tab == 1 || is.null(input$tab)) {
-              values$used_kf1 <- rep(T, length(res))
+              values$used_kf1 <- rep(T, length(x))
             } else if (input$tab == 2) {
-              values$used_kf2 <- rep(T, length(res))
+              values$used_kf2 <- rep(T, length(x))
             } else if (input$tab == 3) {
-              values$used_kf3 <- rep(T, length(res))
+              values$used_kf3 <- rep(T, length(x))
             }
           }
-          trans$equation <- model
-          colnames(e) <- nouns
-          trans$kalman <- e
-          trans$kalman[,1] <- trans$kalman[,1] + trans$ordinate
-          trans$kalman0 <- trans$kalman
-          kfs_unc <- sqrt(kfs_unc)
-          colnames(kfs_unc) <- nouns
-          trans$kalman_unc <- trans$kalman_unc0 <- kfs_unc
-          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-            trans$rate_inst <- trans$rate_inst0 <- unname(as.data.frame(c(e[1,2], diff(mod)/diff(x))))
-            names(trans$rate_inst) <- "Rate_inst"
-          }
-          trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
           if (isTruthy(inputs$waveformPeriod)) {
             save_value <- inputs$waveformPeriod
             updateTextInput(session, "waveformPeriod", value = "")
@@ -3384,7 +3361,7 @@ server <- function(input,output,session) {
   
   # Plot residuals ####
   output$res1 <- output$res2 <- output$res3 <- renderPlot({
-    req(obs(), trans$res, trans$x, trans$sy, trans$run)
+    req(obs(), trans$res, trans$x, trans$sy, info$run)
     if (messages > 0) cat(file = stderr(), "Plotting residual series", "\n")
     if (!is.null(trans$filter)) {
       title <- "Obs-Model residuals & Filter-Model residuals (blue)"
@@ -3539,12 +3516,13 @@ server <- function(input,output,session) {
         cat(trans$midas_vel2," +/- ",trans$midas_sig2,"\n\n")
       }
     }
-    if (isTruthy(trans$run) && length(trans$results) > 0) {
+    if (isTruthy(info$run) && length(trans$results) > 0) {
       if (input$fitType == 2) {
         cat("KF estimate")
         cat(paste0("\n",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", trans$equation, perl = T)))))))), "\n\n")
       } else if (input$fitType == 1) {
         cat("LS estimate") 
+        trans$results$formula <- sub("y ~","Model =",trans$results$formula)
       }
       options(max.print = 1000)
       if (isTruthy(trans$results$sinusoidales)) {
@@ -5039,7 +5017,7 @@ server <- function(input,output,session) {
             shinyjs::hide(id = "res2", anim = T, animType = "fade", time = 0.5, selector = NULL)
             shinyjs::hide(id = "res3", anim = T, animType = "fade", time = 0.5, selector = NULL)
             disable("mle")
-            trans$run <- F
+            info$run <- F
           }
           if (input$series2filter == 2 && input$fitType == 0) {
             updateRadioButtons(session, inputId = "series2filter", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T)
@@ -5338,10 +5316,9 @@ server <- function(input,output,session) {
     trans$mod <- trans$mod0 <- NULL
     trans$kalman <- trans$kalman0 <- NULL
     trans$kalman_unc <- trans$kalman_unc0 <- NULL
-    trans$rate_inst <- trans$rate_inst0 <- NULL
     trans$equation <- NULL
     trans$mle <- F
-    trans$run <- F
+    info$run <- F
     trans$verif <- NULL
     trans$pattern <- NULL
     trans$names <- NULL
@@ -5411,13 +5388,13 @@ server <- function(input,output,session) {
   # Observe primary series ####
   observeEvent(c(input$series), {
     file$primary <- isolate(input$series)
+    info$run <- NULL
     trans$x <- NULL
     trans$y <- NULL
     trans$sy <- NULL
     trans$xe <- NULL
     trans$ye <- NULL
     trans$sye <- NULL
-    trans$run <- NULL
     trans$res <- NULL
     trans$reserror <- NULL
     trans$results <- NULL
@@ -5425,7 +5402,6 @@ server <- function(input,output,session) {
     trans$filter <- NULL
     trans$filterRes <- NULL
     trans$kalman <- NULL
-    trans$rate_inst <- NULL
     trans$equation <- NULL
     trans$ordinate <- NULL
     trans$midas_vel <- NULL
@@ -5459,7 +5435,6 @@ server <- function(input,output,session) {
       trans$results <- NULL
       trans$mod <- NULL
       trans$kalman <- NULL
-      trans$rate_inst <- NULL
       trans$equation <- NULL
       trans$mle <- F
       trans$verif <- NULL
@@ -5491,13 +5466,12 @@ server <- function(input,output,session) {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Averaging series", "\n")
     if (input$fitType == 2) {
-      trans$run <- NULL
+      info$run <- NULL
       trans$res <- NULL
       trans$reserror <- NULL
       trans$results <- NULL
       trans$mod <- NULL
       trans$kalman <- NULL
-      trans$rate_inst <- NULL
       trans$equation <- NULL
       trans$ordinate <- NULL
       trans$filter <- NULL
@@ -5611,7 +5585,6 @@ server <- function(input,output,session) {
     trans$results <- NULL
     trans$mod <- NULL
     trans$kalman <- NULL
-    trans$rate_inst <- NULL
     trans$equation <- NULL
     trans$midas_vel <- NULL
     trans$midas_all <- NULL
@@ -5666,13 +5639,12 @@ server <- function(input,output,session) {
       # NA
     } else {
       if (messages > 0) cat(file = stderr(), "Deleting model", "\n")
-      trans$run <- F
+      info$run <- F
       trans$res <- NULL
       trans$reserror <- NULL
       trans$results <- NULL
       trans$mod <- NULL
       trans$kalman <- NULL
-      trans$rate_inst <- NULL
       trans$equation <- NULL
       trans$midas_vel <- NULL
       trans$midas_all <- NULL
@@ -6090,7 +6062,7 @@ server <- function(input,output,session) {
     trans$xe <- NULL
     trans$ye <- NULL
     trans$sye <- NULL
-    trans$run <- NULL
+    info$run <- NULL
     trans$res <- NULL
     trans$reserror <- NULL
     trans$results <- NULL
@@ -6098,7 +6070,6 @@ server <- function(input,output,session) {
     trans$filter <- NULL
     trans$filterRes <- NULL
     trans$kalman <- NULL
-    trans$rate_inst <- NULL
     trans$equation <- NULL
     trans$ordinate <- NULL
     trans$offsetEpochs <- NULL
@@ -6470,7 +6441,7 @@ server <- function(input,output,session) {
             showNotification("The number of columns in the input PBO file is less than 24. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
           }
-        } else if (format == 3) { #NGL (on May 19, 2022 3 columns were added to the tenv3 format; before it had only 20 columns)
+        } else if (format == 3) { #NGL (on May 19, 2022: 3 columns were added to the tenv3 format; before it had only 20 columns)
           if (columns < 20) {
             showNotification("The number of columns in the input NGL file is less than 20. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
@@ -6520,7 +6491,6 @@ server <- function(input,output,session) {
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
-        # extracted <- tableAll[,c(16,17,18)]
         extracted <- tableAll[,c(16,17,18,19,20,21)]
         names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
         if (input$units == 1) {
@@ -6666,15 +6636,14 @@ server <- function(input,output,session) {
   }
   model <- function(x,y) {
     isolate({
-      model <- "y ~"
+      model <- model_lm <- "y ~"
       model_kf <- ""
-      model_lm <- "y ~"
       j <- 1
       apriori <- list()
       error <- list()
       nouns <- list()
       processNoise <- 0
-      trans$run <- F
+      info$run <- F
       y_detrend <- NULL
       # * Linear model ####
       if ("Linear" %in% input$model) {
@@ -6692,24 +6661,28 @@ server <- function(input,output,session) {
           }
         }
         text_rate <- sprintf("%f",as.numeric(reft))
-        model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")
+        if (input$fitType == 2 && nchar(input$TrendDev) > 0) {
+          model <- paste(model, paste0("Intercept + Rate*dx"), sep = " ")  
+        } else {
+          model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")        
+        }
         model_lm <- paste(model_lm, "x", sep = " ")
-        model_kf <- paste(model_kf, paste0("e[l,",j,"] + e[l,",j + 1,"]*(x[l]-",text_rate,")"), sep = " ")
+        model_kf_inst <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k] - x[k-1])"), sep = " ")
+        model_kf_mean <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k]-",text_rate,")"), sep = " ")
         j <- j + 2
         if (identical(input$Trend0,character(0)) || is.na(input$Trend0) || input$Trend0 == "" || input$Trend0 == " ") {
-          if (isTruthy(match("Rate", trans$names))) {
-            ap_rate <- trans$LScoefs[match("Rate", trans$names)]
-            sigma_rate <- trans$unc/sqrt(length(trans$x))
-          } else {
+          tenth <- ceiling(length(y)/10)
+          if (input$fitType == 1) {
             fastFit <- lm(y ~ x)
-            if (isTruthy(fastFit)) {
-              ap_rate <- summary(fastFit)$coefficients[2,1]
-              sigma_rate <- summary(fastFit)$coefficients[2,2] * 3
-            } else {
-              tenth <- ceiling(length(y)/10)
-              ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
-              sigma_rate <- ap_rate * 5
-            }
+          } else {
+            fastFit <- try(lm(y[1:tenth]~x[1:tenth]), silent = F)
+          }
+          if (isTruthy(fastFit)) {
+            ap_rate <- summary(fastFit)$coefficients[2,1]
+            sigma_rate <- summary(fastFit)$coefficients[2,2] * 3
+          } else {
+            ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
+            sigma_rate <- ap_rate * 5
           }
           if (input$fitType == 2) {
             updateTextInput(session, "Trend0", value = ap_rate)
@@ -6724,33 +6697,41 @@ server <- function(input,output,session) {
             sigma_rate <- as.numeric(input$eTrend0)  
           }
         }
-        if (identical(input$Intercept0,character(0)) || is.na(input$Intercept0) || input$Intercept0 == "" || input$Intercept0 == " ") {
-          if (isTruthy(match("Intercept", trans$names))) {
-            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate
-            sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
+        if (input$fitType == 1) {
+          y_detrend <- y - (x - reft) * ap_rate
+          ap_intercept <- mean(y_detrend, na.rm = T)
+          sigma_intercept <- sd(y_detrend/sqrt(length(y)), na.rm = T)
+          if (sigma_intercept <= 0) {
+            sigma_intercept <- 1
+          }
+        } else if (input$fitType == 2) {
+          if (identical(input$Intercept0,character(0)) || is.na(input$Intercept0) || input$Intercept0 == "" || input$Intercept0 == " ") {
+            if (isTruthy(match("Intercept", trans$names))) {
+              ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
+              sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
+            } else {
+              ap_intercept <- y[1]
+              sigma_intercept <- info$noise
+            }
+            updateTextInput(session, "Intercept0", value = ap_intercept)
+            updateTextInput(session, "eIntercept0", value = sigma_intercept)
           } else {
-            y_detrend <- y - (x - reft) * ap_rate
-            ap_intercept <- mean(y_detrend, na.rm = T)
-            sigma_intercept <- sd(y_detrend/sqrt(length(y)), na.rm = T)
-            if (sigma_intercept <= 0) {
-              sigma_intercept <- 1
+            ap_intercept <- as.numeric(input$Intercept0)
+            if (input$eIntercept0 == 0) {
+              showNotification("The a priori intercept error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            } else {
+              sigma_intercept <- as.numeric(input$eIntercept0)
             }
           }
-          if (input$fitType == 2) {
-            updateTextInput(session, "Intercept0", value = ap_intercept + trans$ordinate)
-            updateTextInput(session, "eIntercept0", value = sigma_intercept)
-          }
-        } else {
-          ap_intercept <- as.numeric(input$Intercept0) - trans$ordinate
-          if (input$eIntercept0 == 0) {
-            showNotification("The a priori intercept error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            req(info$stop)
-          } else {
-            sigma_intercept <- as.numeric(input$eIntercept0)
-          }
         }
-        if (!is.na(as.numeric(input$TrendDev))) {
-          noise <- as.numeric(input$TrendDev)
+        if (nchar(input$TrendDev) > 0) {
+          if (!is.na(as.numeric(input$TrendDev))) {
+            noise <- as.numeric(input$TrendDev)
+          } else {
+            showNotification("The a process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            req(info$stop)
+          } 
         } else {
           noise <- 0
         }
@@ -6758,14 +6739,18 @@ server <- function(input,output,session) {
         apriori <- c(apriori, Intercept = as.numeric(ap_intercept), Rate = as.numeric(ap_rate))
         error <- c(error, Intercept = as.numeric(sigma_intercept), Rate = as.numeric(sigma_rate))
         nouns <- c(nouns, "Intercept", "Rate")
-        trans$run <- T
+        info$run <- T
       } else {
         model <- paste(model, "Intercept", sep = " ")
         model_lm <- paste(model_lm, "1", sep = " ")
-        model_kf <- paste(model_kf, "e[l,",j,"]", sep = " ")
+        model_kf_inst <- model_kf_mean <- paste(model_kf, "e[k,",j,"]", sep = " ")
         j <- j + 1
         if (isTruthy(match("Intercept", trans$names))) {
-          ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate
+          if (input$fitType == 1) {
+            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate 
+          } else if (input$fitType == 2) {
+            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
+          }
           sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
         } else {
           ap_intercept <- mean(y, na.rm = T)
@@ -6843,30 +6828,32 @@ server <- function(input,output,session) {
               if (f < 1/abs(info$rangex)) {
                 showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
               }
-              trans$run <- T
+              info$run <- T
               label_sin <- paste("S",i,sep = "")
               label_cos <- paste("C",i,sep = "")
               text_sin <- sprintf("I(sin(2*pi*(x-%f)*%f))",as.numeric(refs),f)
               text_cos <- sprintf("I(cos(2*pi*(x-%f)*%f))",as.numeric(refs),f)
-              text_sin_kf <- sprintf("sin(2*pi*(x[l]-%f)*%f)",as.numeric(refs),f)
-              text_cos_kf <- sprintf("cos(2*pi*(x[l]-%f)*%f)",as.numeric(refs),f)
+              text_sin_kf <- sprintf("sin(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
+              text_cos_kf <- sprintf("cos(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
               text_sin_lm <- sprintf("sin(2*pi*x*%f)",f)
               text_cos_lm <- sprintf("cos(2*pi*x*%f)",f)
               model <- paste(model, paste(label_sin,text_sin,sep = "*"), sep = " + ")
               model_lm <- paste(model_lm, text_sin_lm, text_cos_lm, sep = " + ")
-              model_kf <- paste(model_kf, paste(paste0("e[l,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
               j <- j + 1
               model <- paste(model, paste(label_cos,text_cos,sep = "*"), sep = " + ")
-              model_kf <- paste(model_kf, paste(paste0("e[l,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste(paste0("e[k,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
               j <- j + 1
               if (length(y_detrend) > 0) {
                 y_now <- y_detrend
               } else {
-                y_now <- y
+                y_now <- y - median(y)
               }
               if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
                 S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
-                eS0[i] <- quantile(y_now, probs = 0.95)/(8*sqrt(2)) 
+                eS0[i] <- as.numeric(S0[i])/2
                 if (input$fitType == 2) {
                   if (isTruthy(match(paste0("S",i), trans$names))) {
                     s <- trans$LScoefs[match(paste0("S",i), trans$names)]
@@ -6881,7 +6868,7 @@ server <- function(input,output,session) {
               nouns <- c(nouns, label_sin)
               apriori[[label_cos]] <- as.numeric(S0[i])
               if (eS0[i] == 0) {
-                trans$run <- F
+                info$run <- F
                 showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               } else {
@@ -6924,13 +6911,14 @@ server <- function(input,output,session) {
             if (nchar(p) > 0 && !is.na(p)) {
               if (trans$x[1] < p && p < trans$x[length(trans$x)]) {
                 trans$offsetEpochs <- c(trans$offsetEpochs, p)
-                trans$run <- T
+                info$run <- T
                 i <- i + 1
                 label <- paste0("O",i)
                 text <- sprintf("I(x>%s)",p)
                 model <- paste(model, paste(label,text,sep = "*"), sep = " + ")
                 model_lm <- paste(model_lm, text, sep = " + ")
-                model_kf <- paste(model_kf, paste0("e[l,",j,"]*I(x[l]>",p,")"), sep = " + ")
+                model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*I(x[k]>",p,")"), sep = " + ")
+                model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*I(x[k]>",p,")"), sep = " + ")
                 j <- j + 1
                 if (identical(O0,character(0)) || is.na(O0[i]) || O0[i] == "" || O0[i] == " ") {
                   if (length(y_detrend) > 0) {
@@ -6973,7 +6961,7 @@ server <- function(input,output,session) {
               }
             } else {
               showNotification(paste0("The epoch given for offset #",i + 1," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              trans$run <- F
+              info$run <- F
               req(info$stop)
             }
           } 
@@ -7110,12 +7098,13 @@ server <- function(input,output,session) {
           }
           for (i in seq_len(length(E0))) {
             if (!is.na(as.numeric(E0[i]))) {
-              trans$run <- T
+              info$run <- T
               label1 <- paste0("E",i)
               label2 <- paste0("TauE",i)
               text_exp <- sprintf("%f",as.numeric(expos[i]))
               model <- paste(model, paste(label1,"*I(x>",text_exp,")*(exp((",text_exp,"-x)/",label2,"))"), sep = " + ")
-              model_kf <- paste(model_kf, paste("e[l,",j,"]","*I(x[l]>",text_exp,")*(exp((",text_exp,"-x[l])/e[l,",j + 1,"]))"), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste("e[k,",j,"]","*I(x[k]>",text_exp,")*(exp((",text_exp,"-x[k])/e[k,",j + 1,"]))"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste("e[k,",j,"]","*I(x[k]>",text_exp,")*(exp((",text_exp,"-x[k])/e[k,",j + 1,"]))"), sep = " + ")
               j <- j + 2
               apriori[[label1]] <- as.numeric(E0[i])
               error[[label1]] <- as.numeric(eE0[i])
@@ -7269,12 +7258,13 @@ server <- function(input,output,session) {
           }
           for (i in seq_len(length(L0))) {
             if (!is.na(as.numeric(L0[i]))) {
-              trans$run <- T
+              info$run <- T
               label1 <- paste0("L",i)
               label2 <- paste0("TauL",i)
               text_log <- sprintf("%f",as.numeric(logas[i]))
               model <- paste(model, paste(label1,"*log1p(I(x>",text_log,")*(x-",text_log,")/",label2,")"), sep = " + ")
-              model_kf <- paste(model_kf, paste0("e[l,",j,"]*log1p(I(x[l] > ",text_log,")*(x[l]-",text_log,")/e[l,",j + 1,"])"), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*log1p(I(x[k] > ",text_log,")*(x[k]-",text_log,")/e[k,",j + 1,"])"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*log1p(I(x[k] > ",text_log,")*(x[k]-",text_log,")/e[k,",j + 1,"])"), sep = " + ")
               j <- j + 2
               apriori[[label1]] <- as.numeric(L0[i])
               error[[label1]] <- as.numeric(eL0[i])
@@ -7338,11 +7328,12 @@ server <- function(input,output,session) {
                 updateTextInput(session, "eP0", value = line_eP0)
               }
             }
-            trans$run <- T
+            info$run <- T
             label <- paste0("P",degree)
             model <- paste(model, paste0(label,"*(x-",text_rate,")^",degree), sep = " + ")
             model_lm <- paste(model_lm, paste0("x^",degree), sep = " + ")
-            model_kf <- paste(model_kf, paste0("e[l,",j,"]*(x[l]-",text_rate,")^",degree), sep = " + ")
+            model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*(x[k]-",text_rate,")^",degree), sep = " + ")
+            model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*(x[k]-",text_rate,")^",degree), sep = " + ")
             j <- j + 1
             apriori[[label]] <- as.numeric(P0[i])
             error[[label]] <- as.numeric(eP0[i])
@@ -7354,7 +7345,7 @@ server <- function(input,output,session) {
       if (input$fitType == 1) {
         list(model = model, model_lm = model_lm, apriori = apriori) 
       } else if (input$fitType == 2) {
-        list(model = model, model_kf = model_kf, apriori = apriori, nouns = nouns, processNoise = processNoise, error = error)
+        list(model = model, model_kf_mean = model_kf_mean, model_kf_inst = model_kf_inst, apriori = apriori, nouns = nouns, processNoise = processNoise, error = error)
       } else {
         #NA
       }
@@ -7535,10 +7526,11 @@ server <- function(input,output,session) {
     maxi <- max(y, na.rm = T)
     if ((abs(mini) > 999 || abs(maxi) > 999) && abs(maxi - mini) < 999) {
       if (mini < 0) {
-        const <- ylab <- maxi
+        const <- maxi
+        ylab <- paste(intToUtf8(8210),abs(mini))
       } else {
         const <- mini
-        ylab <- paste0("+",mini)
+        ylab <- paste("+",abs(mini))
       }
     } else {
       const <- 0
@@ -7745,7 +7737,7 @@ server <- function(input,output,session) {
       cat(sprintf('# Plate model rate removed: %f',trans$plate[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$fitType == 1 && length(trans$results) > 0) {
-      cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$results$formula), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
         cat(sprintf('# Parameter: %s = %f +/- %f',dimnames(trans$LScoefs)[[1]][i],trans$LScoefs[i,1],trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
       }
@@ -7858,9 +7850,6 @@ server <- function(input,output,session) {
     }
     if (input$fitType == 2) {
       OutPut$df <- cbind(OutPut$df,format(trans$kalman,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F))
-      if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-        OutPut$df <- cbind(OutPut$df,format(trans$rate_inst,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F))
-      }
       colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
       OutPut$df <- cbind(OutPut$df,format(trans$kalman_unc,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F))
     }
@@ -7959,13 +7948,13 @@ server <- function(input,output,session) {
     if (!(sqrtMethod == "Cholesky" | sqrtMethod == "svd"))
       stop("Name of sqrtMethod is incorrect")
     
-    m <- rbind(mod$m0, matrix(0, nrow = nrow(y), ncol = length(mod$m0)))
-    a <- matrix(0, nrow = nrow(y), ncol = length(mod$m0))
-    f <- matrix(0, nrow = nrow(y), ncol = ncol(y))
-    C <- vector(1 + nrow(y), mode = "list")
-    R <- vector(nrow(y), mode = "list")
-    ll <- 0
-    w <- as.vector(c(kappa/(p + kappa), rep(1/(2*(p + kappa)), 2*p)))
+    m <- rbind(mod$m0, matrix(0, nrow = nrow(y), ncol = length(mod$m0))) # a posteriori estimated state
+    a <- matrix(0, nrow = nrow(y), ncol = length(mod$m0)) # a priori state in time update
+    f <- matrix(0, nrow = nrow(y), ncol = ncol(y)) # predicted measurement from a priori state
+    C <- vector(1 + nrow(y), mode = "list") # a posteriori state covariance
+    R <- vector(nrow(y), mode = "list") # a priori state covariance in time update
+    ll <- 0 # log-likelihood
+    w <- as.vector(c(kappa/(p + kappa), rep(1/(2*(p + kappa)), 2*p))) # weights of sigma points
     
     C[[1]] <- mod$C0
     
@@ -7973,10 +7962,16 @@ server <- function(input,output,session) {
       
       ##time update
       
+      ## Increase the process noise by a factor depending on the number of missing observations from the last one
+      ## This implies the series must be sampled regularly with data gaps
+      gapFactor <- 1
+      if (i > 1 && info$regular == T) {
+        gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
+      }
       #compute sigma points
       if (sqrtMethod == "Cholesky") {
-        sigmaPlus <- t(chol((p + kappa)*C[[i]]))}
-      else {
+        sigmaPlus <- t(chol((p + kappa)*C[[i]]))
+      } else {
         tmpxs <- La.svd((p + kappa)*C[[i]], nu = 0)
         sigmaPlus <- t(sqrt(tmpxs$d)*tmpxs$vt)}
       sigmax <- t(m[i, ] + cbind(0, sigmaPlus, -sigmaPlus))
@@ -7984,7 +7979,8 @@ server <- function(input,output,session) {
       tmpx <- matrix(sapply(1:nrow(sigmax), function(x) GGfunction(x = sigmax[x,], k = i)), nrow = p)
       a[i, ] <- tcrossprod(w, tmpx)
       #a priori error covariance
-      R[[i]] <- tcrossprod(crossprod(t(tmpx - a[i, ]), diag(w)), tmpx - a[i, ]) + mod$W
+      # R[[i]] <- tcrossprod(crossprod(t(tmpx - a[i, ]), diag(w)), tmpx - a[i, ]) + mod$W
+      R[[i]] <- tcrossprod(crossprod(t(tmpx - a[i, ]), diag(w)), tmpx - a[i, ]) + mod$W * gapFactor
       
       ##measurement update
       
@@ -8000,6 +7996,7 @@ server <- function(input,output,session) {
       tmpy <- matrix(sapply(1:nrow(sigmay), function(x) FFfunction(x = sigmay[x,], k = i)), nrow = ym)
       f[i, ] <- tcrossprod(w, tmpy)
       #covariance of predicted measurement
+      # Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V
       Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V[i]
       #cross covariance between a priori state estimate and predicted measurement
       Qxy <- tcrossprod(crossprod(t(t(sigmay) - a[i, ]), diag(w)), tmpy - f[i, ])
@@ -8111,25 +8108,45 @@ server <- function(input,output,session) {
     D.R <- matrix(0, nrow(y), length(mod$m0))
     ll <- 0
     
-    svdV <- La.svd(mod$V, nu = 0)
-    Uv <- t(svdV$vt)
-    Dv <- sqrt(svdV$d)
-    if (any(Dv < eps)) {
-      Dv <- pmax(Dv, eps)
-      warning("a numerically singular 'V' has been slightly perturbed to make it nonsingular")
-    }
-    Dv.inv <- 1/Dv
-    Dv.inv[abs(Dv.inv) == Inf] <- 0
-    sqrtVinv <- Dv.inv * svdV$vt
-    
-    svdW <- La.svd(mod$W, nu = 0)
-    sqrtW <- sqrt(svdW$d) * svdW$vt
+    # this code is now run below for each observation
+    # svdV <- La.svd(mod$V, nu = 0)
+    # Uv <- t(svdV$vt)
+    # Dv <- sqrt(svdV$d)
+    # if (any(Dv < eps)) {
+    #   Dv <- pmax(Dv, eps)
+    #   warning("a numerically singular 'V' has been slightly perturbed to make it nonsingular")
+    # }
+    # Dv.inv <- 1/Dv
+    # Dv.inv[abs(Dv.inv) == Inf] <- 0
+    # sqrtVinv <- Dv.inv * svdV$vt
+
+    # svdW <- La.svd(mod$W, nu = 0)
+    # sqrtW <- sqrt(svdW$d) * svdW$vt
     
     tmp <- La.svd(mod$C0, nu = 0)
     U.C[[1]] <- t(tmp$vt)
     D.C[1, ] <- sqrt(tmp$d)
     
     for (i in seq(length = nrow(y))) {
+      
+      ## Increase the process noise by a factor depending on the number of missing observations from the last one
+      ## This implies the series must be sampled regularly with data gaps
+      svdV <- La.svd(mod$V[i], nu = 0)
+      Uv <- t(svdV$vt)
+      Dv <- sqrt(svdV$d)
+      if (any(Dv < eps)) {
+        Dv <- pmax(Dv, eps)
+        warning("a numerically singular 'V' has been slightly perturbed to make it nonsingular")
+      }
+      Dv.inv <- 1/Dv
+      Dv.inv[abs(Dv.inv) == Inf] <- 0
+      sqrtVinv <- Dv.inv * svdV$vt
+      gapFactor <- 1
+      if (i > 1 && info$regular == T) {
+        gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
+      }
+      svdW <- La.svd(mod$W * gapFactor, nu = 0)
+      sqrtW <- sqrt(svdW$d) * svdW$vt
       
       if (is.null(GGjacobian)) {
         dGG.dx[[i]] <- jacobian(GGfunction, x = m[i,], k = i)
@@ -8138,6 +8155,7 @@ server <- function(input,output,session) {
       }
       
       if (!any(whereNA <- is.na(y[i, ]))) {
+        
         a[i, ] <- GGfunction(x = m[i, ], k = i)
         if (is.null(FFjacobian)) {
           dFF.dx[[i]] <- jacobian(FFfunction, x = a[i,], k = i)
@@ -8160,7 +8178,8 @@ server <- function(input,output,session) {
         if (logLik) {
           e <- as.matrix(y[i, ] - f[i,])
           Rt <- tcrossprod(rep(D.R[i, ], each = p) * U.R[[i]])
-          Qt <- mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
+          # Qt <- mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
+          Qt <- mod$V[i] + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
           ll <- ll + ym*log(2*pi) + sum(log(eigen(Qt)$values)) + t(e) %*% solve(Qt) %*% e
         }
       }
@@ -8202,7 +8221,8 @@ server <- function(input,output,session) {
           if (logLik) {
             e <- as.matrix(y[i, good] - f[i, good])
             Rt <- tcrossprod(rep(D.R[i, ], each = p) * U.R[[i]])
-            Qt <- (mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
+            # Qt <- (mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
+            Qt <- (mod$V[i] + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
             ll <- ll + sum(good)*log(2*pi) + sum(log(eigen(Qt)$values)) + t(e) %*% solve(Qt) %*% e
           }
         }
@@ -8240,13 +8260,24 @@ server <- function(input,output,session) {
     U.S[[n + 1]] <- mod$U.C[[n + 1]]
     D.S <- rbind(matrix(0, n, p), mod$D.C[n + 1, ])
     
-    svdW <- La.svd(mod$W, nu = 0)
-    Dw <- sqrt(svdW$d)
-    Dw.inv <- pmin(1/Dw, big)
-    sqrtWinv <- Dw.inv * svdW$vt
+    # this code is now run below for each observation
+    # svdW <- La.svd(mod$W, nu = 0)
+    # Dw <- sqrt(svdW$d)
+    # Dw.inv <- pmin(1/Dw, big)
+    # sqrtWinv <- Dw.inv * svdW$vt
     
     if (n > 0) 
       for (i in n:1) {
+        
+        gapFactor <- 1
+        if (i > 1 && info$regular == T) {
+          gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
+        }
+        svdW <- La.svd(mod$W * gapFactor, nu = 0)
+        Dw <- sqrt(svdW$d)
+        Dw.inv <- pmin(1/Dw, big)
+        sqrtWinv <- Dw.inv * svdW$vt
+        
         Dinv <- 1/mod$D.R[i, ]
         Dinv[abs(Dinv) == Inf] <- 0
         H <- crossprod(mod$D.C[i, ] * t(mod$U.C[[i]])) %*% t(mod$dGG.dx[[i]]) %*% crossprod(Dinv * t(mod$U.R[[i]]))
