@@ -716,10 +716,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                     ),
                                                                     fluidRow(
                                                                       column(6,
-                                                                             textInput(inputId = "trendRef",
-                                                                                       div("Ref. epoch rate",
-                                                                                           helpPopup("Reference epoch for the rate. If empty, the mean data epoch will be used.")),
-                                                                                       value = "")
+									     conditionalPanel(
+									       condition = "input.fitType == 1",
+                                                                               textInput(inputId = "trendRef",
+                                                                                         div("Ref. epoch rate",
+                                                                                             helpPopup("Reference epoch for the rate. If empty, the mean data epoch will be used.")),
+                                                                                         value = "")
+									     )
                                                                       ),
                                                                       conditionalPanel(
                                                                         condition = "input.fitType == 2",
