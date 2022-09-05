@@ -3305,7 +3305,8 @@ server <- function(input,output,session) {
           if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
             trans$mod <- trans$mod + trans$pattern
           }
-          # if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) { # Computing time-variable mean rate
+          # Computing time-variable mean rate
+          # if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
           #   mean_rate <- lapply(1:length(x), function(i) coefficients(summary(lm(e[1:i,2]~1,weights = 1/kfs_unc[1:i,1])))[1:2])
           #   mean_rate[[1]][2] <- kfs_unc[1,2]
           #   e <- cbind(e,sapply(mean_rate, "[", 1))
@@ -7928,7 +7929,6 @@ server <- function(input,output,session) {
       #compute sigma points
       if (sqrtMethod == "Cholesky") {
         sigmaPlus <- t(chol((p + kappa)*C[[i]]))
-        # sigmaPlus <- t(chol((p + kappa) * (C[[i]] + mod$W * gapFactor) ))
       } else {
         tmpxs <- La.svd((p + kappa)*C[[i]], nu = 0)
         sigmaPlus <- t(sqrt(tmpxs$d)*tmpxs$vt)}
@@ -7954,6 +7954,7 @@ server <- function(input,output,session) {
       tmpy <- matrix(sapply(1:nrow(sigmay), function(x) FFfunction(x = sigmay[x,], k = i)), nrow = ym)
       f[i, ] <- tcrossprod(w, tmpy)
       #covariance of predicted measurement
+      # Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V
       Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V[i]
       #cross covariance between a priori state estimate and predicted measurement
       Qxy <- tcrossprod(crossprod(t(t(sigmay) - a[i, ]), diag(w)), tmpy - f[i, ])
@@ -8065,16 +8066,17 @@ server <- function(input,output,session) {
     D.R <- matrix(0, nrow(y), length(mod$m0))
     ll <- 0
     
-    svdV <- La.svd(mod$V, nu = 0)
-    Uv <- t(svdV$vt)
-    Dv <- sqrt(svdV$d)
-    if (any(Dv < eps)) {
-      Dv <- pmax(Dv, eps)
-      warning("a numerically singular 'V' has been slightly perturbed to make it nonsingular")
-    }
-    Dv.inv <- 1/Dv
-    Dv.inv[abs(Dv.inv) == Inf] <- 0
-    sqrtVinv <- Dv.inv * svdV$vt
+    # this code is now run below for each observation
+    # svdV <- La.svd(mod$V, nu = 0)
+    # Uv <- t(svdV$vt)
+    # Dv <- sqrt(svdV$d)
+    # if (any(Dv < eps)) {
+    #   Dv <- pmax(Dv, eps)
+    #   warning("a numerically singular 'V' has been slightly perturbed to make it nonsingular")
+    # }
+    # Dv.inv <- 1/Dv
+    # Dv.inv[abs(Dv.inv) == Inf] <- 0
+    # sqrtVinv <- Dv.inv * svdV$vt
 
     # svdW <- La.svd(mod$W, nu = 0)
     # sqrtW <- sqrt(svdW$d) * svdW$vt
@@ -8087,6 +8089,16 @@ server <- function(input,output,session) {
       
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
       ## This implies the series must be sampled regularly with data gaps
+      svdV <- La.svd(mod$V[i], nu = 0)
+      Uv <- t(svdV$vt)
+      Dv <- sqrt(svdV$d)
+      if (any(Dv < eps)) {
+        Dv <- pmax(Dv, eps)
+        warning("a numerically singular 'V' has been slightly perturbed to make it nonsingular")
+      }
+      Dv.inv <- 1/Dv
+      Dv.inv[abs(Dv.inv) == Inf] <- 0
+      sqrtVinv <- Dv.inv * svdV$vt
       gapFactor <- 1
       if (i > 1) {
         gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
@@ -8124,7 +8136,8 @@ server <- function(input,output,session) {
         if (logLik) {
           e <- as.matrix(y[i, ] - f[i,])
           Rt <- tcrossprod(rep(D.R[i, ], each = p) * U.R[[i]])
-          Qt <- mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
+          # Qt <- mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
+          Qt <- mod$V[i] + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
           ll <- ll + ym*log(2*pi) + sum(log(eigen(Qt)$values)) + t(e) %*% solve(Qt) %*% e
         }
       }
@@ -8166,7 +8179,8 @@ server <- function(input,output,session) {
           if (logLik) {
             e <- as.matrix(y[i, good] - f[i, good])
             Rt <- tcrossprod(rep(D.R[i, ], each = p) * U.R[[i]])
-            Qt <- (mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
+            # Qt <- (mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
+            Qt <- (mod$V[i] + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
             ll <- ll + sum(good)*log(2*pi) + sum(log(eigen(Qt)$values)) + t(e) %*% solve(Qt) %*% e
           }
         }
@@ -8204,13 +8218,24 @@ server <- function(input,output,session) {
     U.S[[n + 1]] <- mod$U.C[[n + 1]]
     D.S <- rbind(matrix(0, n, p), mod$D.C[n + 1, ])
     
-    svdW <- La.svd(mod$W, nu = 0)
-    Dw <- sqrt(svdW$d)
-    Dw.inv <- pmin(1/Dw, big)
-    sqrtWinv <- Dw.inv * svdW$vt
+    # this code is now run below for each observation
+    # svdW <- La.svd(mod$W, nu = 0)
+    # Dw <- sqrt(svdW$d)
+    # Dw.inv <- pmin(1/Dw, big)
+    # sqrtWinv <- Dw.inv * svdW$vt
     
     if (n > 0) 
       for (i in n:1) {
+        
+        gapFactor <- 1
+        if (i > 1) {
+          gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
+        }
+        svdW <- La.svd(mod$W * gapFactor, nu = 0)
+        Dw <- sqrt(svdW$d)
+        Dw.inv <- pmin(1/Dw, big)
+        sqrtWinv <- Dw.inv * svdW$vt
+        
         Dinv <- 1/mod$D.R[i, ]
         Dinv[abs(Dinv) == Inf] <- 0
         H <- crossprod(mod$D.C[i, ] * t(mod$U.C[[i]])) %*% t(mod$dGG.dx[[i]]) %*% crossprod(Dinv * t(mod$U.R[[i]]))
