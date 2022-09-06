@@ -5374,7 +5374,7 @@ server <- function(input,output,session) {
     file$secondary <- isolate(input$series2)
   }, priority = 8)
   
-  # Observe format ####
+  # Observe series info ####
   observeEvent(c(input$tab, input$format, input$units, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
@@ -5385,6 +5385,13 @@ server <- function(input,output,session) {
                             "   Units: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
+    }
+  }, priority = 7)
+  
+  # Observe change of time units ####
+  observeEvent(c(input$units), {
+    if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
+      showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
     }
   }, priority = 7)
   
