@@ -6353,7 +6353,7 @@ server <- function(input,output,session) {
         if (input$average) {
           if (nchar(input$step) > 0 && is.na(inputs$step)) {
             showNotification("Time window length is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          } else if (isTruthy(inputs$step) > 0) {
+          } else if (isTruthy(inputs$step)) {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
               showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
               tolerance <- min(diff(table$x,1))/3
