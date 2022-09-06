@@ -5423,6 +5423,9 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(obs())
     obs(NULL)
+    trans$x <- NULL
+    trans$y <- NULL
+    trans$sy <- NULL
     data <- digest()
     obs(data)
     if (!isTruthy(input$remove3D)) {
@@ -6499,6 +6502,7 @@ server <- function(input,output,session) {
         if (input$units == 1) {
           extracted$x <- tableAll[,3]
         } else if (input$units == 2) {
+          showNotification("There is no time units \"weeks\" in a the PBO format. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "units", label = "Time units", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
           req(info$stop)
         } else if (input$units == 3) {
