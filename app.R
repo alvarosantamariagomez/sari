@@ -2238,11 +2238,16 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
   
   # Update data ####
-  observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, input$remove, input$removeAuto, 
-                 input$delete_excluded, input$format, input$units, input$optionSecondary, values, 
+  observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, values$used1, values$used2,
+                 values$used3, input$delete_excluded, input$format, input$units, input$optionSecondary,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
                  input$eulerType, input$neuenu), {
+  # observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, input$remove, input$removeAuto, 
+  #                input$delete_excluded, input$format, input$units, input$optionSecondary, values, 
+  #                inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
+  #                inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
+  #                input$eulerType, input$neuenu), {
     req(obs(), values$used1)
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
@@ -5712,6 +5717,7 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), "Removing points, manually", "\n")
     brush1 <- input$plot_brush
     brush2 <- NULL
+    excluding_plot <- excluding_plotres <- NULL
     if (isTruthy(input$res_brush)) {
       brush2 <- input$res_brush
     } else if (isTruthy(input$vondrak_brush)) {
@@ -5746,58 +5752,62 @@ server <- function(input,output,session) {
         excluding_plotres <- merge(series, excluding_res, by = "x", all.x = T)
         excluding_plotres$selected_ <- sapply(1:length(excluding_plotres$x), function(x) if (isTRUE(excluding_plotres$selected_[x])) T else F)
       }
-      if (isTruthy(input$remove3D)) {
-        if (length(brush1) > 0) {
-          values$used_all <- xor(values$used_all, excluding_plot$selected_)
-          values$excluded_all <- (values$excluded_all + excluding_plot$selected_) == 1
-        }
-        if (length(brush2) > 0) {
-          values$used_all <- xor(values$used_all, excluding_plotres$selected_)
-          values$excluded_all <- (values$excluded_all + excluding_plotres$selected_) == 1
-          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_all_kf <- xor(values$used_all_kf, excluding_plotres_kf$selected_)
+      if ((isTruthy(excluding_plot$selected_) && sum(excluding_plot$selected_) > 0) || (isTruthy(excluding_plotres$selected_) && sum(excluding_plotres$selected_) > 0)) {
+        if (isTruthy(input$remove3D)) {
+          if (length(brush1) > 0) {
+            values$used_all <- xor(values$used_all, excluding_plot$selected_)
+            values$excluded_all <- (values$excluded_all + excluding_plot$selected_) == 1
           }
-        }
-        values$used1 <- values$used2 <- values$used3 <- values$used_all
-        values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
+          if (length(brush2) > 0) {
+            values$used_all <- xor(values$used_all, excluding_plotres$selected_)
+            values$excluded_all <- (values$excluded_all + excluding_plotres$selected_) == 1
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              values$used_all_kf <- xor(values$used_all_kf, excluding_plotres_kf$selected_)
+            }
+          }
+          values$used1 <- values$used2 <- values$used3 <- values$used_all
+          values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
+        } else {
+          if (input$tab == 1 || is.null(input$tab)) {
+            if (length(brush1) > 0) {
+              values$used1 <- xor(values$used1, excluding_plot$selected_)
+              values$excluded1 <- (values$excluded1 + excluding_plot$selected_) == 1
+            }
+            if (length(brush2) > 0) {
+              values$used1 <- xor(values$used1, excluding_plotres$selected_)
+              values$excluded1 <- (values$excluded1 + excluding_plotres$selected_) == 1
+              if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+                values$used_kf1 <- xor(values$used_kf1, excluding_plotres_kf$selected_)
+              }
+            }
+          } else if (input$tab == 2) {
+            if (length(brush1) > 0) {
+              values$used2 <- xor(values$used2, excluding_plot$selected_)
+              values$excluded2 <- (values$excluded2 + excluding_plot$selected_) == 1
+            }
+            if (length(brush2) > 0) {
+              values$used2 <- xor(values$used2, excluding_plotres$selected_)
+              values$excluded2 <- (values$excluded2 + excluding_plotres$selected_) == 1
+              if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+                values$used_kf2 <- xor(values$used_kf2, excluding_plotres_kf$selected_)
+              }
+            }
+          } else if (input$tab == 3) {
+            if (length(brush1) > 0) {
+              values$used3 <- xor(values$used3, excluding_plot$selected_)
+              values$excluded3 <- (values$excluded3 + excluding_plot$selected_) == 1
+            }
+            if (length(brush2) > 0) {
+              values$used3 <- xor(values$used3, excluding_plotres$selected_)
+              values$excluded3 <- (values$excluded3 + excluding_plotres$selected_) == 1
+              if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+                values$used_kf3 <- xor(values$used_kf3, excluding_plotres_kf$selected_)
+              }
+            }
+          }
+        } 
       } else {
-        if (input$tab == 1 || is.null(input$tab)) {
-          if (length(brush1) > 0) {
-            values$used1 <- xor(values$used1, excluding_plot$selected_)
-            values$excluded1 <- (values$excluded1 + excluding_plot$selected_) == 1
-          }
-          if (length(brush2) > 0) {
-            values$used1 <- xor(values$used1, excluding_plotres$selected_)
-            values$excluded1 <- (values$excluded1 + excluding_plotres$selected_) == 1
-            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$used_kf1 <- xor(values$used_kf1, excluding_plotres_kf$selected_)
-            }
-          }
-        } else if (input$tab == 2) {
-          if (length(brush1) > 0) {
-            values$used2 <- xor(values$used2, excluding_plot$selected_)
-            values$excluded2 <- (values$excluded2 + excluding_plot$selected_) == 1
-          }
-          if (length(brush2) > 0) {
-            values$used2 <- xor(values$used2, excluding_plotres$selected_)
-            values$excluded2 <- (values$excluded2 + excluding_plotres$selected_) == 1
-            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$used_kf2 <- xor(values$used_kf2, excluding_plotres_kf$selected_)
-            }
-          }
-        } else if (input$tab == 3) {
-          if (length(brush1) > 0) {
-            values$used3 <- xor(values$used3, excluding_plot$selected_)
-            values$excluded3 <- (values$excluded3 + excluding_plot$selected_) == 1
-          }
-          if (length(brush2) > 0) {
-            values$used3 <- xor(values$used3, excluding_plotres$selected_)
-            values$excluded3 <- (values$excluded3 + excluding_plotres$selected_) == 1
-            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$used_kf3 <- xor(values$used_kf3, excluding_plotres_kf$selected_)
-            }
-          }
-        }
+        showNotification("No point was selected to be removed manually. Check the selected area.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
     }
   }, priority = 4)
@@ -5869,7 +5879,7 @@ server <- function(input,output,session) {
         showNotification("The residual threshold is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
     }
-    if (isTruthy(excluding)) {
+    if (isTruthy(excluding) && sum(excluding) > 0) {
       if (isTruthy(input$remove3D)) {
         values$used_all <- (values$used_all - excluding) > 0
         values$excluded_all <- (values$excluded_all + excluding) > 0
@@ -5899,6 +5909,8 @@ server <- function(input,output,session) {
           }
         }
       }
+    } else {
+      showNotification("No point was selected to be removed automatically. Check the input threshold.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
     }
   }, priority = 4)
   
