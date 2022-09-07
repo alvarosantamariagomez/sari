@@ -5471,12 +5471,22 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 6)
   
-  # Observe new series format ####
-  observeEvent(c(input$separator, input$separator2, input$format, input$format2, input$units, input$eulerType, input$neuenu), {
+  # Observe primary series format ####
+  observeEvent(c(input$separator, input$format, input$units, input$eulerType, input$neuenu), {
     req(obs())
     obs(NULL)
     data <- digest()
     obs(data)
+  }, priority = 6)
+  
+  # Observe secondary series format ####
+  observeEvent(c(input$separator2, input$format2), {
+    req(obs())
+    if (input$optionSecondary > 0) {
+      obs(NULL)
+      data <- digest()
+      obs(data)
+    }
   }, priority = 6)
   
   # Observe averaging ####
@@ -5527,10 +5537,12 @@ server <- function(input,output,session) {
   # Observe secondary series ####
   observeEvent(input$series2, {
     req(file$primary)
-    if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
-    info$input_warn <- 0
-    data <- digest()
-    obs(data)
+    if (input$optionSecondary > 0) {
+      if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
+      info$input_warn <- 0
+      data <- digest()
+      obs(data)
+    }
   }, priority = 6)
   observeEvent(input$optionSecondary, {
     req(file$primary)
@@ -6224,20 +6236,24 @@ server <- function(input,output,session) {
       updateTabsetPanel(session, inputId = "tab", selected = "1")
     }
     # Getting number of columns in file and setting station ID
+    columns <- columns2 <- 0
     columns <- get_columns(input$series$datapath, sep, input$format)
     if (columns > 0) {
       if (!isTruthy(inputs$ids)) {
         file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
       }
-      if (length(file$secondary) > 1) {
+      if (length(file$secondary) > 1 && input$optionSecondary > 0) {
         columns2 <- get_columns(file$secondary$datapath, sep2, input$format2)
         if (columns2 > 0) {
           if (!isTruthy(inputs$ids)) {
             file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-")[[1]][1]
           }
+        } else {
+          updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 0, inline = F)
         }
       }
-      if (!is.null(file$id1) && !is.null(file$id2)) {
+      # if (!is.null(file$id1) && !is.null(file$id2)) {
+      if (isTruthy(file$id1) && isTruthy(file$id2)) {
         if (input$optionSecondary == 0) {
           ids_info <- file$id1
         } else if (input$optionSecondary == 1) {
@@ -6247,7 +6263,8 @@ server <- function(input,output,session) {
         } else if (input$optionSecondary == 3) {
           ids_info <- paste(file$id1,file$id2, sep = " + ")
         }
-      } else if (!is.null(file$id1)) {
+      # } else if (!is.null(file$id1)) {
+      } else if (isTruthy(file$id1)) {
         ids_info <- file$id1
       } else {
         ids_info <- ""
@@ -6258,7 +6275,10 @@ server <- function(input,output,session) {
       table <- NULL
       table2 <- NULL
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
-      if (length(file$secondary) > 1 && columns2 > 0) {
+      if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
+        if (input$format < 4 && input$format != input$format2) {
+          showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        }
         table2 <- extract_table(input$series2$datapath,sep2,input$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2))
       }
       if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
@@ -6428,24 +6448,30 @@ server <- function(input,output,session) {
     }
   }
   get_columns <- function(file,sep,format) {
+    if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
+      showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      # req(info$stop)
+      return(0)
+    }
     if (format == 1) { #NEU/ENU
       skip <- 0
     } else if (format == 2) { #PBO
-      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
+      skip <- try(which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file))), silent = F)
     } else if (format == 3) { #NGL
-      skip <- which(grepl("site YYMMMDD", readLines(file)))
+      skip <- try(which(grepl("site YYMMMDD", readLines(file))), silent = F)
     } else if (format == 4) { #1D
       skip <- 0
     }
-    if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
-      showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-      req(info$stop)
+    if (!isTruthy(skip)) {
+      showNotification("Unable to read the expeced header from PBO/NGL series. Check the requested series format", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      return(0)
     }
     columns <- try(range(count.fields(file, sep = sep, comment.char = "#", skip = skip)), silent = F)
     if (isTruthy(columns))  {
       if (format != 2 && columns[1] != columns[2]) {
         showNotification("The input file contains different number of columns per row. Check the requested input file format. It may contain uncommented text strings.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-        req(info$stop)
+        # req(info$stop)
+        return(0)
       }
       columns <- columns[1]
       if (isTruthy(columns)) {
@@ -6453,34 +6479,40 @@ server <- function(input,output,session) {
           if (isTruthy(input$sigmas)) {
             if (columns < 7) {
               showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
+              # req(info$stop)
+              return(0)
             }
           } else {
             if (columns < 4) {
               showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
+              # req(info$stop)
+              return(0)
             }
           }
         } else if (format == 2) { #PBO
           if (columns < 24) {
             showNotification("The number of columns in the input PBO file is less than 24. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            req(info$stop)
+            # req(info$stop)
+            return(0)
           }
         } else if (format == 3) { #NGL (on May 19, 2022: 3 columns were added to the tenv3 format; before it had only 20 columns)
           if (columns < 20) {
             showNotification("The number of columns in the input NGL file is less than 20. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            req(info$stop)
+            # req(info$stop)
+            return(0)
           }
         } else if (format == 4) { # 1D
           if (isTruthy(input$sigmas)) {
             if (columns < 3) {
               showNotification("The number of columns in the input file is less than 3. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
+              # req(info$stop)
+              return(0)
             }
           } else {
             if (columns < 2) {
               showNotification("The number of columns in the input file is less than 2. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
+              # req(info$stop)
+              return(0)
             }
           }
         } 
