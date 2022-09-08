@@ -288,7 +288,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   )
                                                                 ),
                                                                 div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                    tags$hr(styl = "border-color: black; border-top: 1px solid #000000;")
+                                                                    tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
                                                                 ),
                                                                 div(style = "padding: 0px 0px; margin-top: -1em",
                                                                     conditionalPanel(
@@ -305,23 +305,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                 # * Plot controls ####
                                                 bsCollapsePanel(value = 2,
                                                                 tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                fluidRow(
-                                                                  column(6,
-                                                                         radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T)
-                                                                  ),
-                                                                  column(3, style = "padding: 0px 0px; margin-top:-0.75em",
-                                                                         checkboxInput(inputId = "remove3D",
-                                                                                       div("All components", align = "right",
-                                                                                           helpPopup("To remove points from all components simultaneously")),
-                                                                                       value = T)
-                                                                  ),
-                                                                  column(3, style = "padding: 0px 0px; margin-top:-0.75em",
-                                                                         checkboxInput(inputId = "add_excluded",
-                                                                                       div("Include in file", align = "right",
-                                                                                           helpPopup("To include the removed points in the downloaded results file")),
-                                                                                       value = F)
-                                                                  )
-                                                                ),
+                                                                radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T),
                                                                 fluidRow(
                                                                   column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
                                                                          actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
@@ -354,6 +338,26 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                              actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")#width = NULL)
                                                                       )
                                                                     )
+                                                                ),
+                                                                fluidRow(
+                                                                  column(4,
+                                                                         checkboxInput(inputId = "remove3D",
+                                                                                       div("All components", align = "right",
+                                                                                           helpPopup("To remove points from all components simultaneously")),
+                                                                                       value = T)
+                                                                  ),
+                                                                  column(4,
+                                                                         checkboxInput(inputId = "add_excluded",
+                                                                                       div("Include in file", align = "right",
+                                                                                           helpPopup("To include the removed points in the downloaded results file")),
+                                                                                       value = F)
+                                                                  ),
+                                                                  column(4,
+                                                                         checkboxInput(inputId = "overflow", 
+                                                                                       div("Scrolling",
+                                                                                           helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is deactivated, the user can take a screenshot of the full web page.")),
+                                                                                       value = T),
+                                                                  )
                                                                 ),
                                                                 style = "primary"),
                                                 
@@ -1417,9 +1421,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                               mainPanel(
                                 # style = "position:fixed; right: 0px; height: 90vh; overflow-y: auto;",
                                 id = "main-panel",
-                                div(style = "font-weight: bold; margin-left: 1%",
-                                    checkboxInput(inputId = "overflow", label = "Scrolling", value = T)
-                                ),
                                 conditionalPanel(
                                   condition = "input.header == true",
                                   verbatimTextOutput("header", placeholder = F)
