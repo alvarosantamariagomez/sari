@@ -39,7 +39,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # version ####
-version <- "SARI septiembre 2022"
+version <- "SARI octubre 2022"
 
 # Some GUI functions
 
@@ -221,7 +221,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                 div(style = "padding: 0px 0px; margin-top:-20em",
                                                                     fluidRow(
                                                                       column(4,
-                                                                             div(style = "font-weight: bold", "Series type", helpPopup("Select 1D if the other formats are unknown"))
+                                                                             div(style = "font-weight: bold", "Series format", helpPopup("Select 1D if the other formats are unknown"))
                                                                       ),
                                                                       column(8,
                                                                              radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
@@ -4069,92 +4069,88 @@ server <- function(input,output,session) {
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
     req(trans$x, trans$sy, input$series2filter)
     if (isTruthy(input$filter)) {
-      if (any(diff(trans$x) <= 0)) {
-        showNotification("Negative or null increment in abscissa (probably 2+ points at the same epoch).", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      if (inputs$high == "" || is.na(inputs$high)) {
+        high <- 0
       } else {
-        if (inputs$high == "" || is.na(inputs$high)) {
+        if (nchar(inputs$high) > 0 && !is.na(inputs$high)) {
+          high <- inputs$high
+        } else {
           high <- 0
-        } else {
-          if (nchar(inputs$high) > 0 && !is.na(inputs$high)) {
-            high <- inputs$high
-          } else {
-            high <- 0
-          }
         }
-        if (inputs$low == "" || is.na(inputs$low)) {
+      }
+      if (inputs$low == "" || is.na(inputs$low)) {
+        low <- 0
+      } else {
+        if (nchar(inputs$low) > 0 && !is.na(inputs$low)) {
+          low <- inputs$low
+        } else {
           low <- 0
-        } else {
-          if (nchar(inputs$low) > 0 && !is.na(inputs$low)) {
-            low <- inputs$low
-          } else {
-            low <- 0
-          }
         }
-        filter_low <- NULL
-        filter_high <- NULL
-        if (low != high) {
-          if (input$series2filter == 1) {
-            ordinate <- mean(trans$y)
-            y <- trans$y - ordinate
+      }
+      filter_low <- NULL
+      filter_high <- NULL
+      if (low != high) {
+        if (input$series2filter == 1) {
+          ordinate <- mean(trans$y)
+          y <- trans$y - ordinate
+          sy <- trans$sy
+        } else if (input$series2filter == 2 && length(trans$res) > 0) {
+          ordinate <- mean(trans$res)
+          y <- trans$res - ordinate
+          if (input$fitType == 1) {
+            sy <- trans$reserror
+          } else if (input$fitType == 2) {
             sy <- trans$sy
-          } else if (input$series2filter == 2 && length(trans$res) > 0) {
-            ordinate <- mean(trans$res)
-            y <- trans$res - ordinate
-            if (input$fitType == 1) {
-              sy <- trans$reserror
-            } else if (input$fitType == 2) {
-              sy <- trans$sy
-            }
-          } else {
-            low <- high <- 0
           }
-          if (low > 0) {
-            if (messages > 0) cat(file = stderr(), "Vondrak low ", low, "\n")
-            filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
-            if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
-              trans$vondrak[1] <- low
-            } else {
-              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            trans$vondrak[1] <- NA
-          }
-          if (high > 0) {
-            if (messages > 0) cat(file = stderr(), "Vondrak high ", high, "\n")
-            filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
-            if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
-              trans$vondrak[2] <- high
-            } else {
-              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            trans$vondrak[2] <- NA
-          }
-          if (length(filter_low) > 0 && length(filter_high) > 0) {
-            if (high < low) {
-              trans$filter <- y - (filter_high - filter_low) + ordinate
-            } else if (high > low) {
-              trans$filter <- filter_low - filter_high + ordinate
-            }
-            trans$filterRes <- y - trans$filter + ordinate
-          } else if (length(filter_low) > 0) {
-            trans$filter <- filter_low + ordinate
-            trans$filterRes <- y - trans$filter + ordinate
-          } else if (length(filter_high) > 0) {
-            trans$filter <- y - filter_high + ordinate
-            trans$filterRes <- y - trans$filter + ordinate
-          } else {
-            trans$filter <- NULL
-            trans$filterRes <- NULL
-          }
-        } else if (low == 0) {
-          trans$filter <- NULL
-          trans$filterRes <- NULL
         } else {
-          showNotification("Low-pass and high-pass periods are equal. Unable to smooth the series. Change the smoother parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          low <- high <- 0
+        }
+        if (low > 0) {
+          if (messages > 0) cat(file = stderr(), "Vondrak low ", low, "\n")
+          filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
+          if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
+            trans$vondrak[1] <- low
+          } else {
+            showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$vondrak[1] <- NA
+        }
+        if (high > 0) {
+          if (messages > 0) cat(file = stderr(), "Vondrak high ", high, "\n")
+          filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
+          if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
+            trans$vondrak[2] <- high
+          } else {
+            showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$vondrak[2] <- NA
+        }
+        if (length(filter_low) > 0 && length(filter_high) > 0) {
+          if (high < low) {
+            trans$filter <- y - (filter_high - filter_low) + ordinate
+          } else if (high > low) {
+            trans$filter <- filter_low - filter_high + ordinate
+          }
+          trans$filterRes <- y - trans$filter + ordinate
+        } else if (length(filter_low) > 0) {
+          trans$filter <- filter_low + ordinate
+          trans$filterRes <- y - trans$filter + ordinate
+        } else if (length(filter_high) > 0) {
+          trans$filter <- y - filter_high + ordinate
+          trans$filterRes <- y - trans$filter + ordinate
+        } else {
           trans$filter <- NULL
           trans$filterRes <- NULL
         }
+      } else if (low == 0) {
+        trans$filter <- NULL
+        trans$filterRes <- NULL
+      } else {
+        showNotification("Low-pass and high-pass periods are equal. Unable to smooth the series. Change the smoother parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        trans$filter <- NULL
+        trans$filterRes <- NULL
       }
     } else {
       trans$filter <- NULL
@@ -5311,6 +5307,25 @@ server <- function(input,output,session) {
       showNotification(paste0("Invalid bounds to compute the wavelet. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
     }
   })
+  
+  # Observe time units ####
+  observeEvent(input$units, {
+    if (isTruthy(input$wavelet)) {
+      updateCheckboxInput(session, inputId = "wavelet", value = F)
+    }
+    if (isTruthy(input$waveform)) {
+      updateCheckboxInput(session, inputId = "waveform", value = F)
+    }
+    if (isTruthy(input$mle)) {
+      updateCheckboxInput(session, inputId = "mle", value = F)
+    }
+    if (isTruthy(input$spectrum)) {
+      updateCheckboxInput(session, inputId = "spectrum", value = F)
+    }
+    if (isTruthy(input$filter)) {
+      updateCheckboxInput(session, inputId = "filter", value = F)
+    }
+  }, priority = 100)
   
   # Observe tab ####
   observeEvent(input$tab, {
