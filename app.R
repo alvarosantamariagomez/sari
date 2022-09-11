@@ -86,6 +86,8 @@ withBusyIndicatorUI <- function(button) {
     )
   )
 }
+
+# class for disabled tabs
 withBusyIndicatorCSS <- "
   .btn-loading-container {
     margin-left: 10px;
@@ -4567,7 +4569,7 @@ server <- function(input,output,session) {
               })
             }
             output$est.unc <- renderUI({
-              if ("Linear" %in% input$model) {
+              if ("Linear" %in% input$model && input$fitType == 1) { 
                 if (isTruthy(trans$mle)) {
                   num <- info$points
                   if (isTruthy(sigmaFL)) {
