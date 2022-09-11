@@ -1459,6 +1459,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                            ),
                                            verbatimTextOutput("plot1_info", placeholder = F),
                                            conditionalPanel(
+                                             condition = "output.rate",
+                                             withSpinner(
+                                               plotOutput("rate1", click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                                               type = getOption("spinner.type", default = 1),
+                                               color = getOption("spinner.color", default = "#0080ff"),
+                                               size = getOption("spinner.size", default = 2),
+                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                                             )
+                                           ),
+                                           conditionalPanel(
                                              condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
                                              withSpinner(
                                                plotOutput("vondrak1", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
@@ -1573,6 +1584,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                              )
                                            ),
                                            verbatimTextOutput("plot2_info", placeholder = F),
+                                           conditionalPanel(
+                                             condition = "output.rate",
+                                             withSpinner(
+                                               plotOutput("rate2", click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                                               type = getOption("spinner.type", default = 1),
+                                               color = getOption("spinner.color", default = "#0080ff"),
+                                               size = getOption("spinner.size", default = 2),
+                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                                             )
+                                           ),
                                            conditionalPanel(
                                              condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
                                              withSpinner(
@@ -1690,6 +1712,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                              )
                                            ),
                                            verbatimTextOutput("plot3_info", placeholder = F),
+                                           conditionalPanel(
+                                             condition = "output.rate",
+                                             withSpinner(
+                                               plotOutput("rate3", click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                                               type = getOption("spinner.type", default = 1),
+                                               color = getOption("spinner.color", default = "#0080ff"),
+                                               size = getOption("spinner.size", default = 2),
+                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                                             )
+                                           ),
                                            conditionalPanel(
                                              condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
                                              withSpinner(
@@ -1812,7 +1845,8 @@ server <- function(input,output,session) {
   #   y12 = secondary series
   #   y2 = residual series
   #   y3 = amplitude/power
-  ranges <- reactiveValues(x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL)
+  #   y4 = instantaneous rate
+  ranges <- reactiveValues(x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL)
   
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
@@ -1967,6 +2001,11 @@ server <- function(input,output,session) {
     return(!is.null(trans$res))
   })
   outputOptions(output, "residuals", suspendWhenHidden = F)
+  
+  output$rate <- reactive({
+    return("Linear" %in% input$model && as.numeric(input$TrendDev) > 0 && length(trans$kalman) > 0)
+  })
+  outputOptions(output, "rate", suspendWhenHidden = F)
   
   # Series summary ####
   output$information <- renderUI({
@@ -3138,6 +3177,10 @@ server <- function(input,output,session) {
           sy <- rep(1, length(y))
           updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
         }
+        trans$mod <- trans$mod0 <- NULL
+        trans$res <- trans$res0 <- NULL
+        trans$kalman <- trans$kalman0 <- NULL
+        trans$kalman_unc <- trans$kalman_unc0 <- NULL
         m <- model(x,y)
         if (length(m$apriori) < 2) {
           showNotification("Not enough model components to run the KF. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
@@ -3340,6 +3383,9 @@ server <- function(input,output,session) {
           trans$kalman_info <- m
           trans$equation <- sub("y ~","Model =",m$model)
           trans$x0_kf <- x
+          end.time <- Sys.time()
+          time.taken <- end.time - start.time
+          if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
           if (isTruthy(input$remove3D)) {
             values$used_all_kf <- rep(T, length(x))
           } else {
@@ -3356,9 +3402,13 @@ server <- function(input,output,session) {
             updateTextInput(session, "waveformPeriod", value = "")
             updateTextInput(session, "waveformPeriod", value = save_value)
           }
-          end.time <- Sys.time()
-          time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
+          # Plot instantaneous rate
+          if ("Linear" %in% input$model && as.numeric(input$TrendDev) > 0 && length(trans$kalman) > 0) {
+            output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
+              title <- "Instantaneous linear rate" 
+              plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol) 
+            }, width = reactive(info$width), type = "cairo-png")
+          }
         }
       })
     }
@@ -4710,7 +4760,7 @@ server <- function(input,output,session) {
           ranges$y12 <- range(trans$z, na.rm = T)
         }
       }
-      ranges$x2 <- ranges$x1
+      ranges$x2 <- ranges$x4 <- ranges$x1
       ranges$y2 <- NULL
     } else {
       ranges$x1 <- c(info$minx, info$maxx)
@@ -4718,6 +4768,8 @@ server <- function(input,output,session) {
       ranges$y12 <- NULL
       ranges$x2 <- NULL
       ranges$y2 <- NULL
+      ranges$x4 <- NULL
+      ranges$y4 <- NULL
     }
   })
   observeEvent(input$res_2click, {
@@ -4731,7 +4783,7 @@ server <- function(input,output,session) {
     if (!is.null(brush)) {
       ranges$x2 <- c(brush$xmin, brush$xmax)
       ranges$y2 <- c(brush$ymin, brush$ymax)
-      ranges$x1 <- ranges$x2
+      ranges$x1 <- ranges$x4 <- ranges$x2
       ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
       ranges$y1 <- range(trans$y[ids])
       if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
@@ -4746,6 +4798,8 @@ server <- function(input,output,session) {
         }
       }
     } else {
+      ranges$x4 <- NULL
+      ranges$y4 <- NULL
       ranges$x2 <- NULL
       ranges$y2 <- NULL
       ranges$x1 <- c(info$minx, info$maxx)
@@ -4762,6 +4816,36 @@ server <- function(input,output,session) {
     } else {
       ranges$x3 <- NULL
       ranges$y3 <- NULL
+    }
+  })
+  observeEvent(input$rate_2click, {
+    req(file$primary)
+    brush <- input$rate_brush
+    if (!is.null(brush)) {
+      ranges$x4 <- c(brush$xmin, brush$xmax)
+      ranges$y4 <- c(brush$ymin, brush$ymax)
+      ranges$x1 <- ranges$x2 <- ranges$x4
+      ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
+      ranges$y1 <- range(trans$y[ids])
+      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
+        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
+        if (sum(ids) > 0) {
+          ranges$y12 <- range(trans$z[ids], na.rm = T)
+          if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
+            ranges$y12 <- range(trans$z, na.rm = T)
+          }
+        } else {
+          ranges$y12 <- range(trans$z, na.rm = T)
+        }
+      }
+    } else {
+      ranges$x4 <- NULL
+      ranges$y4 <- NULL
+      ranges$x2 <- NULL
+      ranges$y2 <- NULL
+      ranges$x1 <- c(info$minx, info$maxx)
+      ranges$y1 <- c(info$miny, info$maxy)
+      ranges$y12 <- NULL
     }
   })
   
