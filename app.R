@@ -5320,6 +5320,13 @@ server <- function(input,output,session) {
     if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
       showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
     }
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      info$run <- F
+      trans$mod <- trans$mod0 <- NULL
+      trans$res <- trans$res0 <- NULL
+      trans$kalman <- trans$kalman0 <- NULL
+      trans$kalman_unc <- trans$kalman_unc0 <- NULL
+    }
     if (isTruthy(input$wavelet)) {
       info$run_wavelet <- F
       updateCheckboxInput(session, inputId = "wavelet", value = F)
