@@ -109,7 +109,7 @@ mobileDetect <- function(inputId, value = 0) {
   )
 }
 
-# Disable tab click (from https://stackoverflow.com/questions/40741691/rshiny-disabling-tabs-adding-text-to-tabs)
+# Disable tab click (based on https://stackoverflow.com/questions/40741691/rshiny-disabling-tabs-adding-text-to-tabs)
 css <- '
 .disabled {
 background: default !important;
@@ -238,9 +238,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
                                                                       ),
                                                                       column(6,
-                                                                             radioButtons(inputId = "units", 
+                                                                             radioButtons(inputId = "tunits",
                                                                                           div("Time units",
-                                                                                              helpPopup("These are the units of the time axis, not the series sampling")), 
+                                                                                              helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
                                                                                           choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
                                                                       )
                                                                     )
@@ -720,13 +720,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                     ),
                                                                     fluidRow(
                                                                       column(6,
-									     conditionalPanel(
-									       condition = "input.fitType == 1",
+                                                                             conditionalPanel(
+                                                                               condition = "input.fitType == 1",
                                                                                textInput(inputId = "trendRef",
                                                                                          div("Ref. epoch rate",
                                                                                              helpPopup("Reference epoch for the rate. If empty, the mean data epoch will be used.")),
                                                                                          value = "")
-									     )
+                                                                             )
                                                                       ),
                                                                       conditionalPanel(
                                                                         condition = "input.fitType == 2",
@@ -1819,7 +1819,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, regular = NULL, tunits = NULL)
+                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -1855,16 +1855,17 @@ server <- function(input,output,session) {
   welcome <- F # welcoming message for a remote connection
   debug <- F # saving the environment 
   messages <- 4 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
+  toggleClass( # disabling clicking on SARI name (panic button)
+    class = "disabled",
+    selector = "#tab li a[data-value=0]"
+  )
+  # updateNavbarPage(session, inputId = "tab", selected = "1")
   
   # Welcome ####
   observe({
     if (messages > 2) cat(file = stderr(), paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio), "\n")
-    updateNavbarPage(session, inputId = "tab", selected = "1")
+    # updateNavbarPage(session, inputId = "tab", selected = "1")
     req(input$size)
-    toggleClass( # disabling clicking on SARI name (panic button)
-      class = "disabled",
-      selector = "#tab li a[data-value=0]"
-    )
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), "Mobil connection ", "\n")
       cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
@@ -2240,15 +2241,10 @@ server <- function(input,output,session) {
   
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, values$used1, values$used2,
-                 values$used3, input$delete_excluded, input$format, input$units, input$optionSecondary,
+                 values$used3, input$delete_excluded, input$format, input$tunits, input$optionSecondary,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
                  input$eulerType, input$neuenu), {
-  # observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, input$remove, input$removeAuto, 
-  #                input$delete_excluded, input$format, input$units, input$optionSecondary, values, 
-  #                inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
-  #                inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
-  #                input$eulerType, input$neuenu), {
     req(obs(), values$used1)
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
@@ -2480,11 +2476,11 @@ server <- function(input,output,session) {
     info$sampling <- min(diff(trans$x,1))
     info$regular <- (median(diff(trans$x))/info$sampling < 1.25)
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
-    if (input$units == 1) {
+    if (input$tunits == 1) {
       info$tunits <- "days"
-    } else if (input$units == 2) {
+    } else if (input$tunits == 2) {
       info$tunits <- "weeks"
-    } else if (input$units == 3) {
+    } else if (input$tunits == 3) {
       info$tunits <- "years"
     }
     trans$ordinate <- median(trans$y)
@@ -2559,11 +2555,11 @@ server <- function(input,output,session) {
             if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
               index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "periodRef", value = unique(text[index + 1]))
-              if (input$units == 1) {
+              if (input$tunits == 1) {
                 units <- "d"
-              } else if (input$units == 2) {
+              } else if (input$tunits == 2) {
                 units <- "w"
-              } else if (input$units == 3) {
+              } else if (input$tunits == 3) {
                 units <- "y"
               }
               updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
@@ -2652,11 +2648,11 @@ server <- function(input,output,session) {
             if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
               index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "periodRef", value = unique(text[index + 1]))
-              if (input$units == 1) {
+              if (input$tunits == 1) {
                 units <- "d"
-              } else if (input$units == 2) {
+              } else if (input$tunits == 2) {
                 units <- "w"
-              } else if (input$units == 3) {
+              } else if (input$tunits == 3) {
                 units <- "y"
               }
               updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
@@ -2804,11 +2800,11 @@ server <- function(input,output,session) {
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
     req(trans$x, trans$y, trans$tol)
     if (isTruthy(input$midas)) {
-      if (input$units == 1) {
+      if (input$tunits == 1) {
         period <- 365.25
-      } else if (input$units == 2) {
+      } else if (input$tunits == 2) {
         period <- 365.25/7
-      } else if (input$units == 3) {
+      } else if (input$tunits == 3) {
         period <- 1
       }
       if ((info$rangex / period) < 1) {
@@ -2957,7 +2953,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$model, input$sigmas, inputs$LogariRef, inputs$L0, inputs$TL0, inputs$ExponenRef, inputs$E0, 
                  inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType, 
                  trans$y, input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, 
-                 input$units, trans$sy), {
+                 input$tunits, trans$sy), {
     req(trans$x, trans$y, trans$sy, trans$ordinate)
     if (input$tab == 4) {
       req(info$stop)
@@ -3645,7 +3641,7 @@ server <- function(input,output,session) {
     intervals <- as.data.frame(table(diff(trans$x)))
     # min_period <- 2*gcd(trans$x[-1]*10^info$decimalsx-trans$x[1]*10^info$decimalsx)/10^info$decimalsx #following Eyer and Bartholdi 1999
     min_period <- 2*as.numeric(as.character(intervals$Var1[intervals$Freq/length(trans$x) >= 0.5][1])) #approximate the shortest period by twice the shortest interval repeating itself at least 50% of the time
-
+    
     if (!isTruthy(min_period)) {
       min_period <- 2*min(abs(diff(trans$x)))
     }
@@ -3815,14 +3811,14 @@ server <- function(input,output,session) {
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
     req(obs(), input$spectrum, trans$fs, trans$psd)
-    if (messages > 0) cat(file = stderr(), "Plotting periodogram", "\n")
     if (length(trans$fs) > 0) {
+      if (messages > 0) cat(file = stderr(), "Plotting periodogram", "\n")
       marks <- c(1 %o% 10^(-20:20))
-      if (input$units == 1) {
+      if (input$tunits == 1) {
         period <- "days"
-      } else if (input$units == 2) {
+      } else if (input$tunits == 2) {
         period <- "weeks"
-      } else if (input$units == 3) {
+      } else if (input$tunits == 3) {
         period <- "years"
       }
       if (input$spectrumType == 0) {
@@ -3845,11 +3841,11 @@ server <- function(input,output,session) {
       axis(2,at = marks, labels = marks)
       if (input$spectrumType == 1) {
         if (input$mle && length(trans$noise) > 0) {
-          if (input$units == 1) { #days
+          if (input$tunits == 1) { #days
             f_scale <- 24*60*60
-          } else if (input$units == 2) { #weeks
+          } else if (input$tunits == 2) { #weeks
             f_scale <- 7*24*60*60
-          } else if (input$units == 3) { #years
+          } else if (input$tunits == 3) { #years
             f_scale <- 365.25*24*60*60
           }
           fs_hz <- 1/(info$sampling*f_scale)
@@ -3947,214 +3943,224 @@ server <- function(input,output,session) {
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
     trans$wavelet <- NULL
     req(obs(), input$wavelet, input$waveletType)
-    if (input$units == 1) {
-      period <- "days"
-      t <- 1/365.25
-    } else if (input$units == 2) {
-      period <- "weeks"
-      t <- 7/365.25
-    } else if (input$units == 3) {
-      period <- "years"
-      t <- 1
-    }
-    if (nchar(inputs$min_wavelet) > 0 && !is.na(inputs$min_wavelet) && nchar(inputs$max_wavelet) > 0 && !is.na(inputs$max_wavelet) && nchar(inputs$res_wavelet) > 0 && !is.na(as.numeric(inputs$res_wavelet)) && nchar(inputs$loc_wavelet) > 0 && !is.na(as.numeric(inputs$loc_wavelet)) && as.numeric(inputs$loc_wavelet) > 0 && as.numeric(inputs$loc_wavelet) <= info$rangex/2 && inputs$max_wavelet > inputs$min_wavelet) {
-      min_scale <- inputs$min_wavelet*t
-      max_scale <- inputs$max_wavelet*t
-      num_scale <- as.integer((max_scale - min_scale)/(as.numeric(inputs$res_wavelet)*t))
-      locs <- info$rangex/as.numeric(inputs$loc_wavelet)
-    } else {
-      min_scale <- get.min.scale(trans$x)
-      max_scale <- get.max.scale(trans$x)
-      num_scale <- as.integer(get.nscales(trans$x))
-      res <- (max_scale - min_scale)/num_scale
-      loc <- info$rangex/500
-      if (loc < info$sampling) {
-        loc <- info$sampling
+    if (isTruthy(isolate(info$run_wavelet))) {
+      if (input$tunits == 1) {
+        period <- "days"
+        t <- 1/365.25
+      } else if (input$tunits == 2) {
+        period <- "weeks"
+        t <- 7/365.25
+      } else if (input$tunits == 3) {
+        period <- "years"
+        t <- 1
       }
-      updateTextInput(session, "min_wavelet", value = min_scale)
-      updateTextInput(session, "max_wavelet", value = max_scale)
-      updateTextInput(session, "res_wavelet", value = res)
-      updateTextInput(session, "loc_wavelet", value = loc)
-      req(info$stop)
-    }
-    title <- "Wavelet transform:"
-    if (input$waveletType == 1) {
-      title <- paste0(title," original")
-      y <- isolate(trans$y - mean(trans$y))
-    } else if (input$waveletType == 2 && length(isolate(trans$mod)) > 0 && length(isolate(trans$mod)) > 0) {
-      title <- paste0(title," model")
-      req(trans$mod)
-      y <- isolate(trans$mod - mean(trans$mod))
-    } else if (input$waveletType == 3 && length(isolate(trans$res)) > 0) {
-      title <- paste0(title," model residuals")
-      req(trans$res)
-      y <- isolate(trans$res - mean(trans$res))
-    } else if (input$waveletType == 4 && length(isolate(trans$filter)) > 0) {
-      title <- paste0(title," filter ")
-      req(trans$filter)
-      y <- isolate(trans$filter - mean(trans$filter))
-    } else if (input$waveletType == 5 && length(isolate(trans$filterRes)) > 0) {
-      title <- paste0(title," filter residuals")
-      req(trans$filterRes)
-      y <- isolate(trans$filterRes - mean(trans$filterRes))
-    } else {
-      updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
-      req(info$stop)
-    }
-    if (min_scale < 0.999*get.min.scale(t*trans$x) || max_scale > 1.001*get.max.scale(t*trans$x) || num_scale > as.integer(get.nscales(t*trans$x) + 1) || num_scale < 2) {
-      showNotification("The period bounds and/or resolution are not valid to compute the wavelet transform. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-      updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
-      req(info$stop)
-    }
-    if (messages > 0) cat(file = stderr(), "Computing wavelet", "\n")
-    start.time <- Sys.time()
-    suppressWarnings({
-      trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
-    })
-    end.time <- Sys.time()
-    time.taken <- difftime(end.time, start.time, units = "secs")
-    if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
-    isolate({
-      levels <- suppressWarnings(signif(sd(trans$wavelet$z), 4))
-      z.fun <- match.fun("Mod")
-      attr(trans$wavelet, 'class') <- 'list'
-      # par(mfrow = c(1, 1), mar = c(0, 0, 3, 5), oma = rep(5, 4))
-      pal = colorRampPalette(rev(brewer.pal(11, 'Spectral')))(1024)
-      # par(mar = rep(1, 1))
-      magin_in <- par("mar")
-      magin_out <- par("oma")
-      par(mar = magin_in + c(0, 3, 0, 3), oma = magin_out + c(1, 0, 0, 0))
-      s <- info$sampling*365.25*t/7
-      amplitude_approx <- s*array(t(t(as.matrix(z.fun(trans$wavelet$z[,,1]), ncols = length(trans$wavelet$y), nrows = length(trans$wavelet$x)))*(pi/2)/sqrt(trans$wavelet$y)), dim = c(length(trans$wavelet$x),length(trans$wavelet$y),1))
-      trans$wavelet$x <- trans$wavelet$x/t
-      trans$wavelet$y <- trans$wavelet$y/t
-      if (num_scale > 10) {
-        image(trans$wavelet$x, trans$wavelet$y, amplitude_approx[,,1], col = pal, xlab = "", ylab = "", log = "y")
-        image.plot(zlim = range(amplitude_approx[,,1]), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
+      if (nchar(inputs$min_wavelet) > 0 && !is.na(inputs$min_wavelet) && nchar(inputs$max_wavelet) > 0 && !is.na(inputs$max_wavelet) && nchar(inputs$res_wavelet) > 0 && !is.na(as.numeric(inputs$res_wavelet)) && nchar(inputs$loc_wavelet) > 0 && !is.na(as.numeric(inputs$loc_wavelet)) && as.numeric(inputs$loc_wavelet) > 0 && as.numeric(inputs$loc_wavelet) <= info$rangex/2 && inputs$max_wavelet > inputs$min_wavelet) {
+        min_scale <- inputs$min_wavelet*t
+        max_scale <- inputs$max_wavelet*t
+        num_scale <- as.integer((max_scale - min_scale)/(as.numeric(inputs$res_wavelet)*t))
+        locs <- info$rangex/as.numeric(inputs$loc_wavelet)
       } else {
-        image(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), col = pal, xlab = "", ylab = "")
-        image.plot(zlim = range(z.fun(trans$wavelet$z[,,1])), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
+        min_scale <- get.min.scale(trans$x)
+        max_scale <- get.max.scale(trans$x)
+        num_scale <- as.integer(get.nscales(trans$x))
+        res <- (max_scale - min_scale)/num_scale
+        loc <- info$rangex/500
+        if (loc < info$sampling) {
+          loc <- info$sampling
+        }
+        updateTextInput(session, "min_wavelet", value = min_scale)
+        updateTextInput(session, "max_wavelet", value = max_scale)
+        updateTextInput(session, "res_wavelet", value = res)
+        updateTextInput(session, "loc_wavelet", value = loc)
+        req(info$stop)
       }
-      box()
-      mtext(paste0("Period (",period,")"), side = 2, line = 3, outer = F)
-      contour(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), levels = c(levels, levels*2, levels*3), add = T, labcex = 1.1, drawlabels = F)
-      title(main = title)
-      coord <- unlist(as.list(which(amplitude_approx == max(amplitude_approx), arr.ind = T)))
-      points(trans$wavelet$x[coord[1]], trans$wavelet$y[coord[2]], pch = "*", cex = 3, col = "black")
-      lines(min(trans$wavelet$x) + trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
-      lines(max(trans$wavelet$x) - trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
-    })
-    #
-    if (isTruthy(debug)) {
-      env <- environment()
-      output$debug <- renderTable({
-        data.frame(
-          object = ls(env),
-          size = unlist(lapply(ls(env), function(x) {
-            format(object.size(get(x, envir = env, inherits = F)), unit = 'Mb')
-          }))
-        )
+      title <- "Wavelet transform:"
+      if (input$waveletType == 1) {
+        title <- paste0(title," original")
+        y <- isolate(trans$y - mean(trans$y))
+      } else if (input$waveletType == 2 && length(isolate(trans$mod)) > 0 && length(isolate(trans$mod)) > 0) {
+        title <- paste0(title," model")
+        req(trans$mod)
+        y <- isolate(trans$mod - mean(trans$mod))
+      } else if (input$waveletType == 3 && length(isolate(trans$res)) > 0) {
+        title <- paste0(title," model residuals")
+        req(trans$res)
+        y <- isolate(trans$res - mean(trans$res))
+      } else if (input$waveletType == 4 && length(isolate(trans$filter)) > 0) {
+        title <- paste0(title," filter ")
+        req(trans$filter)
+        y <- isolate(trans$filter - mean(trans$filter))
+      } else if (input$waveletType == 5 && length(isolate(trans$filterRes)) > 0) {
+        title <- paste0(title," filter residuals")
+        req(trans$filterRes)
+        y <- isolate(trans$filterRes - mean(trans$filterRes))
+      } else {
+        updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
+        req(info$stop)
+      }
+      if (min_scale < 0.999*get.min.scale(t*trans$x) || max_scale > 1.001*get.max.scale(t*trans$x) || num_scale > as.integer(get.nscales(t*trans$x) + 1) || num_scale < 2) {
+        showNotification("The period bounds and/or resolution are not valid to compute the wavelet transform. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
+        req(info$stop)
+      }
+      if (messages > 0) cat(file = stderr(), "Computing wavelet", "\n")
+      start.time <- Sys.time()
+      suppressWarnings({
+        trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
       })
-    }
-    output$wavelet1_info <- output$wavelet2_info <- output$wavelet3_info <- renderText({
-      if (length(input$wavelet_1click$x) > 0) {
-        idx <- which.min(abs(trans$wavelet$x - input$wavelet_1click$x))
-        idy <- which.min(abs(trans$wavelet$y - input$wavelet_1click$y))
-        paste0("\tEpoch = ", input$wavelet_1click$x, "\tPeriod (", period, ") = ", input$wavelet_1click$y, "\t\tAmplitude = ", amplitude_approx[idx,idy,1])  
+      end.time <- Sys.time()
+      time.taken <- difftime(end.time, start.time, units = "secs")
+      if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+      isolate({
+        levels <- suppressWarnings(signif(sd(trans$wavelet$z), 4))
+        z.fun <- match.fun("Mod")
+        attr(trans$wavelet, 'class') <- 'list'
+        # par(mfrow = c(1, 1), mar = c(0, 0, 3, 5), oma = rep(5, 4))
+        pal = colorRampPalette(rev(brewer.pal(11, 'Spectral')))(1024)
+        # par(mar = rep(1, 1))
+        magin_in <- par("mar")
+        magin_out <- par("oma")
+        par(mar = magin_in + c(0, 3, 0, 3), oma = magin_out + c(1, 0, 0, 0))
+        s <- info$sampling*365.25*t/7
+        amplitude_approx <- s*array(t(t(as.matrix(z.fun(trans$wavelet$z[,,1]), ncols = length(trans$wavelet$y), nrows = length(trans$wavelet$x)))*(pi/2)/sqrt(trans$wavelet$y)), dim = c(length(trans$wavelet$x),length(trans$wavelet$y),1))
+        trans$wavelet$x <- trans$wavelet$x/t
+        trans$wavelet$y <- trans$wavelet$y/t
+        if (num_scale > 10) {
+          image(trans$wavelet$x, trans$wavelet$y, amplitude_approx[,,1], col = pal, xlab = "", ylab = "", log = "y")
+          image.plot(zlim = range(amplitude_approx[,,1]), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
+        } else {
+          image(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), col = pal, xlab = "", ylab = "")
+          image.plot(zlim = range(z.fun(trans$wavelet$z[,,1])), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
+        }
+        box()
+        mtext(paste0("Period (",period,")"), side = 2, line = 3, outer = F)
+        contour(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), levels = c(levels, levels*2, levels*3), add = T, labcex = 1.1, drawlabels = F)
+        title(main = title)
+        coord <- unlist(as.list(which(amplitude_approx == max(amplitude_approx), arr.ind = T)))
+        points(trans$wavelet$x[coord[1]], trans$wavelet$y[coord[2]], pch = "*", cex = 3, col = "black")
+        lines(min(trans$wavelet$x) + trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
+        lines(max(trans$wavelet$x) - trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
+      })
+      #
+      if (isTruthy(debug)) {
+        env <- environment()
+        output$debug <- renderTable({
+          data.frame(
+            object = ls(env),
+            size = unlist(lapply(ls(env), function(x) {
+              format(object.size(get(x, envir = env, inherits = F)), unit = 'Mb')
+            }))
+          )
+        })
       }
-    })
+      output$wavelet1_info <- output$wavelet2_info <- output$wavelet3_info <- renderText({
+        if (length(input$wavelet_1click$x) > 0) {
+          idx <- which.min(abs(trans$wavelet$x - input$wavelet_1click$x))
+          idy <- which.min(abs(trans$wavelet$y - input$wavelet_1click$y))
+          paste0("\tEpoch = ", input$wavelet_1click$x, "\tPeriod (", period, ") = ", input$wavelet_1click$y, "\t\tAmplitude = ", amplitude_approx[idx,idy,1])  
+        }
+      })
+    } else {
+      inputs$min_wavelet <- ""
+      inputs$max_wavelet <- ""
+      info$run_wavelet <- T
+    }
   }, width = reactive(info$width), type = "cairo-png")
   
   # Compute smoother ####
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
-    req(trans$x, trans$sy, input$series2filter)
-    if (isTruthy(input$filter)) {
-      if (inputs$high == "" || is.na(inputs$high)) {
-        high <- 0
-      } else {
-        if (nchar(inputs$high) > 0 && !is.na(inputs$high)) {
-          high <- inputs$high
-        } else {
+    req(trans$x, trans$sy, input$series2filter, input$filter)
+    if (isTruthy(info$run_filter)) {
+      if (isTruthy(input$filter)) {
+        if (inputs$high == "" || is.na(inputs$high)) {
           high <- 0
-        }
-      }
-      if (inputs$low == "" || is.na(inputs$low)) {
-        low <- 0
-      } else {
-        if (nchar(inputs$low) > 0 && !is.na(inputs$low)) {
-          low <- inputs$low
         } else {
+          if (nchar(inputs$high) > 0 && !is.na(inputs$high)) {
+            high <- inputs$high
+          } else {
+            high <- 0
+          }
+        }
+        if (inputs$low == "" || is.na(inputs$low)) {
           low <- 0
+        } else {
+          if (nchar(inputs$low) > 0 && !is.na(inputs$low)) {
+            low <- inputs$low
+          } else {
+            low <- 0
+          }
         }
-      }
-      filter_low <- NULL
-      filter_high <- NULL
-      if (low != high) {
-        if (input$series2filter == 1) {
-          ordinate <- mean(trans$y)
-          y <- trans$y - ordinate
-          sy <- trans$sy
-        } else if (input$series2filter == 2 && length(trans$res) > 0) {
-          ordinate <- mean(trans$res)
-          y <- trans$res - ordinate
-          if (input$fitType == 1) {
-            sy <- trans$reserror
-          } else if (input$fitType == 2) {
+        filter_low <- NULL
+        filter_high <- NULL
+        if (low != high) {
+          if (input$series2filter == 1) {
+            ordinate <- mean(trans$y)
+            y <- trans$y - ordinate
             sy <- trans$sy
-          }
-        } else {
-          low <- high <- 0
-        }
-        if (low > 0) {
-          if (messages > 0) cat(file = stderr(), "Vondrak low ", low, "\n")
-          filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
-          if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
-            trans$vondrak[1] <- low
+          } else if (input$series2filter == 2 && length(trans$res) > 0) {
+            ordinate <- mean(trans$res)
+            y <- trans$res - ordinate
+            if (input$fitType == 1) {
+              sy <- trans$reserror
+            } else if (input$fitType == 2) {
+              sy <- trans$sy
+            }
           } else {
-            showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            low <- high <- 0
           }
-        } else {
-          trans$vondrak[1] <- NA
-        }
-        if (high > 0) {
-          if (messages > 0) cat(file = stderr(), "Vondrak high ", high, "\n")
-          filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
-          if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
-            trans$vondrak[2] <- high
+          if (low > 0) {
+            if (messages > 0) cat(file = stderr(), "Vondrak low ", low, "\n")
+            filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
+            if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
+              trans$vondrak[1] <- low
+            } else {
+              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            }
           } else {
-            showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            trans$vondrak[1] <- NA
           }
-        } else {
-          trans$vondrak[2] <- NA
-        }
-        if (length(filter_low) > 0 && length(filter_high) > 0) {
-          if (high < low) {
-            trans$filter <- y - (filter_high - filter_low) + ordinate
-          } else if (high > low) {
-            trans$filter <- filter_low - filter_high + ordinate
+          if (high > 0) {
+            if (messages > 0) cat(file = stderr(), "Vondrak high ", high, "\n")
+            filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
+            if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
+              trans$vondrak[2] <- high
+            } else {
+              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            }
+          } else {
+            trans$vondrak[2] <- NA
           }
-          trans$filterRes <- y - trans$filter + ordinate
-        } else if (length(filter_low) > 0) {
-          trans$filter <- filter_low + ordinate
-          trans$filterRes <- y - trans$filter + ordinate
-        } else if (length(filter_high) > 0) {
-          trans$filter <- y - filter_high + ordinate
-          trans$filterRes <- y - trans$filter + ordinate
+          if (length(filter_low) > 0 && length(filter_high) > 0) {
+            if (high < low) {
+              trans$filter <- y - (filter_high - filter_low) + ordinate
+            } else if (high > low) {
+              trans$filter <- filter_low - filter_high + ordinate
+            }
+            trans$filterRes <- y - trans$filter + ordinate
+          } else if (length(filter_low) > 0) {
+            trans$filter <- filter_low + ordinate
+            trans$filterRes <- y - trans$filter + ordinate
+          } else if (length(filter_high) > 0) {
+            trans$filter <- y - filter_high + ordinate
+            trans$filterRes <- y - trans$filter + ordinate
+          } else {
+            trans$filter <- NULL
+            trans$filterRes <- NULL
+          }
+        } else if (low == 0) {
+          trans$filter <- NULL
+          trans$filterRes <- NULL
         } else {
+          showNotification("Low-pass and high-pass periods are equal. Unable to smooth the series. Change the smoother parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           trans$filter <- NULL
           trans$filterRes <- NULL
         }
-      } else if (low == 0) {
-        trans$filter <- NULL
-        trans$filterRes <- NULL
       } else {
-        showNotification("Low-pass and high-pass periods are equal. Unable to smooth the series. Change the smoother parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
         trans$filter <- NULL
         trans$filterRes <- NULL
       }
     } else {
-      trans$filter <- NULL
-      trans$filterRes <- NULL
+      info$run_filter <- T
     }
   }, priority = 1)
   
@@ -4538,7 +4544,7 @@ server <- function(input,output,session) {
                   unc <- sqrt( noise_amp^2 * v * info$sampling^beta * num^gamma ) / scaling
                   unc_white <- sqrt( 12 * sd(trans$res)^2 * (num - 1) / (num * info$rangex^2 * (num + 1)) )
                   if (isTruthy(trans$unc)) {
-                    if (unc > 0) {
+                    if (isTruthy(unc) && unc > 0) {
                       trans$LScoefs[2,2] <- sqrt(unc^2 + trans$unc^2)
                       trans$results$coefficients[2,2] <- sqrt(unc^2 + trans$unc^2)
                     } else {
@@ -5037,6 +5043,7 @@ server <- function(input,output,session) {
                 disable("correct_waveform")
               }
             } else {
+              updateTextInput(session, inputId = "waveformPeriod", value = "")
               updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
             }
             if (isTruthy(input$mle)) {
@@ -5309,20 +5316,28 @@ server <- function(input,output,session) {
   })
   
   # Observe time units ####
-  observeEvent(input$units, {
+  observeEvent(input$tunits, {
+    if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
+      showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+    }
     if (isTruthy(input$wavelet)) {
+      info$run_wavelet <- F
       updateCheckboxInput(session, inputId = "wavelet", value = F)
     }
     if (isTruthy(input$waveform)) {
+      trans$pattern <- NULL
       updateCheckboxInput(session, inputId = "waveform", value = F)
     }
     if (isTruthy(input$mle)) {
       updateCheckboxInput(session, inputId = "mle", value = F)
     }
     if (isTruthy(input$spectrum)) {
+      trans$fs <- NULL
       updateCheckboxInput(session, inputId = "spectrum", value = F)
     }
     if (isTruthy(input$filter)) {
+      info$run_filter <- F
+      trans$filter <- NULL
       updateCheckboxInput(session, inputId = "filter", value = F)
     }
   }, priority = 100)
@@ -5396,23 +5411,16 @@ server <- function(input,output,session) {
   }, priority = 8)
   
   # Observe series info ####
-  observeEvent(c(input$tab, input$format, input$units, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
+  observeEvent(c(input$tab, input$format, input$tunits, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
       req(obs())
       info$tab <- input$tab
       if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                            "   Units: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
+                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
-    }
-  }, priority = 7)
-  
-  # Observe change of time units ####
-  observeEvent(c(input$units), {
-    if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
-      showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
     }
   }, priority = 7)
   
@@ -5488,7 +5496,7 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe primary series format ####
-  observeEvent(c(input$separator, input$format, input$units, input$eulerType, input$neuenu), {
+  observeEvent(c(input$separator, input$format, input$tunits, input$eulerType, input$neuenu), {
     req(obs())
     obs(NULL)
     data <- digest()
@@ -5720,7 +5728,7 @@ server <- function(input,output,session) {
   observeEvent(input$plot, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                          "   Units: ", input$units,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
+                          "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                           file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     info$input_warn <- 0
@@ -6566,13 +6574,13 @@ server <- function(input,output,session) {
       if (isTruthy(tableAll)) {
         extracted <- tableAll[,c(16,17,18,19,20,21)]
         names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
-        if (input$units == 1) {
+        if (input$tunits == 1) {
           extracted$x <- tableAll[,3]
-        } else if (input$units == 2) {
+        } else if (input$tunits == 2) {
           showNotification("There is no time units \"weeks\" in a the PBO format. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "units", label = "Time units", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
           req(info$stop)
-        } else if (input$units == 3) {
+        } else if (input$tunits == 3) {
           extracted$x <- decimal_date(strptime(paste(tableAll[,1],tableAll[,2]),format = '%Y%m%d %H%M%S'))
         }
       }
@@ -6580,11 +6588,11 @@ server <- function(input,output,session) {
       skip <- which(grepl("site YYMMMDD", readLines(file)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
-        if (input$units == 1) {
+        if (input$tunits == 1) {
           extracted <- data.frame( x = tableAll[,4] )
-        } else if (input$units == 2) {
+        } else if (input$tunits == 2) {
           extracted <- data.frame( x = tableAll[,5] + tableAll[,6]/7 )
-        } else if (input$units == 3) {
+        } else if (input$tunits == 3) {
           extracted <- data.frame( x = tableAll[,3] )
         }
         extracted$y1 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East (the coordinate integer portion seems to be constant, but just in case)
@@ -6861,11 +6869,11 @@ server <- function(input,output,session) {
             if (grepl("d",p)) {
               f <- gsub("d", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
-                if (input$units == 1) {
+                if (input$tunits == 1) {
                   f <- 1/as.numeric(f)
-                } else if (input$units == 2) {
+                } else if (input$tunits == 2) {
                   f <- 7/as.numeric(f)
-                } else if (input$units == 3) {
+                } else if (input$tunits == 3) {
                   f <- daysInYear/as.numeric(f)
                 }
               } else {
@@ -6874,11 +6882,11 @@ server <- function(input,output,session) {
             } else if (grepl("w",p)) {
               f <- gsub("w", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
-                if (input$units == 1) {
+                if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*7
-                } else if (input$units == 2) {
+                } else if (input$tunits == 2) {
                   f <- (1/as.numeric(f))*1
-                } else if (input$units == 3) {
+                } else if (input$tunits == 3) {
                   f <- 1/as.numeric(f)*7/daysInYear
                 }
               } else {
@@ -6887,11 +6895,11 @@ server <- function(input,output,session) {
             } else if (grepl("y",p)) {
               f <- gsub("y", "", p)
               if (nchar(f) > 0  && !is.na(as.numeric(f))) {
-                if (input$units == 1) {
+                if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*1/daysInYear
-                } else if (input$units == 2) {
+                } else if (input$tunits == 2) {
                   f <- (1/as.numeric(f))*7/daysInYear
-                } else if (input$units == 3) {
+                } else if (input$tunits == 3) {
                   f <- 1/as.numeric(f)
                 }
               } else {
@@ -7004,11 +7012,11 @@ server <- function(input,output,session) {
                   if (!isTruthy(O0[i])) {
                     O0[i] <- 0
                   }
-                  if (input$units == 1) {
+                  if (input$tunits == 1) {
                     sample <- 1/12 * 365
-                  } else if (input$units == 2) {
+                  } else if (input$tunits == 2) {
                     sample <- 1/12 * 365/7
-                  } else if (input$units == 3) {
+                  } else if (input$tunits == 3) {
                     sample <- 1/12
                   }
                   eO0[i] <- ( sd(y_now[which.max(trans$x > p) - sample & which.min(trans$x < p)]) + sd(y_now[which.max(trans$x > p) & which.min(trans$x < p) + sample]) ) / 2
@@ -7072,15 +7080,15 @@ server <- function(input,output,session) {
                   eE0[i] <- trans$LScoefs[match(paste0("E",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))
                   eTE0[i] <- trans$LScoefs[match(paste0("TauE",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))
                 } else {
-                  if (input$units == 1) {
+                  if (input$tunits == 1) {
                     span <- 3 * 365
                     forward <- 1 * 365
                     sample <- 1/12 * info$sampling*365.25
-                  } else if (input$units == 2) {
+                  } else if (input$tunits == 2) {
                     span <- 3 * 365/7
                     forward <- 1 * 365/7
                     sample <- 1/12 * info$sampling*365.25/7
-                  } else if (input$units == 3) {
+                  } else if (input$tunits == 3) {
                     span <- 3
                     forward <- 1
                     sample <- 1/12 * info$sampling*365.25
@@ -7228,15 +7236,15 @@ server <- function(input,output,session) {
                   eL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("L",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
                   eTL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("TauL",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
                 } else {
-                  if (input$units == 1) {
+                  if (input$tunits == 1) {
                     span <- 3 * 365
                     sample <- 1/12 * info$sampling*365.25
                     forward <- 1 * 365
-                  } else if (input$units == 2) {
+                  } else if (input$tunits == 2) {
                     span <- 3 * 365/7
                     forward <- 1 * 365/7
                     sample <- 1/12 * info$sampling*365.25/7
-                  } else if (input$units == 3) {
+                  } else if (input$tunits == 3) {
                     span <- 3
                     forward <- 1
                     sample <- 1/12 * info$sampling*365.25
@@ -7439,11 +7447,11 @@ server <- function(input,output,session) {
             if (is.na(t)) {
               t <- strptime(f, format = '%Y-%m-%d')
             }
-            if (input$units == 1) {
+            if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
-            } else if (input$units == 2) {
+            } else if (input$tunits == 2) {
               e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
-            } else if (input$units == 3) {
+            } else if (input$tunits == 3) {
               e <- decimal_date(t)  
             }
             if (grepl('Antenna',antrec[[l]])) {
@@ -7472,11 +7480,11 @@ server <- function(input,output,session) {
           if (length(record) > l) {
             elements2 <- unlist(strsplit(record[[l + 1]], "\\s+", fixed = F, perl = T, useBytes = F))
             t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S')
-            if (input$units == 1) {
+            if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
-            } else if (input$units == 2) {
+            } else if (input$tunits == 2) {
               e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
-            } else if (input$units == 3) {
+            } else if (input$tunits == 3) {
               e <- decimal_date(t)
             }
             if (substr(record[[l]],98,168) != substr(record[[l + 1]],98,168)) {
@@ -7502,11 +7510,11 @@ server <- function(input,output,session) {
           if (length(record) > l) {
             elements2 <- unlist(strsplit(record[[l + 1]], "\\s+", fixed = F, perl = T, useBytes = F))
             t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S')
-            if (input$units == 1) {
+            if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
-            } else if (input$units == 2) {
+            } else if (input$tunits == 2) {
               e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
-            } else if (input$units == 3) {
+            } else if (input$tunits == 3) {
               e <- decimal_date(t)
             }
             if (substr(record[[l]],98,168) != substr(record[[l + 1]],98,168)) {
