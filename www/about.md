@@ -95,9 +95,16 @@ Finally, after the series have been plotted, the `load SARI model` button allows
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  
 
 ### II. Plot controls
-Once the format of the series is set, this block allows plotting/resetting the time series and removing points/outliers (see details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section).
+Once the format of the series is set, this block allows plotting/resetting the time series and removing points/outliers.  
+Outliers can be removed automatically using a residual threshold or a normalized residual threshold. They can also be selected and removed manually (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section).
 
-Note that most of the options and features activated while analyzing the series in one of the components will still be active when changing the tab/component (if using a 3D series) or the column number (if using a 1D series). This implies that, when changing the series component, the visualization of the new series will not be available until all the selected features are computed. This allows fitting the same model for different components of the series or different series in the same input file, although it may also slow down the initial visualization of the series. It is recommended to deactivate the options that are not needed to have a faster and smooth transition between coordinate components. Also bear in mind that a model that has been adjusted in one series, may fail for another (for instance if fitting a logarithmic/exponential decay).
+The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously, which is useful if one wants to join the results from each coordinate component into a single file afterwards (a NEU/ENU file for instance). This works also when analyzing different columns using the 1D series format.  
+
+The `include in file` option will keep the removed outliers in the downloaded results file as commented lines.  
+
+<b><span style="color: red;">NEW FEATURE:</span></b> the new option `Scrolling` enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing/archiving a specific analysis, making reports or marking assignments. The quality of the full page screenshot may depend on the browser/extension used.  
+Alternatively, the user can download the full SARI interface from the web browser (usually by pressing Ctrl+s) into an HTML file together with the corresponding web files in a separate directory with a similar name. The downloaded HTML file represents a frozen SARI session (i.e., not connected to the server) that can be reopened later in the web browser even offline. The advantage of the HTML page compared to the fixed screenshot is that all the numeric values are available to be selected and copied, so the same analysis can be easily replicated in a fresh session. However, before opening the HTML file in a web browser, it needs to be modified first. A Bash script called `SARIwebpage.sh` available [here](https://github.com/alvarosantamariagomez/sari/blob/main/SARIwebpage.sh) does the modifications automatically.  
+Note: At this moment, the values of the UI interface including the selected options are only saved in the HTML file when using Mozilla Firefox. Other web browsers I have tested (Google Chromium and its derivatives: Google Chrome, Microsoft Edge and Opera) do not keep this information when saving the web page. I hope this bug will be fixed in a next Chromium et al. update.  
 
 <h3 id="ancillary-information"></h3>
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  
@@ -266,7 +273,9 @@ Notes on the noise analysis:
 
 # Interactive operation
 
-The top navigation bar contains the links to this *help page* and for plotting the coordinate components (1 or 3). It also contains two links at the right edge to `print` this help page into a pdf file and to `save` the results of the analysis. These two links will not be visible unless they are needed. To get back to the main program interface from this help page, click on any of the coordinate component tabs.
+The top navigation bar contains the links to this *help page* and for changing between the different coordinate components (unless a 1D series is used). It also contains two links at the right edge to `print` this help page into a pdf file and to `save` the results of the analysis. These two links will not be visible unless they are needed. To get back to the main program interface from this help page, click on any of the coordinate component tabs.
+
+SARI processes the time series of each coordinate component independently. However, most of the options and features activated while analyzing the series in one of the tab/components will still be active when changing the tab/component (if using a 3D series) or the column number (if using a 1D series). This implies that, when changing the series component, the visualization of the new series will not be available until all the selected features are computed. This allows fitting the same model for different components of the series or different series in the same input file, although it may also slow down the initial visualization of the series. It is recommended to deactivate the options that are not needed to have a faster and smooth transition between coordinate components. Also bear in mind that a model that has been adjusted in one series, may fail for another (for instance if fitting a logarithmic/exponential decay).
 
 One click on any plot will provide the coordinates of the clicked point in a space right under the plots. This is useful to obtain the series values, pinpoint discontinuity epochs or periodic lines in the spectrum.
 
@@ -280,20 +289,10 @@ For the same reason, when previously removed points are included back again into
 
 In addition to using the brushed areas, large residuals can be automatically excluded using the `auto toggle` button. Large is defined by providing the absolute *residual threshold* or the absolute *normalized residual*, i.e., the residual divided by its own error bar.
 
-The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously, which is useful if you want to join the results from each coordinate component into a single file afterwards (a NEU/ENU file for instance). It also works when analyzing many different columns using the 1D series format.  
-
-The `include in file` option will keep the removed points in the downloaded results file as commented lines.  
-
 The `reset` button will erase all the plots and all the parameters from the server memory, except the pointer to the *station.info* and the *custom offset* files which will remain ready to be used again (even if they are not shown to be uploaded, the `plot` and `list` options will still be available).  
 After finishing a series and before uploading a new one, it is mandatory to `reset` all the processing.  
 
 Some features require intensive and time-consuming processing (*noise analysis*, *automatic offset detection*, *wavelet*). In order to save server resources, after 15 min without user interaction, the server will kill the connection and go to sleep, and may even dream of electric sheep!  
-
-<b><span style="color: red;">NEW FEATURE:</span></b> the new option `Scrolling` on top left of the visualization panel enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing/archiving a specific analysis, making reports or marking assignments. The quality of the screenshot depends on the browser/extension used.  
-Alternatively, the user can download the full SARI interface from the web browser (usually by pressing Ctrl+s) into an HTML file together with the corresponding web files in a separate directory with a similar name. The downloaded HTML file represents a frozen SARI session (i.e., not connected to the server) that can be reopened later in the web browser even offline. The advantage of the HTML page compared to the fixed screenshot is that all the numeric values can be selected and copied, so the same analysis can be easily replicated in a fresh session.  
-Before opening the HTML file in a web browser, it needs to be modified first. A BASH script called `SARIwebpage.sh` available [here](https://github.com/alvarosantamariagomez/sari/blob/main/SARIwebpage.sh) does this automatically.  
-Note: The values of the input parameters and the selected options are only saved in the HTML file when using Mozilla Firefox. Other web browsers I have tested (Google Chromium and its derivatives: Google Chrome, Microsoft Edge and Opera) do not keep this information when saving the web page. This bug may be fixed in a next Chromium et al. update.  
-
 
 -----------------
 
@@ -346,7 +345,7 @@ Also, note that EKF and UKF are not necessarily providing the same fit to the se
 
 At this moment, I have not found the way to select the output directory on the client's side, where the user downloads the processed series, from the online server side in order to avoid the repetitive, and sometimes annoying, download prompt. This is related to server/client standard secure browsing, so not entirely my fault. At least, some web browsers provide extensions to automatically download to a specific directory given the file extension or to avoid the unnecessary *(1)*, *(2)*, ... added to the file name if downloaded several times.
 
-When running SARI on a Windows machine with a high-resolution screen, the plot width requested by the client changes by just a few pixels at times when the user is clicking and selecting an area on a plot. The change of the plot width is barely perceptible, but the shiny server reacts to these attribute requests and updates the plot, which is unexpected and quite annoying. This happens for both local (from RStudio) and remote (from shinyapps) connections.  
+When running SARI on a Windows machine with a high-resolution screen, the plot width requested by the client changes by just a few pixels sometimes when the user is clicking and selecting an area on a plot. The change of the plot width is barely perceptible, but the shiny server reacts to these attribute requests and updates the plot, which is unexpected and quite annoying. This happens for both local (from RStudio) and remote (from shinyapps) connections.  
 To avoid this, the width of all the plots in SARI are hold fixed to the first plot width attribute requested by the client when connecting to the server. The limitation of this patch is that the plots width will no longer change if the user changes the pixel ratio or the browser scaling during a SARI session. If that happens, it is recommended to open a new session on the server. Contact the [<a href="#author" target="_self">author</a>](#author) if you have any problem with the plot width or the plots updating themselves with no reason.
 
 -----------------
