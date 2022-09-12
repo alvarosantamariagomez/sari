@@ -1932,7 +1932,7 @@ server <- function(input,output,session) {
         if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
         shinyjs::hide("localDir")
         if (isTRUE(welcome)) {
-          showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "message", session = getDefaultReactiveDomain())
+          showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = "point_to_help", type = "message", session = getDefaultReactiveDomain())
           if (messages > 2) cat(file = stderr(), "Warning", "\n")
           if (isTruthy(input$tactile)) {
             if (input$tactile > 0) {
@@ -2345,7 +2345,7 @@ server <- function(input,output,session) {
           trans$kalman <- trans$kalman0[values$used_all_kf]
           trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf]
           if (length(trans$mod) != length(trans$mod0)) {
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
           }
         } else if (sum(values$used_all) == length(trans$mod0)) {
           trans$mod <- trans$mod0[values$used_all]
@@ -2382,7 +2382,7 @@ server <- function(input,output,session) {
             trans$kalman <- trans$kalman0[values$used_kf1]
             trans$kalman_unc <- trans$kalman_unc0[values$used_kf1]
             if (length(trans$mod) != length(trans$mod0)) {
-              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
             }
           } else if (sum(values$used1) == length(trans$mod0)) {
             trans$mod <- trans$mod0[values$used1]
@@ -2418,7 +2418,7 @@ server <- function(input,output,session) {
             trans$kalman <- trans$kalman0[values$used_kf2]
             trans$kalman_unc <- trans$kalman_unc0[values$used_kf2]
             if (length(trans$mod) != length(trans$mod0)) {
-              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
             }
           } else if (sum(values$used2) == length(trans$mod0)) {
             trans$mod <- trans$mod0[values$used2]
@@ -2454,7 +2454,7 @@ server <- function(input,output,session) {
             trans$kalman <- trans$kalman0[values$used_kf3]
             trans$kalman_unc <- trans$kalman_unc0[values$used_kf3]
             if (length(trans$mod) != length(trans$mod0)) {
-              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
             }
           } else if (sum(values$used3) == length(trans$mod0)) {
             trans$mod <- trans$mod0[values$used3]
@@ -2542,12 +2542,12 @@ server <- function(input,output,session) {
     if (isTruthy(comments) && grepl("^# SARI ", comments[1], ignore.case = F, perl = T)) {
       if (messages > 0) cat(file = stderr(), "Loading SARI file", "\n")
       if (!grepl(version, comments[1], ignore.case = F, perl = T)) {
-        showNotification("Warning: the SARI version used in the uploaded file is not the same as the current version", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("Warning: the SARI version used in the uploaded file is not the same as the current version", action = NULL, duration = 10, closeButton = T, id = "sari_version", type = "warning", session = getDefaultReactiveDomain())
       }
       if (sum(grepl("^# Model", comments, ignore.case = F, perl = T)) > 1) {
-        showNotification("The format of the uploaded file is not compatible.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("The format of the uploaded file is not compatible.", action = NULL, duration = 10, closeButton = T, id = "format_not_compatible", type = "error", session = getDefaultReactiveDomain())
       } else if (sum(grepl("^# Model", comments, ignore.case = F, perl = T)) < 1) {
-        showNotification("No model found in the uploaded file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("No model found in the uploaded file.", action = NULL, duration = 10, closeButton = T, id = "no_model", type = "error", session = getDefaultReactiveDomain())
       } else {
         if (sum(grepl("^# Model .*KF", comments, ignore.case = F, perl = T)) > 0) {
           #This is a KF fit
@@ -2737,7 +2737,7 @@ server <- function(input,output,session) {
         }
       }
     } else {
-      showNotification("Unable to find the SARI version in the uploaded file. Is this a SARI file?", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      showNotification("Unable to find the SARI version in the uploaded file. Is this a SARI file?", action = NULL, duration = 10, closeButton = T, id = "no_sari", type = "warning", session = getDefaultReactiveDomain())
     }
   })
   
@@ -2849,7 +2849,7 @@ server <- function(input,output,session) {
         period <- 1
       }
       if ((info$rangex / period) < 1) {
-        showNotification("Not enough data available to compute interannual differences.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("Not enough data available to compute interannual differences.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
         updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
         req(info$stop)
       }
@@ -2867,7 +2867,7 @@ server <- function(input,output,session) {
           trans$midas_sig <- 1.2533*1.4826*vel_mad/sqrt(length(vel_good)/4)
           trans$midas_all <- vel_good
         } else {
-          showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
           updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
         }
         if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
@@ -2883,12 +2883,12 @@ server <- function(input,output,session) {
             trans$midas_sig2 <- 1.2533*1.4826*vel_mad/sqrt(length(vel_good)/4)
             trans$midas_all <- vel_good
           } else {
-            showNotification("Not enough interannual differences to compute reliable trend.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
             updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
           }
         }
       } else {
-        showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
         updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
       } 
     } else {
@@ -3028,7 +3028,7 @@ server <- function(input,output,session) {
         }
         sy <- trans$sy
         if (any(sy <= 0) || any(is.na(sy))) {
-          showNotification("Some errorbar values are not valid. No weighting applied.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Some errorbar values are not valid. No weighting applied.", action = NULL, duration = 10, closeButton = T, id = "bad_errorbar", type = "error", session = getDefaultReactiveDomain())
           sy <- rep(1, length(y))
           updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
         }
@@ -3044,15 +3044,15 @@ server <- function(input,output,session) {
           apriori <- m$apriori
           req(model, apriori)
           if (messages > 1) cat(file = stderr(), model, "\n")
-          if (any(is.na(x))) {
-            showNotification("Some epoch values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          } else if (any(is.na(y))) {
-            showNotification("Some time series values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          } else if (any(is.na(sy))) {
-            showNotification("Some sigma values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          } else if (any(is.na(weights))) {
-            showNotification("Some sigma values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          } else {
+          # if (any(is.na(x))) {
+          #   showNotification("Some epoch values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          # } else if (any(is.na(y))) {
+          #   showNotification("Some time series values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          # } else if (any(is.na(sy))) {
+          #   showNotification("Some sigma values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          # } else if (any(is.na(weights))) {
+          #   showNotification("Some sigma values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          # } else {
             fit <- NULL
             fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
             if (!inherits(fit,"try-error") && !is.null(fit)) {
@@ -3096,7 +3096,7 @@ server <- function(input,output,session) {
                     info_out <- c(info_out, amp, amp_err, phase, phase_err)
                   } else {
                     if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
-                    showNotification(paste0("Unable to compute the amplitude and/or phase error from the sine and cosine factors of sinusoid ",ss,". Check the input sinusoidal parameters or the time series length and its time units."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                    showNotification(paste0("Unable to compute the amplitude and/or phase error from the sine and cosine factors of sinusoid ",ss,". Check the input sinusoidal parameters or the time series length and its time units."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
                     ss <- ss - 1
                   }
                 }
@@ -3128,9 +3128,9 @@ server <- function(input,output,session) {
               trans$unc <- NULL
               trans$res <- NULL
               trans$mod <- NULL
-              showNotification("Unable to fit the LS model. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("Unable to fit the LS model. Change the model components.", action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
             }
-          }
+          # }
         } else {
           trans$results <- NULL
           trans$res <- NULL
@@ -3175,7 +3175,7 @@ server <- function(input,output,session) {
         }
         sy <- trans$sy
         if (any(sy <= 0) || any(is.na(sy))) {
-          showNotification("Some errorbar values are not valid. No weighting applied.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Some errorbar values are not valid. No weighting applied.", action = NULL, duration = 10, closeButton = T, id = "no_weighting", type = "error", session = getDefaultReactiveDomain())
           sy <- rep(1, length(y))
           updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
         }
@@ -3185,7 +3185,7 @@ server <- function(input,output,session) {
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
         m <- model(x,y)
         if (length(m$apriori) < 2) {
-          showNotification("Not enough model components to run the KF. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Not enough model components to run the KF. Check the input values.", action = NULL, duration = 10, closeButton = T, id = "bad_model", type = "error", session = getDefaultReactiveDomain())
           req(info$stop)
         }
         req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
@@ -3210,7 +3210,7 @@ server <- function(input,output,session) {
           }
         }
         if (!isTruthy(info$regular)) {
-          showNotification("The series is not evenly sampled. The KF process noise will not change after a data gap.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          showNotification("The series is not evenly sampled. The KF process noise will not change after a data gap.", action = NULL, duration = 10, closeButton = T, id = "not_even", type = "warning", session = getDefaultReactiveDomain())
         }
         #Measurement function
         FFfunction <- function(x,k) {
@@ -3280,13 +3280,13 @@ server <- function(input,output,session) {
               HTML(paste(line1, line2, sep = '<br/>'))
             })
           } else {
-            showNotification("The input measurement error bounds are not valid. Skipping optimization.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("The input measurement error bounds are not valid. Skipping optimization.", action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
           }
         }
         ex1 <- list(m0 = apriori, C0 = diag(unc_ini), V = sigmaR^2, W = diag(m$processNoise))
         kfs <- NULL
         if (any(is.na(ex1$C0))) {
-          showNotification("Missing information required on the a priori state to run the Kalman filter. Check the input values", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Missing information required on the a priori state to run the Kalman filter. Check the input values", action = NULL, duration = 10, closeButton = T, id = "bad_a_priori_state", type = "error", session = getDefaultReactiveDomain())
           info$run <- F
           req(info$stop)
         }
@@ -3306,21 +3306,21 @@ server <- function(input,output,session) {
               }
               if (any(kfs_unc < 0)) {
                 kfs_unc[kfs_unc < 0] <- NA
-                showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the EKF fit.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the EKF fit.", action = NULL, duration = 15, closeButton = T, id = "bad_variance", type = "warning", session = getDefaultReactiveDomain())
               }
             } else {
               trans$results <- NULL
               trans$res <- NULL
               trans$mod <- NULL
               info$run <- F
-              showNotification("Unable to run the EKF smoother. Change the model components.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("Unable to run the EKF smoother. The error covariances of the initial state may be zero or too large", action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$results <- NULL
             trans$res <- NULL
             trans$mod <- NULL
             info$run <- F
-            showNotification("Unable to fit the EKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("Unable to fit the EKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
           }
         # UKF
         } else if (input$kf == 2) {
@@ -3337,21 +3337,21 @@ server <- function(input,output,session) {
               }
               if (any(kfs_unc < 0)) {
                 kfs_unc[kfs_unc < 0] <- NA
-                showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the UKF fit.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                showNotification("Negative estimated state variances were found and changed to NA. Something went wrong with the UKF fit.", action = NULL, duration = 15, closeButton = T, id = "bad_variance", type = "warning", session = getDefaultReactiveDomain())
               }
             } else {
               trans$results <- NULL
               trans$res <- NULL
               trans$mod <- NULL
               info$run <- F
-              showNotification("Unable to run the UKF smoother. The error covariances of the initial state may be zero or too large.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("Unable to run the UKF smoother. The error covariances of the initial state may be zero or too large.", action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$results <- NULL
             trans$res <- NULL
             trans$mod <- NULL
             info$run <- F
-            showNotification("Unable to fit the UKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("Unable to fit the UKF. Change the model parameters.", action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
           }
         }
         # Common EKF & UKF
@@ -3506,7 +3506,7 @@ server <- function(input,output,session) {
       yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
       lines(xfit, yfit, col = "red", lwd = 2) 
     } else {
-      showNotification("Unable to compute the histogram. Check the input series.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Unable to compute the histogram. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_histogram", type = "error", session = getDefaultReactiveDomain())
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
     }
   }, width = reactive(info$width), type = "cairo-png")
@@ -3549,7 +3549,7 @@ server <- function(input,output,session) {
       stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
       print(stats,digits = 4)
     } else {
-      showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
     }
   }, width = 180)
   
@@ -3615,7 +3615,7 @@ server <- function(input,output,session) {
           table <- as.data.table(serie, keep.rownames = T)
           uniques <- sum(setDT(table)[, .N, z]$N ==  1)
           if (uniques > 0) {
-            showNotification(paste0(uniques," data epochs are not repeated in the series. The waveform may be wrong at these epochs."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())          
+            showNotification(paste0(uniques," data epochs are not repeated in the series. The waveform may be wrong at these epochs."), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())          
           }
           average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2)), by = z])
           result <- merge(serie,average, by = "z")
@@ -3650,7 +3650,7 @@ server <- function(input,output,session) {
             }
           }, width = reactive(info$width), type = "cairo-png")
         } else {
-          showNotification("The period of the waveform is not valid. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("The period of the waveform is not valid. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_waveform_period", type = "error", session = getDefaultReactiveDomain())
           if (length(trans$pattern) > 0) {
             if (length(trans$res) > 0) {
               trans$mod <- trans$mod - trans$pattern
@@ -3673,17 +3673,18 @@ server <- function(input,output,session) {
   
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
+print(inputs$step)
     req(obs(), input$spectrum)
     if (is.na(inputs$long_period) && input$long_period != "") {
-      showNotification("The longest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("The longest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
     if (is.na(inputs$short_period) && input$short_period != "") {
-      showNotification("The shortest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("The shortest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_short", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
     if (is.na(inputs$ofac) && input$ofac != "") {
-      showNotification("The oversampling value is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("The oversampling value is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_oversampling", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
     if (messages > 0) cat(file = stderr(), "Setting periodogram limits", "\n")
@@ -3700,7 +3701,7 @@ server <- function(input,output,session) {
     # Setting longest period
     if (isTruthy(inputs$long_period)) {
       if (inputs$long_period > max_period) {
-        showNotification("The input longest period is out of bounds. Using the longest valid value instead.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("The input longest period is out of bounds. Using the longest valid value instead.", action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "warning", session = getDefaultReactiveDomain())
         updateTextInput(session, "long_period", value = max_period - 1/10^(info$decimalsx + 1))
         trans$fs <- NULL
         req(info$stop)
@@ -3719,7 +3720,7 @@ server <- function(input,output,session) {
     # Setting shortest period
     if (isTruthy(inputs$short_period)) {
       if (inputs$short_period < min_period) {
-        showNotification("The input shortest period is smaller than the propossed value. The periodogram may be aliased into the Nyquist period range.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The input shortest period is smaller than the propossed value. The periodogram may be aliased into the Nyquist period range.", action = NULL, duration = 10, closeButton = T, id = "bad_short", type = "warning", session = getDefaultReactiveDomain())
       }
       short_period <- inputs$short_period
     } else {
@@ -3734,7 +3735,7 @@ server <- function(input,output,session) {
     # Setting oversampling
     if (isTruthy(inputs$ofac)) {
       if (inputs$ofac < 0.01 || inputs$ofac > 100) {
-        showNotification("The input oversampling value is out of bounds [0.01 - 100]. Using 1 instead.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("The input oversampling value is out of bounds [0.01 - 100]. Using 1 instead.", action = NULL, duration = 10, closeButton = T, id = "bad_oversampling", type = "error", session = getDefaultReactiveDomain())
         trans$fs <- NULL
         updateTextInput(session, "ofac", value = 1)
         req(info$stop)
@@ -3775,7 +3776,7 @@ server <- function(input,output,session) {
       trans$col <- c(1,2,3,4,5)
       periodogram("all")
     } else {
-      showNotification("Negative, null or invalid period bounds for the periodogram. Check the inputs.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Negative, null or invalid period bounds for the periodogram. Check the inputs.", action = NULL, duration = 10, closeButton = T, id = "bad_periods", type = "error", session = getDefaultReactiveDomain())
       trans$fs <- NULL
       if ((input$tab == 1) || (input$format == 4)) {
         shinyjs::hide(id = "res1_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -3942,7 +3943,7 @@ server <- function(input,output,session) {
               crossover <- 2/inputs$short_period
             }
           } else {
-            showNotification("Unable to plot the noise power spectrum on top of the periodogram. Check the noise analysis results.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("Unable to plot the noise power spectrum on top of the periodogram. Check the noise analysis results.", action = NULL, duration = 10, closeButton = T, id = "no_noise_psd", type = "error", session = getDefaultReactiveDomain())
           }
           if (crossover > 0) {
             if (1/crossover <= inputs$short_period) {
@@ -4051,7 +4052,7 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       if (min_scale < 0.999*get.min.scale(t*trans$x) || max_scale > 1.001*get.max.scale(t*trans$x) || num_scale > as.integer(get.nscales(t*trans$x) + 1) || num_scale < 2) {
-        showNotification("The period bounds and/or resolution are not valid to compute the wavelet transform. Check the input values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("The period bounds and/or resolution are not valid to compute the wavelet transform. Check the input values.", action = NULL, duration = 10, closeButton = T, id = "no_wavelet", type = "error", session = getDefaultReactiveDomain())
         updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
         req(info$stop)
       }
@@ -4166,7 +4167,7 @@ server <- function(input,output,session) {
             if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
               trans$vondrak[1] <- low
             } else {
-              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$vondrak[1] <- NA
@@ -4177,7 +4178,7 @@ server <- function(input,output,session) {
             if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
               trans$vondrak[2] <- high
             } else {
-              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("Unable to smooth the series. Change the filter parameters", action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             trans$vondrak[2] <- NA
@@ -4203,7 +4204,7 @@ server <- function(input,output,session) {
           trans$filter <- NULL
           trans$filterRes <- NULL
         } else {
-          showNotification("Low-pass and high-pass periods are equal. Unable to smooth the series. Change the smoother parameters", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Low-pass and high-pass periods are equal. Unable to smooth the series. Change the smoother parameters", action = NULL, duration = 10, closeButton = T, id = "same_periods", type = "error", session = getDefaultReactiveDomain())
           trans$filter <- NULL
           trans$filterRes <- NULL
         }
@@ -4304,7 +4305,7 @@ server <- function(input,output,session) {
           Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]*(trans$x[t + 1] - trans$x[t])^(-k/4)} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = -1)
           Cfl <- Zscaled %*% t(Zscaled)
         } else {
-          showNotification("Max flicker noise value is equal or smaller than min flicker noise value. Change the flicker noise bounds.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Max flicker noise value is equal or smaller than min flicker noise value. Change the flicker noise bounds.", action = NULL, duration = 10, closeButton = T, id = "bad_flicker", type = "error", session = getDefaultReactiveDomain())
         }
       }
       if (input$randomw) {
@@ -4331,7 +4332,7 @@ server <- function(input,output,session) {
           Zscaled[1,1] <- Zscaled[2,2]
           Crw <- Zscaled %*% t(Zscaled)
         } else {
-          showNotification("Max random-walk noise value is equal or smaller than min random-walk noise value. Change the randow-walk noise bounds.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Max random-walk noise value is equal or smaller than min random-walk noise value. Change the randow-walk noise bounds.", action = NULL, duration = 10, closeButton = T, id = "bad_rw", type = "error", session = getDefaultReactiveDomain())
         }
       }
       if (input$powerl) {
@@ -4364,7 +4365,7 @@ server <- function(input,output,session) {
           }
           variances[component] <- 2
         } else {
-          showNotification("Max power-law noise value is equal or smaller than min power-law noise value. Change the power-law noise bounds.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Max power-law noise value is equal or smaller than min power-law noise value. Change the power-law noise bounds.", action = NULL, duration = 10, closeButton = T, id = "bad_pl", type = "error", session = getDefaultReactiveDomain())
         }
       }
       loglik <- function(x) {
@@ -4623,7 +4624,7 @@ server <- function(input,output,session) {
             })
           } else {
             trans$mle <- NULL
-            showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
           }
           if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
         })
@@ -4651,7 +4652,7 @@ server <- function(input,output,session) {
       }
       segment <- input$segmentLength/100
       if (segment*length(trans$x) < 3) {
-        showNotification("The segment size is too small for the series sampling. Consider using a larger segment size.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("The segment size is too small for the series sampling. Consider using a larger segment size.", action = NULL, duration = 10, closeButton = T, id = "bad_search", type = "error", session = getDefaultReactiveDomain())
         req(info$stop)
       }
       lag <- 1
@@ -4674,7 +4675,7 @@ server <- function(input,output,session) {
         })
       })
     } else {
-      showNotification("Finding discontinuities is only possible from detrended series or, more generally, residual series.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Finding discontinuities is only possible from detrended series or, more generally, residual series.", action = NULL, duration = 10, closeButton = T, id = "no_search", type = "error", session = getDefaultReactiveDomain())
     }
   })
   
@@ -4694,7 +4695,7 @@ server <- function(input,output,session) {
         }
         collect(file_out)
       } else {
-        showNotification("Download directory not found. File download skipped.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("Download directory not found. File download skipped.", action = NULL, duration = 10, closeButton = T, id = "no_directory", type = "error", session = getDefaultReactiveDomain())
       }
     })
   })
@@ -5392,19 +5393,19 @@ server <- function(input,output,session) {
       num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
       time_needed <- ceiling(0.000588*num_scale*num_epochs/60)
       if (time_needed > 29) {
-        showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min. WARNING: the server may kill the connection before the wavelet finishes!"), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min. WARNING: the server may kill the connection before the wavelet finishes!"), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "error", session = getDefaultReactiveDomain())
       } else {
-        showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain())
       }
     } else {
-      showNotification(paste0("Invalid bounds to compute the wavelet. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification(paste0("Invalid bounds to compute the wavelet. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_wavelet", type = "error", session = getDefaultReactiveDomain())
     }
   })
   
   # Observe time units ####
   observeEvent(input$tunits, {
     if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
-      showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = "new_units", type = "warning", session = getDefaultReactiveDomain())
     }
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       info$run <- F
@@ -5854,7 +5855,7 @@ server <- function(input,output,session) {
     }
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       if (isTruthy(brush1)) {
-        showNotification("It is not possible to toggle points from the series plot after running a Kalman filter. Consider removing points from the residuals plot or restoring points by reseting all the toggled points.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("It is not possible to toggle points from the series plot after running a Kalman filter. Consider removing points from the residuals plot or restoring points by reseting all the toggled points.", action = NULL, duration = 10, closeButton = T, id = "no_toggle", type = "warning", session = getDefaultReactiveDomain())
         req(info$stop)
       } else {
         series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
@@ -5936,7 +5937,7 @@ server <- function(input,output,session) {
           }
         } 
       } else {
-        showNotification("No point was selected to be removed manually. Check the selected area.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("No point was selected to be removed manually. Check the selected area.", action = NULL, duration = 10, closeButton = T, id = "no_point_manual", type = "warning", session = getDefaultReactiveDomain())
       }
     }
   }, priority = 4)
@@ -5988,13 +5989,13 @@ server <- function(input,output,session) {
         excluding_plot <- abs(joint$res/joint$sy) > abs(inputs$thresholdResN)
         excluding <- excluding_plot
       } else {
-        showNotification("The normalised residual threshold is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The normalised residual threshold is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_normalised_threshold", type = "warning", session = getDefaultReactiveDomain())
       }
     }
     if (nchar(input$thresholdRes) > 0) {
       if (!is.na(inputs$thresholdRes)) {
         if (abs(inputs$thresholdRes) < min(abs(residuals))) {
-          showNotification("The residual threshold will remove all data from the residual series. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())	        
+          showNotification("The residual threshold will remove all data from the residual series. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())	        
         } else {
           if (messages > 0) cat(file = stderr(), "Limit absolute residual ", inputs$thresholdRes, "\n")
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -6005,7 +6006,7 @@ server <- function(input,output,session) {
           excluding <- excluding + excluding_res > 0
         }
       } else {
-        showNotification("The residual threshold is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The residual threshold is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())
       }
     }
     if (isTruthy(excluding) && sum(excluding) > 0) {
@@ -6039,7 +6040,7 @@ server <- function(input,output,session) {
         }
       }
     } else {
-      showNotification("No point was selected to be removed automatically. Check the input threshold.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      showNotification("No point was selected to be removed automatically. Check the input threshold.", action = NULL, duration = 10, closeButton = T, id = "no_point_auto", type = "warning", session = getDefaultReactiveDomain())
     }
   }, priority = 4)
   
@@ -6385,7 +6386,8 @@ server <- function(input,output,session) {
         ids_info <- file$id1
       } else {
         ids_info <- ""
-        showNotification("Problem extracting the series ID from the file name. No series ID will be used", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        removeNotification(id = "ids_info", session = getDefaultReactiveDomain())
+        showNotification("Problem extracting the series ID from the file name. No series ID will be used", action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
       }
       updateTextInput(session, inputId = "ids", value = ids_info)
       # Getting data series from input file
@@ -6394,7 +6396,8 @@ server <- function(input,output,session) {
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
         if (input$format < 4 && input$format != input$format2) {
-          showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          removeNotification(id = "formats", session = getDefaultReactiveDomain())
+          showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
         }
         table2 <- extract_table(input$series2$datapath,sep2,input$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2))
       }
@@ -6464,7 +6467,7 @@ server <- function(input,output,session) {
             }
           })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
         }
-        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       }
       if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
         if (input$format == 4) {
@@ -6491,7 +6494,7 @@ server <- function(input,output,session) {
             }
           })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
         }
-        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       }
       # Checking series values and time order 
       if (!is.null(table)) {
@@ -6499,16 +6502,16 @@ server <- function(input,output,session) {
         table <- table[!is.infinite(rowSums(table)),]
         if (anyNA(table) && is.null(table2)) {
           table <- na.omit(table)
-          showNotification("The input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          showNotification("The input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
         }
         if (anyNA(table2)) {
           table2 <- na.omit(table2)
-          showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
         }
         # Resampling the series
         if (input$average) {
           if (nchar(input$step) > 0 && is.na(inputs$step)) {
-            showNotification("Time window length is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("The re-sampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
           } else if (isTruthy(inputs$step)) {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
               showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
@@ -6532,7 +6535,7 @@ server <- function(input,output,session) {
               }
               table <- na.omit(table)
             } else {
-              showNotification("The re-sampling period is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("The re-sampling period is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
             }
           }
         }
@@ -6542,7 +6545,7 @@ server <- function(input,output,session) {
             NULL
           } else {
             if (any(diff(table$x) <= 0)) {
-              showNotification("Negative or null increment in abscissa (probably 2 or more points at the same epoch).", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("Negative or null increment in abscissa (probably 2 or more points at the same epoch).", action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
               NULL
             } else {
               info$minx <- min(table$x, na.rm = T)
@@ -6552,21 +6555,21 @@ server <- function(input,output,session) {
             }
           }
         } else {
-          showNotification("The input data file is empty or contains wrong data. Check if all columns contain the same amount of numeric values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("The input data file is empty or contains wrong data. Check if all columns contain the same amount of numeric values.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
           NULL
         }
       } else {
-        showNotification("The input data file is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        showNotification("The input data file is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         NULL
       }
     } else {
-      showNotification("The input data file is empty or contains wrong data. Check all columns contain the same amount of numeric values.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("The input data file is empty or contains wrong data. Check all columns contain the same amount of numeric values.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
       NULL
     }
   }
   get_columns <- function(file,sep,format) {
     if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
-      showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = "rinex_file", type = "error", session = getDefaultReactiveDomain())
       # req(info$stop)
       return(0)
     }
@@ -6580,14 +6583,13 @@ server <- function(input,output,session) {
       skip <- 0
     }
     if (!isTruthy(skip)) {
-      showNotification("Unable to read the expeced header from PBO/NGL series. Check the requested series format", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Unable to read the expeced header from PBO/NGL series. Check the requested series format", action = NULL, duration = 15, closeButton = T, id = "no_head", type = "error", session = getDefaultReactiveDomain())
       return(0)
     }
     columns <- try(range(count.fields(file, sep = sep, comment.char = "#", skip = skip)), silent = F)
     if (isTruthy(columns))  {
       if (format != 2 && columns[1] != columns[2]) {
-        showNotification("The input file contains different number of columns per row. Check the requested input file format. It may contain uncommented text strings.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-        # req(info$stop)
+        showNotification("The input file contains different number of columns per row. Check the requested input file format. It may contain uncommented text strings.", action = NULL, duration = 15, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
         return(0)
       }
       columns <- columns[1]
@@ -6595,47 +6597,41 @@ server <- function(input,output,session) {
         if (format == 1) { #NEU/ENU
           if (isTruthy(input$sigmas)) {
             if (columns < 7) {
-              showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              # req(info$stop)
+              showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
               return(0)
             }
           } else {
             if (columns < 4) {
-              showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              # req(info$stop)
+              showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
               return(0)
             }
           }
         } else if (format == 2) { #PBO
           if (columns < 24) {
-            showNotification("The number of columns in the input PBO file is less than 24. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            # req(info$stop)
+            showNotification("The number of columns in the input PBO file is less than 24. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
             return(0)
           }
         } else if (format == 3) { #NGL (on May 19, 2022: 3 columns were added to the tenv3 format; before it had only 20 columns)
           if (columns < 20) {
-            showNotification("The number of columns in the input NGL file is less than 20. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-            # req(info$stop)
+            showNotification("The number of columns in the input NGL file is less than 20. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
             return(0)
           }
         } else if (format == 4) { # 1D
           if (isTruthy(input$sigmas)) {
             if (columns < 3) {
-              showNotification("The number of columns in the input file is less than 3. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              # req(info$stop)
+              showNotification("The number of columns in the input file is less than 3. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
               return(0)
             }
           } else {
             if (columns < 2) {
-              showNotification("The number of columns in the input file is less than 2. Check the series format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-              # req(info$stop)
+              showNotification("The number of columns in the input file is less than 2. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
               return(0)
             }
           }
         } 
       }
     } else {
-      showNotification("Impossible to read the columns from the input file. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Impossible to read the columns from the input file. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
     columns
@@ -6670,7 +6666,7 @@ server <- function(input,output,session) {
         if (input$tunits == 1) {
           extracted$x <- tableAll[,3]
         } else if (input$tunits == 2) {
-          showNotification("There is no time units \"weeks\" in a the PBO format. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("There is no time units \"weeks\" in a the PBO format. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = "no_weeks", type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "units", label = "Time units", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
           req(info$stop)
         } else if (input$tunits == 3) {
@@ -6707,7 +6703,7 @@ server <- function(input,output,session) {
               if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
                 extracted$sy1 <- tableAll[[errorBar]]
               } else {
-                showNotification("Invalid column number for the series error bars. Provide a valid column number or uncheck the error bars option.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                showNotification("Invalid column number for the series error bars. Provide a valid column number or uncheck the error bars option.", action = NULL, duration = 10, closeButton = T, id = "no_error_bars", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               }
             } else {
@@ -6747,17 +6743,17 @@ server <- function(input,output,session) {
       }
       if (length(stationCartesian[!is.na(stationCartesian)]) == 3 && length(stationGeo[!is.na(stationGeo)]) == 2 && length(poleCartesian[!is.na(poleCartesian)]) == 3) {
         if (stationGeo[1] < -90 || stationGeo[1] > 90 || stationGeo[2] > 360 || stationGeo[2] < -360) {
-          showNotification("Station coordinates out of bounds. Check the input values.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Station coordinates out of bounds. Check the input values.", action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
           req(info$stop)
         }
         if (sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) < 6355000*scaling || sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) > 6385000*scaling) {
-          showNotification("Station coordinates out of bounds. Check the input values.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Station coordinates out of bounds. Check the input values.", action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
           req(info$stop)
         }
         if (sqrt(poleCartesian[1]^2 + poleCartesian[2]^2 + poleCartesian[3]^2) > 2) {
-          showNotification("Euler pole parameters out of bounds. Check the input values.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          showNotification("Euler pole parameters out of bounds. Check the input values.", action = NULL, duration = 15, closeButton = T, id = "bad_pole", type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
           req(info$stop)
         }
@@ -6775,14 +6771,14 @@ server <- function(input,output,session) {
           extracted$y3 <- extracted$y3 - trans$plate[3]*(extracted$x - mean(extracted$x))
         }
       } else {
-        showNotification("Problem reading the station coordinates and/or the Euler pole parameters. Check the input values.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("Problem reading the station coordinates and/or the Euler pole parameters. Check the input values.", action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
         updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
       }
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
       extracted
     } else {
-      showNotification("Non numeric values extracted from the input file. Check the input file or the requested format.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      showNotification("Non numeric values extracted from the input file. Check the input file or the requested format.", action = NULL, duration = 15, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
   }
@@ -6866,7 +6862,7 @@ server <- function(input,output,session) {
         } else {
           ap_rate <- as.numeric(input$Trend0)
           if (input$eTrend0 == 0) {
-            showNotification("The a priori trend error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("The a priori trend error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "no_trend_error", type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
           } else {
             sigma_rate <- as.numeric(input$eTrend0)  
@@ -6893,7 +6889,7 @@ server <- function(input,output,session) {
           } else {
             ap_intercept <- as.numeric(input$Intercept0)
             if (input$eIntercept0 == 0) {
-              showNotification("The a priori intercept error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification("The a priori intercept error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "no_intercept_error", type = "error", session = getDefaultReactiveDomain())
               req(info$stop)
             } else {
               sigma_intercept <- as.numeric(input$eIntercept0)
@@ -6904,7 +6900,7 @@ server <- function(input,output,session) {
           if (!is.na(as.numeric(input$TrendDev))) {
             noise <- as.numeric(input$TrendDev)
           } else {
-            showNotification("The a process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification("The a process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_rate_noise", type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
           } 
         } else {
@@ -7001,7 +6997,7 @@ server <- function(input,output,session) {
             }
             if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
               if (f < 1/abs(info$rangex)) {
-                showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
               label_sin <- paste("S",i,sep = "")
@@ -7044,7 +7040,7 @@ server <- function(input,output,session) {
               apriori[[label_cos]] <- as.numeric(S0[i])
               if (eS0[i] == 0) {
                 info$run <- F
-                showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               } else {
                 error[[label_cos]] <- as.numeric(eS0[i])
@@ -7060,11 +7056,11 @@ server <- function(input,output,session) {
                     processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
                   }
                 } else {
-                  showNotification(paste("The process noise value for the sinusoid ",i," is missing or is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+                  showNotification(paste("The process noise value for the sinusoid ",i," is missing or is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_noise", type = "error", session = getDefaultReactiveDomain())
                 }
               }
             } else {
-              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
             }
           }
           line_S0 <- paste(sprintf("%.7f",as.numeric(S0)), collapse = ", ")
@@ -7135,7 +7131,7 @@ server <- function(input,output,session) {
                 }
               }
             } else {
-              showNotification(paste0("The epoch given for offset #",i + 1," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+              showNotification(paste0("The epoch given for offset #",i + 1," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "error", session = getDefaultReactiveDomain())
               info$run <- F
               req(info$stop)
             }
@@ -7218,7 +7214,7 @@ server <- function(input,output,session) {
                     } else {
                       x0 <- 0
                       y0 <- 0
-                      showNotification("Not enough data to obtain the a priori values of the exponential decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                      showNotification("Not enough data to obtain the a priori values of the exponential decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = "no_exponential", type = "warning", session = getDefaultReactiveDomain())
                     }
                     x1 <- apriori_x_after[apriori_x_after >= forward - sample/2 & apriori_x_after < forward + sample/2]
                     y1 <- flat[apriori_x_after >= forward - sample/2 & apriori_x_after < forward + sample/2]
@@ -7242,7 +7238,7 @@ server <- function(input,output,session) {
                       }
                     }
                   } else {
-                    showNotification("Not enough data to obtain the a priori values of the exponential decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                    showNotification("Not enough data to obtain the a priori values of the exponential decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = "no_exponential", type = "warning", session = getDefaultReactiveDomain())
                   }
                 }
               }
@@ -7375,7 +7371,7 @@ server <- function(input,output,session) {
                     } else {
                       x0 <- 0
                       y0 <- 0
-                      showNotification("Not enough data to guess the a priori values of the logarithmic decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                      showNotification("Not enough data to guess the a priori values of the logarithmic decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = "no_logarithmic", type = "warning", session = getDefaultReactiveDomain())
                     }
                     x1 <- apriori_x_after[apriori_x_after > forward - sample & apriori_x_after <= forward]
                     y1 <- flat[apriori_x_after > forward - sample & apriori_x_after <= forward]
@@ -7402,7 +7398,7 @@ server <- function(input,output,session) {
                       eTL0[i] <- sd(unlist(tl))
                     }
                   } else {
-                    showNotification("Not enough data to obtain the a priori values of the logarithmic decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+                    showNotification("Not enough data to guess the a priori values of the logarithmic decay. The a priori values must be provided to continue.", action = NULL, duration = 10, closeButton = T, id = "no_logarithmic", type = "warning", session = getDefaultReactiveDomain())
                   }
                 }
               }
@@ -7557,7 +7553,7 @@ server <- function(input,output,session) {
       }
       return(list(ante,rece))
     } else {
-      showNotification("The input sitelog file is empty or has a wrong format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      showNotification("The input sitelog file is empty or has a wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_sitelog", type = "warning", session = getDefaultReactiveDomain())
       return(NULL)
     }
   }
@@ -7589,7 +7585,7 @@ server <- function(input,output,session) {
           }
         }
       } else {
-        showNotification("The input station.info file is empty or has a wrong format.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The input station.info file is empty or has a wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_stationinfo", type = "warning", session = getDefaultReactiveDomain())
       }
       reces <- unique(reces)
       antes <- unique(antes)
@@ -7669,7 +7665,7 @@ server <- function(input,output,session) {
           } else {
             if (cols[2] > 2 && info$custom_warn == 0) {
               info$custom_warn <- 1
-              showNotification("The input custom discontinuity file contains more than 2 columns. Only the first 2 will be used.", action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification("The input custom discontinuity file contains more than 2 columns. Only the first 2 will be used.", action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "warning", session = getDefaultReactiveDomain())
             }
             if (length(table[table$X2 == x]) > 0) {
               changes <- as.numeric(unique(unlist(table$X1[table$X2 == x])))
@@ -7786,7 +7782,7 @@ server <- function(input,output,session) {
     xdim <- n - 3
     sr <- as.numeric(tail(x, n = 1) - x[1])
     if (p/sr >= 0.1) {
-      showNotification("The input period of the Vondrak filter is larger than T/10. Results may be unreliable.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      showNotification("The input period of the Vondrak filter is larger than T/10. Results may be unreliable.", action = NULL, duration = 10, closeButton = T, id = "bad_vondrak_period", type = "warning", session = getDefaultReactiveDomain())
     }
     eps <- ((10^4.64)*p^-6)/xdim
     kmoy <- 10
