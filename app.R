@@ -6670,7 +6670,7 @@ print(inputs$step)
           updateRadioButtons(session, inputId = "units", label = "Time units", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
           req(info$stop)
         } else if (input$tunits == 3) {
-          extracted$x <- decimal_date(strptime(paste(tableAll[,1],tableAll[,2]),format = '%Y%m%d %H%M%S'))
+          extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S'))
         }
       }
     } else if (format == 3) { #NGL
