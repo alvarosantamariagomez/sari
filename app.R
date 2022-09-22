@@ -2101,7 +2101,7 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$PolyCoef <- suppressWarnings((trimws(input$PolyCoef, which = "both", whitespace = "[ \t\r\n]")))
+    inputs$PolyCoef <- suppressWarnings(as.numeric((trimws(input$PolyCoef, which = "both", whitespace = "[ \t\r\n]"))))
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
@@ -7460,56 +7460,60 @@ print(inputs$step)
       }
       # * Polynomial model ####
       if ("Polynomial" %in% input$model) {
-        if (nchar(inputs$PolyCoef) > 0 && !is.na(inputs$PolyCoef) && inputs$PolyCoef > 1 && inputs$PolyCoef < 20) {
-          P0 <- unlist(strsplit(input$P0, split = ","))
-          eP0 <- unlist(strsplit(input$eP0, split = ","))
-          if (!is.na(inputs$PolyRef)) {
-            refp <- inputs$PolyRef
-          } else {
-            if ("Linear" %in% input$model) {
-              refp <- reft
+        if (nchar(input$PolyCoef) > 0) {
+          if (!is.na(inputs$PolyCoef) && inputs$PolyCoef > 1 && inputs$PolyCoef < 20) {
+            P0 <- unlist(strsplit(input$P0, split = ","))
+            eP0 <- unlist(strsplit(input$eP0, split = ","))
+            if (!is.na(inputs$PolyRef)) {
+              refp <- inputs$PolyRef
             } else {
-              if (input$fitType == 1) {
-                refp <- mean(x, na.rm = T)
-              } else if (input$fitType == 2) {
-                refp <- x[1]
-              }
-            }
-            updateTextInput(session, "PolyRef", value = refp)
-            if (input$fitType == 1) {
-              req(info$stop)
-            }
-          }
-          text_rate <- sprintf("%f",as.numeric(refp))
-          i <- 0
-          for (degree in 2:inputs$PolyCoef) {
-            i <- i + 1
-            if (identical(P0[i],character(0)) || is.na(P0[i])) {
-              P0[i] <- 0
-              if (input$fitType == 2) {
-                if (isTruthy(match(paste0("P",degree), trans$names))) {
-                  P0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names)]
-                  eP0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names) + length(trans$names)]/sqrt(length(trans$x))
-                } else {
-                  eP0[i] <- 1
+              if ("Linear" %in% input$model) {
+                refp <- reft
+              } else {
+                if (input$fitType == 1) {
+                  refp <- mean(x, na.rm = T)
+                } else if (input$fitType == 2) {
+                  refp <- x[1]
                 }
-                line_P0 <- paste(sprintf("%f",as.numeric(P0)), collapse = ", ")
-                line_eP0 <- paste(sprintf("%f",as.numeric(eP0)), collapse = ", ")
-                updateTextInput(session, "P0", value = line_P0)
-                updateTextInput(session, "eP0", value = line_eP0)
+              }
+              updateTextInput(session, "PolyRef", value = refp)
+              if (input$fitType == 1) {
+                req(info$stop)
               }
             }
-            info$run <- T
-            label <- paste0("P",degree)
-            model <- paste(model, paste0(label,"*(x-",text_rate,")^",degree), sep = " + ")
-            model_lm <- paste(model_lm, paste0("x^",degree), sep = " + ")
-            model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*(x[k]-",text_rate,")^",degree), sep = " + ")
-            model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*(x[k]-",text_rate,")^",degree), sep = " + ")
-            j <- j + 1
-            apriori[[label]] <- as.numeric(P0[i])
-            error[[label]] <- as.numeric(eP0[i])
-            nouns <- c(nouns, label)
-            processNoise <- c(processNoise, 0)
+            text_rate <- sprintf("%f",as.numeric(refp))
+            i <- 0
+            for (degree in 2:inputs$PolyCoef) {
+              i <- i + 1
+              if (identical(P0[i],character(0)) || is.na(P0[i])) {
+                P0[i] <- 0
+                if (input$fitType == 2) {
+                  if (isTruthy(match(paste0("P",degree), trans$names))) {
+                    P0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names)]
+                    eP0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names) + length(trans$names)]/sqrt(length(trans$x))
+                  } else {
+                    eP0[i] <- 1
+                  }
+                  line_P0 <- paste(sprintf("%f",as.numeric(P0)), collapse = ", ")
+                  line_eP0 <- paste(sprintf("%f",as.numeric(eP0)), collapse = ", ")
+                  updateTextInput(session, "P0", value = line_P0)
+                  updateTextInput(session, "eP0", value = line_eP0)
+                }
+              }
+              info$run <- T
+              label <- paste0("P",degree)
+              model <- paste(model, paste0(label,"*(x-",text_rate,")^",degree), sep = " + ")
+              model_lm <- paste(model_lm, paste0("x^",degree), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*(x[k]-",text_rate,")^",degree), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*(x[k]-",text_rate,")^",degree), sep = " + ")
+              j <- j + 1
+              apriori[[label]] <- as.numeric(P0[i])
+              error[[label]] <- as.numeric(eP0[i])
+              nouns <- c(nouns, label)
+              processNoise <- c(processNoise, 0)
+            }
+          } else {
+            showNotification("The requested degree of the polynomial is not valid. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "error", session = getDefaultReactiveDomain())
           }
         }
       }
