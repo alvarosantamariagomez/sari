@@ -7647,7 +7647,7 @@ print(inputs$step)
     req(x,z)
     changes <- c()
     cols <- range(count.fields(z$datapath, comment.char = "#"))
-    if (!is.na(cols)) {
+    if (!is.na(cols[1]) && !is.na(cols[2])) {
       if (cols[1] > 1) {
         col <- 2
       } else {
