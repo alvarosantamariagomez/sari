@@ -1855,7 +1855,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T)
+                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -1899,7 +1899,6 @@ server <- function(input,output,session) {
   
   # Welcome ####
   observe({
-    if (messages > 2) cat(file = stderr(), paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio), "\n")
     # updateNavbarPage(session, inputId = "tab", selected = "1")
     req(input$size)
     if (length(input$isMobile) > 0 && input$isMobile) {
@@ -1949,6 +1948,11 @@ server <- function(input,output,session) {
           }
           welcome <- F
         }
+      }
+      if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
+      if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
+      if (info$pixelratio != session$clientData$pixelratio) {
+        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
       }
     }
   }, priority = 2000)
