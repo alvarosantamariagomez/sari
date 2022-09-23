@@ -3108,7 +3108,9 @@ server <- function(input,output,session) {
               }
               trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
               if (isTruthy(synthesis$sigma)) {
-                trans$reserror <- sqrt( weights^-1 - trans$moderror^2 ) * synthesis$sigma
+                if (!any(1/weights < trans$moderror^2)) {
+                  trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
+                }
                 trans$moderror <- trans$moderror * synthesis$sigma
               }
               trans$mod <- mod
@@ -7966,7 +7968,9 @@ server <- function(input,output,session) {
       if (length(trans$moderror) > 0) {
         OutPut$df$Sigma.Model <- format(trans$moderror,nsmall = info$decimalsy, digits = 1, trim = F,scientific = F)
       }
-      OutPut$df$Sigma.Residuals <- format(trans$reserror,nsmall = info$decimalsy, digits = 1, trim = F,scientific = F)
+      if (length(trans$reserror) > 0) {
+        OutPut$df$Sigma.Residuals <- format(trans$reserror,nsmall = info$decimalsy, digits = 1, trim = F,scientific = F)
+      }
     }
     if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
