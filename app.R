@@ -1854,7 +1854,7 @@ server <- function(input,output,session) {
   
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
-                         custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
+                         custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = T)
@@ -5620,7 +5620,6 @@ server <- function(input,output,session) {
     req(file$primary)
     if (input$optionSecondary > 0) {
       if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
-      info$input_warn <- 0
       data <- digest()
       obs(data)
     }
@@ -5690,7 +5689,6 @@ server <- function(input,output,session) {
   observeEvent(c(input$series, input$separator, input$format, input$format2, inputs$epoch, inputs$epoch2, input$separator2), {
     req(trans$res)
     if (messages > 0) cat(file = stderr(), "Deleting fit", "\n")
-    info$input_warn <- 0
     trans$res <- NULL
     trans$reserror <- NULL
     trans$results <- NULL
@@ -5786,7 +5784,6 @@ server <- function(input,output,session) {
                           "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                           file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
-    info$input_warn <- 0
     data <- digest()
     if (!is.null(data)) {
       obs(data)
