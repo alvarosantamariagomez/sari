@@ -182,9 +182,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                             ')
                 ),
                 
-                # Sidebar menu ####
                 sidebarLayout(position = "left", fluid = T,
                               div( id = "menu_all", 
+                                   
+                                   # Sidebar menu ####
                                    sidebarPanel(
                                      width = 4,
                                      style = "position:fixed;width:inherit;",
@@ -1417,7 +1418,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                 actionButton(inputId = "browser", label = "Debug pit stop"),
                                                                 style = "primary")
                                      )
-                                   )),
+                                   )
+                              ),
                               
                               # Visualization panel ####
                               mainPanel(
@@ -1855,7 +1857,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, input_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL)
+                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = T)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
@@ -1888,18 +1890,15 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
-  welcome <- F # welcoming message for a remote connection
   debug <- F # saving the environment 
   messages <- 4 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
   toggleClass( # disabling clicking on SARI name (panic button)
     class = "disabled",
     selector = "#tab li a[data-value=0]"
   )
-  # updateNavbarPage(session, inputId = "tab", selected = "1")
   
   # Welcome ####
   observe({
-    # updateNavbarPage(session, inputId = "tab", selected = "1")
     req(input$size)
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), "Mobil connection ", "\n")
@@ -1922,15 +1921,20 @@ server <- function(input,output,session) {
         tags$h3(style = "color: blue; text-align: center;", "https://alvarosg.shinyapps.io/sari")
       ))
     } else {
+      if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
+      if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
+      if (info$pixelratio != session$clientData$pixelratio) {
+        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+      }
       if (local) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
       } else {
         if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
-        if (messages > 2) cat(file = stderr(), "Pixel ratio ", pixelratio, "\n")
+        if (messages > 2) cat(file = stderr(), "Pixel ratio ", info$pixelratio, "\n")
         if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
         shinyjs::hide("localDir")
-        if (isTRUE(welcome)) {
+        if (isTRUE(info$welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = "point_to_help", type = "message", session = getDefaultReactiveDomain())
           if (messages > 2) cat(file = stderr(), "Warning", "\n")
           if (isTruthy(input$tactile)) {
@@ -1946,13 +1950,8 @@ server <- function(input,output,session) {
               ))
             }
           }
-          welcome <- F
+          info$welcome <- F
         }
-      }
-      if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
-      if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
-      if (info$pixelratio != session$clientData$pixelratio) {
-        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
       }
     }
   }, priority = 2000)
@@ -3048,15 +3047,6 @@ server <- function(input,output,session) {
           apriori <- m$apriori
           req(model, apriori)
           if (messages > 1) cat(file = stderr(), model, "\n")
-          # if (any(is.na(x))) {
-          #   showNotification("Some epoch values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          # } else if (any(is.na(y))) {
-          #   showNotification("Some time series values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          # } else if (any(is.na(sy))) {
-          #   showNotification("Some sigma values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          # } else if (any(is.na(weights))) {
-          #   showNotification("Some sigma values are not valid. Check input file.", action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
-          # } else {
             fit <- NULL
             fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
             if (!inherits(fit,"try-error") && !is.null(fit)) {
@@ -3134,7 +3124,6 @@ server <- function(input,output,session) {
               trans$mod <- NULL
               showNotification("Unable to fit the LS model. Change the model components.", action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
             }
-          # }
         } else {
           trans$results <- NULL
           trans$res <- NULL
@@ -3677,7 +3666,6 @@ server <- function(input,output,session) {
   
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
-print(inputs$step)
     req(obs(), input$spectrum)
     if (is.na(inputs$long_period) && input$long_period != "") {
       showNotification("The longest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "error", session = getDefaultReactiveDomain())
@@ -3886,8 +3874,6 @@ print(inputs$step)
         spectrum_y <- trans$psd
         trans$spectra <- cbind(1/trans$fs, trans$psd[,!is.na(colSums(trans$psd))])
         ylab <- "Power"
-      } else {
-        #
       }
       title <- substring(paste(trans$title[!is.na(trans$title)],collapse = ""), 1, nchar(paste(trans$title[!is.na(trans$title)],collapse = "")) - 2)
       if (is.null(ranges$x3)) {
@@ -5466,36 +5452,7 @@ print(inputs$step)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 100)
-  
-  # Observe download ####
-#   observeEvent(input$tab, {
-#     if (input$tab == 5) {
-#       downloadHandler(
-#         filename = function() {
-#           if (input$format != 4) {
-#             paste0(file$primary$name, "_", input$tab, ".sari")
-#           } else {
-#             paste0(file$primary$name, ".sari")
-#           }
-#         },
-#         content = function(file) {
-#           collect(file)
-#         }
-#       )
-#       updateTabsetPanel(session, input$tab, selected = info$tab)
-#     } else if (input$tab == 7) {
-#       if (input$format != 4) {
-#         filename <- paste0(file$primary$name, "_", input$tab, ".png")
-#       } else {
-#         filename <- paste0(file$primary$name, ".png")
-#       }
-#       screenshot(selector = "body", filename = filename, scale = 1, timer = 0, download = T)
-#     }
-#     output$offsetFound <- renderUI({
-#       NULL
-#     })
-#   }, priority = 8)
-  
+
   # Observe sitelog ####
   observeEvent(input$log, {
     req(file$primary)
@@ -5787,9 +5744,7 @@ print(inputs$step)
   # Observe delete model ####
   observeEvent(input$model, {
     req(trans$res)
-    if (isTruthy(input$model)) {
-      # NA
-    } else {
+    if (!isTruthy(input$model)) {
       if (messages > 0) cat(file = stderr(), "Deleting model", "\n")
       info$run <- F
       trans$res <- NULL
@@ -6305,11 +6260,11 @@ print(inputs$step)
       runjs("document.getElementById('side-panel').style.width='inherit';")
       runjs("document.getElementById('side-panel').style.marginRight='0px';")
     } else {
-      runjs("document.getElementById('side-panel').scrollTop=0;")
       runjs("document.getElementById('side-panel').style.overflowY='visible';")
       runjs("document.getElementById('side-panel').style.position='static';")
       runjs("document.getElementById('side-panel').style.width='100%';")
       runjs("document.getElementById('side-panel').style.marginRight='0px';")
+      runjs("window.scrollTo(0,0)")
     }
   })
   
@@ -6374,7 +6329,6 @@ print(inputs$step)
           updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 0, inline = F)
         }
       }
-      # if (!is.null(file$id1) && !is.null(file$id2)) {
       if (isTruthy(file$id1) && isTruthy(file$id2)) {
         if (input$optionSecondary == 0) {
           ids_info <- file$id1
@@ -6385,7 +6339,6 @@ print(inputs$step)
         } else if (input$optionSecondary == 3) {
           ids_info <- paste(file$id1,file$id2, sep = " + ")
         }
-      # } else if (!is.null(file$id1)) {
       } else if (isTruthy(file$id1)) {
         ids_info <- file$id1
       } else {
@@ -6574,7 +6527,6 @@ print(inputs$step)
   get_columns <- function(file,sep,format) {
     if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
       showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = "rinex_file", type = "error", session = getDefaultReactiveDomain())
-      # req(info$stop)
       return(0)
     }
     if (format == 1) { #NEU/ENU
@@ -7525,8 +7477,6 @@ print(inputs$step)
         list(model = model, model_lm = model_lm, apriori = apriori) 
       } else if (input$fitType == 2) {
         list(model = model, model_kf_mean = model_kf_mean, model_kf_inst = model_kf_inst, apriori = apriori, nouns = nouns, processNoise = processNoise, error = error)
-      } else {
-        #NA
       }
     })
   }
