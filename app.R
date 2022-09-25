@@ -7518,6 +7518,7 @@ server <- function(input,output,session) {
     antes = c()
     reces = c()
     if (!is.null(x)) {
+browser()
       pattern <- paste0("^ ",x)
       record <- grep(pattern, readLines(con = z$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
       if (length(record) > 1) {
@@ -7542,7 +7543,7 @@ server <- function(input,output,session) {
           }
         }
       } else {
-        showNotification("The input station.info file is empty or has a wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_stationinfo", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste("Station",x,"not found in the station.info file."), action = NULL, duration = 10, closeButton = T, id = "bad_stationinfo", type = "warning", session = getDefaultReactiveDomain())
       }
       reces <- unique(reces)
       antes <- unique(antes)
@@ -7571,6 +7572,8 @@ server <- function(input,output,session) {
             }
           }
         }
+      } else {
+        showNotification(paste("Station",y,"not found in the station.info file."), action = NULL, duration = 10, closeButton = T, id = "bad_stationinfo", type = "warning", session = getDefaultReactiveDomain())
       }
     }
     return(list(antes,reces))
