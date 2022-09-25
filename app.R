@@ -3885,7 +3885,7 @@ server <- function(input,output,session) {
       }
       axis(2,at = marks, labels = marks)
       if (input$spectrumType == 1) {
-        if (input$mle && length(trans$noise) > 0) {
+        if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise)) {
           if (input$tunits == 1) { #days
             f_scale <- 24*60*60
           } else if (input$tunits == 2) { #weeks
@@ -7518,7 +7518,6 @@ server <- function(input,output,session) {
     antes = c()
     reces = c()
     if (!is.null(x)) {
-browser()
       pattern <- paste0("^ ",x)
       record <- grep(pattern, readLines(con = z$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
       if (length(record) > 1) {
