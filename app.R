@@ -2008,7 +2008,7 @@ server <- function(input,output,session) {
   outputOptions(output, "residuals", suspendWhenHidden = F)
   
   output$rate <- reactive({
-    return("Linear" %in% input$model && as.numeric(input$TrendDev) > 0 && length(trans$kalman) > 0)
+    return("Linear" %in% input$model && length(trans$kalman) > 0 && sd(trans$kalman[,2]) > .Machine$double.eps)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
   
@@ -3178,12 +3178,14 @@ server <- function(input,output,session) {
         trans$res <- trans$res0 <- NULL
         trans$kalman <- trans$kalman0 <- NULL
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
+        trans$results <- NULL
         m <- model(x,y)
-        if (length(m$apriori) < 2) {
+        req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
+        if (!isTruthy(m) && length(m$apriori) < 2) {
           showNotification("Not enough model components to run the KF. Check the input values.", action = NULL, duration = 10, closeButton = T, id = "bad_model", type = "error", session = getDefaultReactiveDomain())
+          info$run <- F
           req(info$stop)
         }
-        req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
         if (messages > 1) cat(file = stderr(), m$model, "\n")
         apriori <- as.numeric(m$apriori)
         unc_ini <- as.numeric(m$error)^2
@@ -3400,12 +3402,12 @@ server <- function(input,output,session) {
             updateTextInput(session, "waveformPeriod", value = save_value)
           }
           # Plot instantaneous rate
-          if ("Linear" %in% input$model && as.numeric(input$TrendDev) > 0 && length(trans$kalman) > 0) {
-            output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
+          output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
+            if ("Linear" %in% input$model && length(trans$kalman) > 0 && sd(trans$kalman[,2]) > .Machine$double.eps) {
               title <- "Instantaneous linear rate" 
-              plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol) 
-            }, width = reactive(info$width), type = "cairo-png")
-          }
+              plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
+            }
+          }, width = reactive(info$width), type = "cairo-png")
         }
       })
     }
@@ -6787,10 +6789,31 @@ server <- function(input,output,session) {
           }
         }
         text_rate <- sprintf("%f",as.numeric(reft))
-        if (input$fitType == 2 && nchar(input$TrendDev) > 0) {
-          model <- paste(model, paste0("Intercept + Rate*dx"), sep = " ")  
+        if (input$fitType == 2) {
+          if (nchar(input$TrendDev) > 0) {
+            if (!is.na(suppressWarnings(as.numeric(input$TrendDev)))) {
+              if (suppressWarnings(as.numeric(input$TrendDev)) > 0) {
+                model <- paste(model, paste0("Intercept + Rate*dx"), sep = " ")
+                noise <- as.numeric(input$TrendDev)
+              } else if (suppressWarnings(as.numeric(input$TrendDev)) == 0) {
+                noise <- 0
+                model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")
+              } else {
+                showNotification("The process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_rate_noise", type = "error", session = getDefaultReactiveDomain())
+                return(NULL)                
+              }
+            } else {
+              showNotification("The process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_rate_noise", type = "error", session = getDefaultReactiveDomain())
+              return(NULL)
+            }
+          } else {
+            updateTextInput(session, "TrendDev", value = "0.0")
+            noise <- 0
+            model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")
+            showNotification("The process noise value for the trend is missing. Using a value of zero.", action = NULL, duration = 10, closeButton = T, id = "missing_rate_noise", type = "warning", session = getDefaultReactiveDomain())
+          }
         } else {
-          model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")        
+          model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")
         }
         model_lm <- paste(model_lm, "x", sep = " ")
         model_kf_inst <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k] - x[k-1])"), sep = " ")
@@ -6850,21 +6873,11 @@ server <- function(input,output,session) {
               sigma_intercept <- as.numeric(input$eIntercept0)
             }
           }
+          processNoise <- c(processNoise, as.numeric(noise)^2)
+          error <- c(error, Intercept = as.numeric(sigma_intercept), Rate = as.numeric(sigma_rate))
+          nouns <- c(nouns, "Intercept", "Rate")
         }
-        if (nchar(input$TrendDev) > 0) {
-          if (!is.na(as.numeric(input$TrendDev))) {
-            noise <- as.numeric(input$TrendDev)
-          } else {
-            showNotification("The a process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_rate_noise", type = "error", session = getDefaultReactiveDomain())
-            req(info$stop)
-          } 
-        } else {
-          noise <- 0
-        }
-        processNoise <- c(processNoise, as.numeric(noise)^2)
         apriori <- c(apriori, Intercept = as.numeric(ap_intercept), Rate = as.numeric(ap_rate))
-        error <- c(error, Intercept = as.numeric(sigma_intercept), Rate = as.numeric(sigma_rate))
-        nouns <- c(nouns, "Intercept", "Rate")
         info$run <- T
       } else {
         model <- paste(model, "Intercept", sep = " ")
@@ -7002,16 +7015,23 @@ server <- function(input,output,session) {
               }
               nouns <- c(nouns, label_cos)
               if (input$fitType == 2) {
-                if (nchar(sigamp[i]) > 0 && !is.na(as.numeric(sigamp[i]))) {
-                  if (input$SineCosine == 1) {
-                    processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
-                    processNoise <- c(processNoise, 0)
-                  } else if (input$SineCosine == 2) {
-                    processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
-                    processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                if (isTruthy(sigamp[i])) {
+                  if (!is.na(suppressWarnings(as.numeric(sigamp[i]))) && suppressWarnings(as.numeric(sigamp[i]) >= 0)) {
+                    if (input$SineCosine == 1) {
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                      processNoise <- c(processNoise, 0)
+                    } else if (input$SineCosine == 2) {
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                    }
+                  } else {
+                    showNotification(paste("The process noise value for the sinusoid ",i," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_noise", type = "error", session = getDefaultReactiveDomain())
+                    return(NULL)
                   }
                 } else {
-                  showNotification(paste("The process noise value for the sinusoid ",i," is missing or is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_noise", type = "error", session = getDefaultReactiveDomain())
+                  showNotification(paste("The process noise value for the sinusoid ",i," is missing. Using a value of zero."), action = NULL, duration = 10, closeButton = T, id = "missing_sinusoidal_noise", type = "warning", session = getDefaultReactiveDomain())
+                  processNoise <- c(processNoise, 0)
+                  processNoise <- c(processNoise, 0)
                 }
               }
             } else {
