@@ -3,14 +3,34 @@
 # octubre 2022 [2022.10]
 
 ### Fixed:
-- Error when changing from LS to KF and the series were previously resampled
+-Bug when reading hour string "000000" from PBO files
+-Bug when reduce sampling is active but no averaging window is provided
+-Bug when changing from LS to KF and the series were previously resampled
 
 ### Changed:
-- Adding units for the sinusoidal phase and phase error estimates
+-Checking if there are noise analysis results when trying to plot the noise spectrum
+-Additional checks for several input values
+-Checking if the series are more or less evenly sampled before updating the KF process noise
+-Improving the warning message when reading the station.info file
+-Removing console warning when reading the custom offset file
+-Removing KF fit, wavelet and filter results when changing time units
+-Removing values of residual threshold when restoring all removed points
+-More detailed warning when fitting long-period sinusoids
+-Changing behavior when error bars are read, activated and deactivated
+-Notifications and warnings are only shown once for each message
+-Preventing changing to time unit weeks in a PBO series
 
 ### Added:
-- Uploading a SARI file with a previous Kalman filter fit
-- Adding error bars info to the KF fit
+-Showing new warning on screen when the size of the browser window changes
+-Showing new message on screen when uploading a RINEX file
+-New plot to show the time-variable trend estimate from a KF fit
+-Warning on screen when changing the time units and the series were previously resampled
+-New kalman filtering approach for estimating the instantaneous linear rate
+-Adding time-variable measurement and process noises to the KF fit
+-New option to disable scrolling before taking a full page screenshot
+-Adding error bars to the KF fit and posibility to remove normalized outliers
+-Adding units to the sinusoidal phase estimates
+-Loading a SARI file with a previous KF fit
 
 # septiembre 2022 [2022.09]
 
