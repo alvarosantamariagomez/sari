@@ -1,3 +1,10 @@
+![twitter](https://img.shields.io/twitter/follow/timeserious?style=social)
+![license](https://img.shields.io/github/license/alvarosantamariagomez/sari)
+![version](https://img.shields.io/badge/version-octubre%202022-blue)
+![github](https://img.shields.io/github/languages/code-size/alvarosantamariagomez/sari?color=g)
+![docker](https://img.shields.io/docker/image-size/alvarosg/sari?color=g)
+![lines](https://img.shields.io/tokei/lines/github/alvarosantamariagomez/sari?color=yellow)
+
 # ![SARI logo](/www/favicon.png) sari 
 
 SARI is an R/Shiny app that allows you to visualise discrete time series data, analyse them individually, fit unidimensional models interactively and save the results using a web interface.  
