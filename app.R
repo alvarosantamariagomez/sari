@@ -6533,9 +6533,9 @@ server <- function(input,output,session) {
     if (format == 1) { #NEU/ENU
       skip <- 0
     } else if (format == 2) { #PBO
-      skip <- try(which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file))), silent = F)
+      skip <- try(which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F))), silent = F)
     } else if (format == 3) { #NGL
-      skip <- try(which(grepl("site YYMMMDD", readLines(file))), silent = F)
+      skip <- try(which(grepl("site YYMMMDD", readLines(file, warn = F))), silent = F)
     } else if (format == 4) { #1D
       skip <- 0
     }
@@ -6615,7 +6615,7 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 2) { #PBO
-      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
+      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         extracted <- tableAll[,c(16,17,18,19,20,21)]
@@ -6631,7 +6631,7 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 3) { #NGL
-      skip <- which(grepl("site YYMMMDD", readLines(file)))
+      skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         if (input$tunits == 1) {
