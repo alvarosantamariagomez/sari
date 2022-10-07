@@ -5661,12 +5661,12 @@ server <- function(input,output,session) {
     update <- 0
     file$id1 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1])
     if (!isTruthy(file$id1)) {
-      file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
+      file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
       update <- 1
     }
     file$id2 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2])
     if (isTruthy(input$series2$name) && !isTruthy(file$id2)) {
-      file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-")[[1]][1]
+      file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
       update <- 1
     }
     if (update > 0) {
@@ -6318,13 +6318,13 @@ server <- function(input,output,session) {
     columns <- get_columns(input$series$datapath, sep, input$format)
     if (columns > 0) {
       if (!isTruthy(inputs$ids)) {
-        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
+        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
       }
       if (length(file$secondary) > 1 && input$optionSecondary > 0) {
         columns2 <- get_columns(file$secondary$datapath, sep2, input$format2)
         if (columns2 > 0) {
           if (!isTruthy(inputs$ids)) {
-            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-")[[1]][1]
+            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
           }
         } else {
           updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 0, inline = F)
