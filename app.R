@@ -7621,7 +7621,11 @@ server <- function(input,output,session) {
   ReadCustom <- function(x,y,z) {
     req(x,z)
     changes <- c()
-    cols <- range(count.fields(z$datapath, comment.char = "#"))
+    cols <- try(range(count.fields(z$datapath, comment.char = "#")), silent = F)
+    if (!isTruthy(cols)) {
+      showNotification("Unable to read the input custom discontinuity file.", action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
+    }
     if (!is.na(cols[1]) && !is.na(cols[2])) {
       if (cols[1] > 1) {
         col <- 2
