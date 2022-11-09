@@ -1924,7 +1924,7 @@ server <- function(input,output,session) {
       if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
       if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
       if (info$pixelratio != session$clientData$pixelratio) {
-        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "pixelratio", type = "warning", session = getDefaultReactiveDomain())
       }
       if (local) {
         if (!is.null(dev.list())) dev.off()
@@ -1939,7 +1939,7 @@ server <- function(input,output,session) {
           if (messages > 2) cat(file = stderr(), "Warning", "\n")
           if (isTruthy(input$tactile)) {
             if (input$tactile > 0) {
-              if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+              if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
               showModal(modalDialog(
                 title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
                 size = "m",
@@ -2008,7 +2008,7 @@ server <- function(input,output,session) {
   outputOptions(output, "residuals", suspendWhenHidden = F)
   
   output$rate <- reactive({
-    return("Linear" %in% input$model && length(trans$kalman) > 0 && sd(trans$kalman[,2]) > .Machine$double.eps)
+    return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[1] > 0)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
   
@@ -3403,7 +3403,7 @@ server <- function(input,output,session) {
           }
           # Plot instantaneous rate
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
-            if ("Linear" %in% input$model && length(trans$kalman) > 0 && sd(trans$kalman[,2]) > .Machine$double.eps) {
+            if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[1] > 0) {
               title <- "Instantaneous linear rate" 
               plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
             }
