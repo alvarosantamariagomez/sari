@@ -4,7 +4,7 @@ urlcolor: blue
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version octubre 2022'
+title: 'SARI documentation - version noviembre 2022'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -57,7 +57,7 @@ A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).
 
 The changelog is available [here](./changelog.md) (only available from the online help).
 
-Current SARI version: *octubre 2022*  --  "uh, are you certain there's never been any case of even the most insignificant computer error?"
+Current SARI version: *noviembre 2022*  --  "Hey, hey, hey, it's the big Master Control Program everybody's been talking about!"
 
 -----------------
 
