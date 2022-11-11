@@ -1,5 +1,15 @@
 # **SARI changelog**
 
+# noviembre 2022 [2022.11]
+
+### Fixed:
+- Showing plot of instantaneous rate only when necessary
+
+### Changed:
+- Automatically removing obsolete notifications on screen
+
+### Added:
+
 # octubre 2022 [2022.10]
 
 ### Fixed:

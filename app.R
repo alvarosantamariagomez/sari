@@ -39,7 +39,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # version ####
-version <- "SARI octubre 2022"
+version <- "SARI noviembre 2022"
 
 # Some GUI functions
 
@@ -1900,8 +1900,9 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     req(input$size)
+    removeNotification("pixelratio")
     if (length(input$isMobile) > 0 && input$isMobile) {
-      cat(file = stderr(), "Mobil connection ", "\n")
+      cat(file = stderr(), "Mobile connection ", "\n")
       cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
       cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
       shinyjs::hide(id = "menu")
@@ -1924,7 +1925,7 @@ server <- function(input,output,session) {
       if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
       if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
       if (info$pixelratio != session$clientData$pixelratio) {
-        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "pixelratio", type = "warning", session = getDefaultReactiveDomain())
       }
       if (local) {
         if (!is.null(dev.list())) dev.off()
@@ -1939,7 +1940,7 @@ server <- function(input,output,session) {
           if (messages > 2) cat(file = stderr(), "Warning", "\n")
           if (isTruthy(input$tactile)) {
             if (input$tactile > 0) {
-              if (messages > 1) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+              if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
               showModal(modalDialog(
                 title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
                 size = "m",
@@ -2008,7 +2009,7 @@ server <- function(input,output,session) {
   outputOptions(output, "residuals", suspendWhenHidden = F)
   
   output$rate <- reactive({
-    return("Linear" %in% input$model && length(trans$kalman) > 0 && sd(trans$kalman[,2]) > .Machine$double.eps)
+    return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[1] > 0)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
   
@@ -2290,6 +2291,7 @@ server <- function(input,output,session) {
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
                  input$eulerType, input$neuenu), {
     req(obs(), values$used1)
+    removeNotification("kf_not_valid")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
     
@@ -2541,6 +2543,10 @@ server <- function(input,output,session) {
   # Load SARI file ####
   observeEvent(input$loadSARI, {
     req(file$primary, obs())
+    removeNotification("sari_version")
+    removeNotification("format_not_compatible")
+    removeNotification("no_model")
+    removeNotification("no_sari")
     comments <- grep("^#", readLines(con = input$loadSARI$datapath, n = 100, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T, fixed = F, useBytes = F, invert = F)
     if (isTruthy(comments) && grepl("^# SARI ", comments[1], ignore.case = F, perl = T)) {
       if (messages > 0) cat(file = stderr(), "Loading SARI file", "\n")
@@ -2843,6 +2849,7 @@ server <- function(input,output,session) {
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
     req(trans$x, trans$y, trans$tol)
+    removeNotification("no_interannual")
     if (isTruthy(input$midas)) {
       if (input$tunits == 1) {
         period <- 365.25
@@ -2999,6 +3006,9 @@ server <- function(input,output,session) {
                  trans$y, input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, 
                  input$tunits, trans$sy), {
     req(trans$x, trans$y, trans$sy, trans$ordinate)
+    removeNotification("bad_errorbar")
+    removeNotification("bad_sinusoidal")
+    removeNotification("bad_LS")
     if (input$tab == 4) {
       req(info$stop)
     }
@@ -3154,6 +3164,13 @@ server <- function(input,output,session) {
   # KF fit ####
   observeEvent(input$runKF, {
     req(input$model, trans$x, trans$y)
+    removeNotification("no_weighting")
+    removeNotification("bad_model")
+    removeNotification("not_even")
+    removeNotification("bad_measurement_error")
+    removeNotification("bad_a_priori_state")
+    removeNotification("bad_variance")
+    removeNotification("bad_kf")
     output$offsetFound <- renderUI({
       NULL
     })
@@ -3403,7 +3420,7 @@ server <- function(input,output,session) {
           }
           # Plot instantaneous rate
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
-            if ("Linear" %in% input$model && length(trans$kalman) > 0 && sd(trans$kalman[,2]) > .Machine$double.eps) {
+            if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[1] > 0) {
               title <- "Instantaneous linear rate" 
               plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
             }
@@ -3476,6 +3493,7 @@ server <- function(input,output,session) {
   # Plot histogram ####
   output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
     req(obs(), input$histogram)
+    removeNotification("no_histogram")
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
       label <- "Original series"
@@ -3511,6 +3529,7 @@ server <- function(input,output,session) {
   # Stats ####
   output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
     req(obs(), input$histogram)
+    removeNotification("no_stationarity")
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
       label <- "original series"
@@ -3591,6 +3610,8 @@ server <- function(input,output,session) {
   # Periodic waveform ####
   observeEvent(c(input$waveformPeriod, inputs$waveformPeriod, input$waveform, inputs$low, inputs$high, input$fitType), {
     req(trans$x)
+    removeNotification("no_repeat")
+    removeNotification("bad_waveform_period")
     if (isTruthy(input$correct_waveform)) {
       trans$pattern <- NULL
       trans$wave <- inputs$waveformPeriod
@@ -3671,6 +3692,10 @@ server <- function(input,output,session) {
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
     req(obs(), input$spectrum)
+    removeNotification("bad_long")
+    removeNotification("bad_short")
+    removeNotification("bad_oversampling")
+    removeNotification("bad_periods")
     if (is.na(inputs$long_period) && input$long_period != "") {
       showNotification("The longest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
@@ -3860,6 +3885,7 @@ server <- function(input,output,session) {
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
     req(obs(), input$spectrum, trans$fs, trans$psd)
+    removeNotification("no_noise_psd")
     if (length(trans$fs) > 0) {
       if (messages > 0) cat(file = stderr(), "Plotting periodogram", "\n")
       marks <- c(1 %o% 10^(-20:20))
@@ -3990,6 +4016,7 @@ server <- function(input,output,session) {
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
     trans$wavelet <- NULL
     req(obs(), input$wavelet, input$waveletType)
+    removeNotification("no_wavelet")
     if (isTruthy(isolate(info$run_wavelet))) {
       if (input$tunits == 1) {
         period <- "days"
@@ -4117,6 +4144,8 @@ server <- function(input,output,session) {
   # Compute smoother ####
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
     req(trans$x, trans$sy, input$series2filter, input$filter)
+    removeNotification("no_smooth")
+    removeNotification("same_periods")
     if (isTruthy(info$run_filter)) {
       if (isTruthy(input$filter)) {
         if (inputs$high == "" || is.na(inputs$high)) {
@@ -4237,6 +4266,10 @@ server <- function(input,output,session) {
   
   # Noise analysis ####
   observeEvent(input$runmle, {
+    removeNotification("bad_flicker")
+    removeNotification("bad_rw")
+    removeNotification("bad_pl")
+    removeNotification("no_mle")
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
       trans$noise <- vector(length = 11)
       if (length(trans$res) > 0) {
@@ -4629,6 +4662,8 @@ server <- function(input,output,session) {
   # Search offsets ####
   observeEvent(input$search, {
     req(file$primary)
+    removeNotification("bad_search")
+    removeNotification("no_search")
     if (length(trans$res) > 0) {
       if (messages > 0) cat(file = stderr(), "Searching offsets", "\n")
       output$offsetFound <- renderUI({
@@ -4680,6 +4715,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(input$autoDownload, {
+    removeNotification("no_directory")
     withBusyIndicatorServer("autoDownload", { 
       if (isTruthy(info$directory)) {
         if (input$format != 4) {
@@ -5382,6 +5418,8 @@ server <- function(input,output,session) {
   # Observe wavelet ####
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
     req(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet)
+    removeNotification("time_wavelet")
+    removeNotification("bad_wavelet")
     if (isTruthy(inputs$max_wavelet) && isTruthy(inputs$min_wavelet) && isTruthy(as.numeric(inputs$res_wavelet)) && isTruthy(as.numeric(inputs$loc_wavelet)) && inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && as.numeric(inputs$res_wavelet) > 0 && as.numeric(inputs$loc_wavelet) >= info$sampling && as.numeric(inputs$loc_wavelet) <= info$rangex/2) {
       num_scale <- as.integer((inputs$max_wavelet - inputs$min_wavelet)/as.numeric(inputs$res_wavelet))
       num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
@@ -5398,6 +5436,7 @@ server <- function(input,output,session) {
   
   # Observe time units ####
   observeEvent(input$tunits, {
+    removeNotification("new_units")
     if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
       showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = "new_units", type = "warning", session = getDefaultReactiveDomain())
     }
@@ -5661,12 +5700,12 @@ server <- function(input,output,session) {
     update <- 0
     file$id1 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1])
     if (!isTruthy(file$id1)) {
-      file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
+      file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
       update <- 1
     }
     file$id2 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2])
     if (isTruthy(input$series2$name) && !isTruthy(file$id2)) {
-      file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-")[[1]][1]
+      file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
       update <- 1
     }
     if (update > 0) {
@@ -5804,6 +5843,8 @@ server <- function(input,output,session) {
   # Observe removing points manual ####
   observeEvent(input$remove, {
     req(file$primary)
+    removeNotification("no_toggle")
+    removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), "Removing points, manually", "\n")
     brush1 <- input$plot_brush
     brush2 <- NULL
@@ -5905,6 +5946,9 @@ server <- function(input,output,session) {
   # Observe removing points auto ####
   observeEvent(input$removeAuto, {
     req(file$primary)
+    removeNotification("bad_normalised_threshold")
+    removeNotification("bad_threshold")
+    removeNotification("no_point_auto")
     if (messages > 0) cat(file = stderr(), "Removing points, automatically", "\n")
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
@@ -6293,6 +6337,15 @@ server <- function(input,output,session) {
   # Functions ####
   digest <- function() {
     req(file$primary)
+    removeNotification("ids_info")
+    removeNotification("different_formats")
+    removeNotification("in_common")
+    removeNotification("removing_NA")
+    removeNotification("removing_NA_secondary")
+    removeNotification("bad_window")
+    removeNotification("averaging")
+    removeNotification("bad_x")
+    removeNotification("bad_series")
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
     # Setting column separation
     if (input$separator == "1") {
@@ -6318,13 +6371,13 @@ server <- function(input,output,session) {
     columns <- get_columns(input$series$datapath, sep, input$format)
     if (columns > 0) {
       if (!isTruthy(inputs$ids)) {
-        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-")[[1]][1]
+        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
       }
       if (length(file$secondary) > 1 && input$optionSecondary > 0) {
         columns2 <- get_columns(file$secondary$datapath, sep2, input$format2)
         if (columns2 > 0) {
           if (!isTruthy(inputs$ids)) {
-            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-")[[1]][1]
+            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
           }
         } else {
           updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 0, inline = F)
@@ -6526,6 +6579,9 @@ server <- function(input,output,session) {
     }
   }
   get_columns <- function(file,sep,format) {
+    removeNotification("rinex_file")
+    removeNotification("no_head")
+    removeNotification("bad_columns")
     if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
       showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = "rinex_file", type = "error", session = getDefaultReactiveDomain())
       return(0)
@@ -6533,9 +6589,9 @@ server <- function(input,output,session) {
     if (format == 1) { #NEU/ENU
       skip <- 0
     } else if (format == 2) { #PBO
-      skip <- try(which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file))), silent = F)
+      skip <- try(which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F))), silent = F)
     } else if (format == 3) { #NGL
-      skip <- try(which(grepl("site YYMMMDD", readLines(file))), silent = F)
+      skip <- try(which(grepl("site YYMMMDD", readLines(file, warn = F))), silent = F)
     } else if (format == 4) { #1D
       skip <- 0
     }
@@ -6596,6 +6652,12 @@ server <- function(input,output,session) {
   extract_table <- function(file,sep,format,columns,epoch,variable,errorBar) {
     tableAll <- NULL
     extracted <- NULL
+    removeNotification("no_weeks")
+    removeNotification("no_error_bars")
+    removeNotification("bad_coordinates")
+    removeNotification("bad_pole")
+    removeNotification("no_rotation")
+    removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
@@ -6615,7 +6677,7 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 2) { #PBO
-      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file)))
+      skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         extracted <- tableAll[,c(16,17,18,19,20,21)]
@@ -6631,7 +6693,7 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 3) { #NGL
-      skip <- which(grepl("site YYMMMDD", readLines(file)))
+      skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         if (input$tunits == 1) {
@@ -6763,6 +6825,18 @@ server <- function(input,output,session) {
     c(lat,lon)
   }
   model <- function(x,y) {
+    removeNotification("bad_rate_noise")
+    removeNotification("missing_rate_noise")
+    removeNotification("no_trend_error")
+    removeNotification("no_intercept_error")
+    removeNotification("bad_sinusoidal_period")
+    removeNotification("bad_amplitude_error")
+    removeNotification("bad_sinusoidal_noise")
+    removeNotification("missing_sinusoidal_noise")
+    removeNotification("bad_offset_epoch")
+    removeNotification("no_exponential")
+    removeNotification("no_logarithmic")
+    removeNotification("bad_degree")
     isolate({
       model <- model_lm <- "y ~"
       model_kf <- ""
@@ -7488,7 +7562,7 @@ server <- function(input,output,session) {
               processNoise <- c(processNoise, 0)
             }
           } else {
-            showNotification("The requested degree of the polynomial is not valid. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "error", session = getDefaultReactiveDomain())
+            showNotification("The requested degree of the polynomial is not valid. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_degree", type = "error", session = getDefaultReactiveDomain())
           }
         }
       }
@@ -7500,6 +7574,7 @@ server <- function(input,output,session) {
     })
   }
   ReadLog <- function(x) {
+    removeNotification("bad_sitelog")
     antrec <- grep("^[34].[x0-9]+ ",readLines(con = x$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
     dates <- grep(" Date Removed ",readLines(con = x$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
     if (length(antrec) > 0 && length(dates) > 0) {
@@ -7537,6 +7612,7 @@ server <- function(input,output,session) {
   ReadInfo <- function(x,y,z) {
     antes = c()
     reces = c()
+    removeNotification("bad_stationinfo")
     if (!is.null(x)) {
       pattern <- paste0("^ ",x)
       record <- grep(pattern, readLines(con = z$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
@@ -7620,8 +7696,13 @@ server <- function(input,output,session) {
   }
   ReadCustom <- function(x,y,z) {
     req(x,z)
+    removeNotification("bad_custom")
     changes <- c()
-    cols <- range(count.fields(z$datapath, comment.char = "#"))
+    cols <- try(range(count.fields(z$datapath, comment.char = "#")), silent = F)
+    if (!isTruthy(cols)) {
+      showNotification("Unable to read the input custom discontinuity file.", action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
+    }
     if (!is.na(cols[1]) && !is.na(cols[2])) {
       if (cols[1] > 1) {
         col <- 2
@@ -7755,6 +7836,7 @@ server <- function(input,output,session) {
   }
   vondrak <- function(x,y,yp,p) {
     #code adapted from Sylvain Loyer's Fortran code and from Vondrak's 1969 paper
+    removeNotification("bad_vondrak_period")
     n <- length(x)
     p <- as.numeric(p)/(0.791020*log(n) - 2.339407)
     yp <- yp/sum(yp)
