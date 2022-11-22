@@ -2009,7 +2009,7 @@ server <- function(input,output,session) {
   outputOptions(output, "residuals", suspendWhenHidden = F)
   
   output$rate <- reactive({
-    return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[1] > 0)
+    return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
   
@@ -3420,7 +3420,7 @@ server <- function(input,output,session) {
           }
           # Plot instantaneous rate
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
-            if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[1] > 0) {
+            if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
               title <- "Instantaneous linear rate" 
               plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
             }
