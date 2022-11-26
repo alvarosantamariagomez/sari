@@ -3514,7 +3514,7 @@ server <- function(input,output,session) {
       req(info$stop)
     }
     if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
-    if (sd(values) > 0) {
+    if (isTruthy(values) && sd(values) > 0) {
       hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
       dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
       xfit <- seq(min(values),max(values),length = 40) 
@@ -3549,21 +3549,25 @@ server <- function(input,output,session) {
       req(info$stop)
     }
     if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
-    adf <- suppressWarnings(adf.test(values, alternative = "stationary"))
-    kpss <- suppressWarnings(kpss.test(values, null = "Level"))
-    if (isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
-      cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
-      if (kpss$p.value <= 0.01 && adf$p.value >= 0.01) {
-        cat(paste0("WARNING: the ",label," are most certainly NOT stationary (probability > 99%)."), "\n\n")
-      } else if (kpss$p.value < 0.05 && adf$p.value > 0.05) {
-        cat(paste0("WARNING: the ",label," are likely NOT stationary (probability > 95%)."), "\n\n")
-      } else if (kpss$p.value < 0.1 && adf$p.value > 0.1) {
-        cat(paste0("WARNING: the ",label," could be NOT stationary (probability > 90%)."), "\n\n")
+    if (isTruthy(values) && sd(values) > 0) {
+      adf <- suppressWarnings(adf.test(values, alternative = "stationary"))
+      kpss <- suppressWarnings(kpss.test(values, null = "Level"))
+      if (isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
+        cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
+        if (kpss$p.value <= 0.01 && adf$p.value >= 0.01) {
+          cat(paste0("WARNING: the ",label," are most certainly NOT stationary (probability > 99%)."), "\n\n")
+        } else if (kpss$p.value < 0.05 && adf$p.value > 0.05) {
+          cat(paste0("WARNING: the ",label," are likely NOT stationary (probability > 95%)."), "\n\n")
+        } else if (kpss$p.value < 0.1 && adf$p.value > 0.1) {
+          cat(paste0("WARNING: the ",label," could be NOT stationary (probability > 90%)."), "\n\n")
+        } else {
+          cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
+        }
+        stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
+        print(stats,digits = 4)
       } else {
-        cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
+        showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
       }
-      stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
-      print(stats,digits = 4)
     } else {
       showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
     }
