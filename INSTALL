@@ -3,10 +3,13 @@ Instructions for Installing R and RStudio
 ------------------------------------------
 
 To install R, follow the instructions from the official R documentation here
-https://cran.r-project.org/doc/manuals/r-release/R-admin.html
+https://cran.r-project.org/
 
-In addition, if using Windows, Rtools needs to be installed following these instructions
+If using Windows: Rtools needs to be installed following these instructions
 https://cran.r-project.org/bin/windows/Rtools/
+
+If using MacOS: Xcode and a GNU Fortran compiler may be necessary in order to install some packages.
+https://mac.r-project.org/tools/
 
 Finally, it is recommended to install Rstudio (free desktop version) from
 https://www.rstudio.com/products/rstudio/download/
@@ -14,20 +17,24 @@ https://www.rstudio.com/products/rstudio/download/
 Both R and RStudio are available for windows, Linux and MacOS.
  
 With R and RStudio installed, you need to install a number of packages before running SARI.
-In Rstudio, go to Tools -> Install Packages.
 
 Install all the packages indicated below and their dependencies from CRAN.
 If using Windows, in order to use Rtools, you need first to install and load the package devtools:
 `library(devtools)`
 
-All packages can be installed at once from CRAN by adding their names separated by spaces or commas, except for mvcwt which needs to be downloaded and installed manually from here:
-https://cran.r-project.org/src/contrib/Archive/mvcwt/
-To install this package, simply go to Tools -> Install Packages and select the downloaded file.
+There are two ways of installing packages in Rstudio:
 
-Alternatively, the following R command will install all the necessary packages (except mvcwt):
+1) Go to Tools -> Install Packages. The following packages can be installed at once from CRAN by adding their names separated by spaces or commas:
+`data.table, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, psych, RColorBrewer, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries`
+
+2) On the R console, the following command will install the packages at once:
 `install.packages(c("data.table", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries"))`
 
-I also provide the current package versions for which SARI runs without problems (note: package versions may evolve from these).
+In addition, the package "mvcwt" needs to be downloaded and compiled from here:
+https://cran.r-project.org/src/contrib/Archive/mvcwt/
+To install this package, simply go to Tools -> Install Packages and select the downloaded tar.gz file.
+
+The list below shows the package versions used when accessing SARI from Docker or the online server:
 
   (data.table) #v1.14.2
   (dlm) #v1.1-5
