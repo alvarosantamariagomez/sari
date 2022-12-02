@@ -3087,20 +3087,16 @@ server <- function(input,output,session) {
                   cosine <- synthesis$coefficients[s + 1,1]
                   sine_err <- synthesis$coefficients[s,2]
                   cosine_err <- synthesis$coefficients[s + 1,2]
-                  if (sine == 0) {
-                    a <- 1
-                  } else {
-                    a <- 1/( 1 + cosine^2/sine^2)
-                  }
+                  sine_cosine_cov <- synthesis$sigma^2 * synthesis$cov.unscaled[s,s + 1]
                   amp <- sqrt(sine^2 + cosine^2)
                   phase <- atan2(cosine,sine)
-                  amp_err <- try(sqrt(sine^2*sine_err^2/amp^2 + cosine^2*cosine_err^2/amp^2 + 2*sine*cosine*synthesis$cov.unscaled[s,s + 1]/amp^2), silent = F)
-                  phase_err <- try(sqrt(a^2*(cosine_err^2 + cosine^2*sine_err^2/sine^2 - 2*cosine*synthesis$cov.unscaled[s,s + 1]/sine)/sine^2), silent = F)
+                  amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
+                  phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
                   if (isTruthy(amp_err) && isTruthy(phase_err)) {
                     info_out <- c(info_out, amp, amp_err, phase, phase_err)
                   } else {
                     if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
-                    showNotification(paste0("Unable to compute the amplitude and/or phase error from the sine and cosine factors of sinusoid ",ss,". Check the input sinusoidal parameters or the time series length and its time units."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
+                    showNotification(paste0("Unable to compute the amplitude and/or phase error from the errors of the sine and cosine coefficients of sinusoid ",ss,". Please contact the author to repport this problem."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
                     ss <- ss - 1
                   }
                 }
