@@ -1857,11 +1857,14 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = T)
+                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = T,
+                         last_optionSecondary = NULL)
   
   # 4. valid points
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
-                           used3 = NULL, excluded3 = NULL, used_all = NULL, excluded_all = NULL, used_all_kf = NULL)
+                           used3 = NULL, excluded3 = NULL, used_all = NULL, excluded_all = NULL, used_all_kf = NULL,
+                           used1_primary = NULL, used2_primary = NULL, used3_primary = NULL, used_all_primary = NULL,
+                           used1_secondary = NULL, used2_secondary = NULL, used3_secondary = NULL, used_all_secondary = NULL)
   
   # 5. user input
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL, 
@@ -1925,7 +1928,7 @@ server <- function(input,output,session) {
       if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
       if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
       if (info$pixelratio != session$clientData$pixelratio) {
-        showNotification("The size and or resolution of the browser window has been modified. Please consider refreshing the web page.", action = NULL, duration = 10, closeButton = T, id = "pixelratio", type = "warning", session = getDefaultReactiveDomain())
+        showNotification("The size and or resolution of the browser window has been modified. Please consider reloading the web page.", action = NULL, duration = 10, closeButton = T, id = "pixelratio", type = "warning", session = getDefaultReactiveDomain())
       }
       if (local) {
         if (!is.null(dev.list())) dev.off()
@@ -3574,7 +3577,7 @@ server <- function(input,output,session) {
     req(obs())
     options(scipen = 8)
     if (input$optionSecondary == 1 && isTruthy(trans$z)) {
-      serie1 <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
+      serie1 <- data.frame(x = trans$x, y = trans$y)
       serie2 <- data.frame(x = trans$x0[!is.na(trans$z)], y = trans$z[!is.na(trans$z)])
       common <- merge(serie1, serie2, by.x = "x", by.y = "x")
       if (length(common$x) > 30) {
@@ -5502,7 +5505,7 @@ server <- function(input,output,session) {
     file$sitelog <- isolate(input$log)
   }, priority = 8)
   
-  # Observe secondary series ####
+  # Observe secondary file ####
   observeEvent(input$series2, {
     req(file$primary)
     file$secondary <- isolate(input$series2)
@@ -5601,16 +5604,6 @@ server <- function(input,output,session) {
     obs(data)
   }, priority = 6)
   
-  # Observe secondary series format ####
-  observeEvent(c(input$separator2, input$format2), {
-    req(obs())
-    if (input$optionSecondary > 0) {
-      obs(NULL)
-      data <- digest()
-      obs(data)
-    }
-  }, priority = 6)
-  
   # Observe averaging ####
   observeEvent(c(inputs$step), {
     req(file$primary)
@@ -5657,10 +5650,12 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe secondary series ####
-  observeEvent(input$series2, {
+  observeEvent(c(input$series2, input$separator2, input$format2), {
+    req(obs())
     req(file$primary)
     if (input$optionSecondary > 0) {
       if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
+      obs(NULL)
       data <- digest()
       obs(data)
     }
@@ -5678,20 +5673,48 @@ server <- function(input,output,session) {
         cat(file = stderr(), "Averaging with secondary series", "\n")
       }
     }
+    obs(NULL)
     data <- digest()
     obs(data)
     info$points <- length(data$x[!is.na(data$y1)])
-    values$used1 <- rep(T, info$points)
-    values$used2 <- rep(T, info$points)
-    values$used3 <- rep(T, info$points)
-    values$used_all <- rep(T, info$points)
-    values$excluded1 <- rep(F, info$points)
-    values$excluded2 <- rep(F, info$points)
-    values$excluded3 <- rep(F, info$points)
-    values$excluded_all <- rep(F, info$points)
+    if (input$optionSecondary > 1) {
+      values$used1_primary <- values$used1
+      values$used2_primary <- values$used2
+      values$used3_primary <- values$used3
+      values$used_all_primary <- values$used_all
+      if (isTruthy(values$used1_secondary)) {
+        values$used1 <- values$used1_secondary
+        values$used2 <- values$used2_secondary
+        values$used3 <- values$used3_secondary
+        values$used_all <- values$used_all_secondary
+      } else {
+        values$used1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), by = "x", all = F)$s
+        values$used2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), by = "x", all = F)$s
+        values$used3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), by = "x", all = F)$s
+        values$used_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), by = "x", all = F)$s
+      }
+      values$excluded1 <- !values$used1
+      values$excluded2 <- !values$used2
+      values$excluded3 <- !values$used3
+      values$excluded_all <- !values$used_all
+    } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
+      values$used1_secondary <- values$used1
+      values$used2_secondary <- values$used2
+      values$used3_secondary <- values$used3
+      values$used_all_secondary <- values$used_all
+      values$used1 <- values$used1_primary
+      values$used2 <- values$used2_primary
+      values$used3 <- values$used3_primary
+      values$used_all <- values$used_all_primary
+      values$excluded1 <- !values$used1
+      values$excluded2 <- !values$used2
+      values$excluded3 <- !values$used3
+      values$excluded_all <- !values$used_all
+    }
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+    info$last_optionSecondary <- input$optionSecondary
   }, priority = 6)
   
   # Observe ids ####
@@ -5832,7 +5855,7 @@ server <- function(input,output,session) {
       values$used1 <- rep(T, info$points)
       values$used2 <- rep(T, info$points)
       values$used3 <- rep(T, info$points)
-      values$used_all <- rep(T, info$points)
+      values$used_all <- rep(T, info$points) 
       values$excluded1 <- rep(F, info$points)
       values$excluded2 <- rep(F, info$points)
       values$excluded3 <- rep(F, info$points)
@@ -6452,8 +6475,7 @@ server <- function(input,output,session) {
           })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
         }
         info$sampling2 <- min(diff(table2$x,1))
-      }
-      if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 2 && columns2 > 0) {
+      } else if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 2 && columns2 > 0) {
         if (input$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x"), {
             y1 <- y1.x - y1.y
@@ -6478,9 +6500,8 @@ server <- function(input,output,session) {
             }
           })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
         }
-        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-      }
-      if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
+        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+      } else if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
         if (input$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x"), {
             y1 <- (y1.x + y1.y) / 2
@@ -6505,7 +6526,7 @@ server <- function(input,output,session) {
             }
           })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
         }
-        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       }
       # Checking series values and time order 
       if (!is.null(table)) {
