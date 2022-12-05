@@ -1835,6 +1835,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 
 server <- function(input,output,session) {
+  toggleClass( # disabling clicking on SARI name (panic button)
+    class = "disabled",
+    selector = "#tab li a[data-value=0]"
+  )
   cat(file = stderr(), "\n", "\n", "START", "\n")
   
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
@@ -1909,10 +1913,6 @@ server <- function(input,output,session) {
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   debug <- F # saving the environment 
   messages <- 4 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
-  toggleClass( # disabling clicking on SARI name (panic button)
-    class = "disabled",
-    selector = "#tab li a[data-value=0]"
-  )
   
   # Welcome ####
   observe({
@@ -6007,10 +6007,15 @@ server <- function(input,output,session) {
   # Observe plotting ####
   observeEvent(input$plot, {
     req(file$primary)
+    removeNotification("no_component")
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
                           "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                           file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
+    if (input$tab < 1) {
+      showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
+    }
     data <- digest()
     if (!is.null(data)) {
       obs(data)
