@@ -1867,6 +1867,11 @@ server <- function(input,output,session) {
                          last_optionSecondary = NULL)
   
   # 4. valid points
+  #   used = points used in the analysis
+  #   used_primary = points used in the analysis of the primary series
+  #   used_secondary = points used in the analysis of the primary & secondary series
+  #   excluded = points excluded from the analysis, but shown in the series
+  #   deleted = points excluded from the analysis and not shown in the series
   values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
                            used3 = NULL, excluded3 = NULL, used_all = NULL, excluded_all = NULL, used_all_kf = NULL,
                            used1_primary = NULL, used2_primary = NULL, used3_primary = NULL, used_all_primary = NULL,
@@ -2301,7 +2306,7 @@ server <- function(input,output,session) {
                  values$used3, input$delete_excluded, input$format, input$tunits, input$optionSecondary,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
-                 input$eulerType, input$neuenu), {
+                 input$eulerType, input$neuenu, values$deleted1, values$deleted2, values$deleted3), {
     req(obs(), values$used1)
     removeNotification("kf_not_valid")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
@@ -2389,14 +2394,20 @@ server <- function(input,output,session) {
         trans$sz <- data$sz3
       }
       if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        if (sum(values$used_all_kf & !values$deleted_all) < length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used_all_kf & !values$deleted_all]
-          trans$res <- trans$res0[values$used_all_kf & !values$deleted_all]
-          trans$kalman <- trans$kalman0[values$used_all_kf & !values$deleted_all]
-          trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf & !values$deleted_all]
+        if (length(values$used_all_kf) == length(values$deleted_all)) {
+          deleted <- values$deleted_all
+        } else {
+          deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
+        }
+        if (sum(values$used_all_kf & !deleted) < length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used_all_kf & !deleted]
+          trans$res <- trans$res0[values$used_all_kf & !deleted]
+          trans$kalman <- trans$kalman0[values$used_all_kf & !deleted,]
+          trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf & !deleted,]
           showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-        } else if (sum(values$used_all_kf & !values$deleted_all) == length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used_all_kf & !values$deleted_all]
+          updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
+        } else if (sum(values$used_all_kf) == length(trans$mod0)) {
+          trans$mod <- trans$mod0[values$used_all_kf & !deleted]
           if (any(is.na(trans$mod))) {
             info$run <- F
             trans$mod <- trans$mod0 <- NULL
@@ -2405,9 +2416,10 @@ server <- function(input,output,session) {
             trans$kalman_unc <- trans$kalman_unc0 <- NULL
             showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
           } else {
-            trans$res <- trans$res0[values$used_all_kf & !values$deleted_all]
-            trans$kalman <- trans$kalman0[values$used_all_kf & !values$deleted_all]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf & !values$deleted_all]
+            trans$res <- trans$res0[values$used_all_kf & !deleted]
+            trans$kalman <- trans$kalman0[values$used_all_kf & !deleted,]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf & !deleted,]
+            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
           }
         } else {
           info$run <- F
@@ -2445,14 +2457,20 @@ server <- function(input,output,session) {
         trans$z <- data$z1
         trans$sz <- data$sz1
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          if (sum(values$used_kf1 & !values$deleted1) < length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used1 & !values$deleted1]
-            trans$res <- trans$res0[values$used1 & !values$deleted1]
-            trans$kalman <- trans$kalman0[values$used1 & !values$deleted1]
-            trans$kalman_unc <- trans$kalman_unc0[values$used1 & !values$deleted1]
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          } else if (sum(values$used_kf1 & !values$deleted1) == length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf1 & !values$deleted1]
+          if (length(values$used_kf1) == length(values$deleted1)) {
+            deleted <- values$deleted1
+          } else {
+            deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
+          }
+          if (sum(values$used_kf1 & !deleted) < length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf1 & !deleted]
+            trans$res <- trans$res0[values$used_kf1 & !deleted]
+            trans$kalman <- trans$kalman0[values$used_kf1 & !deleted,]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_kf1 & !deleted,]
+            showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
+          } else if (sum(values$used_kf1) == length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf1 & !deleted]
             if (any(is.na(trans$mod))) {
               info$run <- F
               trans$mod <- trans$mod0 <- NULL
@@ -2461,9 +2479,10 @@ server <- function(input,output,session) {
               trans$kalman_unc <- trans$kalman_unc0 <- NULL
               showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
             } else {
-              trans$res <- trans$res0[values$used_kf1 & !values$deleted1]
-              trans$kalman <- trans$kalman0[values$used_kf1 & !values$deleted1]
-              trans$kalman_unc <- trans$kalman_unc0[values$used_kf1 & !values$deleted1]
+              trans$res <- trans$res0[values$used_kf1 & !deleted]
+              trans$kalman <- trans$kalman0[values$used_kf1 & !deleted,]
+              trans$kalman_unc <- trans$kalman_unc0[values$used_kf1 & !deleted,]
+              updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
             }
           } else {
             info$run <- F
@@ -2498,14 +2517,20 @@ server <- function(input,output,session) {
         trans$z <- data$z2
         trans$sz <- data$sz2
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          if (sum(values$used_kf2 & !values$deleted1) < length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf2 & !values$delete2]
-            trans$res <- trans$res0[values$used_kf2 & !values$delete2]
-            trans$kalman <- trans$kalman0[values$used_kf2 & !values$delete2]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_kf2 & !values$delete2]
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          } else if (sum(values$used_kf2 & !values$delete2) == length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf2 & !values$delete2]
+          if (length(values$used_kf2) == length(values$deleted2)) {
+            deleted <- values$deleted2
+          } else {
+            deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
+          }
+          if (sum(values$used_kf2 & !deleted) < length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf2 & !deleted]
+            trans$res <- trans$res0[values$used_kf2 & !deleted]
+            trans$kalman <- trans$kalman0[values$used_kf2 & !deleted,]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_kf2 & !deleted,]
+            showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
+          } else if (sum(values$used_kf2) == length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf2 & !deleted]
             if (any(is.na(trans$mod))) {
               info$run <- F
               trans$mod <- trans$mod0 <- NULL
@@ -2514,9 +2539,10 @@ server <- function(input,output,session) {
               trans$kalman_unc <- trans$kalman_unc0 <- NULL
               showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
             } else {
-              trans$res <- trans$res0[values$used_kf2 & !values$delete2]
-              trans$kalman <- trans$kalman0[values$used_kf2 & !values$delete2]
-              trans$kalman_unc <- trans$kalman_unc0[values$used_kf2 & !values$delete2]
+              trans$res <- trans$res0[values$used_kf2 & !deleted]
+              trans$kalman <- trans$kalman0[values$used_kf2 & !deleted,]
+              trans$kalman_unc <- trans$kalman_unc0[values$used_kf2 & !deleted,]
+              updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
             }
           } else {
             info$run <- F
@@ -2551,14 +2577,20 @@ server <- function(input,output,session) {
         trans$z <- data$z3
         trans$sz <- data$sz3
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          if (sum(values$used_kf3 & !values$delete3) < length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf3 & !values$delete3]
-            trans$res <- trans$res0[values$used_kf3 & !values$delete3]
-            trans$kalman <- trans$kalman0[values$used_kf3 & !values$delete3]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_kf3 & !values$delete3]
-            showNotification("The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          } else if (sum(values$used_kf3 & !values$delete3) == length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf3 & !values$delete3]
+          if (length(values$used_kf3) == length(values$deleted3)) {
+            deleted <- values$deleted3
+          } else {
+            deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
+          }
+          if (sum(values$used_kf3 & !deleted) < length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf3 & !deleted]
+            trans$res <- trans$res0[values$used_kf3 & !deleted]
+            trans$kalman <- trans$kalman0[values$used_kf3 & !deleted,]
+            trans$kalman_unc <- trans$kalman_unc0[values$used_kf3 & !deleted,]
+            showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
+          } else if (sum(values$used_kf3) == length(trans$mod0)) {
+            trans$mod <- trans$mod0[values$used_kf3 & !deleted]
             if (any(is.na(trans$mod))) {
               info$run <- F
               trans$mod <- trans$mod0 <- NULL
@@ -2567,9 +2599,10 @@ server <- function(input,output,session) {
               trans$kalman_unc <- trans$kalman_unc0 <- NULL
               showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
             } else {
-              trans$res <- trans$res0[values$used_kf3 & !values$delete3]
-              trans$kalman <- trans$kalman0[values$used_kf3 & !values$delete3]
-              trans$kalman_unc <- trans$kalman_unc0[values$used_kf3 & !values$delete3]
+              trans$res <- trans$res0[values$used_kf3 & !deleted]
+              trans$kalman <- trans$kalman0[values$used_kf3 & !deleted,]
+              trans$kalman_unc <- trans$kalman_unc0[values$used_kf3 & !deleted,]
+              updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
             }
           } else {
             info$run <- F
@@ -3260,6 +3293,8 @@ server <- function(input,output,session) {
     removeNotification("bad_a_priori_state")
     removeNotification("bad_variance")
     removeNotification("bad_kf")
+    removeNotification("kf_not_valid")
+    updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
     output$offsetFound <- renderUI({
       NULL
     })
@@ -3511,7 +3546,7 @@ server <- function(input,output,session) {
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
             if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
               title <- "Instantaneous linear rate" 
-              plot_series(x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
+              plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
             }
           }, width = reactive(info$width), type = "cairo-png")
         }
@@ -6034,22 +6069,28 @@ server <- function(input,output,session) {
       if ((isTruthy(excluding_plot$selected_) && sum(excluding_plot$selected_) > 0) || (isTruthy(excluding_plotres$selected_) && sum(excluding_plotres$selected_) > 0)) {
         if (isTruthy(input$remove3D)) {
           if (length(brush1) > 0) {
-            values$used_all <- xor(values$used_all, excluding_plot$selected_)
-            values$excluded_all <- (values$excluded_all + excluding_plot$selected_) == 1
             if (isTruthy(input$permanent)) {
-              values$deleted_all <- (values$deleted_all + excluding_plot$selected_) == 1
+              values$used_all <- values$used_all & !excluding_plot$selected_
+              values$excluded_all <- values$excluded_all | excluding_plot$selected_
+              values$deleted_all <- values$deleted_all | excluding_plot$selected_
               updateCheckboxInput(session, inputId = "permanent", value = F)
+            } else {
+              values$used_all <- xor(values$used_all, excluding_plot$selected_)
+              values$excluded_all <- (values$excluded_all + excluding_plot$selected_) == 1
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
               values$used_all_kf <- values$used_all[values$used_all == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
           }
           if (length(brush2) > 0) {
-            values$used_all <- xor(values$used_all, excluding_plotres$selected_)
-            values$excluded_all <- (values$excluded_all + excluding_plotres$selected_) == 1
             if (isTruthy(input$permanent)) {
-              values$deleted_all <- (values$deleted_all + excluding_plotres$selected_) == 1
+              values$used_all <- values$used_all & !excluding_plotres$selected_
+              values$excluded_all <- values$excluded_all | excluding_plotres$selected_
+              values$deleted_all <- values$deleted_all | excluding_plotres$selected_
               updateCheckboxInput(session, inputId = "permanent", value = F)
+            } else {
+              values$used_all <- xor(values$used_all, excluding_plotres$selected_)
+              values$excluded_all <- (values$excluded_all + excluding_plotres$selected_) == 1
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
               values$used_all_kf <- xor(values$used_all_kf, excluding_plotres_kf$selected_)
@@ -6062,22 +6103,28 @@ server <- function(input,output,session) {
         } else {
           if (input$tab == 1 || is.null(input$tab)) {
             if (length(brush1) > 0) {
-              values$used1 <- xor(values$used1, excluding_plot$selected_)
-              values$excluded1 <- (values$excluded1 + excluding_plot$selected_) == 1
               if (isTruthy(input$permanent)) {
-                values$deleted1 <- (values$deleted1 + excluding_plot$selected_) == 1
+                values$used1 <- values$used1 & !excluding_plot$selected_
+                values$excluded1 <- values$excluded1 | excluding_plot$selected_
+                values$deleted1 <- values$deleted1 | excluding_plot$selected_
                 updateCheckboxInput(session, inputId = "permanent", value = F)
+              } else {
+                values$used1 <- xor(values$used1, excluding_plot$selected_)
+                values$excluded1 <- (values$excluded1 + excluding_plot$selected_) == 1
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
                 values$used_kf1 <- values$used1[values$used1 == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
-              values$used1 <- xor(values$used1, excluding_plotres$selected_)
-              values$excluded1 <- (values$excluded1 + excluding_plotres$selected_) == 1
               if (isTruthy(input$permanent)) {
-                values$deleted1 <- (values$deleted1 + excluding_plotres$selected_) == 1
+                values$used1 <- values$used1 & !excluding_plotres$selected_
+                values$excluded1 <- values$excluded1 | excluding_plotres$selected_
+                values$deleted1 <- values$deleted1 | excluding_plotres$selected_
                 updateCheckboxInput(session, inputId = "permanent", value = F)
+              } else {
+                values$used1 <- xor(values$used1, excluding_plotres$selected_)
+                values$excluded1 <- (values$excluded1 + excluding_plotres$selected_) == 1
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
                 values$used_kf1 <- xor(values$used_kf1, excluding_plotres_kf$selected_)
@@ -6085,45 +6132,54 @@ server <- function(input,output,session) {
             }
           } else if (input$tab == 2) {
             if (length(brush1) > 0) {
-              values$used2 <- xor(values$used2, excluding_plot$selected_)
-              values$excluded2 <- (values$excluded2 + excluding_plot$selected_) == 1
               if (isTruthy(input$permanent)) {
-                values$deleted2 <- (values$deleted2 + excluding_plot$selected_) == 1
+                values$used2 <- values$used2 & !excluding_plot$selected_
+                values$excluded2 <- values$excluded2 | excluding_plot$selected_
+                values$deleted2 <- values$deleted2 | excluding_plot$selected_
                 updateCheckboxInput(session, inputId = "permanent", value = F)
+              } else {
+                values$used2 <- xor(values$used2, excluding_plot$selected_)
+                values$excluded2 <- (values$excluded2 + excluding_plot$selected_) == 1
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
                 values$used_kf2 <- values$used2[values$used2 == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
-              values$used2 <- xor(values$used2, excluding_plotres$selected_)
-              values$excluded2 <- (values$excluded2 + excluding_plotres$selected_) == 1
               if (isTruthy(input$permanent)) {
-                values$deleted2 <- (values$deleted2 + excluding_plotres$selected_) == 1
+                values$used2 <- values$used2 & !excluding_plotres$selected_
+                values$excluded2 <- values$excluded2 | excluding_plotres$selected_
+                values$deleted2 <- values$deleted2 | excluding_plotres$selected_
                 updateCheckboxInput(session, inputId = "permanent", value = F)
-              }
-              if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$used_kf2 <- xor(values$used_kf2, excluding_plotres_kf$selected_)
+              } else {
+                values$used2 <- xor(values$used2, excluding_plotres$selected_)
+                values$excluded2 <- (values$excluded2 + excluding_plotres$selected_) == 1
               }
             }
           } else if (input$tab == 3) {
             if (length(brush1) > 0) {
-              values$used3 <- xor(values$used3, excluding_plot$selected_)
-              values$excluded3 <- (values$excluded3 + excluding_plot$selected_) == 1
               if (isTruthy(input$permanent)) {
-                values$deleted3 <- (values$deleted3 + excluding_plot$selected_) == 1
+                values$used3 <- values$used3 & !excluding_plot$selected_
+                values$excluded3 <- values$excluded3 | excluding_plot$selected_
+                values$deleted3 <- values$deleted3 | excluding_plot$selected_
                 updateCheckboxInput(session, inputId = "permanent", value = F)
+              } else {
+                values$used3 <- xor(values$used3, excluding_plot$selected_)
+                values$excluded3 <- (values$excluded3 + excluding_plot$selected_) == 1
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
                 values$used_kf3 <- values$used3[values$used3 == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
-              values$used3 <- xor(values$used3, excluding_plotres$selected_)
-              values$excluded3 <- (values$excluded3 + excluding_plotres$selected_) == 1
               if (isTruthy(input$permanent)) {
-                values$deleted3 <- (values$deleted3 + excluding_plotres$selected_) == 1
+                values$used3 <- values$used3 & !excluding_plotres$selected_
+                values$excluded3 <- values$excluded3 | excluding_plotres$selected_
+                values$deleted3 <- values$deleted3 | excluding_plotres$selected_
                 updateCheckboxInput(session, inputId = "permanent", value = F)
+              } else {
+                values$used3 <- xor(values$used3, excluding_plotres$selected_)
+                values$excluded3 <- (values$excluded3 + excluding_plotres$selected_) == 1
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
                 values$used_kf3 <- xor(values$used_kf3, excluding_plotres_kf$selected_)
@@ -6209,48 +6265,48 @@ server <- function(input,output,session) {
     }
     if (isTruthy(excluding) && sum(excluding) > 0) {
       if (isTruthy(input$remove3D)) {
-        values$used_all <- (values$used_all - excluding) > 0
-        values$excluded_all <- (values$excluded_all + excluding) > 0
+        values$used_all <- values$used_all & !excluding
+        values$excluded_all <- values$excluded_all | excluding
         if (isTruthy(input$permanent)) {
-          values$deleted_all <- (values$deleted_all + excluding) > 0
+          values$deleted_all <- values$deleted_all | excluding
           updateCheckboxInput(session, inputId = "permanent", value = F)
         }
         values$used1 <- values$used2 <- values$used3 <- values$used_all
         values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
         values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$used_all_kf <- (values$used_all_kf - excluding_kf) > 0
+          values$used_all_kf <- values$used_all_kf & !excluding_kf
         }
       } else {
         if (input$tab == 1 || is.null(input$tab)) {
-          values$used1 <- (values$used1 - excluding) > 0
-          values$excluded1 <- (values$excluded1 + excluding) > 0
+          values$used1 <- values$used1 & !excluding
+          values$excluded1 <- values$excluded1 | excluding
           if (isTruthy(input$permanent)) {
-            values$deleted1 <- (values$deleted1 + excluding) > 0
+            values$deleted1 <- values$deleted1 | excluding
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_kf1 <- (values$used_kf1 - excluding_kf) > 0
+            values$used_kf1 <- values$used_kf1 & !excluding_kf
           }
         } else if (input$tab == 2) {
-          values$used2 <- (values$used2 - excluding) > 0
-          values$excluded2 <- (values$excluded2 + excluding) > 0
+          values$used2 <- values$used2 & !excluding
+          values$excluded2 <- values$excluded2 | excluding
           if (isTruthy(input$permanent)) {
-            values$deleted2 <- (values$deleted2 + excluding) > 0
+            values$deleted2 <- values$deleted2 | excluding
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_kf2 <- (values$used_kf2 - excluding_kf) > 0
+            values$used_kf2 <- values$used_kf2 & !excluding_kf
           }
         } else if (input$tab == 3) {
-          values$used3 <- (values$used3 - excluding) > 0
-          values$excluded3 <- (values$excluded3 + excluding) > 0
+          values$used3 <- values$used3 & !excluding
+          values$excluded3 <- values$excluded3 | excluding
           if (isTruthy(input$permanent)) {
-            values$deleted3 <- (values$deleted3 + excluding) > 0
+            values$deleted3 <- values$deleted3 | excluding
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_kf3 <- (values$used_kf3 - excluding_kf) > 0
+            values$used_kf3 <- values$used_kf3 & !excluding_kf
           }
         }
       }
