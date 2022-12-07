@@ -154,9 +154,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .shiny-notification-message { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #000000; padding: 10px 8px 10px 10px; margin: 2px; position:fixed; top: 0; left: calc(28%); width: 71%}
                       .shiny-notification-close:hover { color: #ffffff; }
                       .fa-caret-down { float: right; }
-                      # Fonts are obtained here https://fonts.google.com/
-                      @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono
-                       ")
+                      @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono');
+                      #summary1, #summary2, #summary3 {
+                        white-space: pre-wrap;
+                        word-break: break-word;
+                      }
+                      ")
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
                   tags$style(type = 'text/css', 'form.well { height: 96vh; overflow-y: auto; width: 100%}'),
