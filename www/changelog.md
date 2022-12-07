@@ -1,5 +1,22 @@
 # **SARI changelog**
 
+# diciembre 2022 [2022.12]
+
+### Fixed:
+- Checking selected coordinate component before plotting
+- Bug on the computation of the sinusoidal amplitude and phase errors
+- Checking series values before computing stats and stationarity
+- Bug with the instantenous rate series not being shown when needed
+
+### Changed:
+- Improved CSS style of the fit results section
+- Updated install instructions to run SARI locally from R/RStudio
+
+### Added:
+- New option to delete points from the series permanently
+- Removing points from the series plot after fitting a KF
+- Keeping in memory valid points from the primary and secondary series independently
+
 # noviembre 2022 [2022.11]
 
 ### Fixed:

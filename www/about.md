@@ -4,7 +4,7 @@ urlcolor: blue
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version noviembre 2022'
+title: 'SARI documentation - version diciembre 2022'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -57,7 +57,7 @@ A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).
 
 The changelog is available [here](./changelog.md) (only available from the online help).
 
-Current SARI version: *noviembre 2022*  --  "Hey, hey, hey, it's the big Master Control Program everybody's been talking about!"
+Current SARI version: *diciembre 2022*  --  "You are an imperfect being, created by an imperfect being. Finding you weakness is only a matter of time."
 
 -----------------
 
@@ -102,9 +102,12 @@ The `all components` option changes between removing outliers for each coordinat
 
 The `include in file` option will keep the removed outliers in the downloaded results file as commented lines. No fitting values will be provided for these points.  
 
-<b><span style="color: red;">NEW FEATURE:</span></b> the new option `Scrolling` enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing/archiving a specific analysis, making reports or marking assignments. The quality of the full page screenshot may depend on the browser/extension used.  
+The `scrolling` option enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing/archiving a specific analysis, making reports or marking assignments. The quality of the full page screenshot may depend on the browser/extension used.  
+
 Alternatively, the user can download the full SARI interface from the web browser (usually by pressing Ctrl+s) into an HTML file together with the corresponding web files in a separate directory with a similar name. The downloaded HTML file represents a frozen SARI session (i.e., not connected to the server) that can be reopened later in the web browser even offline. The advantage of the HTML page compared to the fixed screenshot is that all the numeric values are available to be selected and copied, so the same analysis can be easily replicated in a fresh session. However, before opening the HTML file in a web browser, it needs to be modified first. A Bash script called `SARIwebpage.sh` available [here](https://github.com/alvarosantamariagomez/sari/blob/main/SARIwebpage.sh) does the modifications automatically.  
 Note: Unfortunately, at this moment, the values of the UI interface, including the options selected by the user, are only saved in the HTML file when using Mozilla Firefox. Other web browsers, like Safari and the Google Chromium family (Google Chrome, Microsoft Edge and Opera), do not keep this information when saving the web page. I hope this browser error will be fixed in future updates.  
+
+<b><span style="color: red;">NEW FEATURE:</span></b> the new option `permanent` will permanently delete the next points that are removed from the series (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section). Permanently here means these points cannot be restored and they will not be shown again in the current session. The original series file is not modified and it has to be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are removed in a single action, it will automatically deactivate itself so the next points to be removed will be available to be restored. When toggling points that were already removed, this option will delete them permanently, instead of restoring them. This option is intended, for instance, to remove extreme outliers that do not allow to plot a series correctly.
 
 <h3 id="ancillary-information"></h3>
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  
@@ -278,7 +281,7 @@ Notes on the noise analysis:
 
 The top navigation bar contains the links to this *help page* and for changing between the different coordinate components (unless a 1D series is used). It also contains two links at the right edge to `print` this help page into a pdf file and to `save` the results of the analysis. These two links will not be visible unless they are needed. To get back to the main program interface from this help page, click on any of the coordinate component tabs.
 
-SARI processes the time series of each coordinate component independently. However, most of the options and features activated while analyzing the series in one of the tab/components will still be active when changing the tab/component (if using a 3D series) or the column number (if using a 1D series). This implies that, when changing the series component, the visualization of the new series will not be available until all the selected features are computed. This allows fitting the same model for different components of the series or different series in the same input file, although it may also slow down the initial visualization of the series. It is recommended to deactivate the options that are not needed to have a faster and smooth transition between coordinate components. Also bear in mind that a model that has been adjusted in one series, may fail for another (for instance if fitting a logarithmic/exponential decay).
+SARI processes the time series of each coordinate component independently. However, many options and features activated while analyzing the series in one of the tab/components will still be active when changing the tab/component (if using a 3D series) or the column number (if using a 1D series). This implies that, when changing the series component, the visualization of the new series will not be available until all the selected features are computed. This allows fitting the same model for different components of the series or different series in the same input file, although it may also slow down the initial visualization of the series. It is recommended to deactivate the options that are not needed to have a faster and smooth transition between coordinate components. Also bear in mind that a model that has been adjusted in one series, may fail for another (for instance if fitting a logarithmic/exponential decay). Since the Kalman filter is run only when clicking on the `run KF` button, the KF fit will be removed when changing the tab.
 
 One click on any plot will provide the coordinates of the clicked point in a space right under the plots. This is useful to obtain the series values, pinpoint discontinuity epochs or periodic lines in the spectrum.
 
@@ -338,7 +341,9 @@ This is how I usually estimate the linear trend in a NEU/ENU GNSS time series (t
 
 # Known issues
 
-There is a finite number of parallel connections that can be run by the online server at shinyapps. That number depends on the user load. For standard user loads (i.e., excluding noise analysis with spectral index, automatic discontinuity search and large wavelet analysis), up to 24 parallel users can be sustained, probably a few more than that. However, it is not very clear how many simultaneous connections from the same outbound IP address does the shinyapps server allow; that limit may be set somewhere between 10 and 15 and there is nothing I can do about it. If using SARI in a class with many people and connections start being refused, I suggest changing the outbound IP address (for instance connecting through a smartphone hotspot) or using SARI from a local server (RStudio or Docker). Contact the [<a href="#author" target="_self">author</a>](#author) for further information.
+There is a finite number of parallel connections that can be run by the online server at shinyapps. That number depends on the user load. For standard user loads (i.e., excluding noise analysis with spectral index, automatic discontinuity search and large wavelet analysis), up to 24 parallel users can be sustained, probably a few more than that. However, it is not very clear how many simultaneous connections from the same IP address does the shinyapps server allow; that limit may be set somewhere between 10 and 15 and there is nothing I can do about it. If using SARI in a class with many people and connections start being refused, I suggest changing the outbound IP address (for instance connecting through a smartphone hotspot) or using SARI from a local server (RStudio or Docker). Contact the [<a href="#author" target="_self">author</a>](#author) for further information.
+
+For the sake of simplicity of the model equation, SARI uses a common non linear LS fit function that most of the times converges in zero or one iteration. On very rare occasions, the fit does not converge, even with very simplistic models that usually include a sinusoid. A *unable to fit the LS model. Change the model components* message is shown on screen. To avoid this problem, changing slightly the reference epoch of one of the model parameters should be enough to reach convergence. Contact the [<a href="#author" target="_self">author</a>](#author) if you encounter this problem.
 
 The Kalman filter/smoother is significantly slower than the least squares fit, at least for typical GNSS position series I have tested and especially if the model has many parameters. Between EKF and UKF, UKF is theoretically more robust, though this may not represent a big difference for typical GNSS series. Therefore, the UKF is the preferred Kalman flavor by default and it is the algorithm behind the measurement noise optimization (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block).  
 However, I have noticed that, for some series and depending on the model being fitted, the UKF provides negative variances at some epochs and for some of the estimated state parameters.  

@@ -1,37 +1,55 @@
+Instructions to run SARI locally using R/RStudio on Windows, Linux or MacOS
+----------------------------------------------------------------------------
 
-Instructions for Installing R and RStudio 
-------------------------------------------
+1) Install R following the official R documentation here  
+https://cran.r-project.org/
 
-To install R, follow the instructions from the official R documentation here
-https://cran.r-project.org/doc/manuals/r-release/R-admin.html
-
-In addition, if using Windows, Rtools needs to be installed following these instructions
-https://cran.r-project.org/bin/windows/Rtools/
-
-Finally, it is recommended to install Rstudio (free desktop version) from
+2) It is recommended to install RStudio (free desktop version), though it is not mandatory to run SARI  
 https://www.rstudio.com/products/rstudio/download/
 
-Both R and RStudio are available for windows, Linux and MacOS.
- 
-With R and RStudio installed, you need to install a number of packages before running SARI.
-In Rstudio, go to Tools -> Install Packages.
+3) With R (and RStudio) installed, some extras are needed to install R packages
 
-Install all the packages indicated below and their dependencies from CRAN.
-If using Windows, in order to use Rtools, you need first to install and load the package devtools:
-`library(devtools)`
+3.1) If using Windows: install Rtools following these instructions  
+https://cran.r-project.org/bin/windows/Rtools/
 
-All packages can be installed at once from CRAN by adding their names separated by spaces or commas, except for mvcwt which needs to be downloaded and installed manually from here:
-https://cran.r-project.org/src/contrib/Archive/mvcwt/
-To install this package, simply go to Tools -> Install Packages and select the downloaded file.
+Once Rtools is installed, in order to use it, you need first to install and load the package devtools.  
+On the R/RStudio console type:  
+install.packages("devtools")
+library(devtools)
 
-Alternatively, the following R command will install all the necessary packages (except mvcwt):
-`install.packages(c("data.table", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries"))`
+3.2) If using MacOS: install Xcode and a GNU Fortran compiler (not fully tested, feedback is welcome) following:  
+https://mac.r-project.org/tools/
 
-I also provide the current package versions for which SARI runs without problems (note: package versions may evolve from these).
+3.3) If using Linux: you're good to go.
+
+4) Install all the packages indicated below and their dependencies from CRAN.
+There are two ways of installing the required packages:
+
+4.1) On Rstudio, go to Tools -> Install Packages
+Then copy&paste the following list of packages separated by spaces or commas:  
+
+data.table, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, psych, RColorBrewer, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach
+
+4.2) On the R/RStudio console, the following command will install the packages at once:  
+
+install.packages(c("data.table", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach"))
+
+5) In addition, the package mvcwt needs to be downloaded and compiled from here:  
+https://cran.r-project.org/src/contrib/Archive/mvcwt/  
+
+To install this package there are again two options:
+
+5.1) On Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file.
+
+5.2) On the R/Rstudio console type: 
+install.packages("/path/to/the/mvcwt/tar.gz/file")
+
+The list below shows the package versions used with R version 4.1.2 when accessing SARI from Docker or the online server:
 
   (data.table) #v1.14.2
   (dlm) #v1.1-5
   (fields) #v13.3
+  (foreach) #1.5.1
   (lubridate) #v1.8.0
   (magrittr) #v2.0.3
   (markdown) #v1.1
@@ -44,23 +62,43 @@ I also provide the current package versions for which SARI runs without problems
   (shinycssloaders) #v1.0.0.9000
   (shinyjs) #v2.0
   (shinythemes) #v1.2.0
-  (shiny) #v1.7.2
+  (shiny) #v1.7.3
   (spectral) #v2.0
   (strucchange) #v1.5-2
   (tseries) #v0.10-49
   (pracma) #v2.3.8
 
-If the installed shinycssloaders package is not version 1.0.0.9 (or later), you need to install this version from the github repo using
-`devtools::install_github("daattali/shinycssloaders")`
+If the installed shinycssloaders package is not version 1.0.0.9 or later, you need to install this version from its github repo using:  
+devtools::install_github("daattali/shinycssloaders")
 
-Once all the packages are installed, open the app.R script with RStudio.
-Set the working directory to the same location.
-Then click on RunApp (run external) or go to Code -> Source or push Ctrl+Shift+S.
+6) Once all the packages are installed, there are several ways to run SARI:
 
-Enjoy!
+6.1) On RStudio: clone/download the SARI repo, open the app.R script and use one of these:
+
+click on RunApp (run external)
+
+or
+
+go to Code -> Source
+
+or
+
+Ctrl + Shift + S
+
+6.2) On the R/RStudio console type one of these:
+
+To run SARI without cloning/downloading the repo:
+library(shiny)
+runGitHub("sari", "alvarosantamariagomez", launch.browser=T)
+
+or
+
+After cloning/downloading the SARI repo:
+runApp("/path/to/the/downloaded/SARI/app.R/file")
 
 
-Best regards,
+
+For any comment or question, send an email to:
 
 Alvaro Santamaria
-alvaro.santamaria@get.omp.eu
+alvaro.santamaria at get.omp.eu
