@@ -797,7 +797,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                     ),
                                                                     textInput(inputId = "period", 
                                                                               div("Sinusoidal periods",
-                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years)")), 
+                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")), 
                                                                               value = "1y"),
                                                                     fluidRow(
                                                                       column(6,
@@ -7256,6 +7256,7 @@ server <- function(input,output,session) {
       # * Sinusoidal model ####
       if ("Sinusoidal" %in% input$model) {
         periods <- unlist(strsplit(inputs$period, split = ","))
+        periods2 <- NULL
         S0 <- unlist(strsplit(input$S0, split = ","))
         eS0 <- unlist(strsplit(input$eS0, split = ","))
         sigamp <- unlist(strsplit(input$SinusoidalDev, split = ","))
@@ -7275,6 +7276,140 @@ server <- function(input,output,session) {
         if (length(periods) > 0) {
           i <- 0
           for (p in periods) {
+            f <- NULL
+            i <- i + 1
+            if (grepl("x",p)) {
+              harmonics <- unlist(strsplit(p, split = "x"))
+              p <- harmonics[1]
+              h <- as.numeric(harmonics[2])
+            } else {
+              h <- 0
+            }
+            if (grepl("d",p)) {
+              f <- gsub("d", "", p)
+              if (h > 1) {
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+              }
+              if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                if (input$tunits == 1) {
+                  f <- 1/as.numeric(f)
+                } else if (input$tunits == 2) {
+                  f <- 7/as.numeric(f)
+                } else if (input$tunits == 3) {
+                  f <- daysInYear/as.numeric(f)
+                }
+              } else {
+                f <- NULL
+              }
+            } else if (grepl("w",p)) {
+              f <- gsub("w", "", p)
+              if (h > 1) {
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+              }
+              if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                if (input$tunits == 1) {
+                  f <- (1/as.numeric(f))*7
+                } else if (input$tunits == 2) {
+                  f <- (1/as.numeric(f))*1
+                } else if (input$tunits == 3) {
+                  f <- 1/as.numeric(f)*7/daysInYear
+                }
+              } else {
+                f <- NULL
+              }
+            } else if (grepl("y",p)) {
+              f <- gsub("y", "", p)
+              if (h > 1) {
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+              }
+              if (nchar(f) > 0  && !is.na(as.numeric(f))) {
+                if (input$tunits == 1) {
+                  f <- (1/as.numeric(f))*1/daysInYear
+                } else if (input$tunits == 2) {
+                  f <- (1/as.numeric(f))*7/daysInYear
+                } else if (input$tunits == 3) {
+                  f <- 1/as.numeric(f)
+                }
+              } else {
+                f <- NULL
+              }
+            }
+            if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
+              if (f < 1/abs(info$rangex)) {
+                showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              }
+              info$run <- T
+              label_sin <- paste("S",i,sep = "")
+              label_cos <- paste("C",i,sep = "")
+              text_sin <- sprintf("I(sin(2*pi*(x-%f)*%f))",as.numeric(refs),f)
+              text_cos <- sprintf("I(cos(2*pi*(x-%f)*%f))",as.numeric(refs),f)
+              text_sin_kf <- sprintf("sin(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
+              text_cos_kf <- sprintf("cos(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
+              text_sin_lm <- sprintf("sin(2*pi*x*%f)",f)
+              text_cos_lm <- sprintf("cos(2*pi*x*%f)",f)
+              model <- paste(model, paste(label_sin,text_sin,sep = "*"), sep = " + ")
+              model_lm <- paste(model_lm, text_sin_lm, text_cos_lm, sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
+              j <- j + 1
+              model <- paste(model, paste(label_cos,text_cos,sep = "*"), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste(paste0("e[k,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
+              j <- j + 1
+              if (length(y_detrend) > 0) {
+                y_now <- y_detrend
+              } else {
+                y_now <- y - median(y)
+              }
+              if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
+                S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
+                eS0[i] <- as.numeric(S0[i])/2
+                if (input$fitType == 2) {
+                  if (isTruthy(match(paste0("S",i), trans$names))) {
+                    s <- trans$LScoefs[match(paste0("S",i), trans$names)]
+                    c <- trans$LScoefs[match(paste0("C",i), trans$names)]
+                    S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
+                    eS0[i] <- abs(as.numeric(S0[i]))
+                  }
+                }
+              }
+              apriori[[label_sin]] <- as.numeric(S0[i])
+              error[[label_sin]] <- as.numeric(eS0[i])
+              nouns <- c(nouns, label_sin)
+              apriori[[label_cos]] <- as.numeric(S0[i])
+              if (eS0[i] == 0) {
+                info$run <- F
+                showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
+                req(info$stop)
+              } else {
+                error[[label_cos]] <- as.numeric(eS0[i])
+              }
+              nouns <- c(nouns, label_cos)
+              if (input$fitType == 2) {
+                if (isTruthy(sigamp[i])) {
+                  if (!is.na(suppressWarnings(as.numeric(sigamp[i]))) && suppressWarnings(as.numeric(sigamp[i]) >= 0)) {
+                    if (input$SineCosine == 1) {
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                      processNoise <- c(processNoise, 0)
+                    } else if (input$SineCosine == 2) {
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                    }
+                  } else {
+                    showNotification(paste("The process noise value for the sinusoid ",i," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_noise", type = "error", session = getDefaultReactiveDomain())
+                    return(NULL)
+                  }
+                } else {
+                  showNotification(paste("The process noise value for the sinusoid ",i," is missing. Using a value of zero."), action = NULL, duration = 10, closeButton = T, id = "missing_sinusoidal_noise", type = "warning", session = getDefaultReactiveDomain())
+                  processNoise <- c(processNoise, 0)
+                  processNoise <- c(processNoise, 0)
+                }
+              }
+            } else {
+              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
+          for (p in periods2) {
             f <- NULL
             i <- i + 1
             if (grepl("d",p)) {
