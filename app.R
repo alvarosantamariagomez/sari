@@ -1902,7 +1902,7 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL, 
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL, 
-                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL)
+                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL)
   
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -3209,7 +3209,7 @@ server <- function(input,output,session) {
               res <- residuals(fit)
               if ("Sinusoidal" %in% input$model && isTruthy(synthesis$coefficients)) {
                 ss <- 0
-                info_out <- c()
+                info_out <- list()
                 for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
                   ss <- ss + 1
                   sine <- synthesis$coefficients[s,1]
@@ -3222,7 +3222,10 @@ server <- function(input,output,session) {
                   amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
                   phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
                   if (isTruthy(amp_err) && isTruthy(phase_err)) {
-                    info_out <- c(info_out, amp, amp_err, phase, phase_err)
+                    # info_out <- (info_out, trans$periods[ss], amp, amp_err, phase, phase_err)
+                    for (i in list(noquote(trans$periods[ss]), amp, amp_err, phase, phase_err)) {
+                      info_out[[length(info_out) + 1]] = i
+                    }
                   } else {
                     if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
                     showNotification(paste0("Unable to compute the amplitude and/or phase error from the errors of the sine and cosine coefficients of sinusoid ",ss,". Please contact the author to repport this problem."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
@@ -3230,8 +3233,8 @@ server <- function(input,output,session) {
                   }
                 }
                 if (isTruthy(info_out)) {
-                  synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 4, byrow = T)
-                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
+                  synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 5, byrow = T)
+                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Period","Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
                 }
               }
               trans$equation <- sub("y ~","Model =",m$model)
@@ -7257,6 +7260,7 @@ server <- function(input,output,session) {
       if ("Sinusoidal" %in% input$model) {
         periods <- unlist(strsplit(inputs$period, split = ","))
         periods2 <- NULL
+        trans$periods <- NULL
         S0 <- unlist(strsplit(input$S0, split = ","))
         eS0 <- unlist(strsplit(input$eS0, split = ","))
         sigamp <- unlist(strsplit(input$SinusoidalDev, split = ","))
@@ -7291,6 +7295,7 @@ server <- function(input,output,session) {
                 periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
               }
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
                 if (input$tunits == 1) {
                   f <- 1/as.numeric(f)
                 } else if (input$tunits == 2) {
@@ -7307,6 +7312,7 @@ server <- function(input,output,session) {
                 periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
               }
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*7
                 } else if (input$tunits == 2) {
@@ -7323,6 +7329,7 @@ server <- function(input,output,session) {
                 periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
               }
               if (nchar(f) > 0  && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"y",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*1/daysInYear
                 } else if (input$tunits == 2) {
@@ -7415,6 +7422,7 @@ server <- function(input,output,session) {
             if (grepl("d",p)) {
               f <- gsub("d", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
                 if (input$tunits == 1) {
                   f <- 1/as.numeric(f)
                 } else if (input$tunits == 2) {
@@ -7428,6 +7436,7 @@ server <- function(input,output,session) {
             } else if (grepl("w",p)) {
               f <- gsub("w", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*7
                 } else if (input$tunits == 2) {
@@ -7441,6 +7450,7 @@ server <- function(input,output,session) {
             } else if (grepl("y",p)) {
               f <- gsub("y", "", p)
               if (nchar(f) > 0  && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"y",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*1/daysInYear
                 } else if (input$tunits == 2) {
