@@ -5768,14 +5768,9 @@ server <- function(input,output,session) {
     data <- digest()
     obs(data)
     info$points <- length(data$x[!is.na(data$y1)])
-    values$used1 <- rep(T, info$points)
-    values$used2 <- rep(T, info$points)
-    values$used3 <- rep(T, info$points)
-    values$used_all <- rep(T, info$points)
-    values$excluded1 <- rep(F, info$points)
-    values$excluded2 <- rep(F, info$points)
-    values$excluded3 <- rep(F, info$points)
-    values$excluded_all <- rep(F, info$points)
+    values$used1 <- values$used2 <- values$used3 <- values$used_all <- rep(T, info$points)
+    values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all <- rep(F, info$points)
+    values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, info$points)
     updateTextInput(session, "ObsError", value = "")
     if (isTruthy(inputs$step)) {
       info$step <- inputs$step
