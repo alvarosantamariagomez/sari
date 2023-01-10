@@ -2347,7 +2347,8 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- trans$y[values$used_all]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all & values$used_all]
         trans$ye <- data$y1[!is.na(trans$y0)]
         trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
         trans$sy <- data$sy1[!is.na(trans$y0)]
@@ -2376,7 +2377,8 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- trans$y[values$used_all]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all & values$used_all]
         trans$ye <- data$y2[!is.na(trans$y0)]
         trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
         trans$sy <- data$sy2[!is.na(trans$y0)]
@@ -2405,7 +2407,8 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- trans$y[values$used_all]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all & values$used_all]
         trans$ye <- data$y3[!is.na(trans$y0)]
         trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
         trans$sy <- data$sy3[!is.na(trans$y0)]
@@ -2473,8 +2476,8 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        
-        trans$y <- trans$y[values$used1]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted1 & values$used1]
         trans$ye <- data$y1[!is.na(trans$y0)]
         trans$ye <- trans$ye[!values$deleted1 & values$excluded1]
         trans$sy <- data$sy1[!is.na(trans$y0)]
@@ -2540,7 +2543,8 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- trans$y[values$used2]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted2 & values$used2]
         trans$ye <- data$y2[!is.na(trans$y0)]
         trans$ye <- trans$ye[!values$deleted2 & values$excluded2]
         trans$sy <- data$sy2[!is.na(trans$y0)]
@@ -2606,7 +2610,8 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- trans$y[values$used3]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted3 & values$used3]
         trans$ye <- data$y3[!is.na(trans$y0)]
         trans$ye <- trans$ye[!values$deleted3 & values$excluded3]
         trans$sy <- data$sy3[!is.na(trans$y0)]
@@ -3168,8 +3173,8 @@ server <- function(input,output,session) {
   # LS fit ####
   observeEvent(c(input$model, input$sigmas, inputs$LogariRef, inputs$L0, inputs$TL0, inputs$ExponenRef, inputs$E0, 
                  inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType, 
-                 trans$y, input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, 
-                 input$tunits, trans$sy), {
+                 input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, input$tunits,
+                 trans$y, trans$sy), {
     req(trans$x, trans$y, trans$sy, trans$ordinate)
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
