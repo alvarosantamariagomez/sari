@@ -5070,6 +5070,7 @@ server <- function(input,output,session) {
       disable("reset")
       disable("delete_excluded")
       disable("loadSARI")
+      disable("ids")
       disable("correct_waveform")
       disable("custom")
       disable("downloadAs")
@@ -5093,6 +5094,7 @@ server <- function(input,output,session) {
       disable("flicker")
       disable("format")
       disable("format2")
+      disable("tunits")
       disable("histogram")
       disable("histogramType")
       disable("log")
@@ -5105,6 +5107,9 @@ server <- function(input,output,session) {
       disable("optionSecondary")
       disable("waveform")
       disable("plot")
+      disable("overflow")
+      disable("add_excluded")
+      disable("permanent")
       disable("powerl")
       disable("randomw")
       disable("runVerif")
@@ -5130,11 +5135,13 @@ server <- function(input,output,session) {
       disable("euler")
     } else {
       if (length(file$primary) > 0) {
+        enable("ids")
         enable("symbol")
         enable("header")
         enable("separator")
         enable("separator2")
         enable("format")
+        enable("tunits")
         if (input$format == 4) {
           updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
           shinyjs::delay(100, disable("format2"))
@@ -5172,6 +5179,9 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
         }
         enable("plot")
+        enable("overflow")
+        enable("add_excluded")
+        enable("permanent")
         if (isTruthy(info$errorbars)) {
           enable("sigmas") 
         } else {
