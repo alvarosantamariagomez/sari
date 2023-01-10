@@ -4,7 +4,7 @@ urlcolor: blue
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version diciembre 2022'
+title: 'SARI documentation - version enero 2023'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -57,7 +57,7 @@ A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).
 
 The changelog is available [here](./changelog.md) (only available from the online help).
 
-Current SARI version: *diciembre 2022*  --  "You are an imperfect being, created by an imperfect being. Finding you weakness is only a matter of time."
+Current SARI version: *enero 2023*  --  "I know Kung Fu"
 
 -----------------
 
@@ -107,7 +107,7 @@ The `scrolling` option enables/disables the vertical scrolling of the left panel
 Alternatively, the user can download the full SARI interface from the web browser (usually by pressing Ctrl+s) into an HTML file together with the corresponding web files in a separate directory with a similar name. The downloaded HTML file represents a frozen SARI session (i.e., not connected to the server) that can be reopened later in the web browser even offline. The advantage of the HTML page compared to the fixed screenshot is that all the numeric values are available to be selected and copied, so the same analysis can be easily replicated in a fresh session. However, before opening the HTML file in a web browser, it needs to be modified first. A Bash script called `SARIwebpage.sh` available [here](https://github.com/alvarosantamariagomez/sari/blob/main/SARIwebpage.sh) does the modifications automatically.  
 Note: Unfortunately, at this moment, the values of the UI interface, including the options selected by the user, are only saved in the HTML file when using Mozilla Firefox. Other web browsers, like Safari and the Google Chromium family (Google Chrome, Microsoft Edge and Opera), do not keep this information when saving the web page. I hope this browser error will be fixed in future updates.  
 
-<b><span style="color: red;">NEW FEATURE:</span></b> the new option `permanent` will permanently delete the next points that are removed from the series (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section). Permanently here means these points cannot be restored and they will not be shown again in the current session. The original series file is not modified and it has to be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are removed in a single action, it will automatically deactivate itself so the next points to be removed will be available to be restored. When toggling points that were already removed, this option will delete them permanently, instead of restoring them. This option is intended, for instance, to remove extreme outliers that do not allow to plot a series correctly.
+The new option `permanent` will permanently delete the next points that are removed from the series (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section). Permanently here means these points cannot be restored and they will not be shown again in the current session. The original series file is not modified and it has to be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are removed in a single action, it will automatically deactivate itself so the next points to be removed will be available to be restored. When toggling points that were already removed, this option will delete them permanently, instead of restoring them. This option is intended, for instance, to remove extreme outliers that do not allow to plot a series correctly.
 
 <h3 id="ancillary-information"></h3>
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  

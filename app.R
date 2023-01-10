@@ -39,7 +39,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # version ####
-version <- "SARI diciembre 2022"
+version <- "SARI enero 2023"
 
 # Some GUI functions
 
