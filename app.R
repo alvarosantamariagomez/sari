@@ -39,7 +39,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # version ####
-version <- "SARI diciembre 2022"
+version <- "SARI enero 2023"
 
 # Some GUI functions
 
@@ -797,7 +797,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                     ),
                                                                     textInput(inputId = "period", 
                                                                               div("Sinusoidal periods",
-                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years)")), 
+                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")), 
                                                                               value = "1y"),
                                                                     fluidRow(
                                                                       column(6,
@@ -1902,7 +1902,8 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL, 
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL, 
-                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL)
+                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
+                          x_orig = NULL)
   
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -2329,9 +2330,12 @@ server <- function(input,output,session) {
       if ((input$tab == 1) || (input$format == 4)) {
         trans$y0 <- data$y1
         trans$sy0 <- data$sy1
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted_all]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted_all & values$used_all]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2343,18 +2347,25 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$ye <- data$y1[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy1[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$sye <- data$sy1[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all & values$used_all]
+        trans$ye <- data$y1[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
+        trans$sy <- data$sy1[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
+        trans$sye <- data$sy1[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
         trans$z <- data$z1
         trans$sz <- data$sz1
       } else if (input$tab == 2) {
         trans$y0 <- data$y2
         trans$sy0 <- data$sy2
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted_all]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted_all & values$used_all]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2366,18 +2377,25 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$ye <- data$y2[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy2[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$sye <- data$sy2[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all & values$used_all]
+        trans$ye <- data$y2[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
+        trans$sy <- data$sy2[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
+        trans$sye <- data$sy2[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
         trans$z <- data$z2
         trans$sz <- data$sz2
       } else if (input$tab == 3) {
         trans$y0 <- data$y3
         trans$sy0 <- data$sy3
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted_all]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted_all & values$used_all]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2389,10 +2407,14 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$ye <- data$y3[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy3[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$sye <- data$sy3[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all & values$used_all]
+        trans$ye <- data$y3[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
+        trans$sy <- data$sy3[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
+        trans$sye <- data$sy3[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
         trans$z <- data$z3
         trans$sz <- data$sz3
       }
@@ -2437,10 +2459,12 @@ server <- function(input,output,session) {
       if ((input$tab == 1) || (input$format == 4)) {
         trans$y0 <- data$y1
         trans$sy0 <- data$sy1
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted1 & values$used1]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted1 & values$excluded1]
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted1]
-        
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted1 & values$used1]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted1 & values$excluded1]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted1]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2452,11 +2476,14 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted1 & values$used1]
-        trans$ye <- data$y1[!is.na(trans$y0) & !values$deleted1 & values$excluded1]
-        trans$sy <- data$sy1[!is.na(trans$y0) & !values$deleted1 & values$used1]
-        trans$sye <- data$sy1[!is.na(trans$y0) & !values$deleted1 & values$excluded1]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted1 & values$used1]
+        trans$ye <- data$y1[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted1 & values$excluded1]
+        trans$sy <- data$sy1[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted1 & values$used1]
+        trans$sye <- data$sy1[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted1 & values$excluded1]
         trans$z <- data$z1
         trans$sz <- data$sz1
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -2499,9 +2526,12 @@ server <- function(input,output,session) {
       } else if (input$tab == 2) {
         trans$y0 <- data$y2
         trans$sy0 <- data$sy2
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted2 & values$used2]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted2 & values$excluded2]
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted2]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted2 & values$used2]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted2 & values$excluded2]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted2]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2513,10 +2543,14 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted2 & values$used2]
-        trans$ye <- data$y2[!is.na(trans$y0) & !values$deleted2 & values$excluded2]
-        trans$sy <- data$sy2[!is.na(trans$y0) & !values$deleted2 & values$used2]
-        trans$sye <- data$sy2[!is.na(trans$y0) & !values$deleted2 & values$excluded2]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted2 & values$used2]
+        trans$ye <- data$y2[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted2 & values$excluded2]
+        trans$sy <- data$sy2[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted2 & values$used2]
+        trans$sye <- data$sy2[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted2 & values$excluded2]
         trans$z <- data$z2
         trans$sz <- data$sz2
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -2559,9 +2593,12 @@ server <- function(input,output,session) {
       } else if (input$tab == 3) {
         trans$y0 <- data$y3
         trans$sy0 <- data$sy3
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted3 & values$used3]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted3 & values$excluded3]
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted3]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted3 & values$used3]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted3 & values$excluded3]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted3]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2573,10 +2610,14 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted3 & values$used3]
-        trans$ye <- data$y3[!is.na(trans$y0) & !values$deleted3 & values$excluded3]
-        trans$sy <- data$sy3[!is.na(trans$y0) & !values$deleted3 & values$used3]
-        trans$sye <- data$sy3[!is.na(trans$y0) & !values$deleted3 & values$excluded3]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted3 & values$used3]
+        trans$ye <- data$y3[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted3 & values$excluded3]
+        trans$sy <- data$sy3[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted3 & values$used3]
+        trans$sye <- data$sy3[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted3 & values$excluded3]
         trans$z <- data$z3
         trans$sz <- data$sz3
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -3132,8 +3173,8 @@ server <- function(input,output,session) {
   # LS fit ####
   observeEvent(c(input$model, input$sigmas, inputs$LogariRef, inputs$L0, inputs$TL0, inputs$ExponenRef, inputs$E0, 
                  inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType, 
-                 trans$y, input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, 
-                 input$tunits, trans$sy), {
+                 input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, input$tunits,
+                 trans$y, trans$sy), {
     req(trans$x, trans$y, trans$sy, trans$ordinate)
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
@@ -3209,7 +3250,7 @@ server <- function(input,output,session) {
               res <- residuals(fit)
               if ("Sinusoidal" %in% input$model && isTruthy(synthesis$coefficients)) {
                 ss <- 0
-                info_out <- c()
+                info_out <- list()
                 for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
                   ss <- ss + 1
                   sine <- synthesis$coefficients[s,1]
@@ -3222,7 +3263,10 @@ server <- function(input,output,session) {
                   amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
                   phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
                   if (isTruthy(amp_err) && isTruthy(phase_err)) {
-                    info_out <- c(info_out, amp, amp_err, phase, phase_err)
+                    # info_out <- (info_out, trans$periods[ss], amp, amp_err, phase, phase_err)
+                    for (i in list(noquote(trans$periods[ss]), amp, amp_err, phase, phase_err)) {
+                      info_out[[length(info_out) + 1]] = i
+                    }
                   } else {
                     if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
                     showNotification(paste0("Unable to compute the amplitude and/or phase error from the errors of the sine and cosine coefficients of sinusoid ",ss,". Please contact the author to repport this problem."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
@@ -3230,8 +3274,8 @@ server <- function(input,output,session) {
                   }
                 }
                 if (isTruthy(info_out)) {
-                  synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 4, byrow = T)
-                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
+                  synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 5, byrow = T)
+                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Period","Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
                 }
               }
               trans$equation <- sub("y ~","Model =",m$model)
@@ -5026,6 +5070,7 @@ server <- function(input,output,session) {
       disable("reset")
       disable("delete_excluded")
       disable("loadSARI")
+      disable("ids")
       disable("correct_waveform")
       disable("custom")
       disable("downloadAs")
@@ -5049,6 +5094,7 @@ server <- function(input,output,session) {
       disable("flicker")
       disable("format")
       disable("format2")
+      disable("tunits")
       disable("histogram")
       disable("histogramType")
       disable("log")
@@ -5061,6 +5107,9 @@ server <- function(input,output,session) {
       disable("optionSecondary")
       disable("waveform")
       disable("plot")
+      disable("overflow")
+      disable("add_excluded")
+      disable("permanent")
       disable("powerl")
       disable("randomw")
       disable("runVerif")
@@ -5086,11 +5135,13 @@ server <- function(input,output,session) {
       disable("euler")
     } else {
       if (length(file$primary) > 0) {
+        enable("ids")
         enable("symbol")
         enable("header")
         enable("separator")
         enable("separator2")
         enable("format")
+        enable("tunits")
         if (input$format == 4) {
           updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
           shinyjs::delay(100, disable("format2"))
@@ -5128,6 +5179,9 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
         }
         enable("plot")
+        enable("overflow")
+        enable("add_excluded")
+        enable("permanent")
         if (isTruthy(info$errorbars)) {
           enable("sigmas") 
         } else {
@@ -5683,6 +5737,7 @@ server <- function(input,output,session) {
     trans$mle <- F
     trans$verif <- NULL
     trans$pattern <- NULL
+    updateTabsetPanel(session, inputId = "tab", selected = "1")
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
@@ -5765,14 +5820,9 @@ server <- function(input,output,session) {
     data <- digest()
     obs(data)
     info$points <- length(data$x[!is.na(data$y1)])
-    values$used1 <- rep(T, info$points)
-    values$used2 <- rep(T, info$points)
-    values$used3 <- rep(T, info$points)
-    values$used_all <- rep(T, info$points)
-    values$excluded1 <- rep(F, info$points)
-    values$excluded2 <- rep(F, info$points)
-    values$excluded3 <- rep(F, info$points)
-    values$excluded_all <- rep(F, info$points)
+    values$used1 <- values$used2 <- values$used3 <- values$used_all <- rep(T, info$points)
+    values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all <- rep(F, info$points)
+    values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, info$points)
     updateTextInput(session, "ObsError", value = "")
     if (isTruthy(inputs$step)) {
       info$step <- inputs$step
@@ -5818,25 +5868,23 @@ server <- function(input,output,session) {
       values$deleted2_primary <- values$deleted2
       values$deleted3_primary <- values$deleted3
       values$deleted_all_primary <- values$deleted_all
-      if (isTruthy(values$used1_secondary)) {
-        values$used1 <- values$used1_secondary
-        values$used2 <- values$used2_secondary
-        values$used3 <- values$used3_secondary
-        values$used_all <- values$used_all_secondary
-        values$deleted1 <- values$deleted1_secondary
-        values$deleted2 <- values$deleted2_secondary
-        values$deleted3 <- values$deleted3_secondary
-        values$deleted_all <- values$deleted_all_secondary
-      } else {
-        values$used1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), by = "x", all = F)$s
-        values$used2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), by = "x", all = F)$s
-        values$used3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), by = "x", all = F)$s
-        values$used_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), by = "x", all = F)$s
-        values$deleted1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
-        values$deleted2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
-        values$deleted3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
-        values$deleted_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
-      }
+      trans$x_orig <- trans$x0[!is.na(trans$y0)]
+      values$used1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), by = "x", all = F)$s
+      values$used1[is.na(values$used1)] <- F
+      values$used2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), by = "x", all = F)$s
+      values$used2[is.na(values$used2)] <- F
+      values$used3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), by = "x", all = F)$s
+      values$used3[is.na(values$used3)] <- F
+      values$used_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), by = "x", all = F)$s
+      values$used_all[is.na(values$used_all)] <- F
+      values$deleted1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
+      values$deleted1[is.na(values$deleted1)] <- F
+      values$deleted2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
+      values$deleted2[is.na(values$deleted2)] <- F
+      values$deleted3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
+      values$deleted3[is.na(values$deleted3)] <- F
+      values$deleted_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
+      values$deleted_all[is.na(values$deleted_all)] <- F
       values$excluded1 <- !values$used1
       values$excluded2 <- !values$used2
       values$excluded3 <- !values$used3
@@ -5849,22 +5897,23 @@ server <- function(input,output,session) {
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
       }
     } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-      values$used1_secondary <- values$used1
-      values$used2_secondary <- values$used2
-      values$used3_secondary <- values$used3
-      values$used_all_secondary <- values$used_all
-      values$deleted1_secondary <- values$deleted1
-      values$deleted2_secondary <- values$deleted2
-      values$deleted3_secondary <- values$deleted3
-      values$deleted_all_secondary <- values$deleted_all
-      values$used1 <- values$used1_primary
-      values$used2 <- values$used2_primary
-      values$used3 <- values$used3_primary
-      values$used_all <- values$used_all_primary
-      values$deleted1 <- values$deleted1_primary
-      values$deleted2 <- values$deleted2_primary
-      values$deleted3 <- values$deleted3_primary
-      values$deleted_all <- values$deleted_all_primary
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), data.frame(x = trans$x_orig, s = values$used1_primary), by = "x", all.y = T)
+      values$used1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), data.frame(x = trans$x_orig, s = values$used2_primary), by = "x", all.y = T)
+      values$used2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), data.frame(x = trans$x_orig, s = values$used3_primary), by = "x", all.y = T)
+      values$used3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), data.frame(x = trans$x_orig, s = values$used_all_primary), by = "x", all.y = T)
+      values$used_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), data.frame(x = trans$x_orig, s = values$deleted1_primary), by = "x", all.y = T)
+      values$deleted1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), data.frame(x = trans$x_orig, s = values$deleted2_primary), by = "x", all.y = T)
+      values$deleted2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), data.frame(x = trans$x_orig, s = values$deleted3_primary), by = "x", all.y = T)
+      values$deleted3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), data.frame(x = trans$x_orig, s = values$deleted_all_primary), by = "x", all.y = T)
+      values$deleted_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      rm(tempo)
       values$excluded1 <- !values$used1
       values$excluded2 <- !values$used2
       values$excluded3 <- !values$used3
@@ -6684,7 +6733,7 @@ server <- function(input,output,session) {
       table <- NULL
       table2 <- NULL
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
-      if (!isTruthy(values$deleted_all)) {
+      if (is.null(values$deleted_all)) {
         values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
       }
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
@@ -7256,6 +7305,8 @@ server <- function(input,output,session) {
       # * Sinusoidal model ####
       if ("Sinusoidal" %in% input$model) {
         periods <- unlist(strsplit(inputs$period, split = ","))
+        periods2 <- NULL
+        trans$periods <- NULL
         S0 <- unlist(strsplit(input$S0, split = ","))
         eS0 <- unlist(strsplit(input$eS0, split = ","))
         sigamp <- unlist(strsplit(input$SinusoidalDev, split = ","))
@@ -7277,9 +7328,147 @@ server <- function(input,output,session) {
           for (p in periods) {
             f <- NULL
             i <- i + 1
+            if (grepl("x",p)) {
+              harmonics <- unlist(strsplit(p, split = "x"))
+              p <- harmonics[1]
+              h <- as.numeric(harmonics[2])
+            } else {
+              h <- 0
+            }
+            if (grepl("d",p)) {
+              f <- gsub("d", "", p)
+              if (h > 1) {
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+              }
+              if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
+                if (input$tunits == 1) {
+                  f <- 1/as.numeric(f)
+                } else if (input$tunits == 2) {
+                  f <- 7/as.numeric(f)
+                } else if (input$tunits == 3) {
+                  f <- daysInYear/as.numeric(f)
+                }
+              } else {
+                f <- NULL
+              }
+            } else if (grepl("w",p)) {
+              f <- gsub("w", "", p)
+              if (h > 1) {
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+              }
+              if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
+                if (input$tunits == 1) {
+                  f <- (1/as.numeric(f))*7
+                } else if (input$tunits == 2) {
+                  f <- (1/as.numeric(f))*1
+                } else if (input$tunits == 3) {
+                  f <- 1/as.numeric(f)*7/daysInYear
+                }
+              } else {
+                f <- NULL
+              }
+            } else if (grepl("y",p)) {
+              f <- gsub("y", "", p)
+              if (h > 1) {
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+              }
+              if (nchar(f) > 0  && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"y",sep = "")))
+                if (input$tunits == 1) {
+                  f <- (1/as.numeric(f))*1/daysInYear
+                } else if (input$tunits == 2) {
+                  f <- (1/as.numeric(f))*7/daysInYear
+                } else if (input$tunits == 3) {
+                  f <- 1/as.numeric(f)
+                }
+              } else {
+                f <- NULL
+              }
+            }
+            if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
+              if (f < 1/abs(info$rangex)) {
+                showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              }
+              info$run <- T
+              label_sin <- paste("S",i,sep = "")
+              label_cos <- paste("C",i,sep = "")
+              text_sin <- sprintf("I(sin(2*pi*(x-%f)*%f))",as.numeric(refs),f)
+              text_cos <- sprintf("I(cos(2*pi*(x-%f)*%f))",as.numeric(refs),f)
+              text_sin_kf <- sprintf("sin(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
+              text_cos_kf <- sprintf("cos(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
+              text_sin_lm <- sprintf("sin(2*pi*x*%f)",f)
+              text_cos_lm <- sprintf("cos(2*pi*x*%f)",f)
+              model <- paste(model, paste(label_sin,text_sin,sep = "*"), sep = " + ")
+              model_lm <- paste(model_lm, text_sin_lm, text_cos_lm, sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
+              j <- j + 1
+              model <- paste(model, paste(label_cos,text_cos,sep = "*"), sep = " + ")
+              model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
+              model_kf_mean <- paste(model_kf_mean, paste(paste0("e[k,",j,"]"),text_cos_kf,sep = "*"), sep = " + ")
+              j <- j + 1
+              if (length(y_detrend) > 0) {
+                y_now <- y_detrend
+              } else {
+                y_now <- y - median(y)
+              }
+              if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
+                S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
+                eS0[i] <- as.numeric(S0[i])/2
+                if (input$fitType == 2) {
+                  if (isTruthy(match(paste0("S",i), trans$names))) {
+                    s <- trans$LScoefs[match(paste0("S",i), trans$names)]
+                    c <- trans$LScoefs[match(paste0("C",i), trans$names)]
+                    S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
+                    eS0[i] <- abs(as.numeric(S0[i]))
+                  }
+                }
+              }
+              apriori[[label_sin]] <- as.numeric(S0[i])
+              error[[label_sin]] <- as.numeric(eS0[i])
+              nouns <- c(nouns, label_sin)
+              apriori[[label_cos]] <- as.numeric(S0[i])
+              if (eS0[i] == 0) {
+                info$run <- F
+                showNotification("At least one of the a priori sinusoidal amplitude errors is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
+                req(info$stop)
+              } else {
+                error[[label_cos]] <- as.numeric(eS0[i])
+              }
+              nouns <- c(nouns, label_cos)
+              if (input$fitType == 2) {
+                if (isTruthy(sigamp[i])) {
+                  if (!is.na(suppressWarnings(as.numeric(sigamp[i]))) && suppressWarnings(as.numeric(sigamp[i]) >= 0)) {
+                    if (input$SineCosine == 1) {
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                      processNoise <- c(processNoise, 0)
+                    } else if (input$SineCosine == 2) {
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                      processNoise <- c(processNoise, as.numeric(sigamp[i])^2)
+                    }
+                  } else {
+                    showNotification(paste("The process noise value for the sinusoid ",i," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_noise", type = "error", session = getDefaultReactiveDomain())
+                    return(NULL)
+                  }
+                } else {
+                  showNotification(paste("The process noise value for the sinusoid ",i," is missing. Using a value of zero."), action = NULL, duration = 10, closeButton = T, id = "missing_sinusoidal_noise", type = "warning", session = getDefaultReactiveDomain())
+                  processNoise <- c(processNoise, 0)
+                  processNoise <- c(processNoise, 0)
+                }
+              }
+            } else {
+              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
+          for (p in periods2) {
+            f <- NULL
+            i <- i + 1
             if (grepl("d",p)) {
               f <- gsub("d", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
                 if (input$tunits == 1) {
                   f <- 1/as.numeric(f)
                 } else if (input$tunits == 2) {
@@ -7293,6 +7482,7 @@ server <- function(input,output,session) {
             } else if (grepl("w",p)) {
               f <- gsub("w", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*7
                 } else if (input$tunits == 2) {
@@ -7306,6 +7496,7 @@ server <- function(input,output,session) {
             } else if (grepl("y",p)) {
               f <- gsub("y", "", p)
               if (nchar(f) > 0  && !is.na(as.numeric(f))) {
+                trans$periods <- c(trans$periods, trim(paste(f,"y",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*1/daysInYear
                 } else if (input$tunits == 2) {

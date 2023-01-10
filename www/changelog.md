@@ -1,5 +1,23 @@
 # **SARI changelog**
 
+# enero 2023 [2023.01]
+
+### Fixed
+
+- Fixing click on SARI logo before loading a series
+- Removing points when showing/correcting a secondary series
+- Averaging the series with points removed permanently
+
+### Changed
+
+- Disabling a few more options when showing the help page
+
+### Added
+
+- Sinusoidal periods units to the estimated amplitude and phase results
+- Compressed form to fit sinusoidal harmonics
+
+
 # diciembre 2022 [2022.12]
 
 ### Fixed:
