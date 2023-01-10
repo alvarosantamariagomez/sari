@@ -5737,6 +5737,7 @@ server <- function(input,output,session) {
     trans$mle <- F
     trans$verif <- NULL
     trans$pattern <- NULL
+    updateTabsetPanel(session, inputId = "tab", selected = "1")
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
