@@ -1902,7 +1902,8 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL, 
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL, 
-                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL)
+                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
+                          x_orig = NULL)
   
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -2329,9 +2330,12 @@ server <- function(input,output,session) {
       if ((input$tab == 1) || (input$format == 4)) {
         trans$y0 <- data$y1
         trans$sy0 <- data$sy1
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted_all]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted_all & values$used_all]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2343,18 +2347,24 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$ye <- data$y1[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy1[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$sye <- data$sy1[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
+        trans$y <- trans$y[values$used_all]
+        trans$ye <- data$y1[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
+        trans$sy <- data$sy1[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
+        trans$sye <- data$sy1[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
         trans$z <- data$z1
         trans$sz <- data$sz1
       } else if (input$tab == 2) {
         trans$y0 <- data$y2
         trans$sy0 <- data$sy2
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted_all]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted_all & values$used_all]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2366,18 +2376,24 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$ye <- data$y2[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy2[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$sye <- data$sy2[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
+        trans$y <- trans$y[values$used_all]
+        trans$ye <- data$y2[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
+        trans$sy <- data$sy2[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
+        trans$sye <- data$sy2[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
         trans$z <- data$z2
         trans$sz <- data$sz2
       } else if (input$tab == 3) {
         trans$y0 <- data$y3
         trans$sy0 <- data$sy3
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted_all]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted_all & values$used_all]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted_all]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2389,10 +2405,13 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$ye <- data$y3[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy3[!is.na(trans$y0) & !values$deleted_all & values$used_all]
-        trans$sye <- data$sy3[!is.na(trans$y0) & !values$deleted_all & values$excluded_all]
+        trans$y <- trans$y[values$used_all]
+        trans$ye <- data$y3[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
+        trans$sy <- data$sy3[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
+        trans$sye <- data$sy3[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
         trans$z <- data$z3
         trans$sz <- data$sz3
       }
@@ -2437,10 +2456,12 @@ server <- function(input,output,session) {
       if ((input$tab == 1) || (input$format == 4)) {
         trans$y0 <- data$y1
         trans$sy0 <- data$sy1
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted1 & values$used1]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted1 & values$excluded1]
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted1]
-        
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted1 & values$used1]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted1 & values$excluded1]
+        trans$y <- data$y1[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted1]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2453,10 +2474,13 @@ server <- function(input,output,session) {
           ranges$y1 <- c(info$miny, info$maxy)
         }
         
-        trans$y <- data$y1[!is.na(trans$y0) & !values$deleted1 & values$used1]
-        trans$ye <- data$y1[!is.na(trans$y0) & !values$deleted1 & values$excluded1]
-        trans$sy <- data$sy1[!is.na(trans$y0) & !values$deleted1 & values$used1]
-        trans$sye <- data$sy1[!is.na(trans$y0) & !values$deleted1 & values$excluded1]
+        trans$y <- trans$y[values$used1]
+        trans$ye <- data$y1[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted1 & values$excluded1]
+        trans$sy <- data$sy1[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted1 & values$used1]
+        trans$sye <- data$sy1[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted1 & values$excluded1]
         trans$z <- data$z1
         trans$sz <- data$sz1
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -2499,9 +2523,12 @@ server <- function(input,output,session) {
       } else if (input$tab == 2) {
         trans$y0 <- data$y2
         trans$sy0 <- data$sy2
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted2 & values$used2]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted2 & values$excluded2]
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted2]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted2 & values$used2]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted2 & values$excluded2]
+        trans$y <- data$y2[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted2]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2513,10 +2540,13 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y2[!is.na(trans$y0) & !values$deleted2 & values$used2]
-        trans$ye <- data$y2[!is.na(trans$y0) & !values$deleted2 & values$excluded2]
-        trans$sy <- data$sy2[!is.na(trans$y0) & !values$deleted2 & values$used2]
-        trans$sye <- data$sy2[!is.na(trans$y0) & !values$deleted2 & values$excluded2]
+        trans$y <- trans$y[values$used2]
+        trans$ye <- data$y2[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted2 & values$excluded2]
+        trans$sy <- data$sy2[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted2 & values$used2]
+        trans$sye <- data$sy2[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted2 & values$excluded2]
         trans$z <- data$z2
         trans$sz <- data$sz2
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -2559,9 +2589,12 @@ server <- function(input,output,session) {
       } else if (input$tab == 3) {
         trans$y0 <- data$y3
         trans$sy0 <- data$sy3
-        trans$x <- data$x[!is.na(trans$y0) & !values$deleted3 & values$used3]
-        trans$xe <- data$x[!is.na(trans$y0) & !values$deleted3 & values$excluded3]
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted3]
+        trans$x <- data$x[!is.na(trans$y0)]
+        trans$x <- trans$x[!values$deleted3 & values$used3]
+        trans$xe <- data$x[!is.na(trans$y0)]
+        trans$xe <- trans$xe[!values$deleted3 & values$excluded3]
+        trans$y <- data$y3[!is.na(trans$y0)]
+        trans$y <- trans$y[!values$deleted3]
         info$miny <- min(trans$y, na.rm = T)
         info$maxy <- max(trans$y, na.rm = T)
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -2573,10 +2606,13 @@ server <- function(input,output,session) {
         } else {
           ranges$y1 <- c(info$miny, info$maxy)
         }
-        trans$y <- data$y3[!is.na(trans$y0) & !values$deleted3 & values$used3]
-        trans$ye <- data$y3[!is.na(trans$y0) & !values$deleted3 & values$excluded3]
-        trans$sy <- data$sy3[!is.na(trans$y0) & !values$deleted3 & values$used3]
-        trans$sye <- data$sy3[!is.na(trans$y0) & !values$deleted3 & values$excluded3]
+        trans$y <- trans$y[values$used3]
+        trans$ye <- data$y3[!is.na(trans$y0)]
+        trans$ye <- trans$ye[!values$deleted3 & values$excluded3]
+        trans$sy <- data$sy3[!is.na(trans$y0)]
+        trans$sy <- trans$sy[!values$deleted3 & values$used3]
+        trans$sye <- data$sy3[!is.na(trans$y0)]
+        trans$sye <- trans$sye[!values$deleted3 & values$excluded3]
         trans$z <- data$z3
         trans$sz <- data$sz3
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -5816,25 +5852,23 @@ server <- function(input,output,session) {
       values$deleted2_primary <- values$deleted2
       values$deleted3_primary <- values$deleted3
       values$deleted_all_primary <- values$deleted_all
-      if (isTruthy(values$used1_secondary)) {
-        values$used1 <- values$used1_secondary
-        values$used2 <- values$used2_secondary
-        values$used3 <- values$used3_secondary
-        values$used_all <- values$used_all_secondary
-        values$deleted1 <- values$deleted1_secondary
-        values$deleted2 <- values$deleted2_secondary
-        values$deleted3 <- values$deleted3_secondary
-        values$deleted_all <- values$deleted_all_secondary
-      } else {
-        values$used1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), by = "x", all = F)$s
-        values$used2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), by = "x", all = F)$s
-        values$used3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), by = "x", all = F)$s
-        values$used_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), by = "x", all = F)$s
-        values$deleted1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
-        values$deleted2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
-        values$deleted3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
-        values$deleted_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
-      }
+      trans$x_orig <- trans$x0[!is.na(trans$y0)]
+      values$used1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), by = "x", all = F)$s
+      values$used1[is.na(values$used1)] <- F
+      values$used2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), by = "x", all = F)$s
+      values$used2[is.na(values$used2)] <- F
+      values$used3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), by = "x", all = F)$s
+      values$used3[is.na(values$used3)] <- F
+      values$used_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), by = "x", all = F)$s
+      values$used_all[is.na(values$used_all)] <- F
+      values$deleted1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
+      values$deleted1[is.na(values$deleted1)] <- F
+      values$deleted2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
+      values$deleted2[is.na(values$deleted2)] <- F
+      values$deleted3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
+      values$deleted3[is.na(values$deleted3)] <- F
+      values$deleted_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
+      values$deleted_all[is.na(values$deleted_all)] <- F
       values$excluded1 <- !values$used1
       values$excluded2 <- !values$used2
       values$excluded3 <- !values$used3
@@ -5847,22 +5881,23 @@ server <- function(input,output,session) {
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
       }
     } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-      values$used1_secondary <- values$used1
-      values$used2_secondary <- values$used2
-      values$used3_secondary <- values$used3
-      values$used_all_secondary <- values$used_all
-      values$deleted1_secondary <- values$deleted1
-      values$deleted2_secondary <- values$deleted2
-      values$deleted3_secondary <- values$deleted3
-      values$deleted_all_secondary <- values$deleted_all
-      values$used1 <- values$used1_primary
-      values$used2 <- values$used2_primary
-      values$used3 <- values$used3_primary
-      values$used_all <- values$used_all_primary
-      values$deleted1 <- values$deleted1_primary
-      values$deleted2 <- values$deleted2_primary
-      values$deleted3 <- values$deleted3_primary
-      values$deleted_all <- values$deleted_all_primary
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), data.frame(x = trans$x_orig, s = values$used1_primary), by = "x", all.y = T)
+      values$used1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), data.frame(x = trans$x_orig, s = values$used2_primary), by = "x", all.y = T)
+      values$used2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), data.frame(x = trans$x_orig, s = values$used3_primary), by = "x", all.y = T)
+      values$used3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), data.frame(x = trans$x_orig, s = values$used_all_primary), by = "x", all.y = T)
+      values$used_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), data.frame(x = trans$x_orig, s = values$deleted1_primary), by = "x", all.y = T)
+      values$deleted1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), data.frame(x = trans$x_orig, s = values$deleted2_primary), by = "x", all.y = T)
+      values$deleted2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), data.frame(x = trans$x_orig, s = values$deleted3_primary), by = "x", all.y = T)
+      values$deleted3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), data.frame(x = trans$x_orig, s = values$deleted_all_primary), by = "x", all.y = T)
+      values$deleted_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      rm(tempo)
       values$excluded1 <- !values$used1
       values$excluded2 <- !values$used2
       values$excluded3 <- !values$used3
@@ -6682,7 +6717,7 @@ server <- function(input,output,session) {
       table <- NULL
       table2 <- NULL
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
-      if (!isTruthy(values$deleted_all)) {
+      if (is.null(values$deleted_all)) {
         values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
       }
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
