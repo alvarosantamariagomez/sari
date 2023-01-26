@@ -3661,10 +3661,9 @@ server <- function(input,output,session) {
     }
   }, width = reactive(info$width), type = "cairo-png")
   
-  # Plot histogram ####
-  output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
+  # Compute stats & histogram ####
+  observeEvent(c(input$histogramType, ranges$x1), {
     req(obs(), input$histogram)
-    removeNotification("no_histogram")
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
       label <- "Original series"
@@ -3684,65 +3683,43 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
       req(info$stop)
     }
-    if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
-    if (isTruthy(values) && sd(values) > 0) {
-      hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
-      dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
-      xfit <- seq(min(values),max(values),length = 40) 
-      yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
-      lines(xfit, yfit, col = "red", lwd = 2) 
+    removeNotification("no_histogram")
+    removeNotification("no_histogram")
+    if (isTruthy(values) && isTruthy(sd(values)) && length(values) > 1 && sd(values) > 0) {
+      if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
+      output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
+        hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
+        dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
+        xfit <- seq(min(values),max(values),length = 40) 
+        yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
+        lines(xfit, yfit, col = "red", lwd = 2)
+      }, width = reactive(info$width), type = "cairo-png")
+      if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
+      adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
+      kpss <- suppressWarnings(kpss.test(values, null = "Level"))
+      stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
+      output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
+        if (!inherits(adf,"try-error") && !is.null(adf) && isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
+          cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
+          if (kpss$p.value <= 0.01 && adf$p.value >= 0.01) {
+            cat(paste0("WARNING: the ",label," are most certainly NOT stationary (probability > 99%)."), "\n\n")
+          } else if (kpss$p.value < 0.05 && adf$p.value > 0.05) {
+            cat(paste0("WARNING: the ",label," are likely NOT stationary (probability > 95%)."), "\n\n")
+          } else if (kpss$p.value < 0.1 && adf$p.value > 0.1) {
+            cat(paste0("WARNING: the ",label," could be NOT stationary (probability > 90%)."), "\n\n")
+          } else {
+            cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
+          }
+        } else {
+          kk <- showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
+        }
+        print(stats,digits = 4)
+      }, width = 180)
     } else {
       showNotification("Unable to compute the histogram. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_histogram", type = "error", session = getDefaultReactiveDomain())
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
     }
-  }, width = reactive(info$width), type = "cairo-png")
-  
-  # Stats ####
-  output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
-    req(obs(), input$histogram)
-    removeNotification("no_stationarity")
-    if (input$histogramType == 1) {
-      values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "original series"
-    } else if (input$histogramType == 2 && length(trans$mod) > 0) {
-      values <- trans$mod[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "model series"
-    } else if (input$histogramType == 3 && length(trans$res) > 0) {
-      values <- trans$res[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "model residual series"
-    } else if (input$histogramType == 4 && length(trans$filter) > 0) {
-      values <- trans$filter[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "filter series"
-    } else if (input$histogramType == 5 && length(trans$filterRes) > 0) {
-      values <- trans$filterRes[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "filter residual series"
-    } else {
-      req(info$stop)
-    }
-    if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
-    if (isTruthy(values) && sd(values) > 0) {
-      adf <- suppressWarnings(adf.test(values, alternative = "stationary"))
-      kpss <- suppressWarnings(kpss.test(values, null = "Level"))
-      if (isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
-        cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
-        if (kpss$p.value <= 0.01 && adf$p.value >= 0.01) {
-          cat(paste0("WARNING: the ",label," are most certainly NOT stationary (probability > 99%)."), "\n\n")
-        } else if (kpss$p.value < 0.05 && adf$p.value > 0.05) {
-          cat(paste0("WARNING: the ",label," are likely NOT stationary (probability > 95%)."), "\n\n")
-        } else if (kpss$p.value < 0.1 && adf$p.value > 0.1) {
-          cat(paste0("WARNING: the ",label," could be NOT stationary (probability > 90%)."), "\n\n")
-        } else {
-          cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
-        }
-        stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
-        print(stats,digits = 4)
-      } else {
-        showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
-      }
-    } else {
-      showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
-    }
-  }, width = 180)
+  })
   
   # Fit summary ####
   output$summary1 <- output$summary2 <- output$summary3 <- renderPrint({
