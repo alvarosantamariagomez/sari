@@ -5843,6 +5843,7 @@ server <- function(input,output,session) {
     }
   }, priority = 6)
   observeEvent(input$optionSecondary, {
+    req(obs())
     req(file$primary)
     if (messages > 0) {
       if (input$optionSecondary == 0) {
@@ -6595,13 +6596,13 @@ server <- function(input,output,session) {
   })
   
   # Observe hide buttons ####
-  observeEvent(c(input$tab, trans$filter, trans$res, inputs$step, input$optionSecondary), {
+  observeEvent(c(input$tab, trans$filter, trans$res, trans$y, inputs$step, input$optionSecondary), {
     if (input$tab == 4) {
       showTab(inputId = "tab", target = "6", select = F, session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     } else {
       hideTab(inputId = "tab", target = "6", session = getDefaultReactiveDomain())
-      if (length(trans$filter) > 0 || length(trans$res) > 0 || (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || input$optionSecondary > 1) {
+      if (length(trans$y) > 0 && (length(trans$filter) > 0 || length(trans$res) > 0 || (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || input$optionSecondary > 1)) {
         showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
       } else {
         hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
