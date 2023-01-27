@@ -1557,7 +1557,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                color.background = getOption("spinner.color.background", default = "#ffffff"),
                                                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
                                              ),
-                                             downloadLink('downloadSpectrum1', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                             downloadLink('downloadSpectrum1', div(id = "downloadlink1", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
                                              verbatimTextOutput("lomb1_info", placeholder = F)
                                            ),
                                            conditionalPanel(
@@ -1683,7 +1683,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                color.background = getOption("spinner.color.background", default = "#ffffff"),
                                                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
                                              ),
-                                             downloadLink('downloadSpectrum2', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                             downloadLink('downloadSpectrum2', div(id = "downloadlink2", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
                                              verbatimTextOutput("lomb2_info", placeholder = F)
                                            ),
                                            conditionalPanel(
@@ -1811,7 +1811,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                color.background = getOption("spinner.color.background", default = "#ffffff"),
                                                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
                                              ),
-                                             downloadLink('downloadSpectrum3', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                             downloadLink('downloadSpectrum3', div(id = "downloadlink3", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
                                              verbatimTextOutput("lomb3_info", placeholder = F)
                                            ),
                                            conditionalPanel(
@@ -3860,6 +3860,9 @@ server <- function(input,output,session) {
       showNotification("The oversampling value is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_oversampling", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (messages > 0) cat(file = stderr(), "Setting periodogram limits", "\n")
     trans$fs <- NULL
     trans$title <- c("Lomb-Scargle periodogram: ")
@@ -3962,6 +3965,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumOriginal), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[1])) {
       trans$psd[,1] <- NA
       trans$amp[,1] <- NA
@@ -3973,6 +3979,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumModel), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[2])) {
       trans$psd[,2] <- NA
       trans$amp[,2] <- NA
@@ -3984,6 +3993,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$periodogram_residuals), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[3])) {
       trans$psd[,3] <- NA
       trans$amp[,3] <- NA
@@ -3995,6 +4007,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumFilter), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[4])) {
       trans$psd[,4] <- NA
       trans$amp[,4] <- NA
@@ -4006,6 +4021,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumFilterRes), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[5])) {
       trans$psd[,5] <- NA
       trans$amp[,5] <- NA
@@ -4017,18 +4035,27 @@ server <- function(input,output,session) {
   })
   observeEvent(c(trans$y, trans$sy), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (input$spectrumOriginal) {
       periodogram("original")
     }
   })
   observeEvent(c(trans$res, trans$model), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (input$spectrumModel || input$periodogram_residuals) {
       periodogram(c("model","residuals"))
     }
   })
   observeEvent(c(trans$filter, trans$filterRes), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (input$spectrumFilter || input$spectrumFilterRes) {
       periodogram(c("filter","filterRes"))
     }
@@ -5656,6 +5683,9 @@ server <- function(input,output,session) {
     trans$names <- NULL
     trans$noise <- NULL
     updateTextInput(session, "ObsError", value = "")
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
@@ -8238,6 +8268,9 @@ server <- function(input,output,session) {
       trans$amp[,1] <- lombscargle$A
       trans$psd[,1] <- lombscargle$PSD*var(trans$y)
       trans$var <- var(trans$y)
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     if (input$spectrumModel && length(trans$mod) > 0 && length(trans$res) > 0 && any("all" %in% serie || "model" %in% serie)) {
       trans$title[3] <- "model (red), "
@@ -8248,6 +8281,9 @@ server <- function(input,output,session) {
       trans$amp[,2] <- lombscargle$A
       trans$psd[,2] <- lombscargle$PSD*var(ideal)
       trans$var <- var(ideal)
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     } 
     if (input$periodogram_residuals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
       trans$title[4] <- "model residuals (green), "
@@ -8262,6 +8298,9 @@ server <- function(input,output,session) {
       trans$amp[,3] <- lombscargle$A
       trans$psd[,3] <- lombscargle$PSD*var(as.vector(trans$res))
       trans$var <- var(as.vector(trans$res))
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     if (input$spectrumFilter && length(trans$filter > 0) && any("all" %in% serie || "filter" %in% serie)) {
       trans$title[5] <- "filter (blue), "
@@ -8271,6 +8310,9 @@ server <- function(input,output,session) {
       trans$amp[,4] <- lombscargle$A
       trans$psd[,4] <- lombscargle$PSD*lombscargle$PSD*var(as.vector(trans$filter))
       trans$var <- var(as.vector(trans$filter))
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     if (input$spectrumFilterRes && length(trans$filterRes) > 0 && any("all" %in% serie || "filterRes" %in% serie)) {
       trans$title[6] <- "filter residuals (cyan), "
@@ -8280,6 +8322,9 @@ server <- function(input,output,session) {
       trans$amp[,5] <- lombscargle$A
       trans$psd[,5] <- lombscargle$PSD*var(as.vector(trans$filterRes))
       trans$var <- var(as.vector(trans$filterRes))
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$periodogram_residuals,input$spectrumFilter,input$spectrumFilterRes)
   }
