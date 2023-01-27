@@ -4166,8 +4166,8 @@ server <- function(input,output,session) {
           lines(1/trans$fs, regression, col = c)
           text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = c)
           lombx <- c(inputs$long_period,inputs$short_period)
-          bias <- 0.01
-          lomby_flicker <- c(bias*(10^(slope$coef[1])*(inputs$long_period/inputs$short_period)),bias*10^(slope$coef[1]))
+          start <- median(tail(p, n = as.integer(length(p)/100)))
+          lomby_flicker <- c(start*(inputs$long_period/inputs$short_period),start)
           lines(lombx,lomby_flicker, col = "hotpink", lty = 2, lwd = 2)
           text(inputs$long_period/10,min(p),"Slope = -1",col = "hotpink")
         }
