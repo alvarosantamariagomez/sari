@@ -3248,7 +3248,7 @@ server <- function(input,output,session) {
                 mod <- mod + trans$pattern
               }
               res <- residuals(fit)
-              if ("Sinusoidal" %in% input$model && isTruthy(synthesis$coefficients)) {
+              if (any(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
                 ss <- 0
                 info_out <- list()
                 for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
@@ -7467,7 +7467,11 @@ server <- function(input,output,session) {
                 }
               }
             } else {
-              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              if (info$sampling == f) {
+                showNotification(paste("The period asked for sinusoid ",i," is equal to the series sampling and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              } else {
+                showNotification(paste("The period asked for sinusoid ",i," is way out of the data bounds and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              }
             }
           }
           for (p in periods2) {
