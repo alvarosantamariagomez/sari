@@ -6741,9 +6741,6 @@ server <- function(input,output,session) {
       table <- NULL
       table2 <- NULL
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
-      if (is.null(values$deleted_all)) {
-        values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
-      }
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
         if (input$format < 4 && input$format != input$format2) {
           removeNotification(id = "formats", session = getDefaultReactiveDomain())
@@ -6855,6 +6852,9 @@ server <- function(input,output,session) {
         if (anyNA(table2)) {
           table2 <- na.omit(table2)
           showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
+        }
+        if (is.null(values$deleted_all)) {
+          values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
         }
         # Resampling the series
         if (input$average) {
