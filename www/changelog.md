@@ -1,5 +1,21 @@
 # **SARI changelog**
 
+# febrero 2023 [2023.02]
+
+### Fixed
+
+- Bug when plotting the primary and secondary series at the same time with different number of points
+- Bug when the sinusoidal period is the same as the series sampling
+
+### Changed
+
+- Improved location of the FN power spectrum on top of the periodogram with different time units
+- The link to download the periodogram data appears only when necessary
+- Simplifying the code for plotting the histogram and checking for stationarity
+
+### Added
+
+
 # enero 2023 [2023.01]
 
 ### Fixed

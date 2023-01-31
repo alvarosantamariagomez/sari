@@ -39,7 +39,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # version ####
-version <- "SARI enero 2023"
+version <- "SARI febrero 2023"
 
 # Some GUI functions
 
@@ -1557,7 +1557,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                color.background = getOption("spinner.color.background", default = "#ffffff"),
                                                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
                                              ),
-                                             downloadLink('downloadSpectrum1', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                             downloadLink('downloadSpectrum1', div(id = "downloadlink1", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
                                              verbatimTextOutput("lomb1_info", placeholder = F)
                                            ),
                                            conditionalPanel(
@@ -1683,7 +1683,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                color.background = getOption("spinner.color.background", default = "#ffffff"),
                                                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
                                              ),
-                                             downloadLink('downloadSpectrum2', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                             downloadLink('downloadSpectrum2', div(id = "downloadlink2", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
                                              verbatimTextOutput("lomb2_info", placeholder = F)
                                            ),
                                            conditionalPanel(
@@ -1811,7 +1811,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                color.background = getOption("spinner.color.background", default = "#ffffff"),
                                                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
                                              ),
-                                             downloadLink('downloadSpectrum3', div(style = "margin-top:0em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                             downloadLink('downloadSpectrum3', div(id = "downloadlink3", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
                                              verbatimTextOutput("lomb3_info", placeholder = F)
                                            ),
                                            conditionalPanel(
@@ -3248,7 +3248,7 @@ server <- function(input,output,session) {
                 mod <- mod + trans$pattern
               }
               res <- residuals(fit)
-              if ("Sinusoidal" %in% input$model && isTruthy(synthesis$coefficients)) {
+              if (any(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
                 ss <- 0
                 info_out <- list()
                 for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
@@ -3661,10 +3661,9 @@ server <- function(input,output,session) {
     }
   }, width = reactive(info$width), type = "cairo-png")
   
-  # Plot histogram ####
-  output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
+  # Compute stats & histogram ####
+  observeEvent(c(input$histogramType, ranges$x1), {
     req(obs(), input$histogram)
-    removeNotification("no_histogram")
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
       label <- "Original series"
@@ -3684,65 +3683,43 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
       req(info$stop)
     }
-    if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
-    if (isTruthy(values) && sd(values) > 0) {
-      hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
-      dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
-      xfit <- seq(min(values),max(values),length = 40) 
-      yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
-      lines(xfit, yfit, col = "red", lwd = 2) 
+    removeNotification("no_histogram")
+    removeNotification("no_histogram")
+    if (isTruthy(values) && isTruthy(sd(values)) && length(values) > 1 && sd(values) > 0) {
+      if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
+      output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
+        hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
+        dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
+        xfit <- seq(min(values),max(values),length = 40) 
+        yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
+        lines(xfit, yfit, col = "red", lwd = 2)
+      }, width = reactive(info$width), type = "cairo-png")
+      if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
+      adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
+      kpss <- suppressWarnings(kpss.test(values, null = "Level"))
+      stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
+      output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
+        if (!inherits(adf,"try-error") && !is.null(adf) && isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
+          cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
+          if (kpss$p.value <= 0.01 && adf$p.value >= 0.01) {
+            cat(paste0("WARNING: the ",label," are most certainly NOT stationary (probability > 99%)."), "\n\n")
+          } else if (kpss$p.value < 0.05 && adf$p.value > 0.05) {
+            cat(paste0("WARNING: the ",label," are likely NOT stationary (probability > 95%)."), "\n\n")
+          } else if (kpss$p.value < 0.1 && adf$p.value > 0.1) {
+            cat(paste0("WARNING: the ",label," could be NOT stationary (probability > 90%)."), "\n\n")
+          } else {
+            cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
+          }
+        } else {
+          kk <- showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
+        }
+        print(stats,digits = 4)
+      }, width = 180)
     } else {
       showNotification("Unable to compute the histogram. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_histogram", type = "error", session = getDefaultReactiveDomain())
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
     }
-  }, width = reactive(info$width), type = "cairo-png")
-  
-  # Stats ####
-  output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
-    req(obs(), input$histogram)
-    removeNotification("no_stationarity")
-    if (input$histogramType == 1) {
-      values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "original series"
-    } else if (input$histogramType == 2 && length(trans$mod) > 0) {
-      values <- trans$mod[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "model series"
-    } else if (input$histogramType == 3 && length(trans$res) > 0) {
-      values <- trans$res[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "model residual series"
-    } else if (input$histogramType == 4 && length(trans$filter) > 0) {
-      values <- trans$filter[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "filter series"
-    } else if (input$histogramType == 5 && length(trans$filterRes) > 0) {
-      values <- trans$filterRes[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "filter residual series"
-    } else {
-      req(info$stop)
-    }
-    if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
-    if (isTruthy(values) && sd(values) > 0) {
-      adf <- suppressWarnings(adf.test(values, alternative = "stationary"))
-      kpss <- suppressWarnings(kpss.test(values, null = "Level"))
-      if (isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
-        cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
-        if (kpss$p.value <= 0.01 && adf$p.value >= 0.01) {
-          cat(paste0("WARNING: the ",label," are most certainly NOT stationary (probability > 99%)."), "\n\n")
-        } else if (kpss$p.value < 0.05 && adf$p.value > 0.05) {
-          cat(paste0("WARNING: the ",label," are likely NOT stationary (probability > 95%)."), "\n\n")
-        } else if (kpss$p.value < 0.1 && adf$p.value > 0.1) {
-          cat(paste0("WARNING: the ",label," could be NOT stationary (probability > 90%)."), "\n\n")
-        } else {
-          cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
-        }
-        stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
-        print(stats,digits = 4)
-      } else {
-        showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
-      }
-    } else {
-      showNotification("Unable to assess stationarity. Check the input series.", action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
-    }
-  }, width = 180)
+  })
   
   # Fit summary ####
   output$summary1 <- output$summary2 <- output$summary3 <- renderPrint({
@@ -3883,6 +3860,9 @@ server <- function(input,output,session) {
       showNotification("The oversampling value is not numeric. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_oversampling", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (messages > 0) cat(file = stderr(), "Setting periodogram limits", "\n")
     trans$fs <- NULL
     trans$title <- c("Lomb-Scargle periodogram: ")
@@ -3985,6 +3965,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumOriginal), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[1])) {
       trans$psd[,1] <- NA
       trans$amp[,1] <- NA
@@ -3996,6 +3979,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumModel), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[2])) {
       trans$psd[,2] <- NA
       trans$amp[,2] <- NA
@@ -4007,6 +3993,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$periodogram_residuals), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[3])) {
       trans$psd[,3] <- NA
       trans$amp[,3] <- NA
@@ -4018,6 +4007,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumFilter), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[4])) {
       trans$psd[,4] <- NA
       trans$amp[,4] <- NA
@@ -4029,6 +4021,9 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumFilterRes), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (isTruthy(trans$spectra_old[5])) {
       trans$psd[,5] <- NA
       trans$amp[,5] <- NA
@@ -4040,18 +4035,27 @@ server <- function(input,output,session) {
   })
   observeEvent(c(trans$y, trans$sy), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (input$spectrumOriginal) {
       periodogram("original")
     }
   })
   observeEvent(c(trans$res, trans$model), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (input$spectrumModel || input$periodogram_residuals) {
       periodogram(c("model","residuals"))
     }
   })
   observeEvent(c(trans$filter, trans$filterRes), {
     req(obs(), input$spectrum)
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     if (input$spectrumFilter || input$spectrumFilterRes) {
       periodogram(c("filter","filterRes"))
     }
@@ -4162,8 +4166,8 @@ server <- function(input,output,session) {
           lines(1/trans$fs, regression, col = c)
           text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = c)
           lombx <- c(inputs$long_period,inputs$short_period)
-          bias <- 0.01
-          lomby_flicker <- c(bias*(10^(slope$coef[1])*(inputs$long_period/inputs$short_period)),bias*10^(slope$coef[1]))
+          start <- median(tail(p, n = as.integer(length(p)/100)))
+          lomby_flicker <- c(start*(inputs$long_period/inputs$short_period),start)
           lines(lombx,lomby_flicker, col = "hotpink", lty = 2, lwd = 2)
           text(inputs$long_period/10,min(p),"Slope = -1",col = "hotpink")
         }
@@ -5679,6 +5683,9 @@ server <- function(input,output,session) {
     trans$names <- NULL
     trans$noise <- NULL
     updateTextInput(session, "ObsError", value = "")
+    shinyjs::hide(id = "downloadlink1", anim = F)
+    shinyjs::hide(id = "downloadlink2", anim = F)
+    shinyjs::hide(id = "downloadlink3", anim = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
@@ -5843,6 +5850,7 @@ server <- function(input,output,session) {
     }
   }, priority = 6)
   observeEvent(input$optionSecondary, {
+    req(obs())
     req(file$primary)
     if (messages > 0) {
       if (input$optionSecondary == 0) {
@@ -6595,13 +6603,13 @@ server <- function(input,output,session) {
   })
   
   # Observe hide buttons ####
-  observeEvent(c(input$tab, trans$filter, trans$res, inputs$step, input$optionSecondary), {
+  observeEvent(c(input$tab, trans$filter, trans$res, trans$y, inputs$step, input$optionSecondary), {
     if (input$tab == 4) {
       showTab(inputId = "tab", target = "6", select = F, session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     } else {
       hideTab(inputId = "tab", target = "6", session = getDefaultReactiveDomain())
-      if (length(trans$filter) > 0 || length(trans$res) > 0 || (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || input$optionSecondary > 1) {
+      if (length(trans$y) > 0 && (length(trans$filter) > 0 || length(trans$res) > 0 || (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || input$optionSecondary > 1)) {
         showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
       } else {
         hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
@@ -6733,9 +6741,6 @@ server <- function(input,output,session) {
       table <- NULL
       table2 <- NULL
       table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
-      if (is.null(values$deleted_all)) {
-        values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
-      }
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
         if (input$format < 4 && input$format != input$format2) {
           removeNotification(id = "formats", session = getDefaultReactiveDomain())
@@ -6847,6 +6852,9 @@ server <- function(input,output,session) {
         if (anyNA(table2)) {
           table2 <- na.omit(table2)
           showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
+        }
+        if (is.null(values$deleted_all)) {
+          values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
         }
         # Resampling the series
         if (input$average) {
@@ -7459,7 +7467,11 @@ server <- function(input,output,session) {
                 }
               }
             } else {
-              showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              if (info$sampling == f) {
+                showNotification(paste("The period asked for sinusoid ",i," is equal to the series sampling and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              } else {
+                showNotification(paste("The period asked for sinusoid ",i," is way out of the data bounds and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              }
             }
           }
           for (p in periods2) {
@@ -8260,6 +8272,9 @@ server <- function(input,output,session) {
       trans$amp[,1] <- lombscargle$A
       trans$psd[,1] <- lombscargle$PSD*var(trans$y)
       trans$var <- var(trans$y)
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     if (input$spectrumModel && length(trans$mod) > 0 && length(trans$res) > 0 && any("all" %in% serie || "model" %in% serie)) {
       trans$title[3] <- "model (red), "
@@ -8270,6 +8285,9 @@ server <- function(input,output,session) {
       trans$amp[,2] <- lombscargle$A
       trans$psd[,2] <- lombscargle$PSD*var(ideal)
       trans$var <- var(ideal)
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     } 
     if (input$periodogram_residuals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
       trans$title[4] <- "model residuals (green), "
@@ -8284,6 +8302,9 @@ server <- function(input,output,session) {
       trans$amp[,3] <- lombscargle$A
       trans$psd[,3] <- lombscargle$PSD*var(as.vector(trans$res))
       trans$var <- var(as.vector(trans$res))
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     if (input$spectrumFilter && length(trans$filter > 0) && any("all" %in% serie || "filter" %in% serie)) {
       trans$title[5] <- "filter (blue), "
@@ -8293,6 +8314,9 @@ server <- function(input,output,session) {
       trans$amp[,4] <- lombscargle$A
       trans$psd[,4] <- lombscargle$PSD*lombscargle$PSD*var(as.vector(trans$filter))
       trans$var <- var(as.vector(trans$filter))
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     if (input$spectrumFilterRes && length(trans$filterRes) > 0 && any("all" %in% serie || "filterRes" %in% serie)) {
       trans$title[6] <- "filter residuals (cyan), "
@@ -8302,6 +8326,9 @@ server <- function(input,output,session) {
       trans$amp[,5] <- lombscargle$A
       trans$psd[,5] <- lombscargle$PSD*var(as.vector(trans$filterRes))
       trans$var <- var(as.vector(trans$filterRes))
+      shinyjs::show(id = "downloadlink1", anim = F)
+      shinyjs::show(id = "downloadlink2", anim = F)
+      shinyjs::show(id = "downloadlink3", anim = F)
     }
     trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$periodogram_residuals,input$spectrumFilter,input$spectrumFilterRes)
   }
