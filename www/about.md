@@ -4,7 +4,7 @@ urlcolor: blue
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version enero 2023'
+title: 'SARI documentation - version febrero 2023'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -57,7 +57,7 @@ A ~40 min video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).
 
 The changelog is available [here](./changelog.md) (only available from the online help).
 
-Current SARI version: *enero 2023*  --  "I know Kung Fu"
+Current SARI version: *febrero 2023*  --  "You will ride eternal, shiny and chrome!"
 
 -----------------
 
