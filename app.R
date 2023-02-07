@@ -8224,6 +8224,9 @@ server <- function(input,output,session) {
     return(changes)
   }
   plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol) {
+    x <- x[!is.na(x)]
+    y <- y[!is.na(y)]
+    z <- z[!is.na(z)]
     options(digits = 10)
     if (symbol == 0) {
       s <- 'p'
