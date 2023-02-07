@@ -6080,14 +6080,9 @@ server <- function(input,output,session) {
     if (!is.null(data)) {
       obs(data)
       info$points <- length(data$x)
-      values$used1 <- rep(T, info$points)
-      values$used2 <- rep(T, info$points)
-      values$used3 <- rep(T, info$points)
-      values$used_all <- rep(T, info$points)
-      values$excluded1 <- rep(F, info$points)
-      values$excluded2 <- rep(F, info$points)
-      values$excluded3 <- rep(F, info$points)
-      values$excluded_all <- rep(F, info$points)
+      values$used1 <- values$used2 <- values$used3 <- values$used_all <- rep(T, info$points)
+      values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all <- rep(F, info$points)
+      values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, info$points)
     }
   }, priority = 4)
   
@@ -6852,9 +6847,6 @@ server <- function(input,output,session) {
         if (anyNA(table2)) {
           table2 <- na.omit(table2)
           showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
-        }
-        if (is.null(values$deleted_all)) {
-          values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, length(table$x))
         }
         # Resampling the series
         if (input$average) {
