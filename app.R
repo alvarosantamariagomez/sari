@@ -6083,7 +6083,7 @@ server <- function(input,output,session) {
       values$used1 <- rep(T, info$points)
       values$used2 <- rep(T, info$points)
       values$used3 <- rep(T, info$points)
-      values$used_all <- rep(T, info$points) 
+      values$used_all <- rep(T, info$points)
       values$excluded1 <- rep(F, info$points)
       values$excluded2 <- rep(F, info$points)
       values$excluded3 <- rep(F, info$points)
@@ -7467,10 +7467,14 @@ server <- function(input,output,session) {
                 }
               }
             } else {
-              if (info$sampling == f) {
-                showNotification(paste("The period asked for sinusoid ",i," is equal to the series sampling and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+              if (isTruthy(f)) {
+                if (info$sampling == f) {
+                  showNotification(paste("The period asked for sinusoid ",i," is equal to the series sampling and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                } else {
+                  showNotification(paste("The period asked for sinusoid ",i," is way out of the data bounds and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                }
               } else {
-                showNotification(paste("The period asked for sinusoid ",i," is way out of the data bounds and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(paste("The period asked for sinusoid ",i," has wrong format and has been rejected"), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
             }
           }
