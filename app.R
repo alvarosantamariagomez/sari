@@ -517,7 +517,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(4,
                                                                                div(style = "padding: 0px 0px; margin-top:-1em",
                                                                                    checkboxInput(inputId = "sameScale",
-                                                                                                 div("Equal scale",
+                                                                                                 div("Same scale",
                                                                                                      helpPopup("Force the y-axis of the secondary series on the right to have the same scale as the y-axis of the primary series on the left")),
                                                                                                  value = F),
                                                                                    checkboxInput(inputId = "same_axis",
@@ -673,7 +673,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ),
                                                                         column(width = 6, offset = 0, style = "margin-top:-2em; padding: 0px 40px 0px 0px", align = "right",
                                                                                withBusyIndicatorUI(
-                                                                                 actionButton(inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                 actionButton(inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                                )
                                                                         )
                                                                       ),
@@ -1873,19 +1873,13 @@ server <- function(input,output,session) {
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = T,
                          last_optionSecondary = NULL)
   
-  # 4. valid points
-  #   used = points used in the analysis
-  #   used_primary = points used in the analysis of the primary series
-  #   used_secondary = points used in the analysis of the primary & secondary series
-  #   excluded = points excluded from the analysis, but shown in the series
-  #   deleted = points excluded from the analysis and not shown in the series
-  values <- reactiveValues(used1 = NULL, excluded1 = NULL, used2 = NULL, excluded2 = NULL, 
-                           used3 = NULL, excluded3 = NULL, used_all = NULL, excluded_all = NULL, used_all_kf = NULL,
-                           used1_primary = NULL, used2_primary = NULL, used3_primary = NULL, used_all_primary = NULL,
-                           used1_secondary = NULL, used2_secondary = NULL, used3_secondary = NULL, used_all_secondary = NULL,
-                           deleted1 = NULL, deleted2 = NULL, deleted3 = NULL, deleted_all = NULL,
-                           deleted1_primary = NULL, deleted2_primary = NULL, deleted3_primary = NULL, deleted_all_primary = NULL,
-                           deleted1_secondary = NULL, deleted2_secondary = NULL, deleted3_secondary = NULL, deleted_all_secondary = NULL)
+  # 4. point status: valid (T), excluded (F) or deleted (NA)
+  #   series: status of the primary series
+  #   previous: saving of the status of the primary series when merging with a secondary series or downsampling
+  #   kf: status of the fitted KF series
+  values <- reactiveValues(series1 = NULL, series2 = NULL, series3 = NULL, series_all = NULL,
+                           previous1 = NULL, previous2 = NULL, previous3 = NULL, previous_all = NULL,
+                           kf1 = NULL, kf2 = NULL, kf3 = NULL, kf_all = NULL)
   
   # 5. user input
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL, 
@@ -1896,7 +1890,7 @@ server <- function(input,output,session) {
   
   # 6. computed values
   trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL, 
-                          sye = NULL, z = NULL, sz = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL, 
+                          sye = NULL, y2 = NULL, sy2 = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL, 
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL, 
                           midas_sig = NULL, midas_all = NULL, tol = NULL, midas_vel2 = NULL, midas_sig2 = NULL, 
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
@@ -1943,7 +1937,7 @@ server <- function(input,output,session) {
         tags$h3(style = "color: blue; text-align: center;", "https://alvarosg.shinyapps.io/sari")
       ))
     } else {
-      if (messages > 2) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
+      if (messages > 4) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
       if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
       if (info$pixelratio != session$clientData$pixelratio) {
         showNotification("The size and or resolution of the browser window has been modified. Please consider reloading the web page.", action = NULL, duration = 10, closeButton = T, id = "pixelratio", type = "warning", session = getDefaultReactiveDomain())
@@ -2306,374 +2300,127 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
   
   # Update data ####
-  observeEvent(c(input$plot, input$sigmas, input$series2, input$tab, values$used1, values$used2,
-                 values$used3, input$delete_excluded, input$format, input$tunits, input$optionSecondary,
-                 inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator, 
-                 inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, 
-                 input$eulerType, input$neuenu, values$deleted1, values$deleted2, values$deleted3), {
-    req(obs(), values$used1)
+  observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
+                 inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
+                 input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2,
+                 values$series1, values$series2, values$series3, values$series_all,
+                 input$eulerType, input$neuenu), {
+    req(obs())
     removeNotification("kf_not_valid")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
     
-    # data$y    = all points from input series
-    # trans$y0  = all points from input series
-    # trans$y   = points used
-    # trans$sy  = sigmas used
+    # data$y    = all points read from input series
+    # trans$y0  = all points from input series (same as data$y)
+    # trans$y   = points valid
+    # trans$sy  = sigmas valid
     # trans$ye  = points excluded
     # trans$sye = sigmas excluded
-    # trans$z   = points from secondary series (independent)
-    # trans$sz  = sigmas from secondary series (independent)
+    # trans$y2  = points from secondary series (independent)
+    # trans$sy2 = sigmas from secondary series (independent)
     
     trans$x0 <- data$x
-    if (isTruthy(input$remove3D)) {
-      if ((input$tab == 1) || (input$format == 4)) {
-        trans$y0 <- data$y1
-        trans$sy0 <- data$sy1
-        trans$x <- data$x[!is.na(trans$y0)]
-        trans$x <- trans$x[!values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0)]
-        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
-        trans$y <- data$y1[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted_all]
-        info$miny <- min(trans$y, na.rm = T)
-        info$maxy <- max(trans$y, na.rm = T)
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y1 <- range(trans$y[ids], na.rm = T)
-          if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
-            ranges$y1 <- c(info$miny, info$maxy)
-          }
-        } else {
-          ranges$y1 <- c(info$miny, info$maxy)
-        }
-        trans$y <- data$y1[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted_all & values$used_all]
-        trans$ye <- data$y1[!is.na(trans$y0)]
-        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy1[!is.na(trans$y0)]
-        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
-        trans$sye <- data$sy1[!is.na(trans$y0)]
-        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
-        trans$z <- data$z1
-        trans$sz <- data$sz1
-      } else if (input$tab == 2) {
-        trans$y0 <- data$y2
-        trans$sy0 <- data$sy2
-        trans$x <- data$x[!is.na(trans$y0)]
-        trans$x <- trans$x[!values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0)]
-        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
-        trans$y <- data$y2[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted_all]
-        info$miny <- min(trans$y, na.rm = T)
-        info$maxy <- max(trans$y, na.rm = T)
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y1 <- range(trans$y[ids], na.rm = T)
-          if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
-            ranges$y1 <- c(info$miny, info$maxy)
-          }
-        } else {
-          ranges$y1 <- c(info$miny, info$maxy)
-        }
-        trans$y <- data$y2[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted_all & values$used_all]
-        trans$ye <- data$y2[!is.na(trans$y0)]
-        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy2[!is.na(trans$y0)]
-        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
-        trans$sye <- data$sy2[!is.na(trans$y0)]
-        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
-        trans$z <- data$z2
-        trans$sz <- data$sz2
-      } else if (input$tab == 3) {
-        trans$y0 <- data$y3
-        trans$sy0 <- data$sy3
-        trans$x <- data$x[!is.na(trans$y0)]
-        trans$x <- trans$x[!values$deleted_all & values$used_all]
-        trans$xe <- data$x[!is.na(trans$y0)]
-        trans$xe <- trans$xe[!values$deleted_all & values$excluded_all]
-        trans$y <- data$y3[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted_all]
-        info$miny <- min(trans$y, na.rm = T)
-        info$maxy <- max(trans$y, na.rm = T)
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y1 <- range(trans$y[ids], na.rm = T)
-          if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
-            ranges$y1 <- c(info$miny, info$maxy)
-          }
-        } else {
-          ranges$y1 <- c(info$miny, info$maxy)
-        }
-        trans$y <- data$y3[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted_all & values$used_all]
-        trans$ye <- data$y3[!is.na(trans$y0)]
-        trans$ye <- trans$ye[!values$deleted_all & values$excluded_all]
-        trans$sy <- data$sy3[!is.na(trans$y0)]
-        trans$sy <- trans$sy[!values$deleted_all & values$used_all]
-        trans$sye <- data$sy3[!is.na(trans$y0)]
-        trans$sye <- trans$sye[!values$deleted_all & values$excluded_all]
-        trans$z <- data$z3
-        trans$sz <- data$sz3
+    if ((input$tab == 1) || (input$format == 4)) {
+      trans$y0 <- data$y1
+      trans$sy0 <- data$sy1
+      trans$y2 <- data$z1[!is.na(data$z1)]
+      trans$sy2 <- data$sz1[!is.na(data$z1)]
+      if (isTruthy(input$remove3D)) {
+        series <- values$series_all
+        kf <- values$kf_all
+      } else {
+        series <- values$series1
+        kf <- values$kf1
       }
-      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        if (length(values$used_all_kf) == length(values$deleted_all)) {
-          deleted <- values$deleted_all
-        } else {
-          deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
-        }
-        if (sum(values$used_all_kf & !deleted) < length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used_all_kf & !deleted]
-          trans$res <- trans$res0[values$used_all_kf & !deleted]
-          trans$kalman <- trans$kalman0[values$used_all_kf & !deleted,]
-          trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf & !deleted,]
-          showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
-        } else if (sum(values$used_all_kf) == length(trans$mod0)) {
-          trans$mod <- trans$mod0[values$used_all_kf & !deleted]
-          if (any(is.na(trans$mod))) {
-            info$run <- F
-            trans$mod <- trans$mod0 <- NULL
-            trans$res <- trans$res0 <- NULL
-            trans$kalman <- trans$kalman0 <- NULL
-            trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          } else {
-            trans$res <- trans$res0[values$used_all_kf & !deleted]
-            trans$kalman <- trans$kalman0[values$used_all_kf & !deleted,]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_all_kf & !deleted,]
-            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
-          }
-        } else {
-          info$run <- F
-          trans$mod <- trans$mod0 <- NULL
-          trans$res <- trans$res0 <- NULL
-          trans$kalman <- trans$kalman0 <- NULL
-          trans$kalman_unc <- trans$kalman_unc0 <- NULL
-          showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-        }
+    } else if (input$tab == 2) {
+      trans$y0 <- data$y2
+      trans$sy0 <- data$sy2
+      trans$y2 <- data$z2[!is.na(data$z2)]
+      trans$sy2 <- data$sz2[!is.na(data$z2)]
+      if (isTruthy(input$remove3D)) {
+        series <- values$series_all
+        kf <- values$kf_all
+      } else {
+        series <- values$series2
+        kf <- values$kf2
+      }
+    } else if (input$tab == 3) {
+      trans$y0 <- data$y3
+      trans$sy0 <- data$sy3
+      trans$y2 <- data$z3[!is.na(data$z3)]
+      trans$sy2 <- data$sz3[!is.na(data$z3)]
+      if (isTruthy(input$remove3D)) {
+        series <- values$series_all
+        kf <- values$kf_all
+      } else {
+        series <- values$series3
+        kf <- values$kf3
+      }
+    }
+    trans$x <- trans$xe <- trans$x0[!is.na(trans$y0)]
+    trans$x <- trans$x[series & !is.na(series)]
+    trans$xe <- trans$xe[!series & !is.na(series)]
+    trans$x2 <- trans$x0[!is.na(data$z1)]
+    trans$y <- trans$y0[!is.na(trans$y0)]
+    trans$y <- trans$y[!is.na(series)]
+    info$miny <- min(trans$y, na.rm = T)
+    info$maxy <- max(trans$y, na.rm = T)
+    ids <- trans$x0[!is.na(trans$y0)] >= ranges$x1[1] & trans$x0[!is.na(trans$y0)] <= ranges$x1[2]
+    if (sum(ids) > 0) {
+      ranges$y1 <- range(trans$y[ids], na.rm = T)
+      if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
+        ranges$y1 <- c(info$miny, info$maxy)
       }
     } else {
-      if ((input$tab == 1) || (input$format == 4)) {
-        trans$y0 <- data$y1
-        trans$sy0 <- data$sy1
-        trans$x <- data$x[!is.na(trans$y0)]
-        trans$x <- trans$x[!values$deleted1 & values$used1]
-        trans$xe <- data$x[!is.na(trans$y0)]
-        trans$xe <- trans$xe[!values$deleted1 & values$excluded1]
-        trans$y <- data$y1[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted1]
-        info$miny <- min(trans$y, na.rm = T)
-        info$maxy <- max(trans$y, na.rm = T)
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y1 <- range(trans$y[ids], na.rm = T)
-          if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
-            ranges$y1 <- c(info$miny, info$maxy)
-          }
-        } else {
-          ranges$y1 <- c(info$miny, info$maxy)
-        }
-        trans$y <- data$y1[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted1 & values$used1]
-        trans$ye <- data$y1[!is.na(trans$y0)]
-        trans$ye <- trans$ye[!values$deleted1 & values$excluded1]
-        trans$sy <- data$sy1[!is.na(trans$y0)]
-        trans$sy <- trans$sy[!values$deleted1 & values$used1]
-        trans$sye <- data$sy1[!is.na(trans$y0)]
-        trans$sye <- trans$sye[!values$deleted1 & values$excluded1]
-        trans$z <- data$z1
-        trans$sz <- data$sz1
-        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          if (length(values$used_kf1) == length(values$deleted1)) {
-            deleted <- values$deleted1
-          } else {
-            deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
-          }
-          if (sum(values$used_kf1 & !deleted) < length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf1 & !deleted]
-            trans$res <- trans$res0[values$used_kf1 & !deleted]
-            trans$kalman <- trans$kalman0[values$used_kf1 & !deleted,]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_kf1 & !deleted,]
-            showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
-          } else if (sum(values$used_kf1) == length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf1 & !deleted]
-            if (any(is.na(trans$mod))) {
-              info$run <- F
-              trans$mod <- trans$mod0 <- NULL
-              trans$res <- trans$res0 <- NULL
-              trans$kalman <- trans$kalman0 <- NULL
-              trans$kalman_unc <- trans$kalman_unc0 <- NULL
-              showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-            } else {
-              trans$res <- trans$res0[values$used_kf1 & !deleted]
-              trans$kalman <- trans$kalman0[values$used_kf1 & !deleted,]
-              trans$kalman_unc <- trans$kalman_unc0[values$used_kf1 & !deleted,]
-              updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
-            }
-          } else {
-            info$run <- F
-            trans$mod <- trans$mod0 <- NULL
-            trans$res <- trans$res0 <- NULL
-            trans$kalman <- trans$kalman0 <- NULL
-            trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          }
-        }
-      } else if (input$tab == 2) {
-        trans$y0 <- data$y2
-        trans$sy0 <- data$sy2
-        trans$x <- data$x[!is.na(trans$y0)]
-        trans$x <- trans$x[!values$deleted2 & values$used2]
-        trans$xe <- data$x[!is.na(trans$y0)]
-        trans$xe <- trans$xe[!values$deleted2 & values$excluded2]
-        trans$y <- data$y2[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted2]
-        info$miny <- min(trans$y, na.rm = T)
-        info$maxy <- max(trans$y, na.rm = T)
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y1 <- range(trans$y[ids], na.rm = T)
-          if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
-            ranges$y1 <- c(info$miny, info$maxy)
-          }
-        } else {
-          ranges$y1 <- c(info$miny, info$maxy)
-        }
-        trans$y <- data$y2[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted2 & values$used2]
-        trans$ye <- data$y2[!is.na(trans$y0)]
-        trans$ye <- trans$ye[!values$deleted2 & values$excluded2]
-        trans$sy <- data$sy2[!is.na(trans$y0)]
-        trans$sy <- trans$sy[!values$deleted2 & values$used2]
-        trans$sye <- data$sy2[!is.na(trans$y0)]
-        trans$sye <- trans$sye[!values$deleted2 & values$excluded2]
-        trans$z <- data$z2
-        trans$sz <- data$sz2
-        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          if (length(values$used_kf2) == length(values$deleted2)) {
-            deleted <- values$deleted2
-          } else {
-            deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
-          }
-          if (sum(values$used_kf2 & !deleted) < length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf2 & !deleted]
-            trans$res <- trans$res0[values$used_kf2 & !deleted]
-            trans$kalman <- trans$kalman0[values$used_kf2 & !deleted,]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_kf2 & !deleted,]
-            showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
-          } else if (sum(values$used_kf2) == length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf2 & !deleted]
-            if (any(is.na(trans$mod))) {
-              info$run <- F
-              trans$mod <- trans$mod0 <- NULL
-              trans$res <- trans$res0 <- NULL
-              trans$kalman <- trans$kalman0 <- NULL
-              trans$kalman_unc <- trans$kalman_unc0 <- NULL
-              showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-            } else {
-              trans$res <- trans$res0[values$used_kf2 & !deleted]
-              trans$kalman <- trans$kalman0[values$used_kf2 & !deleted,]
-              trans$kalman_unc <- trans$kalman_unc0[values$used_kf2 & !deleted,]
-              updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
-            }
-          } else {
-            info$run <- F
-            trans$mod <- trans$mod0 <- NULL
-            trans$res <- trans$res0 <- NULL
-            trans$kalman <- trans$kalman0 <- NULL
-            trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          }
-        }
-      } else if (input$tab == 3) {
-        trans$y0 <- data$y3
-        trans$sy0 <- data$sy3
-        trans$x <- data$x[!is.na(trans$y0)]
-        trans$x <- trans$x[!values$deleted3 & values$used3]
-        trans$xe <- data$x[!is.na(trans$y0)]
-        trans$xe <- trans$xe[!values$deleted3 & values$excluded3]
-        trans$y <- data$y3[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted3]
-        info$miny <- min(trans$y, na.rm = T)
-        info$maxy <- max(trans$y, na.rm = T)
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y1 <- range(trans$y[ids], na.rm = T)
-          if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
-            ranges$y1 <- c(info$miny, info$maxy)
-          }
-        } else {
-          ranges$y1 <- c(info$miny, info$maxy)
-        }
-        trans$y <- data$y3[!is.na(trans$y0)]
-        trans$y <- trans$y[!values$deleted3 & values$used3]
-        trans$ye <- data$y3[!is.na(trans$y0)]
-        trans$ye <- trans$ye[!values$deleted3 & values$excluded3]
-        trans$sy <- data$sy3[!is.na(trans$y0)]
-        trans$sy <- trans$sy[!values$deleted3 & values$used3]
-        trans$sye <- data$sy3[!is.na(trans$y0)]
-        trans$sye <- trans$sye[!values$deleted3 & values$excluded3]
-        trans$z <- data$z3
-        trans$sz <- data$sz3
-        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          if (length(values$used_kf3) == length(values$deleted3)) {
-            deleted <- values$deleted3
-          } else {
-            deleted <- merge(trans$x0_kf, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
-          }
-          if (sum(values$used_kf3 & !deleted) < length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf3 & !deleted]
-            trans$res <- trans$res0[values$used_kf3 & !deleted]
-            trans$kalman <- trans$kalman0[values$used_kf3 & !deleted,]
-            trans$kalman_unc <- trans$kalman_unc0[values$used_kf3 & !deleted,]
-            showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-            updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
-          } else if (sum(values$used_kf3) == length(trans$mod0)) {
-            trans$mod <- trans$mod0[values$used_kf3 & !deleted]
-            if (any(is.na(trans$mod))) {
-              info$run <- F
-              trans$mod <- trans$mod0 <- NULL
-              trans$res <- trans$res0 <- NULL
-              trans$kalman <- trans$kalman0 <- NULL
-              trans$kalman_unc <- trans$kalman_unc0 <- NULL
-              showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-            } else {
-              trans$res <- trans$res0[values$used_kf3 & !deleted]
-              trans$kalman <- trans$kalman0[values$used_kf3 & !deleted,]
-              trans$kalman_unc <- trans$kalman_unc0[values$used_kf3 & !deleted,]
-              updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
-            }
-          } else {
-            info$run <- F
-            trans$mod <- trans$mod0 <- NULL
-            trans$res <- trans$res0 <- NULL
-            trans$kalman <- trans$kalman0 <- NULL
-            trans$kalman_unc <- trans$kalman_unc0 <- NULL
-            showNotification("At least one point not used in the KF fit has been added. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-          }
-        }
+      ranges$y1 <- c(info$miny, info$maxy)
+    }
+    trans$y <- trans$ye <- trans$y0[!is.na(trans$y0)]
+    trans$y <- trans$y[series & !is.na(series)]
+    trans$ye <- trans$ye[!series & !is.na(series)]
+    trans$sy <- trans$sy0[!is.na(trans$y0)]
+    trans$sy <- trans$sy[series & !is.na(series)]
+    trans$sye <- trans$sye[!series & !is.na(series)]
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      if (length(trans$mod0) > sum(kf[!is.na(kf)])) {
+        trans$mod <- trans$mod0[kf & !is.na(kf)]
+        trans$res <- trans$res0[kf & !is.na(kf)]
+        trans$kalman <- trans$kalman0[kf & !is.na(kf),]
+        trans$kalman_unc <- trans$kalman_unc0[kf & !is.na(kf),]
+        showNotification("At least one point used in the KF fit was removed. The KF fit results are no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+        updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
+      } else if (length(trans$mod0) < sum(kf[!is.na(kf)])) {
+        info$run <- F
+        trans$mod <- trans$mod0 <- NULL
+        trans$res <- trans$res0 <- NULL
+        trans$kalman <- trans$kalman0 <- NULL
+        trans$kalman_unc <- trans$kalman_unc0 <- NULL
+        showNotification("At least one point previously not used in the KF fit has been restored in the series. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+      } else if (any(is.na(trans$mod0[kf & !is.na(kf)]))) { # same number of points, but at least one was not used in the KF fit
+        info$run <- F
+        trans$mod <- trans$mod0 <- NULL
+        trans$res <- trans$res0 <- NULL
+        trans$kalman <- trans$kalman0 <- NULL
+        trans$kalman_unc <- trans$kalman_unc0 <- NULL
+        showNotification("At least one point previously not used in the KF fit has been restored in the series. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
+      } else {
+        updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
     }
     if (!isTruthy(input$sigmas)) {
       trans$sy <- rep(1, length(trans$sy))
       trans$sy0 <- rep(1, length(trans$sy0))
       trans$sye <- rep(1, length(trans$sye))
-      trans$sz <- rep(1, length(trans$sz))
+      trans$sy2 <- rep(1, length(trans$sy2))
     }
-    if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
-      ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
+    if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+      ids <- trans$x0[!is.na(trans$y2)] >= ranges$x1[1] & trans$x0[!is.na(trans$y2)] <= ranges$x1[2]
       if (sum(ids) > 0) {
-        ranges$y12 <- range(trans$z[ids], na.rm = T)
+        ranges$y12 <- range(trans$y2[ids], na.rm = T)
         if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
-          ranges$y12 <- range(trans$z, na.rm = T)
+          ranges$y12 <- range(trans$y2, na.rm = T)
         }
       } else {
-        ranges$y12 <- range(trans$z, na.rm = T)
+        ranges$y12 <- range(trans$y2, na.rm = T)
       }
     }
     info$decimalsx <- max(decimalplaces(trans$x))
@@ -2694,13 +2441,6 @@ server <- function(input,output,session) {
     info$sampling <- min(diff(trans$x,1))
     info$regular <- (median(diff(trans$x))/info$sampling < 1.25)
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
-    if (input$tunits == 1) {
-      info$tunits <- "days"
-    } else if (input$tunits == 2) {
-      info$tunits <- "weeks"
-    } else if (input$tunits == 3) {
-      info$tunits <- "years"
-    }
     trans$ordinate <- median(trans$y)
     trans$tol <- min(diff(isolate(trans$x),1)) / 1.5
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
@@ -2931,7 +2671,7 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
-    if (length(isolate(file$secondary)) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
+    if (length(isolate(file$secondary)) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
       if (input$symbol == 0) {
         symbol <- 'p'
       } else if (input$symbol == 1) {
@@ -2944,7 +2684,7 @@ server <- function(input,output,session) {
         if (isTruthy(ranges$y12)[1]) {
           middle <- (ranges$y12[1] + ranges$y12[2]) / 2
         } else {
-          middle <- median(trans$z, na.rm = T)
+          middle <- median(trans$y2, na.rm = T)
         }
         ranges$y12 <- c(middle - half, middle + half)
       } else if (isTruthy(input$same_axis)) {
@@ -2952,14 +2692,14 @@ server <- function(input,output,session) {
       } else {
         ranges$y12 <- NULL
       }
-      plot(trans$x0[!is.na(trans$z)], trans$z[!is.na(trans$z)], type = symbol, pch = 20, col = "#59b300", axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+      plot(trans$x2, trans$y2, type = symbol, pch = 20, col = "#59b300", axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
       if (isTruthy(sigmas)) {
         color <- "#59b300"
         alfa <- 0.2
         shade <- adjustcolor(color, alpha.f = alfa)
-        ba <- trans$z[!is.na(trans$z)] + trans$sz[!is.na(trans$z)]
-        bb <- trans$z[!is.na(trans$z)] - trans$sz[!is.na(trans$z)]
-        polygon(c(trans$x0[!is.na(trans$z)], rev(trans$x0[!is.na(trans$z)])), c(ba, rev(bb)), col = shade, border = NA)
+        ba <- trans$y2 + trans$sy2
+        bb <- trans$y2 - trans$sy2
+        polygon(c(trans$x2, rev(trans$x2)), c(ba, rev(bb)), col = shade, border = NA)
       }
       axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
       par(new = T)
@@ -3341,7 +3081,7 @@ server <- function(input,output,session) {
     removeNotification("bad_variance")
     removeNotification("bad_kf")
     removeNotification("kf_not_valid")
-    updateButton(session, inputId = "runKF", label = "Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
+    updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
     output$offsetFound <- renderUI({
       NULL
     })
@@ -3574,14 +3314,15 @@ server <- function(input,output,session) {
           time.taken <- end.time - start.time
           if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
           if (isTruthy(input$remove3D)) {
-            values$used_all_kf <- rep(T, length(x))
+            values$kf_all <- rep(T, length(x))
+            values$kf1 <- values$kf2 <- values$kf3 <- values$kf_all
           } else {
             if (input$tab == 1 || is.null(input$tab)) {
-              values$used_kf1 <- rep(T, length(x))
+              values$kf1 <- rep(T, length(x))
             } else if (input$tab == 2) {
-              values$used_kf2 <- rep(T, length(x))
+              values$kf2 <- rep(T, length(x))
             } else if (input$tab == 3) {
-              values$used_kf3 <- rep(T, length(x))
+              values$kf3 <- rep(T, length(x))
             }
           }
           if (isTruthy(inputs$waveformPeriod)) {
@@ -3725,9 +3466,9 @@ server <- function(input,output,session) {
   output$summary1 <- output$summary2 <- output$summary3 <- renderPrint({
     req(obs())
     options(scipen = 8)
-    if (input$optionSecondary == 1 && isTruthy(trans$z)) {
+    if (input$optionSecondary == 1 && isTruthy(trans$y2)) {
       serie1 <- data.frame(x = trans$x, y = trans$y)
-      serie2 <- data.frame(x = trans$x0[!is.na(trans$z)], y = trans$z[!is.na(trans$z)])
+      serie2 <- data.frame(x = trans$x2, y = trans$y2)
       common <- merge(serie1, serie2, by.x = "x", by.y = "x")
       if (length(common$x) > 30) {
         cat("Pearson's correlation = ", sprintf("%.3f",cor(common$y.x,common$y.y)), "from ", length(common$x)," points at common epochs\n\n")
@@ -4778,7 +4519,6 @@ server <- function(input,output,session) {
             output$est.unc <- renderUI({
               if ("Linear" %in% input$model && input$fitType == 1) { 
                 if (isTruthy(trans$mle)) {
-                  num <- info$points
                   if (isTruthy(sigmaFL)) {
                     noise_amp <- sigmaFL
                     index <- -1
@@ -4800,8 +4540,8 @@ server <- function(input,output,session) {
                   } else {
                     gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
                   }
-                  unc <- sqrt( noise_amp^2 * v * info$sampling^beta * num^gamma ) / scaling
-                  unc_white <- sqrt( 12 * sd(trans$res)^2 * (num - 1) / (num * info$rangex^2 * (num + 1)) )
+                  unc <- sqrt( noise_amp^2 * v * info$sampling^beta * info$points^gamma ) / scaling
+                  unc_white <- sqrt( 12 * sd(trans$res)^2 * (info$points - 1) / (info$points * info$rangex^2 * (info$points + 1)) )
                   if (isTruthy(trans$unc)) {
                     if (isTruthy(unc) && unc > 0) {
                       trans$LScoefs[2,2] <- sqrt(unc^2 + trans$unc^2)
@@ -4948,12 +4688,7 @@ server <- function(input,output,session) {
   observeEvent(input$remove3D, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Removing from all series is", input$remove3D, "\n")
-    values$used1 <- values$used_all
-    values$used2 <- values$used_all
-    values$used3 <- values$used_all
-    values$excluded1 <- values$excluded_all
-    values$excluded2 <- values$excluded_all
-    values$excluded3 <- values$excluded_all
+    values$series1 <- values$series2 <- values$series3 <- values$series_all
   })
   observeEvent(input$permanent, {
     req(input$permanent)
@@ -4965,15 +4700,15 @@ server <- function(input,output,session) {
     if (!is.null(brush)) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
       ranges$y1 <- c(brush$ymin, brush$ymax)
-      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
+      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
         if (sum(ids) > 0) {
-          ranges$y12 <- range(trans$z[ids], na.rm = T)
+          ranges$y12 <- range(trans$y2[ids], na.rm = T)
           if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
-            ranges$y12 <- range(trans$z, na.rm = T)
+            ranges$y12 <- range(trans$y2, na.rm = T)
           }
         } else {
-          ranges$y12 <- range(trans$z, na.rm = T)
+          ranges$y12 <- range(trans$y2, na.rm = T)
         }
       }
       ranges$x2 <- ranges$x4 <- ranges$x1
@@ -5002,15 +4737,15 @@ server <- function(input,output,session) {
       ranges$x1 <- ranges$x4 <- ranges$x2
       ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
       ranges$y1 <- range(trans$y[ids])
-      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
+      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
         if (sum(ids) > 0) {
-          ranges$y12 <- range(trans$z[ids], na.rm = T)
+          ranges$y12 <- range(trans$y2[ids], na.rm = T)
           if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
-            ranges$y12 <- range(trans$z, na.rm = T)
+            ranges$y12 <- range(trans$y2, na.rm = T)
           }
         } else {
-          ranges$y12 <- range(trans$z, na.rm = T)
+          ranges$y12 <- range(trans$y2, na.rm = T)
         }
       }
     } else {
@@ -5043,15 +4778,15 @@ server <- function(input,output,session) {
       ranges$x1 <- ranges$x2 <- ranges$x4
       ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
       ranges$y1 <- range(trans$y[ids])
-      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$z))) {
+      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
         if (sum(ids) > 0) {
-          ranges$y12 <- range(trans$z[ids], na.rm = T)
+          ranges$y12 <- range(trans$y2[ids], na.rm = T)
           if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
-            ranges$y12 <- range(trans$z, na.rm = T)
+            ranges$y12 <- range(trans$y2, na.rm = T)
           }
         } else {
-          ranges$y12 <- range(trans$z, na.rm = T)
+          ranges$y12 <- range(trans$y2, na.rm = T)
         }
       }
     } else {
@@ -5243,7 +4978,7 @@ server <- function(input,output,session) {
           }
           enable("wavelet")
           enable("waveletType")
-          if (sum(values$excluded1) == sum(values$excluded2) && sum(values$excluded1) == sum(values$excluded3)) {
+          if (sum(!is.na(values$series1)) == sum(!is.na(values$series2)) && sum(!is.na(values$series1)) == sum(!is.na(values$series3))) {
             enable("remove3D")
           } else {
             disable("remove3D")
@@ -5630,6 +5365,13 @@ server <- function(input,output,session) {
   # Observe time units ####
   observeEvent(input$tunits, {
     removeNotification("new_units")
+    if (input$tunits == 1) {
+      info$tunits <- "days"
+    } else if (input$tunits == 2) {
+      info$tunits <- "weeks"
+    } else if (input$tunits == 3) {
+      info$tunits <- "years"
+    }
     if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
       showNotification(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results. Check the validity of the input averaging period."), action = NULL, duration = 10, closeButton = T, id = "new_units", type = "warning", session = getDefaultReactiveDomain())
     }
@@ -5759,11 +5501,6 @@ server <- function(input,output,session) {
     trans$sy <- NULL
     data <- digest()
     obs(data)
-    if (!isTruthy(input$remove3D)) {
-      info$points <- length(data$x)
-      values$used_all <- values$used1 <- values$used2 <- values$used3 <- rep(T, info$points)
-      values$excluded_all <- values$excluded1 <- values$excluded2 <- values$excluded3 <- rep(F, info$points)
-    }
     if (input$fitType == 2) {
       trans$midas_vel <- NULL
       trans$midas_all <- NULL
@@ -5823,18 +5560,25 @@ server <- function(input,output,session) {
     trans$pattern <- NULL
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
     updateTextInput(session, "short_period", value = "")
+    updateTextInput(session, "ObsError", value = "")
     obs(NULL)
     data <- digest()
-    obs(data)
-    info$points <- length(data$x[!is.na(data$y1)])
-    values$used1 <- values$used2 <- values$used3 <- values$used_all <- rep(T, info$points)
-    values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all <- rep(F, info$points)
-    values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, info$points)
-    updateTextInput(session, "ObsError", value = "")
-    if (isTruthy(inputs$step)) {
-      info$step <- inputs$step
-    } else {
-      info$step <- 0
+    if (!is.null(data)) {
+      obs(data)
+      if (isTruthy(info$step)) {
+        if (isTruthy(input$remove3D)) {
+          values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+        } else {
+          values$series1 <- rep(T, length(data$x[!is.na(data$y1)]))
+          values$series2 <- rep(T, length(data$x[!is.na(data$y2)]))
+          values$series3 <- rep(T, length(data$x[!is.na(data$y3)]))
+        }
+      } else {
+        values$series1 <- values$previous1
+        values$series2 <- values$previous2
+        values$series3 <- values$previous3
+        values$series_all <- values$previous_all
+      }
     }
   }, priority = 6)
   
@@ -5866,73 +5610,41 @@ server <- function(input,output,session) {
     obs(NULL)
     data <- digest()
     obs(data)
-    info$points <- length(data$x[!is.na(data$y1)])
     if (input$optionSecondary > 1) {
-      values$used1_primary <- values$used1
-      values$used2_primary <- values$used2
-      values$used3_primary <- values$used3
-      values$used_all_primary <- values$used_all
-      values$deleted1_primary <- values$deleted1
-      values$deleted2_primary <- values$deleted2
-      values$deleted3_primary <- values$deleted3
-      values$deleted_all_primary <- values$deleted_all
+      values$previous1 <- values$series1
+      values$previous2 <- values$series2
+      values$previous3 <- values$series3
+      values$previous_all <- values$series_all
       trans$x_orig <- trans$x0[!is.na(trans$y0)]
-      values$used1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), by = "x", all = F)$s
-      values$used1[is.na(values$used1)] <- F
-      values$used2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), by = "x", all = F)$s
-      values$used2[is.na(values$used2)] <- F
-      values$used3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), by = "x", all = F)$s
-      values$used3[is.na(values$used3)] <- F
-      values$used_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), by = "x", all = F)$s
-      values$used_all[is.na(values$used_all)] <- F
-      values$deleted1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), by = "x", all = F)$s
-      values$deleted1[is.na(values$deleted1)] <- F
-      values$deleted2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), by = "x", all = F)$s
-      values$deleted2[is.na(values$deleted2)] <- F
-      values$deleted3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), by = "x", all = F)$s
-      values$deleted3[is.na(values$deleted3)] <- F
-      values$deleted_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), by = "x", all = F)$s
-      values$deleted_all[is.na(values$deleted_all)] <- F
-      values$excluded1 <- !values$used1
-      values$excluded2 <- !values$used2
-      values$excluded3 <- !values$used3
-      values$excluded_all <- !values$used_all
-      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        info$run <- F
-        trans$mod <- trans$mod0 <- NULL
-        trans$res <- trans$res0 <- NULL
-        trans$kalman <- trans$kalman0 <- NULL
-        trans$kalman_unc <- trans$kalman_unc0 <- NULL
+      if (isTruthy(input$remove3D)) {
+        values$series_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), by = "x", all = F)$s
+        values$series1 <- values$series2 <- values$series3 <- values$series_all
+      } else {
+        values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
+        values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
+        values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s  
       }
     } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used1), data.frame(x = trans$x_orig, s = values$used1_primary), by = "x", all.y = T)
-      values$used1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used2), data.frame(x = trans$x_orig, s = values$used2_primary), by = "x", all.y = T)
-      values$used2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used3), data.frame(x = trans$x_orig, s = values$used3_primary), by = "x", all.y = T)
-      values$used3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$used_all), data.frame(x = trans$x_orig, s = values$used_all_primary), by = "x", all.y = T)
-      values$used_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted1), data.frame(x = trans$x_orig, s = values$deleted1_primary), by = "x", all.y = T)
-      values$deleted1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted2), data.frame(x = trans$x_orig, s = values$deleted2_primary), by = "x", all.y = T)
-      values$deleted2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted3), data.frame(x = trans$x_orig, s = values$deleted3_primary), by = "x", all.y = T)
-      values$deleted3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$deleted_all), data.frame(x = trans$x_orig, s = values$deleted_all_primary), by = "x", all.y = T)
-      values$deleted_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      rm(tempo)
-      values$excluded1 <- !values$used1
-      values$excluded2 <- !values$used2
-      values$excluded3 <- !values$used3
-      values$excluded_all <- !values$used_all
-      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        info$run <- F
-        trans$mod <- trans$mod0 <- NULL
-        trans$res <- trans$res0 <- NULL
-        trans$kalman <- trans$kalman0 <- NULL
-        trans$kalman_unc <- trans$kalman_unc0 <- NULL
+      if (isTruthy(input$remove3D)) {
+        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
+        values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+        values$series1 <- values$series2 <- values$series3 <- values$series_all
+      } else {
+        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
+        values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
+        values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
+        values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
       }
+      rm(tempo)
+    }
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      info$run <- F
+      trans$mod <- trans$mod0 <- NULL
+      trans$res <- trans$res0 <- NULL
+      trans$kalman <- trans$kalman0 <- NULL
+      trans$kalman_unc <- trans$kalman_unc0 <- NULL
     }
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
@@ -6079,10 +5791,7 @@ server <- function(input,output,session) {
     data <- digest()
     if (!is.null(data)) {
       obs(data)
-      info$points <- length(data$x)
-      values$used1 <- values$used2 <- values$used3 <- values$used_all <- rep(T, info$points)
-      values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all <- rep(F, info$points)
-      values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all <- rep(F, info$points)
+      values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
     }
   }, priority = 4)
   
@@ -6092,34 +5801,25 @@ server <- function(input,output,session) {
     removeNotification("no_toggle")
     removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), "Removing points, manually", "\n")
+    excluding_plot <- excluding_plotres <- NULL
+    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     brush1 <- input$plot_brush
     brush2 <- NULL
-    excluding_plot <- excluding_plotres <- NULL
-    if (isTruthy(input$res_brush)) {
+    if (isTruthy(input$res_brush) && length(trans$res) > 0) {
+      residuals <- data.frame(x = trans$x, y = trans$res)
       brush2 <- input$res_brush
-    } else if (isTruthy(input$vondrak_brush)) {
+    } else if (isTruthy(input$vondrak_brush) && length(trans$filterRes) > 0) {
+      residuals <- data.frame(x = trans$x, y = trans$filterRes)
       brush2 <- input$vondrak_brush
-    }
-    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
-    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-      if (isTruthy(brush2)) {
-        series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
-      }
     }
     if (isTruthy(brush1) || isTruthy(brush2)) {
       if (length(brush1) > 0) {
         excluding_plot <- brushedPoints(series, brush1, xvar = "x", yvar = "y", allRows = T)
       }
       if (length(brush2) > 0) {
-        if (isTruthy(input$res_brush) && length(trans$res) > 0) {
-          residuals <- data.frame(x = trans$x, y = trans$res)  
-        } else if (isTruthy(input$vondrak_brush) && length(trans$filterRes) > 0) {
-          residuals <- data.frame(x = trans$x, y = trans$filterRes)
-        } else {
-          req(info$stop)
-        }
         excluding_res <- brushedPoints(residuals, brush2, xvar = "x", yvar = "y", allRows = T)
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+          series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
           excluding_plotres_kf <- merge(series_kf, excluding_res, by = "x", all.x = T)
           excluding_plotres_kf$selected_ <- sapply(1:length(excluding_plotres_kf$x), function(x) if (isTRUE(excluding_plotres_kf$selected_[x])) T else F)
         }
@@ -6130,119 +5830,96 @@ server <- function(input,output,session) {
         if (isTruthy(input$remove3D)) {
           if (length(brush1) > 0) {
             if (isTruthy(input$permanent)) {
-              values$used_all <- values$used_all & !excluding_plot$selected_
-              values$excluded_all <- values$excluded_all | excluding_plot$selected_
-              values$deleted_all <- values$deleted_all | excluding_plot$selected_
+              values$series_all[excluding_plot$selected_] <- NA
               updateCheckboxInput(session, inputId = "permanent", value = F)
             } else {
-              values$used_all <- xor(values$used_all, excluding_plot$selected_)
-              values$excluded_all <- (values$excluded_all + excluding_plot$selected_) == 1
+              values$series_all <- xor(values$series_all, excluding_plot$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$used_all_kf <- values$used_all[values$used_all == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+              values$kf_all <- values$series_all[(values$series_all & !is.na(values$series_all)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
           }
           if (length(brush2) > 0) {
             if (isTruthy(input$permanent)) {
-              values$used_all <- values$used_all & !excluding_plotres$selected_
-              values$excluded_all <- values$excluded_all | excluding_plotres$selected_
-              values$deleted_all <- values$deleted_all | excluding_plotres$selected_
+              values$series_all[excluding_plotres$selected_] <- NA
               updateCheckboxInput(session, inputId = "permanent", value = F)
             } else {
-              values$used_all <- xor(values$used_all, excluding_plotres$selected_)
-              values$excluded_all <- (values$excluded_all + excluding_plotres$selected_) == 1
+              values$series_all <- xor(values$series_all, excluding_plotres$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$used_all_kf <- xor(values$used_all_kf, excluding_plotres_kf$selected_)
+              values$kf_all <- xor(values$kf_all, excluding_plotres_kf$selected_)
             }
           }
-          values$used1 <- values$used2 <- values$used3 <- values$used_all
-          values$used_kf1 <- values$used_kf2 <- values$used_kf3 <- values$used_all_kf
-          values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
-          values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all
+          values$series1 <- values$series2 <- values$series3 <- values$series_all
+          values$kf1 <- values$kf2 <- values$kf3 <- values$kf_all
         } else {
           if (input$tab == 1 || is.null(input$tab)) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
-                values$used1 <- values$used1 & !excluding_plot$selected_
-                values$excluded1 <- values$excluded1 | excluding_plot$selected_
-                values$deleted1 <- values$deleted1 | excluding_plot$selected_
+                values$series1[excluding_plot$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$used1 <- xor(values$used1, excluding_plot$selected_)
-                values$excluded1 <- (values$excluded1 + excluding_plot$selected_) == 1
+                values$series1 <- xor(values$series1, excluding_plot$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$used_kf1 <- values$used1[values$used1 == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+                values$kf1 <- values$series1[(values$series1 & !is.na(values$series1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$used1 <- values$used1 & !excluding_plotres$selected_
-                values$excluded1 <- values$excluded1 | excluding_plotres$selected_
-                values$deleted1 <- values$deleted1 | excluding_plotres$selected_
+                values$series1 <- xor(values$series1, excluding_plotres$selected_)
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$used1 <- xor(values$used1, excluding_plotres$selected_)
-                values$excluded1 <- (values$excluded1 + excluding_plotres$selected_) == 1
+                values$series2 <- xor(values$series2, excluding_plotres$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$used_kf1 <- xor(values$used_kf1, excluding_plotres_kf$selected_)
+                values$kf1 <- xor(values$kf1, excluding_plotres_kf$selected_)
               }
             }
           } else if (input$tab == 2) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
-                values$used2 <- values$used2 & !excluding_plot$selected_
-                values$excluded2 <- values$excluded2 | excluding_plot$selected_
-                values$deleted2 <- values$deleted2 | excluding_plot$selected_
+                values$series2[excluding_plot$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$used2 <- xor(values$used2, excluding_plot$selected_)
-                values$excluded2 <- (values$excluded2 + excluding_plot$selected_) == 1
+                values$series2 <- xor(values$series2, excluding_plot$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$used_kf2 <- values$used2[values$used2 == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+                values$kf2 <- values$series2[(values$series2 & !is.na(values$series2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$used2 <- values$used2 & !excluding_plotres$selected_
-                values$excluded2 <- values$excluded2 | excluding_plotres$selected_
-                values$deleted2 <- values$deleted2 | excluding_plotres$selected_
+                values$series2 <- xor(values$series2, excluding_plotres$selected_)
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$used2 <- xor(values$used2, excluding_plotres$selected_)
-                values$excluded2 <- (values$excluded2 + excluding_plotres$selected_) == 1
+                values$series2 <- xor(values$series2, excluding_plotres$selected_)
+              }
+              if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+                values$kf2 <- xor(values$kf2, excluding_plotres_kf$selected_)
               }
             }
           } else if (input$tab == 3) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
-                values$used3 <- values$used3 & !excluding_plot$selected_
-                values$excluded3 <- values$excluded3 | excluding_plot$selected_
-                values$deleted3 <- values$deleted3 | excluding_plot$selected_
+                values$series3[excluding_plot$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$used3 <- xor(values$used3, excluding_plot$selected_)
-                values$excluded3 <- (values$excluded3 + excluding_plot$selected_) == 1
+                values$series3 <- xor(values$series3, excluding_plot$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$used_kf3 <- values$used3[values$used3 == T | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+                values$kf3 <- values$series3[(values$series3 & !is.na(values$series3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$used3 <- values$used3 & !excluding_plotres$selected_
-                values$excluded3 <- values$excluded3 | excluding_plotres$selected_
-                values$deleted3 <- values$deleted3 | excluding_plotres$selected_
+                values$series3 <- xor(values$series3, excluding_plotres$selected_)
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$used3 <- xor(values$used3, excluding_plotres$selected_)
-                values$excluded3 <- (values$excluded3 + excluding_plotres$selected_) == 1
+                values$series3 <- xor(values$series3, excluding_plotres$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$used_kf3 <- xor(values$used_kf3, excluding_plotres_kf$selected_)
+                values$kf3 <- xor(values$kf3, excluding_plotres_kf$selected_)
               }
             }
           }
@@ -6263,7 +5940,7 @@ server <- function(input,output,session) {
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       series_kf <- data.frame(x = trans$x0_kf, y = trans$res0)
     }
-    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])  
+    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     if (length(trans$res) > 0) {
       if (isTruthy(input$sigmas)) {
         if (length(trans$reserror) > 0) {
@@ -6325,48 +6002,42 @@ server <- function(input,output,session) {
     }
     if (isTruthy(excluding) && sum(excluding) > 0) {
       if (isTruthy(input$remove3D)) {
-        values$used_all <- values$used_all & !excluding
-        values$excluded_all <- values$excluded_all | excluding
+        values$series_all <- xor(values$series_all, excluding)
         if (isTruthy(input$permanent)) {
-          values$deleted_all <- values$deleted_all | excluding
+          values$series_all[excluding] <- NA
           updateCheckboxInput(session, inputId = "permanent", value = F)
         }
-        values$used1 <- values$used2 <- values$used3 <- values$used_all
-        values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
-        values$deleted1 <- values$deleted2 <- values$deleted3 <- values$deleted_all
+        values$series1 <- values$series2 <- values$series3 <- values$series_all
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$used_all_kf <- values$used_all_kf & !excluding_kf
+          values$kf_all <- values$series_all[(values$series_all & !is.na(values$series_all)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
         }
       } else {
         if (input$tab == 1 || is.null(input$tab)) {
-          values$used1 <- values$used1 & !excluding
-          values$excluded1 <- values$excluded1 | excluding
+          values$series1 <- xor(values$series1, excluding)
           if (isTruthy(input$permanent)) {
-            values$deleted1 <- values$deleted1 | excluding
+            values$series1[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_kf1 <- values$used_kf1 & !excluding_kf
+            values$kf1 <- values$series1[(values$series1 & !is.na(values$series1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
           }
         } else if (input$tab == 2) {
-          values$used2 <- values$used2 & !excluding
-          values$excluded2 <- values$excluded2 | excluding
+          values$series2 <- xor(values$series2, excluding)
           if (isTruthy(input$permanent)) {
-            values$deleted2 <- values$deleted2 | excluding
+            values$series2[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_kf2 <- values$used_kf2 & !excluding_kf
+            values$kf2 <- values$series2[(values$series2 & !is.na(values$series2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
           }
         } else if (input$tab == 3) {
-          values$used3 <- values$used3 & !excluding
-          values$excluded3 <- values$excluded3 | excluding
+          values$series3 <- xor(values$series3, excluding)
           if (isTruthy(input$permanent)) {
-            values$deleted3 <- values$deleted3 | excluding
+            values$series3[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$used_kf3 <- values$used_kf3 & !excluding_kf
+            values$kf3 <- values$series3[(values$series3 & !is.na(values$series3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
           }
         }
       }
@@ -6380,31 +6051,26 @@ server <- function(input,output,session) {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Restoring points", "\n")
     if (isTruthy(input$remove3D)) {
-      values$used_all <- rep(T, length(trans$y0[!is.na(trans$y0)]))
-      values$excluded_all <- rep(F, sum(values$used_all))
-      values$used1 <- values$used2 <- values$used3 <- values$used_all
-      values$excluded1 <- values$excluded2 <- values$excluded3 <- values$excluded_all
+      values$series_all[!values$series_all & !is.na(values$series_all)] <- T
+      values$series1 <- values$series2 <- values$series3 <- values$series_all
       if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        values$used_kf1 <- values$used_kf2 <- values$used_kf3 <- values$used_all_kf <- values$used_all
+        values$kf1 <- values$kf2 <- values$kf3 <- values$kf_all <- values$series_all
       }
     } else {
       if (input$tab == 1 || is.null(input$tab)) {
-        values$used1 <- rep(T, length(trans$x0))
-        values$excluded1 <- rep(F, length(trans$x0))
+        values$series1[!values$series1 & !is.na(values$series1)] <- T
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$used_kf1 <- values$used1
+          values$kf1 <- values$series1
         }
       } else if (input$tab == 2) {
-        values$used2 <- rep(T, length(trans$x0))
-        values$excluded2 <- rep(F, length(trans$x0))
+        values$series2[!values$series2 & !is.na(values$series2)] <- T
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$used_kf2 <- values$used2
+          values$kf2 <- values$series2
         }
       } else if (input$tab == 3) {
-        values$used3 <- rep(T, length(trans$x0))
-        values$excluded3 <- rep(F, length(trans$x0))
+        values$series3[!values$series3 & !is.na(values$series3)] <- T
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$used_kf3 <- values$used3
+          values$kf3 <- values$series3
         }
       }
     }
@@ -6566,23 +6232,16 @@ server <- function(input,output,session) {
     trans$verif <- NULL
     trans$pattern <- NULL
     trans$unc <- NULL
-    values$used1 <- NULL
-    values$excluded1 <- NULL
-    values$deleted1 <- NULL
-    values$used2 <- NULL
-    values$excluded2 <- NULL
-    values$deleted2 <- NULL
-    values$used3 <- NULL
-    values$excluded3 <- NULL
-    values$deleted3 <- NULL
-    values$used_all <- NULL
-    values$excluded_all <- NULL
-    values$deleted_all <- NULL
+    values$series1 <- NULL
+    values$series2 <- NULL
+    values$series3 <- NULL
+    values$series_all <- NULL
     info$points <- NULL
     info$log <- NULL
     info$rangex <- NULL
     info$sampling <- NULL
     info$errorbars <- T
+    info$last_optionSecondary <- NULL
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
@@ -6851,33 +6510,38 @@ server <- function(input,output,session) {
         # Resampling the series
         if (input$average) {
           if (nchar(input$step) > 0 && is.na(inputs$step)) {
+            info$step <- NULL
             showNotification("The re-sampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
           } else if (isTruthy(inputs$step)) {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
               showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
               tolerance <- min(diff(table$x,1))/3
+              if (!isTruthy(info$step)) {
+                values$previous1 <- values$series1
+                values$previous2 <- values$series2
+                values$previous3 <- values$series3
+                values$previous_all <- values$series_all
+              }
+              info$step <- inputs$step
               if (input$format == 4) {
-                if (info$step == inputs$step) {
-                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T)
-                } else {
-                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x[values$used1], y1 = table$y1[values$used1], y2 = NULL, y3 = NULL, sy1 = table$sy1[values$used1], sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T) 
-                }
+                averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T)
                 removeNotification(id = "averaging", session = getDefaultReactiveDomain())
-                table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]) 
+                table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
               } else {
-                if (info$step == inputs$step) {
-                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance ), simplify = T)
-                } else {
-                  averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x[values$used1], y1 = table$y1[values$used1], y2 = table$y2[values$used2], y3 = table$y3[values$used3], sy1 = table$sy1[values$used1], sy2 = table$sy2[values$used2], sy3 = table$sy3[values$used3], tol = tolerance ), simplify = T)  
-                }
+                averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance ), simplify = T)
                 removeNotification(id = "averaging", session = getDefaultReactiveDomain())
                 table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])  
               }
               table <- na.omit(table)
             } else {
+              info$step <- NULL
               showNotification("The re-sampling period is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
             }
+          } else {
+            info$step <- NULL
           }
+        } else {
+          info$step <- NULL
         }
         # Checking for simultaneous values and setting series limits
         if (nrow(table) > 0) {
@@ -7126,8 +6790,8 @@ server <- function(input,output,session) {
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
       extracted
     } else {
-      showNotification("Non numeric values extracted from the input file. Check the input file or the requested format.", action = NULL, duration = 15, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
-      req(info$stop)
+      showNotification("Non numeric values extracted from the input series. Check the input file or the requested format.", action = NULL, duration = 15, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
+      NULL
     }
   }
   latlon2xyz <- function(lat,lon,scaling) {
@@ -8224,9 +7888,6 @@ server <- function(input,output,session) {
     return(changes)
   }
   plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol) {
-    x <- x[!is.na(x)]
-    y <- y[!is.na(y)]
-    z <- z[!is.na(z)]
     options(digits = 10)
     if (symbol == 0) {
       s <- 'p'
@@ -8249,7 +7910,7 @@ server <- function(input,output,session) {
       const <- 0
       ylab <- ""
     }
-    plot(x,y, type = s, pch = 20, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
+    plot(x, y, type = s, pch = 20, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
     p <- par("usr")[3:4] # min/max Y-axis values
     pout <- pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
@@ -9093,20 +8754,20 @@ server <- function(input,output,session) {
     index <- x >= x[1] + (p - 1)*as.numeric(isolate(inputs$step)) - tol & x < x[1] + p*as.numeric(isolate(inputs$step)) - tol * 2/3
     if (length(x[index]) == 1) {
       x_ <- x[1] + (p - 0.5)*isolate(inputs$step)
-      y1_ <- y1[index]
-      y2_ <- y2[index]
-      y3_ <- y3[index]
-      sy1_ <- sy1[index]
-      sy2_ <- sy2[index]
-      sy3_ <- sy3[index]
+      y1_ <- y1[index & values$previous1 & !is.na(values$previous1)]
+      y2_ <- y2[index & values$previous2 & !is.na(values$previous2)]
+      y3_ <- y3[index & values$previous3 & !is.na(values$previous3)]
+      sy1_ <- sy1[index & values$previous1 & !is.na(values$previous1)]
+      sy2_ <- sy2[index & values$previous2 & !is.na(values$previous2)]
+      sy3_ <- sy3[index & values$previous3 & !is.na(values$previous3)]
     } else if (length(x[index]) > 1) {
       x_ <- x[1] + (p - 0.5)*isolate(inputs$step)
-      y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2)
-      y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2)
-      y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2)
-      sy1_ <- sqrt(1/sum(1/sy1[index]^2))
-      sy2_ <- sqrt(1/sum(1/sy2[index]^2))
-      sy3_ <- sqrt(1/sum(1/sy3[index]^2))
+      y1_ <- weighted.mean(y1[index & values$previous1 & !is.na(values$previous1)], 1/(sy1[index & values$previous1 & !is.na(values$previous1)])^2)
+      y2_ <- weighted.mean(y2[index & values$previous2 & !is.na(values$previous2)], 1/(sy2[index & values$previous2 & !is.na(values$previous2)])^2)
+      y3_ <- weighted.mean(y3[index & values$previous3 & !is.na(values$previous3)], 1/(sy3[index & values$previous3 & !is.na(values$previous3)])^2)
+      sy1_ <- sqrt(1/sum(1/sy1[index & values$previous1 & !is.na(values$previous1)]^2))
+      sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
+      sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
     } else {
       x_ <- NA
       y1_ <- NA
