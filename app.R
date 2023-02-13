@@ -523,6 +523,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    checkboxInput(inputId = "same_axis",
                                                                                                  div("Same axis",
                                                                                                      helpPopup("Force the y-axis of the secondary series on the right to be the same as the y-axis of the primary series on the left")),
+                                                                                                 value = F),
+                                                                                   checkboxInput(inputId = "ne",
+                                                                                                 div(HTML("N &#8652; E"),
+                                                                                                     helpPopup("Swap the columns of the North and East components of the series")),
                                                                                                  value = F)
                                                                                )
                                                                         )
@@ -2302,7 +2306,7 @@ server <- function(input,output,session) {
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
-                 input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2,
+                 input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne,
                  values$series1, values$series2, values$series3, values$series_all,
                  input$eulerType, input$neuenu), {
     req(obs())
@@ -4856,6 +4860,7 @@ server <- function(input,output,session) {
       disable("series2")
       disable("separator")
       disable("separator2")
+      disable("ne")
       disable("series2filter")
       disable("typeSecondary")
       disable("sigmas")
@@ -4887,6 +4892,11 @@ server <- function(input,output,session) {
         } else {
           enable("format2")
           enable("euler")
+        }
+        if (input$format2 == 4) {
+          disable("ne")
+        } else {
+          enable("ne")
         }
         enable("units")
         enable("log")
@@ -5583,7 +5593,7 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe secondary series ####
-  observeEvent(c(input$series2, input$separator2, input$format2), {
+  observeEvent(c(input$series2, input$separator2, input$format2, input$ne), {
     req(obs())
     req(file$primary)
     if (input$optionSecondary > 0) {
@@ -6394,13 +6404,13 @@ server <- function(input,output,session) {
       # Getting data series from input file
       table <- NULL
       table2 <- NULL
-      table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar))
+      table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
         if (input$format < 4 && input$format != input$format2) {
           removeNotification(id = "formats", session = getDefaultReactiveDomain())
           showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
         }
-        table2 <- extract_table(input$series2$datapath,sep2,input$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2))
+        table2 <- extract_table(input$series2$datapath,sep2,input$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
       }
       if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
         if (input$format == 4) {
@@ -6642,7 +6652,7 @@ server <- function(input,output,session) {
     }
     columns
   }
-  extract_table <- function(file,sep,format,columns,epoch,variable,errorBar) {
+  extract_table <- function(file,sep,format,columns,epoch,variable,errorBar,swap) {
     tableAll <- NULL
     extracted <- NULL
     removeNotification("no_weeks")
@@ -6655,13 +6665,23 @@ server <- function(input,output,session) {
       skip <- 0
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
-        extracted <- tableAll[,c(1,2,3,4)]
+        if (isTruthy(swap)) {
+          extracted <- tableAll[,c(1,3,2,4)]
+        } else {
+          extracted <- tableAll[,c(1,2,3,4)]
+        }
         names(extracted) <- c("x","y1","y2","y3")
         if (length(extracted) > 0) {
           if (columns > 4) {
-            extracted$sy1 <- tableAll[,5]
-            extracted$sy2 <- tableAll[,6]
-            extracted$sy3 <- tableAll[,7]
+            if (isTruthy(swap)) {
+              extracted$sy1 <- tableAll[,6]
+              extracted$sy2 <- tableAll[,5]
+              extracted$sy3 <- tableAll[,7]
+            } else {
+              extracted$sy1 <- tableAll[,5]
+              extracted$sy2 <- tableAll[,6]
+              extracted$sy3 <- tableAll[,7]
+            }
           } else {
             extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
             info$errorbars <- F
@@ -6673,7 +6693,11 @@ server <- function(input,output,session) {
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
-        extracted <- tableAll[,c(16,17,18,19,20,21)]
+        if (isTruthy(swap)) {
+          extracted <- tableAll[,c(17,16,18,20,19,21)]
+        } else {
+          extracted <- tableAll[,c(16,17,18,19,20,21)]
+        }
         names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
         if (input$tunits == 1) {
           extracted$x <- tableAll[,3]
@@ -6696,11 +6720,18 @@ server <- function(input,output,session) {
         } else if (input$tunits == 3) {
           extracted <- data.frame( x = tableAll[,3] )
         }
-        extracted$y1 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East (the coordinate integer portion seems to be constant, but just in case)
-        extracted$y2 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
+        if (isTruthy(swap)) {
+          extracted$y2 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East
+          extracted$y1 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
+          extracted$sy2 <- tableAll[,15]
+          extracted$sy1 <- tableAll[,16]
+        } else {
+          extracted$y1 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East (the coordinate integer portion seems to be constant, but just in case)
+          extracted$y2 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
+          extracted$sy1 <- tableAll[,15]
+          extracted$sy2 <- tableAll[,16]
+        }
         extracted$y3 <- tableAll[,12] - tableAll[1,12] + tableAll[,13] #Up
-        extracted$sy1 <- tableAll[,15]
-        extracted$sy2 <- tableAll[,16]
         extracted$sy3 <- tableAll[,17]
       }
     } else if (format == 4) { #1D
