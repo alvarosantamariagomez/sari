@@ -1852,7 +1852,7 @@ server <- function(input,output,session) {
   observeEvent(input$browser,{
     browser()
   })
-  
+
   # Initialize reactive variables of the global database
   
   # 1. input files.
@@ -1874,8 +1874,8 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = T,
-                         last_optionSecondary = NULL)
+                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
+                         last_optionSecondary = NULL, format = NULL)
   
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1906,6 +1906,9 @@ server <- function(input,output,session) {
   # 7. output
   OutPut <- reactiveValues(df = NULL)
   output_excluded <- reactiveValues(df = NULL)
+  
+  # 8. input parameters via URL
+  url <- reactiveValues(station = NULL, file = NULL, product = NULL, server = NULL)
   
   # Constants ####
   # Some initial values and constants
@@ -4687,7 +4690,13 @@ server <- function(input,output,session) {
   # Control plots ####
   output$header <- renderText({
     req(input$header, file$primary)
-    noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+    if (isTruthy(url$file)) {
+      con <- url(url$file)
+      noquote(paste(readLines(con = con, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+      suppressWarnings(try(close.connection(con), silent = T))
+    } else {
+      noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+    }
   })
   observeEvent(input$remove3D, {
     req(file$primary)
@@ -5299,6 +5308,58 @@ server <- function(input,output,session) {
     }
   }, priority = 100)
   
+  # Observe URL ####
+  observeEvent(c(session$clientData$url_search), {
+    if (!isTruthy(url$station)) {
+      query <- parseQueryString(session$clientData$url_search)
+      if (length(query) > 0) {
+        if (messages > 0) cat(file = stderr(), "Analizando URL", "\n")
+        if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
+          url$station <- query[['station']]
+          if (tolower(query[['server']]) == "ngl") {
+            url$server <- "ngl"
+            info$format <- 3
+            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 3, inline = T)
+            if (tolower(query[['product']]) == "tenv3") {
+              url$product <- "tenv3"
+              file$primary$name <- paste0(url$station,".",url$product)
+              url$file <- paste0("http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/",file$primary$name)
+              con <- url(url$file)
+              check <- suppressWarnings(try(open.connection(con, open = "rt", timeout = t), silent = T)[1])
+              suppressWarnings(try(close.connection(con), silent = T))
+              check <- ifelse(is.null(check),TRUE,FALSE)
+              if (!isTruthy(check)) {
+                showNotification(paste0("Station ",query[['station']]," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                req(info$stop)
+              }
+            } else {
+              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          } else {
+            showNotification(paste0("Unknown server ",query[['server']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+            req(info$stop)
+          }
+          data <- digest()
+          if (!is.null(data)) {
+            obs(data)
+            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+          }
+        } else {
+          url$station <- NULL
+          url$file <- NULL
+          url$server <- NULL
+          url$product <- NULL
+        }
+      } else {
+        url$station <- NULL
+        url$file <- NULL
+        url$server <- NULL
+        url$product <- NULL
+      }
+    }
+  })
+  
   # Observe Euler ####
   observeEvent(c(inputs$station_x, inputs$station_y, inputs$station_z, inputs$station_lat, inputs$station_lon, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot), {
     if (input$eulerType != 0) {
@@ -5463,6 +5524,7 @@ server <- function(input,output,session) {
     } else {
       req(obs())
       info$tab <- input$tab
+      info$format <- input$format
       if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
@@ -5538,7 +5600,15 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe primary series format ####
-  observeEvent(c(input$separator, input$format, input$tunits, input$eulerType, input$neuenu), {
+  observeEvent(c(input$format), {
+    req(obs())
+    if (info$format != input$format) {
+      obs(NULL)
+      data <- digest()
+      obs(data)
+    }
+  }, priority = 6)
+  observeEvent(c(input$separator, input$tunits, input$eulerType, input$neuenu), {
     req(obs())
     obs(NULL)
     data <- digest()
@@ -6203,6 +6273,22 @@ server <- function(input,output,session) {
   observeEvent(input$reset, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Reset all", "\n")
+    if (length(session$clientData$url_search) > 0) {
+      if (session$clientData$url_pathname == "/") {
+        path <- ""
+      } else {
+        path <- session$clientData$url_pathname
+      }
+      if (session$clientData$url_port == "") {
+        port <- ""
+      } else {
+        port <- paste0(":",session$clientData$url_port)
+      }
+print(paste0(session$clientData$url_protocol,"//",session$clientData$url_hostname,path,port))
+      jscode <- paste0("window.location.href = '",session$clientData$url_protocol,"//",session$clientData$url_hostname,path,port,"';")
+      runjs(jscode)
+      req(info$stop)
+    }
     reset("side-panel")
     reset("main-panel")
     obs(NULL)
@@ -6252,6 +6338,10 @@ server <- function(input,output,session) {
     info$sampling <- NULL
     info$errorbars <- T
     info$last_optionSecondary <- NULL
+    url$station <- NULL
+    url$file <- NULL
+    url$server <- NULL
+    url$product <- NULL
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
@@ -6362,16 +6452,24 @@ server <- function(input,output,session) {
     } else if (input$separator2 == "3") {
       sep2 <- ";"
     }
-    
-    if (input$format == 4) {
+    if (info$format == 4) {
       updateTabsetPanel(session, inputId = "tab", selected = "1")
     }
     # Getting number of columns in file and setting station ID
     columns <- columns2 <- 0
-    columns <- get_columns(input$series$datapath, sep, input$format)
+    if (url$server == "ngl") {
+      columns <- 23
+      showNotification("Parsing the URL and downloading the input series file. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "parsing_url", type = "warning", session = getDefaultReactiveDomain())
+    } else {
+      columns <- get_columns(input$series$datapath, sep, info$format) 
+    }
     if (columns > 0) {
-      if (!isTruthy(inputs$ids)) {
-        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+      if (isTruthy(url$station)) {
+        file$id1 <- url$station
+      } else {
+        if (!isTruthy(inputs$ids)) {
+          file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+        }
       }
       if (length(file$secondary) > 1 && input$optionSecondary > 0) {
         columns2 <- get_columns(file$secondary$datapath, sep2, input$format2)
@@ -6404,16 +6502,23 @@ server <- function(input,output,session) {
       # Getting data series from input file
       table <- NULL
       table2 <- NULL
-      table <- extract_table(input$series$datapath,sep,input$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
+      if (isTruthy(url$file)) {
+        con <- url(url$file)
+        table <- extract_table(con,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
+        suppressWarnings(try(close.connection(con), silent = T))
+        removeNotification("parsing_url")
+      } else {
+        table <- extract_table(input$series$datapath,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
+      }
       if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
-        if (input$format < 4 && input$format != input$format2) {
+        if (info$format < 4 && info$format != input$format2) {
           removeNotification(id = "formats", session = getDefaultReactiveDomain())
           showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
         }
         table2 <- extract_table(input$series2$datapath,sep2,input$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
       }
       if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
-        if (input$format == 4) {
+        if (info$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x", all = T), {
             y1 <- y1.x 
             z1 <- y1.y
@@ -6453,7 +6558,7 @@ server <- function(input,output,session) {
         }
         info$sampling2 <- min(diff(table2$x,1))
       } else if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 2 && columns2 > 0) {
-        if (input$format == 4) {
+        if (info$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x"), {
             y1 <- y1.x - y1.y
             sy1 <- sqrt(sy1.x^2 + sy1.y^2)
@@ -6479,7 +6584,7 @@ server <- function(input,output,session) {
         }
         showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       } else if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
-        if (input$format == 4) {
+        if (info$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x"), {
             y1 <- (y1.x + y1.y) / 2
             sy1 = sd(c(sy1.x,sy1.y))/sqrt(2)
@@ -6533,7 +6638,7 @@ server <- function(input,output,session) {
                 values$previous_all <- values$series_all
               }
               info$step <- inputs$step
-              if (input$format == 4) {
+              if (info$format == 4) {
                 averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T)
                 removeNotification(id = "averaging", session = getDefaultReactiveDomain())
                 table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
