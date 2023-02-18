@@ -1908,7 +1908,7 @@ server <- function(input,output,session) {
   output_excluded <- reactiveValues(df = NULL)
   
   # 8. input parameters via URL
-  url <- reactiveValues(station = NULL, file = NULL, server = NULL)
+  url <- reactiveValues(station = NULL, file = NULL)
   
   # Constants ####
   # Some initial values and constants
@@ -2313,6 +2313,9 @@ server <- function(input,output,session) {
                  values$series1, values$series2, values$series3, values$series_all,
                  input$eulerType, input$neuenu), {
     req(obs())
+    if (input$tab == 4) {
+      req(info$stop)
+    }
     removeNotification("kf_not_valid")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
@@ -4691,9 +4694,7 @@ server <- function(input,output,session) {
   output$header <- renderText({
     req(input$header, file$primary)
     if (isTruthy(url$file)) {
-      con <- url(url$file, method = "libcurl")
-      noquote(paste(readLines(con = con, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
-      suppressWarnings(try(close.connection(con), silent = T))
+      noquote(paste(readLines(con = file$primary$name, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
       noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     }
@@ -5313,65 +5314,90 @@ server <- function(input,output,session) {
     if (!isTruthy(url$station)) {
       query <- parseQueryString(session$clientData$url_search)
       if (length(query) > 0) {
+        removeNotification("parsing_url")
         if (messages > 0) cat(file = stderr(), "Analizando URL", "\n")
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
+          removeNotification("bad_url")
           url$station <- query[['station']]
+          #NGL
           if (tolower(query[['server']]) == "ngl") {
-            url$server <- "ngl"
             info$format <- 3
             updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 3, inline = T)
-            if (tolower(query[['product']]) == "tenv3") {
-              file$primary$name <- paste0(url$station,".",query[['product']])
+            if (tolower(query[['product']]) == "final") {
+              file$primary$name <- paste0(toupper(url$station),".tenv3")
               url$file <- paste0("http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/",file$primary$name)
-              con <- url(url$file, method = "libcurl")
-              check <- suppressWarnings(try(open.connection(con, open = "rt", timeout = t), silent = T)[1])
-              suppressWarnings(try(close.connection(con), silent = T))
-              check <- ifelse(is.null(check),TRUE,FALSE)
-              if (!isTruthy(check)) {
-                showNotification(paste0("Station ",query[['station']]," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                req(info$stop)
-              }
-            } else {
-              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
-            } 
-          } else if (tolower(query[['server']]) == "renag") {
-            url$server <- "renag"
-            info$format <- 2
-            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
-            if (tolower(query[['product']]) == "raw") {
-              file$primary$name <- paste0(url$station,"_raw.pos_UGA_ITRF14.pos")
-              url$file <- paste0("ftp://webrenag.unice.fr/products/position-timeseries/",file$primary$name)
-              con <- url(url$file, method = "libcurl")
-              check <- suppressWarnings(try(open.connection(con, open = "rt", timeout = t), silent = T)[1])
-              suppressWarnings(try(close.connection(con), silent = T))
-              check <- ifelse(is.null(check),TRUE,FALSE)
-              if (!isTruthy(check)) {
-                showNotification(paste0("Station ",query[['station']]," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                req(info$stop)
-              }
+            } else if (tolower(query[['product']]) == "rapid") {
+              file$primary$name <- paste0(toupper(url$station),".tenv3")
+              url$file <- paste0("http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/",file$primary$name)
             } else {
               showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
               req(info$stop)
             }
+          # RENAG
+          } else if (tolower(query[['server']]) == "renag") {
+            info$format <- 2
+            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
+            if (tolower(query[['product']]) == "raw") {
+              file$primary$name <- paste0(toupper(url$station),"_raw.pos_UGA_ITRF14.pos")
+              url$file <- paste0("ftp://webrenag.unice.fr/products/position-timeseries/",file$primary$name)
+            } else {
+              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          #UNAVCO
+          } else if (tolower(query[['server']]) == "unavco") {
+            info$format <- 2
+            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
+            if (tolower(query[['product']]) == "cwu") {
+              file$primary$name <- paste0(toupper(url$station),".",tolower(query[['product']]),".igs14.pos")
+              url$file <- paste0("https://data.unavco.org/archive/gnss/products/position/",url$station,"/",file$primary$name)
+            } else if (tolower(query[['product']]) == "nmt") {
+              file$primary$name <- paste0(toupper(url$station),".",tolower(query[['product']]),".igs14.pos")
+              url$file <- paste0("https://data.unavco.org/archive/gnss/products/position/",url$station,"/",file$primary$name)
+            } else if (tolower(query[['product']]) == "pbo") {
+              file$primary$name <- paste0(toupper(url$station),".",tolower(query[['product']]),".igs14.pos")
+              url$file <- paste0("https://data.unavco.org/archive/gnss/products/position/",url$station,"/",file$primary$name)
+            } else {
+              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          # EUREF
+          } else if (tolower(query[['server']]) == "euref") {
+            info$format <- 2
+            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
+            if (tolower(query[['product']]) == "pbo") {
+              file$primary$name <- paste0(toupper(url$station),".pos")
+              url$file <- paste0("https://epncb.eu/ftp/product/cumulative/C2220/pbo/",file$primary$name)
+            } else {
+              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          #
           } else {
             showNotification(paste0("Unknown server ",query[['server']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
           }
-          data <- digest()
-          if (!is.null(data)) {
-            obs(data)
-            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+          showNotification(paste0("Downloading the ",file$primary$name," file from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url", type = "warning", session = getDefaultReactiveDomain())
+          down <- download.file(url$file, destfile = file$primary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T)
+          if (down == 0) {
+            data <- digest()
+            if (!is.null(data)) {
+              obs(data)
+              values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+            }
+          } else {
+            showNotification(paste0("File ",file$primary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+            removeNotification("parsing_url")
+            req(info$stop)
           }
         } else {
+          showNotification(paste0("At least one missing argument in the URL (station, server and product). No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           url$station <- NULL
           url$file <- NULL
-          url$server <- NULL
         }
       } else {
         url$station <- NULL
         url$file <- NULL
-        url$server <- NULL
       }
     }
   })
@@ -5859,7 +5885,7 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 5)
   
-  # Observe hide buttons ####
+  Observe hide buttons ####
   observeEvent(input$format, {
     if (input$format == 4) {
       output$tabName = renderText({ "1D series" })
@@ -6355,7 +6381,6 @@ server <- function(input,output,session) {
     info$last_optionSecondary <- NULL
     url$station <- NULL
     url$file <- NULL
-    url$server <- NULL
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
@@ -6472,10 +6497,9 @@ server <- function(input,output,session) {
     # Getting number of columns in file and setting station ID
     columns <- columns2 <- 0
     if (isTruthy(url$station)) {
-      columns <- 5
-      showNotification("Parsing the URL and downloading the input series file. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "parsing_url", type = "warning", session = getDefaultReactiveDomain())
+      columns <- get_columns(file$primary$name, sep, info$format)
     } else {
-      columns <- get_columns(input$series$datapath, sep, info$format) 
+      columns <- get_columns(input$series$datapath, sep, info$format)
     }
     if (columns > 0) {
       if (isTruthy(url$station)) {
@@ -6517,10 +6541,7 @@ server <- function(input,output,session) {
       table <- NULL
       table2 <- NULL
       if (isTruthy(url$file)) {
-        con <- url(url$file, method = "libcurl")
-        table <- extract_table(con,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
-        suppressWarnings(try(close.connection(con), silent = T))
-        removeNotification("parsing_url")
+        table <- extract_table(file$primary$name,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
       } else {
         table <- extract_table(input$series$datapath,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
       }
@@ -6705,7 +6726,7 @@ server <- function(input,output,session) {
     removeNotification("no_head")
     removeNotification("bad_columns")
     if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
-      showNotification("Hello my friend! It seems you uploaded a RINEX file. Please, consider uploading a time series instead ... everything will be funnier!", action = NULL, duration = 15, closeButton = T, id = "rinex_file", type = "error", session = getDefaultReactiveDomain())
+      showNotification("It seems you uploaded a RINEX file. Please, consider uploading a time series instead", action = NULL, duration = 15, closeButton = T, id = "rinex_file", type = "error", session = getDefaultReactiveDomain())
       return(0)
     }
     if (format == 1) { #NEU/ENU

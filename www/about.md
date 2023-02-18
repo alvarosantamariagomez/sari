@@ -68,23 +68,29 @@ Current SARI version: *febrero 2023*  --  "You will ride eternal, shiny and chro
 
 The SARI interface is divided into two panels with separate vertical scrolling: the left panel contains all the processing options while the right panel is for visualization of the series and the analysis.  
 Click to expand/collapse any of the following five blocks on the left panel as needed.  
-Note that some OS and some web browsers apply a zoom to all web pages by default. It is recommended to adjust the browser zoom (usually ctrl + mouse wheel) so that all the controls, buttons, plots, etc. on both panels fit comfortably on the screen. It is recommended to fit the browser zoom before starting a series analysis.
+Note that some OS and some web browsers apply a zoom to all web pages by default. It is recommended to adjust the browser zoom (usually ctrl + mouse wheel) so that all the controls, buttons, plots, etc. on both panels fit comfortably on the screen. It is recommended to adjust the browser zoom before starting a series analysis to avoid problems with the plots (see details in the [<a href="#known-issues" target="_self">Known issues</a>](#known-issues) section).  
 
 ### I. Input data and format
 This block allows uploading and setting the series format before plotting. The input series file must be a text file with standard encoding (ASCII, UTF-8) and organized in columns generally corresponding to the epochs, the observed variables and their error bars. The series does not need to be evenly sampled.
 
-The user can upload GNSS series from local files in the standard *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension *.pos*, version 1.1.0) and *NGL* (with extension *.tenv3*). The user only needs to set the time unit of the input series (days, weeks or years).  
-<b><span style="color: red;">NEW FEATURE:</span></b> Alternatively, the user can upload GNSS series "on the fly" from the online files available at specific web servers. This is done via specific parameters included in the SARI URL. This option allows webmasters of any GNSS series database (or any other type of series) to include a specific link on their webpages to open a GNSS series directly with SARI on a new browser tab.  
-At this moment, the following server/products are available via a URL command, but more could be added in the future:  
-- `?station=PIMI&server=NGL&product=TENV3`
-- `?station=PIMI&server=RENAG&product=RAW`  
+The user can upload GNSS series from local files in the standard *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension *.pos*, version 1.1.0) and *NGL* (with extension *.tenv3*). The user only needs to set the time unit of the input series (days, weeks or years).
 
-Adding one of previous strings at the end of the SARI URL will automatically upload the GNSS position series of the station *PIMI* from the Nevada Geodetic Laboratory or the RESIF/RENAG servers, respectively.
+<b><span style="color: red;">NEW FEATURE:</span></b> Alternatively, the user can upload GNSS series from online files available at specific web servers. This is done via three parameters (station, server and product) that must be included in the SARI URL. This option allows webmasters of any GNSS series database (or any other type of series) to include a specific link on their webpages to open a GNSS series directly with SARI on a new browser tab.  
+At this moment, the following servers and products are available via the URL:  
+
+<b>Server</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Products</b>  
+[RENAG](http://renag.resif.fr/en/)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RAW  
+[NGL](http://geodesy.unr.edu/)    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FINAL, RAPID  
+[EUREF](https://epncb.eu/_organisation/about.php)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PBO  
+[UNAVCO](https://www.unavco.org/data/gps-gnss/gps-gnss.html) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CWU, NMT, PBO  
+
+For example, adding this string `?station=PIMI&server=RENAG&product=RAW` at the end of the SARI URL will automatically upload the *RAW* GNSS position series of the station *PIMI* from the *RENAG* server.  
+Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
 Once uploaded and plotted (see the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block), the three coordinates components of the GNSS series will be shown in separate tabs: 1st, 2nd and 3rd component, respectively. The components are plotted in the same order as the columns in the input file (i.e. NEU or ENU for instance). For PBO series, it is NEU-like and for NGL series, it is ENU-like. When plotting a primary and a secondary series with different formats, use the option `N `<span style="color: red;">&#8652;</span>` E` to match the coordinate components North and East (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 For series in a different format, the user needs to check the *1D* option and then set the column separator (blanks, commas or semi-colons) and the column numbers containing the epochs, the variable and the error bars if available.
 
-The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. For uncommented text, the behavior depends on the requested series format:  
+The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. In case uncommented text is found, the behavior depends on the requested series format:  
 Any non-numeric value in a NEU/ENU or 1D series will make the full line to be skipped.  
 For the PBO and NGL series, the headers are recognized and skipped, also the first two columns of the NGL files and the last column of the PBO files. However, any other non-numeric value in these files will stop the app.  
 Data records having a NA, NaN or Inf/inf entries will be treated as valid not-available or not-a-number numeric values and will be automatically skipped, but na, Na, nan, NAN or any other string will be considered as unwanted text.  
@@ -423,9 +429,9 @@ Universit&#233; de Toulouse, CNRS, IRD, CNES, UPS
 Observatoire Midi-Pyr&#233;n&#233;es  
 Toulouse 
 
-![](get.jpg) ![](ups.jpg) ![](omp.jpg) ![](resif_renag.png)
-
 For any comments, suggestions, questions, bugs, unexpected crashes or missing features, please [contact Alvaro](https://www.get.omp.eu/author/ALVARO-SANTAMARIA/).
+
+![](get.jpg) ![](ups.jpg) ![](omp.jpg) ![](resif_renag.png)
 
 
 
