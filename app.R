@@ -1875,7 +1875,7 @@ server <- function(input,output,session) {
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
-                         last_optionSecondary = NULL, format = NULL)
+                         last_optionSecondary = NULL, format = NULL, intro = T)
   
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1917,12 +1917,11 @@ server <- function(input,output,session) {
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   debug <- F # saving the environment 
-  messages <- 4 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
+  messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
   
   # Welcome ####
   observe({
-    req(input$size)
-    removeNotification("pixelratio")
+    req(input$size, info$intro)
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), "Mobile connection ", "\n")
       cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
@@ -1944,11 +1943,6 @@ server <- function(input,output,session) {
         tags$h3(style = "color: blue; text-align: center;", "https://alvarosg.shinyapps.io/sari")
       ))
     } else {
-      if (messages > 4) cat(file = stderr(), isolate(paste("Fixed width = ",info$width, " System width = ",session$clientData$output_plot1_width, " Pixel ratio = ",session$clientData$pixelratio)), "\n")
-      if (!isTruthy(info$pixelratio)) info$pixelratio <- session$clientData$pixelratio
-      if (info$pixelratio != session$clientData$pixelratio) {
-        showNotification("The size and or resolution of the browser window has been modified. Please consider reloading the web page.", action = NULL, duration = 10, closeButton = T, id = "pixelratio", type = "warning", session = getDefaultReactiveDomain())
-      }
       if (local) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
@@ -1977,6 +1971,7 @@ server <- function(input,output,session) {
         }
       }
     }
+    info$intro <- F
   }, priority = 2000)
   
   # GUI reactive flags ####
@@ -5309,6 +5304,13 @@ server <- function(input,output,session) {
     }
   }, priority = 100)
   
+  # Observe screen ####
+  observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width), {
+    if (messages > 0) cat(file = stderr(), "Cambio pantalla", "\n")
+    info$pixelratio <- session$clientData$pixelratio
+    info$width <- session$clientData$output_plot1_width
+  }, priority = 2000)
+  
   # Observe URL ####
   observeEvent(c(session$clientData$url_search), {
     if (!isTruthy(url$station)) {
@@ -5885,7 +5887,7 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 5)
   
-  Observe hide buttons ####
+  # Observe hide buttons ####
   observeEvent(input$format, {
     if (input$format == 4) {
       output$tabName = renderText({ "1D series" })
@@ -5896,7 +5898,7 @@ server <- function(input,output,session) {
       showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
     }
-  })
+  }, priority = 10)
   
   # Observe plotting ####
   observeEvent(input$plot, {
@@ -5910,6 +5912,8 @@ server <- function(input,output,session) {
       showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
+    info$format <- input$format
+    info$width <- isolate(session$clientData$output_plot1_width)
     data <- digest()
     if (!is.null(data)) {
       obs(data)
