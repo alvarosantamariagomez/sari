@@ -5306,7 +5306,7 @@ server <- function(input,output,session) {
   
   # Observe screen ####
   observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width), {
-    if (messages > 0) cat(file = stderr(), "Cambio pantalla", "\n")
+    if (messages > 2) cat(file = stderr(), "Cambio pantalla", "\n")
     info$pixelratio <- session$clientData$pixelratio
     info$width <- session$clientData$output_plot1_width
   }, priority = 2000)
@@ -5339,7 +5339,7 @@ server <- function(input,output,session) {
           } else if (tolower(query[['server']]) == "renag") {
             info$format <- 2
             updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
-            if (tolower(query[['product']]) == "raw") {
+            if (tolower(query[['product']]) == "uga") {
               file$primary$name <- paste0(toupper(url$station),"_raw.pos_UGA_ITRF14.pos")
               url$file <- paste0("ftp://webrenag.unice.fr/products/position-timeseries/",file$primary$name)
             } else {

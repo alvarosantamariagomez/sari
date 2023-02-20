@@ -75,16 +75,16 @@ This block allows uploading and setting the series format before plotting. The i
 
 The user can upload GNSS series from local files in the standard *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension *.pos*, version 1.1.0) and *NGL* (with extension *.tenv3*). The user only needs to set the time unit of the input series (days, weeks or years).
 
-<b><span style="color: red;">NEW FEATURE:</span></b> Alternatively, the user can upload GNSS series from online files available at specific web servers. This is done via three parameters (station, server and product) that must be included in the SARI URL. This option allows webmasters of any GNSS series database (or any other type of series) to include a specific link on their webpages to open a GNSS series directly with SARI on a new browser tab.  
+<b><span style="color: red;">NEW FEATURE:</span></b> Alternatively, the user can upload GNSS series from online files available at specific web servers. This is done via three parameters (station, server and product) that must be included in the SARI URL (see example below). This option allows webmasters of any GNSS series database (or any other type of series) to include a link on their webpages to open a specific GNSS series directly with SARI on a new browser tab.  
 At this moment, the following servers and products are available via the URL:  
 
 <b>Server</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Products</b>  
-[RENAG](http://renag.resif.fr/en/)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RAW  
+[RENAG](http://renag.resif.fr/en/)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; UGA  
 [NGL](http://geodesy.unr.edu/)    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FINAL, RAPID  
 [EUREF](https://epncb.eu/_organisation/about.php)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PBO  
 [UNAVCO](https://www.unavco.org/data/gps-gnss/gps-gnss.html) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CWU, NMT, PBO  
 
-For example, adding this string `?station=PIMI&server=RENAG&product=RAW` at the end of the SARI URL will automatically upload the *RAW* GNSS position series of the station *PIMI* from the *RENAG* server.  
+For example, adding this string `?station=PIMI&server=RENAG&product=UGA` at the end of the SARI URL will automatically upload the *UGA* GNSS position series of the station *PIMI* from the *RENAG* server.  
 Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
 Once uploaded and plotted (see the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block), the three coordinates components of the GNSS series will be shown in separate tabs: 1st, 2nd and 3rd component, respectively. The components are plotted in the same order as the columns in the input file (i.e. NEU or ENU for instance). For PBO series, it is NEU-like and for NGL series, it is ENU-like. When plotting a primary and a secondary series with different formats, use the option `N `<span style="color: red;">&#8652;</span>` E` to match the coordinate components North and East (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
