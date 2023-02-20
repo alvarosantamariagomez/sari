@@ -68,7 +68,7 @@ Current SARI version: *febrero 2023*  --  "You will ride eternal, shiny and chro
 
 The SARI interface is divided into two panels with separate vertical scrolling: the left panel contains all the processing options while the right panel is for visualization of the series and the analysis.  
 Click to expand/collapse any of the following five blocks on the left panel as needed.  
-Note that some OS and some web browsers apply a zoom to all web pages by default. It is recommended to adjust the browser zoom (usually ctrl + mouse wheel) so that all the controls, buttons, plots, etc. on both panels fit comfortably on the screen. It is recommended to adjust the browser zoom before starting a series analysis to avoid problems with the plots (see details in the [<a href="#known-issues" target="_self">Known issues</a>](#known-issues) section).  
+Note that some OS and some web browsers apply a zoom to all web pages by default. It is recommended to adjust the browser zoom (usually ctrl + mouse wheel) so that all the controls, buttons, plots, etc. on both panels fit comfortably on the screen.  
 
 ### I. Input data and format
 This block allows uploading and setting the series format before plotting. The input series file must be a text file with standard encoding (ASCII, UTF-8) and organized in columns generally corresponding to the epochs, the observed variables and their error bars. The series does not need to be evenly sampled.
@@ -368,9 +368,6 @@ The uncertainty of the estimated state parameters at the affected epochs will be
 Also, note that EKF and UKF are not necessarily providing the same fit to the series.
 
 At this moment, I have not found the way to select the output directory on the client's side, where the user downloads the processed series, from the online server side in order to avoid the repetitive, and sometimes annoying, download prompt. This is related to server/client standard secure browsing, so not entirely my fault. At least, some web browsers provide extensions to automatically download to a specific directory given the file extension or to avoid the unnecessary *(1)*, *(2)*, ... added to the file name if downloaded several times.
-
-When running SARI on a Windows machine with a high-resolution screen, the plot width requested by the client changes by just a few pixels sometimes when the user is clicking and selecting an area on a plot. The change of the plot width is barely perceptible, but the shiny server reacts to the new attribute requests and updates the plot, which is quite annoying. This happens for both local (from RStudio) and remote (from shinyapps) connections.  
-To avoid this, the width of all the plots in SARI are hold fixed to the first width attribute requested by the client when connecting to the server. The limitation of this patch is that the width of the plots will no longer change if the user changes the pixel ratio or the browser scaling (zoom) during a SARI session, that is, the plots will look weird in the new window size. The width of the plots will be set back to normal by refreshing the web page and a warning will be shown on screen when this is necessary. However, refreshing the web page will reset the analysis, as in a new connection to the server. Therefore, it is recommended that the width and resolution of the web browser window is set before starting using the app and kept unchanged afterwards. Contact the [<a href="#author" target="_self">author</a>](#author) if you have any problem with the plot width or the plots updating themselves with no reason.
 
 -----------------
 
