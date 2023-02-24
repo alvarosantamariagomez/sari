@@ -8598,6 +8598,9 @@ server <- function(input,output,session) {
       f[i, ] <- tcrossprod(w, tmpy)
       #covariance of predicted measurement
       # Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V
+      if (!isTruthy(mod$V[i])) {
+        mod$V[i] <- mod$V[1] # ugly but necessary for running the measurement noise optimization only
+      }
       Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V[i]
       #cross covariance between a priori state estimate and predicted measurement
       Qxy <- tcrossprod(crossprod(t(t(sigmay) - a[i, ]), diag(w)), tmpy - f[i, ])
