@@ -120,6 +120,18 @@ pointer-events: none;
 color: gray !important;
 }'
 
+# Update fileInput file names from URL (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
+jscode_update_series <- "
+Shiny.addCustomMessageHandler('filename', function(txt) {
+  var target = $('#series').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
+jscode_update_series2 <- "
+Shiny.addCustomMessageHandler('filename2', function(txt) {
+  var target = $('#series2').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
+
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
@@ -182,7 +194,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     tactile = navigator.maxTouchPoints;
                                     Shiny.onInputChange("tactile", tactile);
                                 });
-                            ')
+                            '),
+                  
+                  # update fileInput file name from URL
+                  tags$script(HTML(jscode_update_series)),
+                  tags$script(HTML(jscode_update_series2))
                 ),
                 
                 sidebarLayout(position = "left", fluid = T,
@@ -5348,6 +5364,7 @@ server <- function(input,output,session) {
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F)
+                    session$sendCustomMessage("filename2", file$secondary$name)
                   } else {
                     removeNotification("parsing_url2")
                     showNotification(paste0("File ",file$secondary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5358,6 +5375,7 @@ server <- function(input,output,session) {
               if (!is.null(data)) {
                 obs(data)
                 values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+                session$sendCustomMessage("filename", file$primary$name)
               }
             } else {
               removeNotification("parsing_url1")
