@@ -6853,6 +6853,12 @@ server <- function(input,output,session) {
         } else if (input$tunits == 3) {
           extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S'))
         }
+        ref_pos <- grep("^XYZ Reference position",readLines(file, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+        if (length(ref_pos) > 0) {
+          updateTextInput(inputId = "station_x", value = unlist(strsplit(ref_pos, split = " +"))[5])
+          updateTextInput(inputId = "station_y", value = unlist(strsplit(ref_pos, split = " +"))[6])
+          updateTextInput(inputId = "station_z", value = unlist(strsplit(ref_pos, split = " +"))[7])
+        }
       }
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
@@ -6878,6 +6884,9 @@ server <- function(input,output,session) {
         }
         extracted$y3 <- tableAll[,12] - tableAll[1,12] + tableAll[,13] #Up
         extracted$sy3 <- tableAll[,17]
+        updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+        updateTextInput(inputId = "station_lat", value = tableAll[1,21])
+        updateTextInput(inputId = "station_lon", value = tableAll[1,22] + 360)
       }
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && epoch <= columns && !is.na(variable) && is.numeric(variable) && variable > 0 && variable <= columns && epoch != variable) {
