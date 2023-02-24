@@ -1875,7 +1875,7 @@ server <- function(input,output,session) {
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
-                         last_optionSecondary = NULL, format = NULL, intro = T)
+                         last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T)
   
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1908,7 +1908,7 @@ server <- function(input,output,session) {
   output_excluded <- reactiveValues(df = NULL)
   
   # 8. input parameters via URL
-  url <- reactiveValues(station = NULL, file = NULL)
+  url <- reactiveValues(station = NULL, file = NULL, station2 = NULL, file2 = NULL)
   
   # Constants ####
   # Some initial values and constants
@@ -2417,7 +2417,7 @@ server <- function(input,output,session) {
       trans$sye <- rep(1, length(trans$sye))
       trans$sy2 <- rep(1, length(trans$sy2))
     }
-    if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+    if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
       ids <- trans$x0[!is.na(trans$y2)] >= ranges$x1[1] & trans$x0[!is.na(trans$y2)] <= ranges$x1[2]
       if (sum(ids) > 0) {
         ranges$y12 <- range(trans$y2[ids], na.rm = T)
@@ -2676,7 +2676,7 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
-    if (length(isolate(file$secondary)) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+    if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
       if (input$symbol == 0) {
         symbol <- 'p'
       } else if (input$symbol == 1) {
@@ -4709,7 +4709,7 @@ server <- function(input,output,session) {
     if (!is.null(brush)) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
       ranges$y1 <- c(brush$ymin, brush$ymax)
-      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+      if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
         if (sum(ids) > 0) {
           ranges$y12 <- range(trans$y2[ids], na.rm = T)
@@ -4746,7 +4746,7 @@ server <- function(input,output,session) {
       ranges$x1 <- ranges$x4 <- ranges$x2
       ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
       ranges$y1 <- range(trans$y[ids])
-      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+      if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
         if (sum(ids) > 0) {
           ranges$y12 <- range(trans$y2[ids], na.rm = T)
@@ -4787,7 +4787,7 @@ server <- function(input,output,session) {
       ranges$x1 <- ranges$x2 <- ranges$x4
       ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
       ranges$y1 <- range(trans$y[ids])
-      if (length(file$secondary) > 1 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+      if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
         if (sum(ids) > 0) {
           ranges$y12 <- range(trans$y2[ids], na.rm = T)
@@ -5316,81 +5316,55 @@ server <- function(input,output,session) {
     if (!isTruthy(url$station)) {
       query <- parseQueryString(session$clientData$url_search)
       if (length(query) > 0) {
-        removeNotification("parsing_url")
+        removeNotification("parsing_url1")
+        removeNotification("parsing_url2")
         if (messages > 0) cat(file = stderr(), "Analizando URL", "\n")
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
-          url$station <- query[['station']]
-          #NGL
-          if (tolower(query[['server']]) == "ngl") {
-            info$format <- 3
-            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 3, inline = T)
-            if (tolower(query[['product']]) == "final") {
-              file$primary$name <- paste0(toupper(url$station),".tenv3")
-              url$file <- paste0("http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/",file$primary$name)
-            } else if (tolower(query[['product']]) == "rapid") {
-              file$primary$name <- paste0(toupper(url$station),".tenv3")
-              url$file <- paste0("http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/",file$primary$name)
+          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']]))
+          if (isTruthy(url_info)) {
+            url$station <- url_info[1]
+            url$file <- url_info[2]
+            file$primary$name <- url_info[3]
+            info$format <- url_info[4]
+            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
+            showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+            down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+            if (isTruthy(down)) {
+              if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
+                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]))
+                if (isTruthy(url_info)) {
+                  url$station2 <- url_info[1]
+                  url$file2 <- url_info[2]
+                  file$secondary$name <- url_info[3]
+                  info$format2 <- url_info[4]
+                  if ((info$format == 2 && info$format2 == 3) || (info$format == 3 && info$format2 == 2)) {
+                      updateCheckboxInput(session, inputId = "ne", value = T)
+                  }
+                  updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
+                  showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+                  down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+                  if (isTruthy(down)) {
+                    info$menu <- unique(c(info$menu, 3))
+                    updateCollapse(session, id = "menu", open = info$menu)
+                    updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F)
+                  } else {
+                    removeNotification("parsing_url2")
+                    showNotification(paste0("File ",file$secondary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                  }
+                }
+              }
+              data <- digest()
+              if (!is.null(data)) {
+                obs(data)
+                values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+              }
             } else {
-              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
+              removeNotification("parsing_url1")
+              showNotification(paste0("File ",file$primary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              url$station <- NULL
+              url$file <- NULL
             }
-          # RENAG
-          } else if (tolower(query[['server']]) == "renag") {
-            info$format <- 2
-            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
-            if (tolower(query[['product']]) == "uga") {
-              file$primary$name <- paste0(toupper(url$station),"_raw.pos_UGA_ITRF14.pos")
-              url$file <- paste0("ftp://webrenag.unice.fr/products/position-timeseries/",file$primary$name)
-            } else {
-              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
-            }
-          #UNAVCO
-          } else if (tolower(query[['server']]) == "unavco") {
-            info$format <- 2
-            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
-            if (tolower(query[['product']]) == "cwu") {
-              file$primary$name <- paste0(toupper(url$station),".",tolower(query[['product']]),".igs14.pos")
-              url$file <- paste0("https://data.unavco.org/archive/gnss/products/position/",url$station,"/",file$primary$name)
-            } else if (tolower(query[['product']]) == "nmt") {
-              file$primary$name <- paste0(toupper(url$station),".",tolower(query[['product']]),".igs14.pos")
-              url$file <- paste0("https://data.unavco.org/archive/gnss/products/position/",url$station,"/",file$primary$name)
-            } else if (tolower(query[['product']]) == "pbo") {
-              file$primary$name <- paste0(toupper(url$station),".",tolower(query[['product']]),".igs14.pos")
-              url$file <- paste0("https://data.unavco.org/archive/gnss/products/position/",url$station,"/",file$primary$name)
-            } else {
-              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
-            }
-          # EUREF
-          } else if (tolower(query[['server']]) == "euref") {
-            info$format <- 2
-            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 2, inline = T)
-            if (tolower(query[['product']]) == "pbo") {
-              file$primary$name <- paste0(toupper(url$station),".pos")
-              url$file <- paste0("https://epncb.eu/ftp/product/cumulative/C2220/pbo/",file$primary$name)
-            } else {
-              showNotification(paste0("Unknown product ",query[['product']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-              req(info$stop)
-            }
-          #
-          } else {
-            showNotification(paste0("Unknown server ",query[['server']],". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-            req(info$stop)
-          }
-          showNotification(paste0("Downloading the ",file$primary$name," file from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url", type = "warning", session = getDefaultReactiveDomain())
-          down <- download.file(url$file, destfile = file$primary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T)
-          if (down == 0) {
-            data <- digest()
-            if (!is.null(data)) {
-              obs(data)
-              values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-            }
-          } else {
-            showNotification(paste0("File ",file$primary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-            removeNotification("parsing_url")
-            req(info$stop)
           }
         } else {
           showNotification(paste0("At least one missing argument in the URL (station, server and product). No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5562,13 +5536,14 @@ server <- function(input,output,session) {
   }, priority = 8)
   
   # Observe series info ####
-  observeEvent(c(input$tab, input$format, input$tunits, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
+  observeEvent(c(input$tab, input$format, input$format2, input$tunits, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
       req(obs())
       info$tab <- input$tab
       info$format <- input$format
+      info$format2 <- input$format2
       if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
@@ -5707,7 +5682,19 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe secondary series ####
-  observeEvent(c(input$series2, input$separator2, input$format2, input$ne), {
+  observeEvent(c(input$format2), {
+    req(obs())
+    req(file$primary)
+    if (info$format2 != input$format2) {
+      if (input$optionSecondary > 0) {
+        if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
+        obs(NULL)
+        data <- digest()
+        obs(data)
+      }
+    }
+  }, priority = 6)
+  observeEvent(c(input$series2, input$separator2, input$ne), {
     req(obs())
     req(file$primary)
     if (input$optionSecondary > 0) {
@@ -5733,47 +5720,49 @@ server <- function(input,output,session) {
     }
     obs(NULL)
     data <- digest()
-    obs(data)
-    if (input$optionSecondary > 1) {
-      values$previous1 <- values$series1
-      values$previous2 <- values$series2
-      values$previous3 <- values$series3
-      values$previous_all <- values$series_all
-      trans$x_orig <- trans$x0[!is.na(trans$y0)]
-      if (isTruthy(input$remove3D)) {
-        values$series_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), by = "x", all = F)$s
-        values$series1 <- values$series2 <- values$series3 <- values$series_all
-      } else {
-        values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
-        values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
-        values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s  
+    if (!is.null(data)) {
+      obs(data)
+      if (input$optionSecondary > 1) {
+        values$previous1 <- values$series1
+        values$previous2 <- values$series2
+        values$previous3 <- values$series3
+        values$previous_all <- values$series_all
+        trans$x_orig <- trans$x0[!is.na(trans$y0)]
+        if (isTruthy(input$remove3D)) {
+          values$series_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), by = "x", all = F)$s
+          values$series1 <- values$series2 <- values$series3 <- values$series_all
+        } else {
+          values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
+          values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
+          values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s  
+        }
+      } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
+        if (isTruthy(input$remove3D)) {
+          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
+          values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+          values$series1 <- values$series2 <- values$series3 <- values$series_all
+        } else {
+          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
+          values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
+          values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
+          values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+        }
+        rm(tempo)
       }
-    } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-      if (isTruthy(input$remove3D)) {
-        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
-        values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-        values$series1 <- values$series2 <- values$series3 <- values$series_all
-      } else {
-        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
-        values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
-        values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-        tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
-        values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+        info$run <- F
+        trans$mod <- trans$mod0 <- NULL
+        trans$res <- trans$res0 <- NULL
+        trans$kalman <- trans$kalman0 <- NULL
+        trans$kalman_unc <- trans$kalman_unc0 <- NULL
       }
-      rm(tempo)
+      updateTextInput(session, "ObsError", value = "")
+      updateTextInput(session, "waveformPeriod", value = "")
+      updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+      info$last_optionSecondary <- input$optionSecondary
     }
-    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-      info$run <- F
-      trans$mod <- trans$mod0 <- NULL
-      trans$res <- trans$res0 <- NULL
-      trans$kalman <- trans$kalman0 <- NULL
-      trans$kalman_unc <- trans$kalman_unc0 <- NULL
-    }
-    updateTextInput(session, "ObsError", value = "")
-    updateTextInput(session, "waveformPeriod", value = "")
-    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
-    info$last_optionSecondary <- input$optionSecondary
   }, priority = 6)
   
   # Observe ids ####
@@ -6513,11 +6502,19 @@ server <- function(input,output,session) {
           file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
         }
       }
-      if (length(file$secondary) > 1 && input$optionSecondary > 0) {
-        columns2 <- get_columns(file$secondary$datapath, sep2, input$format2)
+      if (length(file$secondary) > 0 && input$optionSecondary > 0) {
+        if (isTruthy(url$station2)) {
+          columns2 <- get_columns(file$secondary$name, sep2, info$format2)
+        } else {
+          columns2 <- get_columns(file$secondary$datapath, sep2, info$format2)
+        }
         if (columns2 > 0) {
-          if (!isTruthy(inputs$ids)) {
-            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+          if (isTruthy(url$station2)) {
+            file$id2 <- url$station2
+          } else {
+            if (!isTruthy(inputs$ids)) {
+              file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+            }
           }
         } else {
           updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 0, inline = F)
@@ -6549,14 +6546,18 @@ server <- function(input,output,session) {
       } else {
         table <- extract_table(input$series$datapath,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
       }
-      if (length(file$secondary) > 1 && input$optionSecondary > 0 && columns2 > 0) {
-        if (info$format < 4 && info$format != input$format2) {
+      if (length(file$secondary) > 0 && input$optionSecondary > 0 && columns2 > 0) {
+        if (info$format < 4 && info$format != info$format2) {
           removeNotification(id = "formats", session = getDefaultReactiveDomain())
           showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
         }
-        table2 <- extract_table(input$series2$datapath,sep2,input$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+        if (isTruthy(url$file2)) {
+          table2 <- extract_table(file$secondary$name,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+        } else {
+          table2 <- extract_table(input$series2$datapath,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+        }
       }
-      if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
+      if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
         if (info$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x", all = T), {
             y1 <- y1.x 
@@ -6566,7 +6567,7 @@ server <- function(input,output,session) {
           })[,c("x","y1","sy1","z1","sz1")])
         } else {
           table <- data.frame(within(merge(table,table2,by = "x", all = T), {
-            if (input$format2 == 4) {
+            if (info$format2 == 4) {
               y1 <- y1.x 
               z1 <- y1.y
               y2 <- y2
@@ -6596,15 +6597,15 @@ server <- function(input,output,session) {
           })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
         }
         info$sampling2 <- min(diff(table2$x,1))
-      } else if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 2 && columns2 > 0) {
+      } else if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 2 && columns2 > 0) {
         if (info$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x"), {
             y1 <- y1.x - y1.y
             sy1 <- sqrt(sy1.x^2 + sy1.y^2)
           })[,c("x","y1","sy1")])
         } else {
-          table <- data.frame(within(merge(table,table2,by = "x"), {
-            if (input$format2 == 4) {
+          table <- data.frame(within(merge(table,table2,by = "x"), { 
+            if (info$format2 == 4) {
               y1 <- y1.x - y1.y
               y2 <- y2 - y1.y
               y3 <- y3 - y1.y
@@ -6622,7 +6623,7 @@ server <- function(input,output,session) {
           })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
         }
         showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-      } else if (length(file$secondary) > 1 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
+      } else if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
         if (info$format == 4) {
           table <- data.frame(within(merge(table,table2,by = "x"), {
             y1 <- (y1.x + y1.y) / 2
@@ -6630,7 +6631,7 @@ server <- function(input,output,session) {
           })[,c("x","y1","sy1")])
         } else {
           table <- data.frame(within(merge(table,table2,by = "x"), {
-            if (input$format2 == 4) {
+            if (info$format2 == 4) {
               y1 <- (y1.x + y1.y) / 2
               y2 <- (y2 + y1.y) / 2
               y3 <- (y3 + y1.y) / 2
@@ -8958,6 +8959,63 @@ server <- function(input,output,session) {
       out <- c(x_,y1_,y2_,y3_,sy1_,sy2_,sy3_)
     }
     return(out)
+  }
+  get_URL_info <- function(server,station,product) {
+    #NGL
+    if (tolower(server) == "ngl") {
+      format <- 3
+      if (tolower(product) == "final") {
+        name <- paste0(toupper(station),".tenv3")
+        file <- paste0("http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/",name)
+      } else if (tolower(product) == "rapid") {
+        name <- paste0(toupper(station),".tenv3")
+        file <- paste0("http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      # RENAG
+    } else if (tolower(server) == "renag") {
+      format <- 2
+      if (tolower(product) == "uga") {
+        name <- paste0(toupper(station),"_raw.pos_UGA_ITRF14.pos")
+        file <- paste0("ftp://webrenag.unice.fr/products/position-timeseries/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      #UNAVCO
+    } else if (tolower(server) == "unavco") {
+      format <- 2
+      if (tolower(product) == "cwu") {
+        name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+        file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
+      } else if (tolower(product) == "nmt") {
+        name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+        file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
+      } else if (tolower(product) == "pbo") {
+        name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+        file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      # EUREF
+    } else if (tolower(server) == "euref") {
+      format <- 2
+      if (tolower(product) == "pbo") {
+        name <- paste0(toupper(station),".pos")
+        file <- paste0("https://epncb.eu/ftp/product/cumulative/C2220/pbo/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      #
+    } else {
+      showNotification(paste0("Unknown server ",server,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+      return(NULL)
+    }
+    return(list(station,file,name,format))
   }
 }
 
