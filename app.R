@@ -3982,7 +3982,13 @@ server <- function(input,output,session) {
         max_scale <- get.max.scale(trans$x)
         num_scale <- as.integer(get.nscales(trans$x))
         res <- (max_scale - min_scale)/num_scale
-        loc <- info$rangex/500
+        if (info$points < 500) {
+          num_epochs <- info$points
+        } else {
+          num_epochs <- 500
+        }
+        num_epocs <- 
+        loc <- info$rangex/num_epochs
         if (loc < info$sampling) {
           loc <- info$sampling
         }
