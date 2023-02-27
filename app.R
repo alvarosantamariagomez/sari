@@ -38,6 +38,9 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
+devmode(TRUE)
+options(shiny.fullstacktrace = TRUE)
+
 # version ####
 version <- "SARI febrero 2023"
 
