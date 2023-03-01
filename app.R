@@ -38,7 +38,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 
 # version ####
@@ -5359,6 +5359,7 @@ server <- function(input,output,session) {
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
           url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']]))
+print(url_info)
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
@@ -9095,16 +9096,17 @@ server <- function(input,output,session) {
       } else if (tolower(product) == "merra") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA/",name)
       } else if (tolower(product) == "merra2atm") {
+        name <- paste0(toupper(station),"_NEU_ib.merra2")
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/",name)
       } else if (tolower(product) == "merra2hyd") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/",name)
-      } else if (tolower(product) != "grace") {
+      } else if (tolower(product) == "grace") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GRACE/",name)
-      } else if (tolower(product) != "ecco") {
+      } else if (tolower(product) == "ecco") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ECCO/",name)
-      } else if (tolower(product) != "ecco2") {
+      } else if (tolower(product) == "ecco2") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ECCO2/",name)
-      } else if (tolower(product) != "glorys") {
+      } else if (tolower(product) == "glorys") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLORYS/",name)
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
