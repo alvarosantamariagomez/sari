@@ -9099,6 +9099,7 @@ print(url_info)
         name <- paste0(toupper(station),"_NEU_ib.merra2")
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/",name)
       } else if (tolower(product) == "merra2hyd") {
+        name <- paste0(toupper(station),"_NEU.merra2")
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/",name)
       } else if (tolower(product) == "grace") {
         file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GRACE/",name)
