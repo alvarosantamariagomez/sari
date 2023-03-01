@@ -84,8 +84,8 @@ At this moment, the following servers and products are available via the URL:
 [NGL](http://geodesy.unr.edu/)    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FINAL, RAPID  
 [EUREF](https://epncb.eu/_organisation/about.php)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PBO  
 [UNAVCO](https://www.unavco.org/data/gps-gnss/gps-gnss.html) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CWU, NMT, PBO  
-[EOSTLS](http://loading.u-strasbg.fr/) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN, GLDAS, GLDAS2, GLORYS,  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   GRACE, MERRA, MERRA2ATM, MERRA2HYD  
+[EOSTLS](http://loading.u-strasbg.fr/) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD  
 
 For example, adding this query string  
 <span style="color: red;"> ?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI </span>  
