@@ -21,7 +21,7 @@ SARI can be run:
 - locally on your machine using a prebuilt Docker image available at https://hub.docker.com/r/alvarosg/sari  
 - locally on your machine after installing R, RStudio and all the R dependencies given in the [INSTALL](INSTALL) file. Once all this is set up, then just clone, open and run the [source code](app.R) in RStudio or simply execute `library(shiny)` and then `runGitHub("sari","alvarosantamariagomez",launch.browser=T)`  
 
-The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers via some parameters included in the URL. The latter option allows adding links on websites that open specific GNSS series with SARI, like for example [this one.](https://alvarosg.shinyapps.io/sari/?station=TLSE&server=NGL&product=RAW)  
+The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers via some parameters included in the URL. The latter option allows adding links on websites that open specific GNSS series with SARI, like for example [this one.](https://alvarosg.shinyapps.io/sari/?station=TLSE&server=NGL&product=FINAL)  
 
 The [about.pdf](/www/about.pdf) file contains detailed information on how to run SARI, including the description of all the implemented functionalities.  
 This file is also accessible from the main web interface of SARI by clicking the `Help` button or locally in the /www directory.  
