@@ -1,5 +1,26 @@
 # **SARI changelog**
 
+# marzo 2023 [2023.03]
+
+### Fixed
+
+- Bug with the initial wavelet epochs when the series has less than 500 points
+- Bug in the measurement noise optimization with the time variable error bars implemented in the UKF
+- Bug when plotting the error bars and loading primary and secondary series at the same time
+
+### Changed
+
+- Simplified managment of status of points in the series (used, removed, deleted)
+- Updating plots with new width after browser window changes
+
+### Added
+
+- Option to parse URL parameters to load primary and secondary GNSS series
+- Option to apply a scale factor to the secondary series
+- Option to swap N/E components of the secondary series
+- Automatic extraction of the station coordinates for the plate model from NGL and PBO files
+- Devmode and fullstacktrace options for debugging
+
 # febrero 2023 [2023.02]
 
 ### Fixed

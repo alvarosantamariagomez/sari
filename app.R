@@ -38,11 +38,11 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-devmode(TRUE)
+# devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 
 # version ####
-version <- "SARI febrero 2023"
+version <- "SARI marzo 2023"
 
 # Some GUI functions
 
@@ -548,7 +548,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                      helpPopup("Force the y-axis of the secondary series on the right to be the same as the y-axis of the primary series on the left")),
                                                                                                  value = F),
                                                                                    checkboxInput(inputId = "ne",
-                                                                                                 div(HTML("N &#8652; E"),
+                                                                                                 div(HTML("N @ E"),
                                                                                                      helpPopup("Swap the columns of the North and East components of the series")),
                                                                                                  value = F)
                                                                                )
