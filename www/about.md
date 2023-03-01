@@ -79,17 +79,46 @@ The user can upload GNSS series from local files in the standard *NEU/ENU* forma
 This feature allows webmasters of any GNSS series database (or any other type of series) to include a link on their webpages to open a specific GNSS series directly with SARI on a new browser tab.  
 At this moment, the following servers and products are available via the URL:  
 
-<b>Server</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Products</b>  
-[RENAG](http://renag.resif.fr/en/)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; UGA  
-[NGL](http://geodesy.unr.edu/)    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FINAL, RAPID  
-[EUREF](https://epncb.eu/_organisation/about.php)  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PBO  
-[UNAVCO](https://www.unavco.org/data/gps-gnss/gps-gnss.html) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CWU, NMT, PBO  
-[EOSTLS](http://loading.u-strasbg.fr/) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD  
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;">Server</th>
+   <th style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</th>
+   <th style="text-align:left;">Product</th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"><a href="http://renag.resif.fr/en/" target="_blank">RENAG</a></td>
+   <th style="text-align:right;"></th>
+   <td style="text-align:left;">UGA</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="http://geodesy.unr.edu/" target="_blank">NGL</a></td>
+   <th style="text-align:right;"></th>
+   <td style="text-align:left;">FINAL, RAPID</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="https://epncb.eu/_organisation/about.php" target="_blank">EUREF</a></td>
+   <th style="text-align:right;"></th>
+   <td style="text-align:left;">PBO</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="https://www.unavco.org/data/gps-gnss/gps-gnss.html" target="_blank">UNAVCO</a></td>
+   <th style="text-align:right;"></th>
+   <td style="text-align:left;">CWU, NMT, PBO</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a> (loading)</td>
+   <th style="text-align:right;"></th>
+   <td style="text-align:left;">ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN, GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD</td>
+  </tr>
+</tbody>
+</table></br> 
 
 For example, adding this query string  
 <span style="color: red;"> ?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI </span>  
-at the end of the SARI base URL (both local on RStudio or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *UGA* GNSS position series of the station *PIMI* from the *RENAG* server, and also the *NGL* *FINAL* series of the same station as secondary series (see example below and the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
+at the end of the SARI base URL (both local on RStudio or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *UGA* GNSS position series of the station *PIMI* from the *RENAG* server, and also the *NGL* *FINAL* series of the same station as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 The *EOSTLS* series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
 Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
