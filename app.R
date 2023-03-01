@@ -530,11 +530,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       condition = "output.series2",
                                                                       fluidRow(
                                                                         column(8,
-                                                                               radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T),
-                                                                               radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto")
+                                                                               # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T),
+                                                                               radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                               textInput(inputId = "scaleFactor", 
+                                                                                         div("Scale factor",
+                                                                                             helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")), 
+                                                                                         value = "")
                                                                         ),
                                                                         column(4,
-                                                                               div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                               div(style = "padding: 0px 0px; margin-top:1em",
                                                                                    checkboxInput(inputId = "sameScale",
                                                                                                  div("Same scale",
                                                                                                      helpPopup("Force the y-axis of the secondary series on the right to have the same scale as the y-axis of the primary series on the left")),
@@ -1908,7 +1912,7 @@ server <- function(input,output,session) {
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL, 
                            periodRef = NULL, offsetEpoch = NULL, ExponenRef = NULL, E0 = NULL, TE0 = NULL, 
                            LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = NULL, 
-                           long_period = NULL, short_period = NULL, low = NULL, high = NULL)
+                           long_period = NULL, short_period = NULL, low = NULL, high = NULL, scaleFactor = NULL)
   obs <- reactiveVal()
   
   # 6. computed values
@@ -2320,6 +2324,10 @@ server <- function(input,output,session) {
     inputs$pole_rot <- suppressWarnings(as.numeric(trimws(input$pole_rot, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
   
+  reactive({
+    inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(input$scaleFactor, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(2000, priority = 1001)
+  
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
@@ -2429,6 +2437,10 @@ server <- function(input,output,session) {
       } else {
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
+    }
+    if (isTruthy(inputs$scaleFactor)) {
+      trans$y2 <- trans$y2 * inputs$scaleFactor
+      trans$sy2 <- trans$sy2 * inputs$scaleFactor
     }
     if (!isTruthy(input$sigmas)) {
       trans$sy <- rep(1, length(trans$sy))
@@ -6783,15 +6795,17 @@ server <- function(input,output,session) {
       columns <- columns[1]
       if (isTruthy(columns)) {
         if (format == 1) { #NEU/ENU
-          if (isTruthy(input$sigmas)) {
-            if (columns < 7) {
-              showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-              return(0)
-            }
-          } else {
-            if (columns < 4) {
-              showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-              return(0)
+          if (!isTruthy(url$station)) {
+            if (isTruthy(input$sigmas)) {
+              if (columns < 7) {
+                showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
+                return(0)
+              }
+            } else {
+              if (columns < 4) {
+                showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
+                return(0)
+              }
             }
           }
         } else if (format == 2) { #PBO
@@ -9053,6 +9067,51 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
+      # EOST Loading Service
+    } else if (tolower(server) == "eostls") {
+      format <- 1
+      name <- paste0(toupper(station),"_NEU.",tolower(product))
+      if (tolower(product) == "atmib") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ATMIB/",name)
+      } else if (tolower(product) == "atmmo") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ATMMO/",name)
+      } else if (tolower(product) == "erain") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERAin/",name)
+      } else if (tolower(product) == "erahyd") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERAhyd/",name)
+      } else if (tolower(product) == "era5ib") {
+        name <- paste0(toupper(station),"_NEU.era5")
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERA5_IB/",name)
+      } else if (tolower(product) == "era5hyd") {
+        name <- paste0(toupper(station),"_NEU.era5")
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERA5_hydro/",name)
+      } else if (tolower(product) == "era5tugo") {
+        name <- paste0(toupper(station),"_NEU.era5")
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERA5_TUGO/",name)
+      } else if (tolower(product) == "gldas") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLDAS/",name)
+      } else if (tolower(product) == "gldas2") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLDAS2/",name)
+      } else if (tolower(product) == "merra") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA/",name)
+      } else if (tolower(product) == "merra2atm") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/",name)
+      } else if (tolower(product) == "merra2hyd") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/",name)
+      } else if (tolower(product) != "grace") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GRACE/",name)
+      } else if (tolower(product) != "ecco") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ECCO/",name)
+      } else if (tolower(product) != "ecco2") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ECCO2/",name)
+      } else if (tolower(product) != "glorys") {
+        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLORYS/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
+      updateTextInput(session, inputId = "scaleFactor", value = "0.001")
       #
     } else {
       showNotification(paste0("Unknown server ",server,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
