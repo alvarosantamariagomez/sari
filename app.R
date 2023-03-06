@@ -1872,9 +1872,9 @@ server <- function(input,output,session) {
   cat(file = stderr(), "\n", "\n", "START", "\n")
   
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
-  observeEvent(input$browser,{
-    browser()
-  })
+  # observeEvent(input$browser,{
+  #   browser()
+  # })
 
   # Initialize reactive variables of the global database
   
@@ -5355,20 +5355,38 @@ server <- function(input,output,session) {
       if (length(query) > 0) {
         removeNotification("parsing_url1")
         removeNotification("parsing_url2")
+        removeNotification("no_local")
         if (messages > 0) cat(file = stderr(), "Analizando URL", "\n")
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
+          if (!isTruthy(local) && tolower(query[['server']]) == "local") {
+            showNotification(paste0("Local server is not available on remote connections."), action = NULL, duration = 10, closeButton = T, id = "no_local", type = "warning", session = getDefaultReactiveDomain())
+            url$station <- NULL
+            url$file <- NULL
+            req(info$stop)
+          }
           url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']]))
-print(url_info)
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
             file$primary$name <- url_info[3]
             info$format <- url_info[4]
             updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
-            showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-            down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
-            if (isTruthy(down)) {
+            if (tolower(query[['server']]) == "local") {
+              if (!isTruthy(file.exists(url$file))) {
+                showNotification(paste0("Local file ",url$file," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                url$station <- NULL
+                url$file <- NULL
+                req(info$stop)
+              }
+              showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+              down <- 0
+              file$primary$name <- url$file
+            } else {
+              showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+              down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+            }
+            if (isTruthy(down) && down == 0) {
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
                 url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]))
                 if (isTruthy(url_info)) {
@@ -5377,19 +5395,19 @@ print(url_info)
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
                   if ((info$format == 2 && info$format2 == 3) || (info$format == 3 && info$format2 == 2)) {
-                      updateCheckboxInput(session, inputId = "ne", value = T)
+                    updateCheckboxInput(session, inputId = "ne", value = T)
                   }
                   updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
                   showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                   down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
-                  if (isTruthy(down)) {
+                  if (isTruthy(down) && down == 0) {
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F)
                     session$sendCustomMessage("filename2", file$secondary$name)
                   } else {
                     removeNotification("parsing_url2")
-                    showNotification(paste0("File ",file$secondary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                    showNotification(paste0("File ",file$secondary$name," not found in ",toupper(query[['server2']]),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                   }
                 }
               }
@@ -5401,7 +5419,7 @@ print(url_info)
               }
             } else {
               removeNotification("parsing_url1")
-              showNotification(paste0("File ",file$primary$name," not found. No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              showNotification(paste0("File ",file$primary$name," not found in ",toupper(query[['server']]),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
               url$station <- NULL
               url$file <- NULL
             }
@@ -9115,6 +9133,23 @@ print(url_info)
       }
       updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
       updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+      # LOCAL
+    } else if (tolower(server) == "local") {
+      if (tolower(product) == "neu") {
+        format <- 1
+      } else if (tolower(product) == "pbo") {
+        format <- 2
+      } else if (tolower(product) == "ngl") {
+        format <- 3
+      } else if (tolower(product) == "1d") {
+        format <- 4
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      name <- basename(station)
+      file <- station
+      station <- strsplit(name, "\\.|_|\\s|-|\\(")[[1]][1]
       #
     } else {
       showNotification(paste0("Unknown server ",server,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
