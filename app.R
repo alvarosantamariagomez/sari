@@ -2811,42 +2811,47 @@ server <- function(input,output,session) {
       }
       if (messages > 0) cat(file = stderr(), "Computing MIDAS", "\n")
       if (length(trans$x) > 6) {
-        vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0))
-        vel <- c(vel[1,],vel[2,])
-        vel <- vel[vel > -999999]
-        if (length(vel) > 9) {
-          vel_sig <- 1.4826*mad(vel, na.rm = T)
-          vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
-          vel_good <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
-          vel_mad <- mad(vel_good, na.rm = T)
-          trans$midas_vel <- median(vel_good)
-          trans$midas_sig <- 1.2533*1.4826*vel_mad/sqrt(length(vel_good)/4)
-          trans$midas_all <- vel_good
-        } else {
-          showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
-          updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
-        }
-        if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
-          vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1))
-          vel <- c(vel[1,],vel[2,])
-          vel <- vel[vel > -999999]
-          if (length(vel) > 9) {
-            vel_sig <- 1.4826*mad(vel, na.rm = T)
-            vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
-            vel_good <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
-            vel_mad <- mad(vel_good, na.rm = T)
-            trans$midas_vel2 <- median(vel_good)
-            trans$midas_sig2 <- 1.2533*1.4826*vel_mad/sqrt(length(vel_good)/4)
-            trans$midas_all <- vel_good
-          } else {
-            showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
-            updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
-          }
-        }
+        withProgress(message = 'Computing MIDAS trend',
+                     detail = 'This may take a while ...', value = 0, {
+                       setProgress(0)
+                       vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0))
+                       vel <- c(vel[1,],vel[2,])
+                       vel <- vel[vel > -999999]
+                       if (length(vel) > 9) {
+                         vel_sig <- 1.4826*mad(vel, na.rm = T)
+                         vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
+                         vel_good <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                         vel_mad <- mad(vel_good, na.rm = T)
+                         trans$midas_vel <- median(vel_good)
+                         trans$midas_sig <- 1.2533*1.4826*vel_mad/sqrt(length(vel_good)/4)
+                         trans$midas_all <- vel_good
+                       } else {
+                         showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
+                         updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
+                       }
+                       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
+                         setProgress(0)
+                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1))
+                         vel <- c(vel[1,],vel[2,])
+                         vel <- vel[vel > -999999]
+                         if (length(vel) > 9) {
+                           vel_sig <- 1.4826*mad(vel, na.rm = T)
+                           vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
+                           vel_good <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                           vel_mad <- mad(vel_good, na.rm = T)
+                           trans$midas_vel2 <- median(vel_good)
+                           trans$midas_sig2 <- 1.2533*1.4826*vel_mad/sqrt(length(vel_good)/4)
+                           trans$midas_all <- vel_good
+                         } else {
+                           showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
+                           updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
+                         }
+                       }
+                     })
       } else {
         showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
         updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
-      } 
+      }
     } else {
       trans$midas_vel <- NULL
     }
@@ -2875,7 +2880,7 @@ server <- function(input,output,session) {
       withBusyIndicatorServer("runVerif", {
         if (isTruthy(inputs$verif_white)) {
           C <- C + (inputs$verif_white*scaling)^2*diag(n)
-        } 
+        }
         if (isTruthy(inputs$verif_pl) && isTruthy(inputs$verif_k) && inputs$verif_k < 0) {
           if (inputs$verif_k == -1) {
             Delta <- sapply(1:n, function(i) if (i < 150) {gamma(i - 1 + 0.5)/(factorial(i - 1)*gamma(0.5))} else {((i - 1)^-0.5)/gamma(0.5)})
@@ -3125,6 +3130,8 @@ server <- function(input,output,session) {
       trans$mle <- F
       trans$verif <- NULL
       withBusyIndicatorServer("runKF", {
+        withProgress(message = 'Running Kalman Filter',
+                     detail = 'This may take a while ...', value = 0, {
         x <- trans$x
         y <- trans$y
         if (isTruthy(input$correct_waveform)) {
@@ -3374,6 +3381,7 @@ server <- function(input,output,session) {
             }
           }, width = reactive(info$width), type = "cairo-png")
         }
+      })
       })
     }
   })
@@ -4042,7 +4050,14 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "Computing wavelet", "\n")
       start.time <- Sys.time()
       suppressWarnings({
-        trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
+        withProgress(message = 'Computing wavelet transform',
+                     detail = 'This may take a while ...', value = 0.1, {
+                       trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
+                       setProgress(0.7) # just for progress bar lovers
+                       Sys.sleep(1)
+                       setProgress(1)
+                       Sys.sleep(1)
+                     })
       })
       end.time <- Sys.time()
       time.taken <- difftime(end.time, start.time, units = "secs")
@@ -4265,7 +4280,7 @@ server <- function(input,output,session) {
         }
         variances[component] <- mean(c(top[component],bottom[component]))
         Cwh <- diag(n)
-      } 
+      }
       if (input$flicker) {
         component <- component + 1
         if (nchar(inputs$max_fl) > 0 && !is.na(as.numeric(inputs$max_fl)) && as.numeric(inputs$max_fl) > 0 ) {
@@ -4358,6 +4373,7 @@ server <- function(input,output,session) {
         }
       }
       loglik <- function(x) {
+        incProgress(0.007) # off the top of my head
         h <- 0
         C <- matrix(0,n,n)
         if (input$white) {
@@ -4399,223 +4415,226 @@ server <- function(input,output,session) {
       start.time <- Sys.time()
       if (component > 0) {
         if (messages > 2) print(paste0("Inicio optimizacion ",Sys.time()))
-        withBusyIndicatorServer("runmle", {
-          modmle <- optim(par = log(variances),
-                          fn = loglik,
-                          lower = log(bottom),
-                          upper = log(top),
-                          method = "L-BFGS-B",
-                          hessian = T,
-                          control = c(fnscale = -1, factr = 1e11)
-          )
-          if (messages > 2) print(paste0("Fin optimizacion ",Sys.time()))
-          end.time <- Sys.time()
-          time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
-          if (modmle$convergence == 0) {
-            trans$mle <- 1
-            sd_noises <- sqrt(diag(solve(-modmle$hessian)))
-            zeroes <- NULL
-            i <- 0
-            sigmaFL <- NULL
-            sigmaPL <- NULL
-            sigmaRW <- NULL
-            sigmaK <- NULL
-            if (input$white) {
-              i <- i + 1
-              if (i %in% zeroes) {
-                sigmaWH <- NA
-                seParmsWH <- NA
-              } else {
-                sigmaWH <- exp(modmle$par[i])/scaling
-                seParmsWH <- sd_noises[i]*sd(series)
-              }
-              trans$noise[1] <- sigmaWH
-              trans$noise[2] <- seParmsWH
-              output$est.white <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- "White noise:"
-                  line2 <- sprintf("%f",sigmaWH)
-                  line3 <- sprintf("+/- %f",seParmsWH)
-                  HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                } else {
-                  NULL
-                }
-              })
-            } else {
-              trans$noise[1] <- NA
-              trans$noise[2] <- NA
-            }
-            if (input$flicker) {
-              i <- i + 1
-              if (i %in% zeroes) {
-                sigmaFL <- NA
-                seParmsFL <- NA
-              } else {
-                sigmaFL <- exp(modmle$par[i])/scaling
-                seParmsFL <- sd_noises[i]*sd(series)
-              }
-              trans$noise[3] <- sigmaFL
-              trans$noise[4] <- seParmsFL
-              output$est.flicker <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- "Flicker noise:"
-                  line2 <- sprintf("%f",sigmaFL)
-                  line3 <- sprintf("+/- %f",seParmsFL)
-                  HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                } else {
-                  NULL
-                }
-              })
-            } else {
-              trans$noise[3] <- NA
-              trans$noise[4] <- NA
-            }
-            if (input$randomw) {
-              i <- i + 1
-              if (i %in% zeroes) {
-                sigmaRW <- NA
-                seParmsRW <- NA
-              } else {
-                sigmaRW <- exp(modmle$par[i])/scaling
-                seParmsRW <- sd_noises[i]*sd(series)
-              }
-              trans$noise[5] <- sigmaRW
-              trans$noise[6] <- seParmsRW
-              output$est.randomw <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- "Random walk:"
-                  line2 <- sprintf("%f",sigmaRW)
-                  line3 <- sprintf("+/- %f",seParmsRW)
-                  HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                } else {
-                  NULL
-                }
-              })
-            } else {
-              trans$noise[5] <- NA
-              trans$noise[6] <- NA
-            }
-            if (input$powerl) {
-              i <- i + 1
-              if (i %in% zeroes) {
-                sigmaPL <- NA
-                seParmsPL <- NA
-              } else {
-                sigmaPL <- exp(modmle$par[i])/scaling
-                seParmsPL <- sd_noises[i]*sd(series)
-              }
-              trans$noise[7] <- sigmaPL
-              trans$noise[8] <- seParmsPL
-              output$est.powerl <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- "Power-law:"
-                  line2 <- sprintf("%f",sigmaPL)
-                  line3 <- sprintf("+/- %f",seParmsPL)
-                  HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                } else {
-                  NULL
-                }
-              })
-              i <- i + 1
-              if (i %in% zeroes) {
-                sigmaK <- NA
-                seParmsK <- NA
-              } else {
-                sigmaK <- 1 - exp(modmle$par[i])
-                seParmsK <- sd_noises[i]
-              }
-              trans$noise[9] <- sigmaK
-              trans$noise[10] <- seParmsK
-              output$est.index <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- "Spectral index:"
-                  line2 <- sprintf("%f",sigmaK)
-                  line3 <- sprintf("+/- %f",seParmsK)
-                  HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                } else {
-                  NULL
-                }
-              })
-            } else {
-              trans$noise[7] <- NA
-              trans$noise[8] <- NA
-              trans$noise[9] <- NA
-              trans$noise[10] <- NA
-            }
-            if (input$white || input$flicker || input$randomw || input$powerl) {
-              if (length(modmle$value) > 0) {
-                trans$noise[11] <- modmle$value
-              } else {
-                trans$noise[11] <- NA
-              }
-              output$est.mle <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- sprintf("<br/>log-Likelihood = %.4f",modmle$value)
-                  HTML(line1)
-                } else {
-                  NULL
-                }
-              })
-            }
-            output$est.unc <- renderUI({
-              if ("Linear" %in% input$model && input$fitType == 1) { 
-                if (isTruthy(trans$mle)) {
-                  if (isTruthy(sigmaFL)) {
-                    noise_amp <- sigmaFL
-                    index <- -1
-                  } else if (isTruthy(sigmaRW)) {
-                    noise_amp <- sigmaRW
-                    index <- -2
-                  } else if (isTruthy(sigmaPL)) {
-                    noise_amp <- sigmaPL
-                    index <- sigmaK
-                  } else {
-                    noise_amp <- 0
-                    index <- 0
-                  }
-                  noise_amp <- noise_amp * scaling
-                  v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
-                  beta <- (-1*index)/2 - 2
-                  if (index < -1.3) {
-                    gamma <- -3 - index
-                  } else {
-                    gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
-                  }
-                  unc <- sqrt( noise_amp^2 * v * info$sampling^beta * info$points^gamma ) / scaling
-                  unc_white <- sqrt( 12 * sd(trans$res)^2 * (info$points - 1) / (info$points * info$rangex^2 * (info$points + 1)) )
-                  if (isTruthy(trans$unc)) {
-                    if (isTruthy(unc) && unc > 0) {
-                      trans$LScoefs[2,2] <- sqrt(unc^2 + trans$unc^2)
-                      trans$results$coefficients[2,2] <- sqrt(unc^2 + trans$unc^2)
-                    } else {
-                      unc <- trans$unc
-                      trans$LScoefs[2,2] <- trans$unc
-                    }
-                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f",unc/unc_white)
-                    HTML(line1) 
-                  } else {
-                    NULL
-                  }
-                } else {
-                  if (isTruthy(trans$unc)) {
-                    if (isTruthy(trans$LScoefs[2,2])) {
-                      trans$LScoefs[2,2] <- trans$unc
-                    }
-                    if (isTruthy(trans$results$coefficients[2,2])) {
-                      trans$results$coefficients[2,2] <- trans$unc
-                    }
-                  }
-                  NULL
-                }
-              }
-            })
-          } else {
-            trans$mle <- NULL
-            showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
-          }
-          if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
-        })
+        withProgress(message = 'Fitting noise model',
+                     detail = 'This may take a while ...', value = 0, {
+                       withBusyIndicatorServer("runmle", {
+                         modmle <- optim(par = log(variances),
+                                         fn = loglik,
+                                         lower = log(bottom),
+                                         upper = log(top),
+                                         method = "L-BFGS-B",
+                                         hessian = T,
+                                         control = c(fnscale = -1, factr = 1e11)
+                         )
+                         if (messages > 2) print(paste0("Fin optimizacion ",Sys.time()))
+                         end.time <- Sys.time()
+                         time.taken <- end.time - start.time
+                         if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+                         if (modmle$convergence == 0) {
+                           trans$mle <- 1
+                           sd_noises <- sqrt(diag(solve(-modmle$hessian)))
+                           zeroes <- NULL
+                           i <- 0
+                           sigmaFL <- NULL
+                           sigmaPL <- NULL
+                           sigmaRW <- NULL
+                           sigmaK <- NULL
+                           if (input$white) {
+                             i <- i + 1
+                             if (i %in% zeroes) {
+                               sigmaWH <- NA
+                               seParmsWH <- NA
+                             } else {
+                               sigmaWH <- exp(modmle$par[i])/scaling
+                               seParmsWH <- sd_noises[i]*sd(series)
+                             }
+                             trans$noise[1] <- sigmaWH
+                             trans$noise[2] <- seParmsWH
+                             output$est.white <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- "White noise:"
+                                 line2 <- sprintf("%f",sigmaWH)
+                                 line3 <- sprintf("+/- %f",seParmsWH)
+                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+                               } else {
+                                 NULL
+                               }
+                             })
+                           } else {
+                             trans$noise[1] <- NA
+                             trans$noise[2] <- NA
+                           }
+                           if (input$flicker) {
+                             i <- i + 1
+                             if (i %in% zeroes) {
+                               sigmaFL <- NA
+                               seParmsFL <- NA
+                             } else {
+                               sigmaFL <- exp(modmle$par[i])/scaling
+                               seParmsFL <- sd_noises[i]*sd(series)
+                             }
+                             trans$noise[3] <- sigmaFL
+                             trans$noise[4] <- seParmsFL
+                             output$est.flicker <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- "Flicker noise:"
+                                 line2 <- sprintf("%f",sigmaFL)
+                                 line3 <- sprintf("+/- %f",seParmsFL)
+                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+                               } else {
+                                 NULL
+                               }
+                             })
+                           } else {
+                             trans$noise[3] <- NA
+                             trans$noise[4] <- NA
+                           }
+                           if (input$randomw) {
+                             i <- i + 1
+                             if (i %in% zeroes) {
+                               sigmaRW <- NA
+                               seParmsRW <- NA
+                             } else {
+                               sigmaRW <- exp(modmle$par[i])/scaling
+                               seParmsRW <- sd_noises[i]*sd(series)
+                             }
+                             trans$noise[5] <- sigmaRW
+                             trans$noise[6] <- seParmsRW
+                             output$est.randomw <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- "Random walk:"
+                                 line2 <- sprintf("%f",sigmaRW)
+                                 line3 <- sprintf("+/- %f",seParmsRW)
+                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+                               } else {
+                                 NULL
+                               }
+                             })
+                           } else {
+                             trans$noise[5] <- NA
+                             trans$noise[6] <- NA
+                           }
+                           if (input$powerl) {
+                             i <- i + 1
+                             if (i %in% zeroes) {
+                               sigmaPL <- NA
+                               seParmsPL <- NA
+                             } else {
+                               sigmaPL <- exp(modmle$par[i])/scaling
+                               seParmsPL <- sd_noises[i]*sd(series)
+                             }
+                             trans$noise[7] <- sigmaPL
+                             trans$noise[8] <- seParmsPL
+                             output$est.powerl <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- "Power-law:"
+                                 line2 <- sprintf("%f",sigmaPL)
+                                 line3 <- sprintf("+/- %f",seParmsPL)
+                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+                               } else {
+                                 NULL
+                               }
+                             })
+                             i <- i + 1
+                             if (i %in% zeroes) {
+                               sigmaK <- NA
+                               seParmsK <- NA
+                             } else {
+                               sigmaK <- 1 - exp(modmle$par[i])
+                               seParmsK <- sd_noises[i]
+                             }
+                             trans$noise[9] <- sigmaK
+                             trans$noise[10] <- seParmsK
+                             output$est.index <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- "Spectral index:"
+                                 line2 <- sprintf("%f",sigmaK)
+                                 line3 <- sprintf("+/- %f",seParmsK)
+                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+                               } else {
+                                 NULL
+                               }
+                             })
+                           } else {
+                             trans$noise[7] <- NA
+                             trans$noise[8] <- NA
+                             trans$noise[9] <- NA
+                             trans$noise[10] <- NA
+                           }
+                           if (input$white || input$flicker || input$randomw || input$powerl) {
+                             if (length(modmle$value) > 0) {
+                               trans$noise[11] <- modmle$value
+                             } else {
+                               trans$noise[11] <- NA
+                             }
+                             output$est.mle <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- sprintf("<br/>log-Likelihood = %.4f",modmle$value)
+                                 HTML(line1)
+                               } else {
+                                 NULL
+                               }
+                             })
+                           }
+                           output$est.unc <- renderUI({
+                             if ("Linear" %in% input$model && input$fitType == 1) {
+                               if (isTruthy(trans$mle)) {
+                                 if (isTruthy(sigmaFL)) {
+                                   noise_amp <- sigmaFL
+                                   index <- -1
+                                 } else if (isTruthy(sigmaRW)) {
+                                   noise_amp <- sigmaRW
+                                   index <- -2
+                                 } else if (isTruthy(sigmaPL)) {
+                                   noise_amp <- sigmaPL
+                                   index <- sigmaK
+                                 } else {
+                                   noise_amp <- 0
+                                   index <- 0
+                                 }
+                                 noise_amp <- noise_amp * scaling
+                                 v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
+                                 beta <- (-1*index)/2 - 2
+                                 if (index < -1.3) {
+                                   gamma <- -3 - index
+                                 } else {
+                                   gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
+                                 }
+                                 unc <- sqrt( noise_amp^2 * v * info$sampling^beta * info$points^gamma ) / scaling
+                                 unc_white <- sqrt( 12 * sd(trans$res)^2 * (info$points - 1) / (info$points * info$rangex^2 * (info$points + 1)) )
+                                 if (isTruthy(trans$unc)) {
+                                   if (isTruthy(unc) && unc > 0) {
+                                     trans$LScoefs[2,2] <- sqrt(unc^2 + trans$unc^2)
+                                     trans$results$coefficients[2,2] <- sqrt(unc^2 + trans$unc^2)
+                                   } else {
+                                     unc <- trans$unc
+                                     trans$LScoefs[2,2] <- trans$unc
+                                   }
+                                   line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f",unc/unc_white)
+                                   HTML(line1)
+                                 } else {
+                                   NULL
+                                 }
+                               } else {
+                                 if (isTruthy(trans$unc)) {
+                                   if (isTruthy(trans$LScoefs[2,2])) {
+                                     trans$LScoefs[2,2] <- trans$unc
+                                   }
+                                   if (isTruthy(trans$results$coefficients[2,2])) {
+                                     trans$results$coefficients[2,2] <- trans$unc
+                                   }
+                                 }
+                                 NULL
+                               }
+                             }
+                           })
+                         } else {
+                           trans$mle <- NULL
+                           showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+                         }
+                         if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
+                       })
+                     })
       }
     }
   })
@@ -4654,7 +4673,14 @@ server <- function(input,output,session) {
         extended_series <- ts(c(rnorm(extension,center_ini,disp_ini),trans$res, rnorm(extension,center_end,disp_end)))
         extended_series <- cbind(extended_series, lag(extended_series, k = -lag))
         colnames(extended_series) <- c("y", "ylag1")
-        breaks <- breakpoints(y ~ ylag1, data = extended_series, h = segment)
+        withProgress(message = 'Searching discontinuities',
+                     detail = 'This may take a while ...', value = 0.1, {
+                       breaks <- breakpoints(y ~ ylag1, data = extended_series, h = segment)
+                       setProgress(0.7) # just for progress bar lovers
+                       Sys.sleep(1)
+                       setProgress(1)
+                       Sys.sleep(1)
+                     })
         output$offsetFound <- renderUI({
           if (isTruthy(breaks$breakpoints)) {
             line <- paste(0.5*info$sampling + trans$x[(breaks$breakpoints + 1 - extension)[which((breaks$breakpoints + 1 - extension) > 0 & (breaks$breakpoints + 1 - extension) < length(trans$x))]],collapse = ", ")
@@ -6096,7 +6122,7 @@ server <- function(input,output,session) {
               }
             }
           }
-        } 
+        }
       } else {
         showNotification("No point was selected to be removed manually. Check the selected area.", action = NULL, duration = 10, closeButton = T, id = "no_point_manual", type = "warning", session = getDefaultReactiveDomain())
       }
@@ -6261,7 +6287,7 @@ server <- function(input,output,session) {
         id2 <- NULL
       } else {
         id2 <- file$id2
-      } 
+      }
     } else {
       id2 <- NULL
     }
@@ -6295,7 +6321,7 @@ server <- function(input,output,session) {
         id2 <- NULL
       } else {
         id2 <- file$id2
-      } 
+      }
     } else {
       id2 <- NULL
     }
@@ -6523,7 +6549,6 @@ server <- function(input,output,session) {
     removeNotification("removing_NA")
     removeNotification("removing_NA_secondary")
     removeNotification("bad_window")
-    removeNotification("averaging")
     removeNotification("bad_x")
     removeNotification("bad_series")
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
@@ -6727,7 +6752,6 @@ server <- function(input,output,session) {
             showNotification("The re-sampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
           } else if (isTruthy(inputs$step)) {
             if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
-              showNotification("Averaging the series. This may take a while ...", action = NULL, duration = NULL, closeButton = F, id = "averaging", type = "warning", session = getDefaultReactiveDomain())
               tolerance <- min(diff(table$x,1))/3
               if (!isTruthy(info$step)) {
                 values$previous1 <- values$series1
@@ -6736,15 +6760,18 @@ server <- function(input,output,session) {
                 values$previous_all <- values$series_all
               }
               info$step <- inputs$step
-              if (info$format == 4) {
-                averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance ), simplify = T)
-                removeNotification(id = "averaging", session = getDefaultReactiveDomain())
-                table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
-              } else {
-                averaged <- sapply(1:as.integer((max(table$x) - min(table$x))/inputs$step), function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance ), simplify = T)
-                removeNotification(id = "averaging", session = getDefaultReactiveDomain())
-                table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])  
-              }
+              withProgress(message = 'Averaging the series',
+                           detail = 'This may take a while ...', value = 0, {
+                             if (info$format == 4) {
+                               w <- as.integer((max(table$x) - min(table$x))/inputs$step)
+                               averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w), simplify = T)
+                               table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
+                             } else {
+                               w <- as.integer((max(table$x) - min(table$x))/inputs$step)
+                               averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance, w = w), simplify = T)
+                               table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                             }
+                           })
               table <- na.omit(table)
             } else {
               info$step <- NULL
@@ -6849,7 +6876,7 @@ server <- function(input,output,session) {
               return(0)
             }
           }
-        } 
+        }
       }
     } else {
       showNotification("Impossible to read the columns from the input file. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
@@ -7576,7 +7603,7 @@ server <- function(input,output,session) {
               info$run <- F
               req(info$stop)
             }
-          } 
+          }
         } else {
           trans$offsetEpochs <- NULL
         }
@@ -8173,73 +8200,77 @@ server <- function(input,output,session) {
   periodogram <- function(serie) {
     req(trans$fs)
     if (messages > 0) cat(file = stderr(), "Computing periodogram ", serie, "\n")
-    if (input$spectrumOriginal && any("all" %in% serie || "original" %in% serie)) {
-      trans$title[2] <- "original (black), "
-      lombscargle <- spec.lomb(y = trans$y, x = trans$x - trans$x[1], f = trans$fs, w = trans$sy, mode = "normal")
-      trans$fs <- lombscargle$f
-      trans$spectra <- 1/lombscargle$f
-      trans$amp[,1] <- lombscargle$A
-      trans$psd[,1] <- lombscargle$PSD*var(trans$y)
-      trans$var <- var(trans$y)
-      shinyjs::show(id = "downloadlink1", anim = F)
-      shinyjs::show(id = "downloadlink2", anim = F)
-      shinyjs::show(id = "downloadlink3", anim = F)
-    }
-    if (input$spectrumModel && length(trans$mod) > 0 && length(trans$res) > 0 && any("all" %in% serie || "model" %in% serie)) {
-      trans$title[3] <- "model (red), "
-      ideal <- trans$mod
-      lombscargle <- spec.lomb(y = ideal, x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
-      trans$fs <- lombscargle$f
-      trans$spectra <- 1/lombscargle$f
-      trans$amp[,2] <- lombscargle$A
-      trans$psd[,2] <- lombscargle$PSD*var(ideal)
-      trans$var <- var(ideal)
-      shinyjs::show(id = "downloadlink1", anim = F)
-      shinyjs::show(id = "downloadlink2", anim = F)
-      shinyjs::show(id = "downloadlink3", anim = F)
-    } 
-    if (input$periodogram_residuals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
-      trans$title[4] <- "model residuals (green), "
-      if (length(trans$reserror) > 0) {
-        sy <- trans$reserror
-      } else {
-        sy <- trans$sy
-      }
-      lombscargle <- spec.lomb(y = as.vector(trans$res), x = trans$x - trans$x[1], f = trans$fs, w = sy, mode = "normal")
-      trans$fs <- lombscargle$f
-      trans$spectra <- 1/lombscargle$f
-      trans$amp[,3] <- lombscargle$A
-      trans$psd[,3] <- lombscargle$PSD*var(as.vector(trans$res))
-      trans$var <- var(as.vector(trans$res))
-      shinyjs::show(id = "downloadlink1", anim = F)
-      shinyjs::show(id = "downloadlink2", anim = F)
-      shinyjs::show(id = "downloadlink3", anim = F)
-    }
-    if (input$spectrumFilter && length(trans$filter > 0) && any("all" %in% serie || "filter" %in% serie)) {
-      trans$title[5] <- "filter (blue), "
-      lombscargle <- spec.lomb(y = as.vector(trans$filter), x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
-      trans$fs <- lombscargle$f
-      trans$spectra <- 1/lombscargle$f
-      trans$amp[,4] <- lombscargle$A
-      trans$psd[,4] <- lombscargle$PSD*lombscargle$PSD*var(as.vector(trans$filter))
-      trans$var <- var(as.vector(trans$filter))
-      shinyjs::show(id = "downloadlink1", anim = F)
-      shinyjs::show(id = "downloadlink2", anim = F)
-      shinyjs::show(id = "downloadlink3", anim = F)
-    }
-    if (input$spectrumFilterRes && length(trans$filterRes) > 0 && any("all" %in% serie || "filterRes" %in% serie)) {
-      trans$title[6] <- "filter residuals (cyan), "
-      lombscargle <- spec.lomb(y = as.vector(trans$filterRes), x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
-      trans$fs <- lombscargle$f
-      trans$spectra <- 1/lombscargle$f
-      trans$amp[,5] <- lombscargle$A
-      trans$psd[,5] <- lombscargle$PSD*var(as.vector(trans$filterRes))
-      trans$var <- var(as.vector(trans$filterRes))
-      shinyjs::show(id = "downloadlink1", anim = F)
-      shinyjs::show(id = "downloadlink2", anim = F)
-      shinyjs::show(id = "downloadlink3", anim = F)
-    }
-    trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$periodogram_residuals,input$spectrumFilter,input$spectrumFilterRes)
+    withProgress(message = 'Computing  periodogram',
+                 detail = 'This may take a while ...', value = 0, {
+                   incProgress(0.5)
+                   if (input$spectrumOriginal && any("all" %in% serie || "original" %in% serie)) {
+                     trans$title[2] <- "original (black), "
+                     lombscargle <- spec.lomb(y = trans$y, x = trans$x - trans$x[1], f = trans$fs, w = trans$sy, mode = "normal")
+                     trans$fs <- lombscargle$f
+                     trans$spectra <- 1/lombscargle$f
+                     trans$amp[,1] <- lombscargle$A
+                     trans$psd[,1] <- lombscargle$PSD*var(trans$y)
+                     trans$var <- var(trans$y)
+                     shinyjs::show(id = "downloadlink1", anim = F)
+                     shinyjs::show(id = "downloadlink2", anim = F)
+                     shinyjs::show(id = "downloadlink3", anim = F)
+                   }
+                   if (input$spectrumModel && length(trans$mod) > 0 && length(trans$res) > 0 && any("all" %in% serie || "model" %in% serie)) {
+                     trans$title[3] <- "model (red), "
+                     ideal <- trans$mod
+                     lombscargle <- spec.lomb(y = ideal, x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
+                     trans$fs <- lombscargle$f
+                     trans$spectra <- 1/lombscargle$f
+                     trans$amp[,2] <- lombscargle$A
+                     trans$psd[,2] <- lombscargle$PSD*var(ideal)
+                     trans$var <- var(ideal)
+                     shinyjs::show(id = "downloadlink1", anim = F)
+                     shinyjs::show(id = "downloadlink2", anim = F)
+                     shinyjs::show(id = "downloadlink3", anim = F)
+                   }
+                   if (input$periodogram_residuals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
+                     trans$title[4] <- "model residuals (green), "
+                     if (length(trans$reserror) > 0) {
+                       sy <- trans$reserror
+                     } else {
+                       sy <- trans$sy
+                     }
+                     lombscargle <- spec.lomb(y = as.vector(trans$res), x = trans$x - trans$x[1], f = trans$fs, w = sy, mode = "normal")
+                     trans$fs <- lombscargle$f
+                     trans$spectra <- 1/lombscargle$f
+                     trans$amp[,3] <- lombscargle$A
+                     trans$psd[,3] <- lombscargle$PSD*var(as.vector(trans$res))
+                     trans$var <- var(as.vector(trans$res))
+                     shinyjs::show(id = "downloadlink1", anim = F)
+                     shinyjs::show(id = "downloadlink2", anim = F)
+                     shinyjs::show(id = "downloadlink3", anim = F)
+                   }
+                   if (input$spectrumFilter && length(trans$filter > 0) && any("all" %in% serie || "filter" %in% serie)) {
+                     trans$title[5] <- "filter (blue), "
+                     lombscargle <- spec.lomb(y = as.vector(trans$filter), x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
+                     trans$fs <- lombscargle$f
+                     trans$spectra <- 1/lombscargle$f
+                     trans$amp[,4] <- lombscargle$A
+                     trans$psd[,4] <- lombscargle$PSD*lombscargle$PSD*var(as.vector(trans$filter))
+                     trans$var <- var(as.vector(trans$filter))
+                     shinyjs::show(id = "downloadlink1", anim = F)
+                     shinyjs::show(id = "downloadlink2", anim = F)
+                     shinyjs::show(id = "downloadlink3", anim = F)
+                   }
+                   if (input$spectrumFilterRes && length(trans$filterRes) > 0 && any("all" %in% serie || "filterRes" %in% serie)) {
+                     trans$title[6] <- "filter residuals (cyan), "
+                     lombscargle <- spec.lomb(y = as.vector(trans$filterRes), x = trans$x - trans$x[1], f = trans$fs, mode = "normal")
+                     trans$fs <- lombscargle$f
+                     trans$spectra <- 1/lombscargle$f
+                     trans$amp[,5] <- lombscargle$A
+                     trans$psd[,5] <- lombscargle$PSD*var(as.vector(trans$filterRes))
+                     trans$var <- var(as.vector(trans$filterRes))
+                     shinyjs::show(id = "downloadlink1", anim = F)
+                     shinyjs::show(id = "downloadlink2", anim = F)
+                     shinyjs::show(id = "downloadlink3", anim = F)
+                   }
+                   trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$periodogram_residuals,input$spectrumFilter,input$spectrumFilterRes)
+                 })
   }
   vondrak <- function(x,y,yp,p) {
     #code adapted from Sylvain Loyer's Fortran code and from Vondrak's 1969 paper
@@ -8603,6 +8634,8 @@ server <- function(input,output,session) {
     
     for (i in seq(length = nrow(y))) {
       
+      setProgress(round(i/info$points, digits = 1))
+      
       ##time update
       
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
@@ -8697,6 +8730,8 @@ server <- function(input,output,session) {
     if (n > 0) 
       for (i in n:1) {
         
+        # setProgress(0.5*i/info$points + 0.5)
+        
         #compute sigma points
         if (sqrtMethod == "Cholesky") {
           sigmaPlus <- t(chol((p + kappa)*mod$C[[i]]))}
@@ -8774,6 +8809,8 @@ server <- function(input,output,session) {
     D.C[1, ] <- sqrt(tmp$d)
     
     for (i in seq(length = nrow(y))) {
+      
+      setProgress(round(i/info$points, digits = 1))
       
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
       ## This implies the series must be sampled regularly with data gaps
@@ -8963,6 +9000,7 @@ server <- function(input,output,session) {
     })
   }
   midas_vel <- function(m,t,disc) {
+    setProgress(round(m/info$points, digits = 1))
     vel_f <- -999999
     vel_b <- -999999
     index_f <- which.min(abs(trans$x - (trans$x[m] + t)))
@@ -9002,7 +9040,7 @@ server <- function(input,output,session) {
     }
   }
   trim <- function(x) gsub("^\\s+|\\s+$", "", x)
-  average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol) {
+  average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w) {
     index <- x >= x[1] + (p - 1)*as.numeric(isolate(inputs$step)) - tol & x < x[1] + p*as.numeric(isolate(inputs$step)) - tol * 2/3
     if (length(x[index]) == 1) {
       x_ <- x[1] + (p - 0.5)*isolate(inputs$step)
@@ -9034,6 +9072,7 @@ server <- function(input,output,session) {
     } else {
       out <- c(x_,y1_,y2_,y3_,sy1_,sy2_,sy3_)
     }
+    setProgress(round(p/w, digits = 1))
     return(out)
   }
   get_URL_info <- function(server,station,product) {
