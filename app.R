@@ -5369,7 +5369,7 @@ server <- function(input,output,session) {
   
   # Observe screen ####
   observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width), {
-    if (messages > 2) cat(file = stderr(), "Cambio pantalla", "\n")
+    if (messages > 2) cat(file = stderr(), "Screen size change", "\n")
     info$pixelratio <- session$clientData$pixelratio
     info$width <- session$clientData$output_plot1_width
   }, priority = 2000)

@@ -44,7 +44,7 @@ The development of SARI started in 2017 to analyze GNSS position time series fro
 This document describes the different options and functionalities implemented in the current version of SARI. Within this document:  
 GUI options are given in this `red lettering`.  
 GUI specific input values and files are given in *italics*.  
-Local and external links are given in this <a href="#" target="_self">blue</a>.  
+Local and external links are given in this <a href="#" target="_self">blue</a>. Note that some links are accessible only from a remote SARI session on Shinyapps.  
 
 Further details and some examples can be found in  
 Santamar&#237;a-G&#243;mez, A. (2019) SARI: interactive GNSS position time series analysis software. GPS solutions, 23:52. DOI: [10.1007/s10291-019-0846-y](https://link.springer.com/article/10.1007/s10291-019-0846-y)
@@ -89,6 +89,11 @@ At this moment, the following servers and products are available via the URL:
  </thead>
 <tbody>
   <tr>
+   <td style="text-align:left;">LOCAL<sup>1</sup></td>
+   <th style="text-align:right;"></th>
+   <td style="text-align:left;">ENU/NEU, PBO, NGL, 1D</td>
+  </tr>
+  <tr>
    <td style="text-align:left;"><a href="http://renag.resif.fr/en/" target="_blank">RENAG</a></td>
    <th style="text-align:right;"></th>
    <td style="text-align:left;">UGA</td>
@@ -109,17 +114,19 @@ At this moment, the following servers and products are available via the URL:
    <td style="text-align:left;">CWU, NMT, PBO</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a> (loading)</td>
+   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a><sup>2</sup></td>
    <th style="text-align:right;"></th>
    <td style="text-align:left;">ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN, GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD</td>
   </tr>
 </tbody>
 </table></br> 
 
-For example, adding this query string  
+<sup>1</sup> The *LOCAL* server is used to load series from local files on a local SARI session (more details in the [SARI shell script](../scripts/sari.sh)).  
+<sup>2</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
+
+The server/product parameters can be defined for both the primary and secondary series. For example, adding this query string  
 <span style="color: red;"> ?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI </span>  
-at the end of the SARI base URL (both local on RStudio or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *UGA* GNSS position series of the station *PIMI* from the *RENAG* server, and also the *NGL* *FINAL* series of the same station as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
-The *EOSTLS* series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
+at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *UGA* GNSS position series of the station *PIMI* from the *RENAG* server, and also the *NGL* *FINAL* series of the same station as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
 Once uploaded and plotted (see the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block), the three coordinates components of the GNSS series will be shown in separate tabs: 1st, 2nd and 3rd component, respectively. The components are plotted in the same order as the columns in the input file (i.e. NEU or ENU for instance). For PBO series, it is NEU-like and for NGL series, it is ENU-like. When plotting a primary and a secondary series with different formats, use the option `N@E` to match the coordinate components North and East (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
