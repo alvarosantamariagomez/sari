@@ -2331,7 +2331,7 @@ server <- function(input,output,session) {
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
-                 input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne,
+                 input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
                  values$series1, values$series2, values$series3, values$series_all,
                  input$eulerType, input$neuenu), {
     req(obs())
