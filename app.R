@@ -6733,16 +6733,16 @@ server <- function(input,output,session) {
               y1 <- (y1.x + y1.y) / 2
               y2 <- (y2 + y1.y) / 2
               y3 <- (y3 + y1.y) / 2
-              sy1 <- sd(c(sy1.x,sy1.y))/sqrt(2)
-              sy2 <- sd(c(sy2,sy1.y))/sqrt(2)
-              sy3 <- sd(c(sy3,sy1.y))/sqrt(2)
+              sy1 <- abs(sy1.x - sy1.y)/2
+              sy2 <- abs(sy2 - sy1.y)/2
+              sy3 <- abs(sy3 - sy1.y)/2
             } else {
               y1 <- (y1.x + y1.y) / 2
               y2 <- (y2.x + y2.y) / 2
               y3 <- (y3.x + y3.y) / 2
-              sy1 = sd(c(sy1.x,sy1.y))/sqrt(2)
-              sy2 = sd(c(sy2.x,sy2.y))/sqrt(2)
-              sy3 = sd(c(sy3.x,sy3.y))/sqrt(2)
+              sy1 <- abs(sy1.x - sy1.y)/2
+              sy2 <- abs(sy2.x - sy2.y)/2
+              sy3 <- abs(sy3.x - sy3.y)/2
             }
           })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
         }
