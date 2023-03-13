@@ -5424,8 +5424,20 @@ server <- function(input,output,session) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
                   updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
-                  showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                  down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+                  if (tolower(query[['server2']]) == "local") {
+                    if (!isTruthy(file.exists(url$file2))) {
+                      showNotification(paste0("Local file ",url$file2," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                      url$station2 <- NULL
+                      url$file2 <- NULL
+                      req(info$stop)
+                    }
+                    showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+                    down <- 0
+                    file$secondary$name <- url$file2
+                  } else {
+                    showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+                    down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+                  }
                   if (isTruthy(down) && down == 0) {
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
