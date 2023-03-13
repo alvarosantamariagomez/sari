@@ -6651,6 +6651,9 @@ server <- function(input,output,session) {
         } else {
           table2 <- extract_table(input$series2$datapath,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
         }
+        if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
+          showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
+        }
       }
       if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
         if (info$format == 4) {
