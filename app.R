@@ -5382,7 +5382,7 @@ server <- function(input,output,session) {
         removeNotification("parsing_url1")
         removeNotification("parsing_url2")
         removeNotification("no_local")
-        if (messages > 0) cat(file = stderr(), "Analizando URL", "\n")
+        if (messages > 0) cat(file = stderr(), "Analyzing URL", "\n")
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
           if (!isTruthy(local) && tolower(query[['server']]) == "local") {
@@ -6557,7 +6557,6 @@ server <- function(input,output,session) {
     req(file$primary)
     removeNotification("ids_info")
     removeNotification("different_formats")
-    removeNotification("in_common")
     removeNotification("removing_NA")
     removeNotification("removing_NA_secondary")
     removeNotification("bad_window")
@@ -6655,98 +6654,106 @@ server <- function(input,output,session) {
           showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
         }
       }
-      if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 1 && columns2 > 0) {
-        if (info$format == 4) {
-          table <- data.frame(within(merge(table,table2,by = "x", all = T), {
-            y1 <- y1.x 
-            z1 <- y1.y
-            sy1 <- sy1.x
-            sz1 <- sy1.y
-          })[,c("x","y1","sy1","z1","sz1")])
-        } else {
-          table <- data.frame(within(merge(table,table2,by = "x", all = T), {
-            if (info$format2 == 4) {
+      if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && columns2 > 0) {
+        if (input$optionSecondary == 1) {
+          if (info$format == 4) {
+            table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
               y1 <- y1.x 
               z1 <- y1.y
-              y2 <- y2
-              z2 <- y1.y
-              y3 <- y3
-              z3 <- y1.y
               sy1 <- sy1.x
               sz1 <- sy1.y
-              sy2 <- sy2
-              sz2 <- sy1.y
-              sy3 <- sy3
-              sz3 <- sy1.y
-            } else {
-              y1 <- y1.x 
-              z1 <- y1.y
-              y2 <- y2.x
-              z2 <- y2.y
-              y3 <- y3.x
-              z3 <- y3.y
-              sy1 <- sy1.x
-              sz1 <- sy1.y
-              sy2 <- sy2.x
-              sz2 <- sy2.y
-              sy3 <- sy3.x
-              sz3 <- sy3.y
-            }
-          })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
-        }
-        info$sampling2 <- min(diff(table2$x,1))
-      } else if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 2 && columns2 > 0) {
-        if (info$format == 4) {
-          table <- data.frame(within(merge(table,table2,by = "x"), {
-            y1 <- y1.x - y1.y
-            sy1 <- sqrt(sy1.x^2 + sy1.y^2)
-          })[,c("x","y1","sy1")])
-        } else {
-          table <- data.frame(within(merge(table,table2,by = "x"), { 
-            if (info$format2 == 4) {
+            })[,c("x","y1","sy1","z1","sz1")])
+          } else {
+            table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+              if (info$format2 == 4) {
+                y1 <- y1.x 
+                z1 <- y1.y
+                y2 <- y2
+                z2 <- y1.y
+                y3 <- y3
+                z3 <- y1.y
+                sy1 <- sy1.x
+                sz1 <- sy1.y
+                sy2 <- sy2
+                sz2 <- sy1.y
+                sy3 <- sy3
+                sz3 <- sy1.y
+              } else {
+                y1 <- y1.x 
+                z1 <- y1.y
+                y2 <- y2.x
+                z2 <- y2.y
+                y3 <- y3.x
+                z3 <- y3.y
+                sy1 <- sy1.x
+                sz1 <- sy1.y
+                sy2 <- sy2.x
+                sz2 <- sy2.y
+                sy3 <- sy3.x
+                sz3 <- sy3.y
+              }
+            })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
+          }
+          info$sampling2 <- min(diff(table2$x,1))
+        } else if (input$optionSecondary == 2) {
+          if (info$format == 4) {
+            table_common <- data.frame(within(merge(table,table2,by = "x"), {
               y1 <- y1.x - y1.y
-              y2 <- y2 - y1.y
-              y3 <- y3 - y1.y
               sy1 <- sqrt(sy1.x^2 + sy1.y^2)
-              sy2 <- sqrt(sy2^2 + sy1.y^2)
-              sy3 <- sqrt(sy3^2 + sy1.y^2)
-            } else {
-              y1 <- y1.x - y1.y
-              y2 <- y2.x - y2.y
-              y3 <- y3.x - y3.y
-              sy1 <- sqrt(sy1.x^2 + sy1.y^2)
-              sy2 <- sqrt(sy2.x^2 + sy2.y^2)
-              sy3 <- sqrt(sy3.x^2 + sy3.y^2)
-            }
-          })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+            })[,c("x","y1","sy1")])
+          } else {
+            table_common <- data.frame(within(merge(table,table2,by = "x"), { 
+              if (info$format2 == 4) {
+                y1 <- y1.x - y1.y
+                y2 <- y2 - y1.y
+                y3 <- y3 - y1.y
+                sy1 <- sqrt(sy1.x^2 + sy1.y^2)
+                sy2 <- sqrt(sy2^2 + sy1.y^2)
+                sy3 <- sqrt(sy3^2 + sy1.y^2)
+              } else {
+                y1 <- y1.x - y1.y
+                y2 <- y2.x - y2.y
+                y3 <- y3.x - y3.y
+                sy1 <- sqrt(sy1.x^2 + sy1.y^2)
+                sy2 <- sqrt(sy2.x^2 + sy2.y^2)
+                sy3 <- sqrt(sy3.x^2 + sy3.y^2)
+              }
+            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+          }
+          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+        } else if (input$optionSecondary == 3) {
+          if (info$format == 4) {
+            table_common <- data.frame(within(merge(table,table2,by = "x"), {
+              y1 <- (y1.x + y1.y) / 2
+              sy1 <- abs(sy1.x - sy1.y)/2
+            })[,c("x","y1","sy1")])
+          } else {
+            table_common <- data.frame(within(merge(table,table2,by = "x"), {
+              if (info$format2 == 4) {
+                y1 <- (y1.x + y1.y) / 2
+                y2 <- (y2 + y1.y) / 2
+                y3 <- (y3 + y1.y) / 2
+              	sy1 <- abs(sy1.x - sy1.y)/2
+              	sy2 <- abs(sy2 - sy1.y)/2
+              	sy3 <- abs(sy3 - sy1.y)/2
+              } else {
+                y1 <- (y1.x + y1.y) / 2
+                y2 <- (y2.x + y2.y) / 2
+                y3 <- (y3.x + y3.y) / 2
+              	sy1 <- abs(sy1.x - sy1.y)/2
+              	sy2 <- abs(sy2.x - sy2.y)/2
+              	sy3 <- abs(sy3.x - sy3.y)/2
+              }
+            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+          }
+          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
         }
-        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-      } else if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && input$optionSecondary == 3 && columns2 > 0) {
-        if (info$format == 4) {
-          table <- data.frame(within(merge(table,table2,by = "x"), {
-            y1 <- (y1.x + y1.y) / 2
-            sy1 = sd(c(sy1.x,sy1.y))/sqrt(2)
-          })[,c("x","y1","sy1")])
+        if (nrow(table_common) > 0) {
+          table <- table_common
+          rm(table_common)
         } else {
-          table <- data.frame(within(merge(table,table2,by = "x"), {
-            if (info$format2 == 4) {
-              y1 <- (y1.x + y1.y) / 2
-              y2 <- (y2 + y1.y) / 2
-              y3 <- (y3 + y1.y) / 2
-              sy1 <- abs(sy1.x - sy1.y)/2
-              sy2 <- abs(sy2 - sy1.y)/2
-              sy3 <- abs(sy3 - sy1.y)/2
-            } else {
-              y1 <- (y1.x + y1.y) / 2
-              y2 <- (y2.x + y2.y) / 2
-              y3 <- (y3.x + y3.y) / 2
-              sy1 <- abs(sy1.x - sy1.y)/2
-              sy2 <- abs(sy2.x - sy2.y)/2
-              sy3 <- abs(sy3.x - sy3.y)/2
-            }
-          })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+          updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1)
         }
-        showNotification(paste0("There are ",length(table$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       }
       # Checking series values and time order 
       if (!is.null(table)) {
