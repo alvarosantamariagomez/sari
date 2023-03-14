@@ -4751,10 +4751,20 @@ server <- function(input,output,session) {
   # Control plots ####
   output$header <- renderText({
     req(input$header, file$primary)
-    if (isTruthy(url$file)) {
-      noquote(paste(readLines(con = file$primary$name, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+    if (length(trans$x) > 0) {
+      if (input$sigmas) {
+        header <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)[1:input$lines,]
+      } else {
+        header <- data.frame(x = trans$x, y = trans$y)[1:input$lines,]
+      }
+      write.table(header, file = "tmp", append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
+      noquote(paste(readLines(con = "tmp", ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
-      noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+      if (isTruthy(url$file)) {
+        noquote(paste(readLines(con = file$primary$name, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+      } else {
+        noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+      }
     }
   })
   observeEvent(input$remove3D, {
