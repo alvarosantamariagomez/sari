@@ -7012,7 +7012,7 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "units", label = "Time units", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
           req(info$stop)
         } else if (input$tunits == 3) {
-          extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S'))
+          extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
         }
         if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
           ref_pos <- grep("^XYZ Reference position",readLines(file, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
@@ -8077,9 +8077,9 @@ server <- function(input,output,session) {
         for (l in seq_len(length(dates))) {
           if (!(grepl('CCYY',dates[[l]]))) {
             f <- data.frame(strsplit(dates[[l]], " :"))[2,]
-            t <- strptime(f, format = '%Y-%m-%dT%H:%M')
+            t <- strptime(f, format = '%Y-%m-%dT%H:%M', tz = "GMT")
             if (is.na(t)) {
-              t <- strptime(f, format = '%Y-%m-%d')
+              t <- strptime(f, format = '%Y-%m-%d', tz = "GMT")
             }
             if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
@@ -8114,7 +8114,7 @@ server <- function(input,output,session) {
           elements1 <- unlist(strsplit(record[[l]], "\\s+", fixed = F, perl = T, useBytes = F))
           if (length(record) > l) {
             elements2 <- unlist(strsplit(record[[l + 1]], "\\s+", fixed = F, perl = T, useBytes = F))
-            t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S')
+            t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S', tz = "GMT")
             if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
             } else if (input$tunits == 2) {
@@ -8144,7 +8144,7 @@ server <- function(input,output,session) {
           elements1 <- unlist(strsplit(record[[l]], "\\s+", fixed = F, perl = T, useBytes = F))
           if (length(record) > l) {
             elements2 <- unlist(strsplit(record[[l + 1]], "\\s+", fixed = F, perl = T, useBytes = F))
-            t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S')
+            t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S', tz = "GMT")
             if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
             } else if (input$tunits == 2) {
