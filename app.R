@@ -7008,9 +7008,7 @@ server <- function(input,output,session) {
         if (input$tunits == 1) {
           extracted$x <- tableAll[,3]
         } else if (input$tunits == 2) {
-          showNotification("There is no time units \"weeks\" in a the PBO format. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = "no_weeks", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "units", label = "Time units", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
-          req(info$stop)
+          extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"),strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
         } else if (input$tunits == 3) {
           extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
         }
