@@ -297,10 +297,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   )
                                                                 ),
                                                                 fluidRow(
-                                                                  column(6, 
-                                                                         checkboxInput(inputId = "average", 
+                                                                  column(6,
+                                                                         checkboxInput(inputId = "average",
                                                                                        div("Reduce sampling",
-                                                                                           helpPopup("To compute the moving average of the series for a given non-overlapping window pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")), 
+                                                                                           helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
                                                                                        value = F)
                                                                   ),
                                                                   column(6,
@@ -532,10 +532,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(8,
                                                                                # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T),
                                                                                radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
-                                                                               textInput(inputId = "scaleFactor", 
-                                                                                         div("Scale factor",
-                                                                                             helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")), 
-                                                                                         value = "")
+                                                                               fluidRow(
+                                                                                 column(6,
+                                                                                        textInput(inputId = "scaleFactor", 
+                                                                                                  div("Scale factor",
+                                                                                                      helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")), 
+                                                                                                  value = "1")
+                                                                                 ),
+                                                                                 column(6,
+                                                                                        textInput(inputId = "step2", 
+                                                                                                  div("Averaging",
+                                                                                                      helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")), 
+                                                                                                  value = "")
+                                                                                 )
+                                                                               )
                                                                         ),
                                                                         column(4,
                                                                                div(style = "padding: 0px 0px; margin-top:1em",
@@ -1895,7 +1905,7 @@ server <- function(input,output,session) {
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
-                         decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, errorbars = T,
+                         decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, step2 = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T)
@@ -1912,7 +1922,8 @@ server <- function(input,output,session) {
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL, 
                            periodRef = NULL, offsetEpoch = NULL, ExponenRef = NULL, E0 = NULL, TE0 = NULL, 
                            LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = NULL, 
-                           long_period = NULL, short_period = NULL, low = NULL, high = NULL, scaleFactor = NULL)
+                           long_period = NULL, short_period = NULL, low = NULL, high = NULL, scaleFactor = 1,
+                           step = NULL, step2 = NULL)
   obs <- reactiveVal()
   
   # 6. computed values
@@ -2171,7 +2182,11 @@ server <- function(input,output,session) {
   reactive({
     inputs$step <- suppressWarnings(as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
-
+  
+  reactive({
+    inputs$step2 <- suppressWarnings(as.numeric(trimws(input$step2, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(2000, priority = 1001)
+  
   reactive({
     inputs$min_wavelet <- suppressWarnings(as.numeric(trimws(input$min_wavelet, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
@@ -2437,10 +2452,6 @@ server <- function(input,output,session) {
       } else {
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
-    }
-    if (isTruthy(inputs$scaleFactor)) {
-      trans$y2 <- trans$y2 * inputs$scaleFactor
-      trans$sy2 <- trans$sy2 * inputs$scaleFactor
     }
     if (!isTruthy(input$sigmas)) {
       trans$sy <- rep(1, length(trans$sy))
@@ -5741,7 +5752,7 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   # Observe averaging ####
-  observeEvent(c(inputs$step), {
+  observeEvent(c(inputs$step, inputs$step2), {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Averaging series", "\n")
     if (input$fitType == 2) {
@@ -5770,7 +5781,7 @@ server <- function(input,output,session) {
     data <- digest()
     if (!is.null(data)) {
       obs(data)
-      if (isTruthy(info$step)) {
+      if (isTruthy(info$step) || isTruthy(info$step2)) {
         if (isTruthy(input$remove3D)) {
           values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
         } else {
@@ -6650,6 +6661,44 @@ server <- function(input,output,session) {
       } else {
         table <- extract_table(input$series$datapath,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
       }
+      # Resampling the primary series
+      if (!is.null(table) && isTruthy(input$average)) {
+        if (nchar(input$step) > 0 && is.na(inputs$step)) {
+          info$step <- NULL
+          showNotification("The resampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+        } else if (isTruthy(inputs$step)) {
+          if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
+            tolerance <- min(diff(table$x,1))/3
+            if (!isTruthy(info$step)) {
+              values$previous1 <- values$series1
+              values$previous2 <- values$series2
+              values$previous3 <- values$series3
+              values$previous_all <- values$series_all
+            }
+            info$step <- inputs$step
+            withProgress(message = 'Averaging the series',
+                         detail = 'This may take a while ...', value = 0, {
+                           if (info$format == 4) {
+                             w <- as.integer((max(table$x) - min(table$x))/inputs$step)
+                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F), simplify = T)
+                             table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
+                           } else {
+                             w <- as.integer((max(table$x) - min(table$x))/inputs$step)
+                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance, w = w, s = inputs$step, second = F), simplify = T)
+                             table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                           }
+                         })
+            table <- na.omit(table)
+          } else {
+            info$step <- NULL
+            showNotification("The resampling period is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          info$step <- NULL
+        }
+      } else {
+        info$step <- NULL
+      }
       if (length(file$secondary) > 0 && input$optionSecondary > 0 && columns2 > 0) {
         if (info$format < 4 && info$format != info$format2) {
           removeNotification(id = "formats", session = getDefaultReactiveDomain())
@@ -6660,6 +6709,37 @@ server <- function(input,output,session) {
         } else {
           table2 <- extract_table(input$series2$datapath,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
         }
+        # Resampling the secondary series
+        if (!is.null(table2)) {
+          if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
+            info$step2 <- NULL
+            showNotification("The resampling period of the secondary series is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+          } else if (isTruthy(inputs$step2)) {
+            if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
+              tolerance <- min(diff(table2$x,1))/3
+              info$step2 <- inputs$step2
+              withProgress(message = 'Averaging the series',
+                           detail = 'This may take a while ...', value = 0, {
+                             w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
+                             if (info$format2 == 4) {
+                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
+                             } else {
+                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                             }
+                           })
+              table2 <- na.omit(table2)
+            } else {
+              info$step2 <- NULL
+              showNotification("The resampling period of the secondary series is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+            }
+          } else {
+            info$step2 <- NULL
+          }
+        } else {
+          info$step2 <- NULL
+        }
         if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
           showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
         }
@@ -6669,38 +6749,38 @@ server <- function(input,output,session) {
           if (info$format == 4) {
             table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
               y1 <- y1.x 
-              z1 <- y1.y
+              z1 <- y1.y * inputs$scaleFactor
               sy1 <- sy1.x
-              sz1 <- sy1.y
+              sz1 <- sy1.y  * inputs$scaleFactor
             })[,c("x","y1","sy1","z1","sz1")])
           } else {
             table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
               if (info$format2 == 4) {
                 y1 <- y1.x 
-                z1 <- y1.y
+                z1 <- y1.y * inputs$scaleFactor
                 y2 <- y2
-                z2 <- y1.y
+                z2 <- y1.y * inputs$scaleFactor
                 y3 <- y3
-                z3 <- y1.y
+                z3 <- y1.y * inputs$scaleFactor
                 sy1 <- sy1.x
-                sz1 <- sy1.y
+                sz1 <- sy1.y * inputs$scaleFactor
                 sy2 <- sy2
-                sz2 <- sy1.y
+                sz2 <- sy1.y * inputs$scaleFactor
                 sy3 <- sy3
-                sz3 <- sy1.y
+                sz3 <- sy1.y * inputs$scaleFactor
               } else {
                 y1 <- y1.x 
-                z1 <- y1.y
+                z1 <- y1.y * inputs$scaleFactor
                 y2 <- y2.x
-                z2 <- y2.y
+                z2 <- y2.y * inputs$scaleFactor
                 y3 <- y3.x
-                z3 <- y3.y
+                z3 <- y3.y * inputs$scaleFactor
                 sy1 <- sy1.x
-                sz1 <- sy1.y
+                sz1 <- sy1.y * inputs$scaleFactor
                 sy2 <- sy2.x
-                sz2 <- sy2.y
+                sz2 <- sy2.y * inputs$scaleFactor
                 sy3 <- sy3.x
-                sz3 <- sy3.y
+                sz3 <- sy3.y * inputs$scaleFactor
               }
             })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
           }
@@ -6708,25 +6788,25 @@ server <- function(input,output,session) {
         } else if (input$optionSecondary == 2) {
           if (info$format == 4) {
             table_common <- data.frame(within(merge(table,table2,by = "x"), {
-              y1 <- y1.x - y1.y
-              sy1 <- sqrt(sy1.x^2 + sy1.y^2)
+              y1 <- y1.x - y1.y * inputs$scaleFactor
+              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             })[,c("x","y1","sy1")])
           } else {
             table_common <- data.frame(within(merge(table,table2,by = "x"), { 
               if (info$format2 == 4) {
-                y1 <- y1.x - y1.y
-                y2 <- y2 - y1.y
-                y3 <- y3 - y1.y
-                sy1 <- sqrt(sy1.x^2 + sy1.y^2)
-                sy2 <- sqrt(sy2^2 + sy1.y^2)
-                sy3 <- sqrt(sy3^2 + sy1.y^2)
+                y1 <- y1.x - y1.y * inputs$scaleFactor
+                y2 <- y2 - y1.y * inputs$scaleFactor
+                y3 <- y3 - y1.y * inputs$scaleFactor
+                sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
+                sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
               } else {
-                y1 <- y1.x - y1.y
-                y2 <- y2.x - y2.y
-                y3 <- y3.x - y3.y
-                sy1 <- sqrt(sy1.x^2 + sy1.y^2)
-                sy2 <- sqrt(sy2.x^2 + sy2.y^2)
-                sy3 <- sqrt(sy3.x^2 + sy3.y^2)
+                y1 <- y1.x - y1.y * inputs$scaleFactor
+                y2 <- y2.x - y2.y * inputs$scaleFactor
+                y3 <- y3.x - y3.y * inputs$scaleFactor
+                sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
+                sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
               }
             })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
           }
@@ -6734,25 +6814,25 @@ server <- function(input,output,session) {
         } else if (input$optionSecondary == 3) {
           if (info$format == 4) {
             table_common <- data.frame(within(merge(table,table2,by = "x"), {
-              y1 <- (y1.x + y1.y) / 2
-              sy1 <- abs(sy1.x - sy1.y)/2
+              y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+              sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
             })[,c("x","y1","sy1")])
           } else {
             table_common <- data.frame(within(merge(table,table2,by = "x"), {
               if (info$format2 == 4) {
-                y1 <- (y1.x + y1.y) / 2
-                y2 <- (y2 + y1.y) / 2
-                y3 <- (y3 + y1.y) / 2
-              	sy1 <- abs(sy1.x - sy1.y)/2
-              	sy2 <- abs(sy2 - sy1.y)/2
-              	sy3 <- abs(sy3 - sy1.y)/2
+                y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
+                y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
+              	sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+              	sy2 <- abs(sy2 - sy1.y * inputs$scaleFactor)/2
+              	sy3 <- abs(sy3 - sy1.y * inputs$scaleFactor)/2
               } else {
-                y1 <- (y1.x + y1.y) / 2
-                y2 <- (y2.x + y2.y) / 2
-                y3 <- (y3.x + y3.y) / 2
-              	sy1 <- abs(sy1.x - sy1.y)/2
-              	sy2 <- abs(sy2.x - sy2.y)/2
-              	sy3 <- abs(sy3.x - sy3.y)/2
+                y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
+                y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
+              	sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+              	sy2 <- abs(sy2.x - sy2.y * inputs$scaleFactor)/2
+              	sy3 <- abs(sy3.x - sy3.y * inputs$scaleFactor)/2
               }
             })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
           }
@@ -6776,44 +6856,6 @@ server <- function(input,output,session) {
         if (anyNA(table2)) {
           table2 <- na.omit(table2)
           showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
-        }
-        # Resampling the series
-        if (input$average) {
-          if (nchar(input$step) > 0 && is.na(inputs$step)) {
-            info$step <- NULL
-            showNotification("The re-sampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-          } else if (isTruthy(inputs$step)) {
-            if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
-              tolerance <- min(diff(table$x,1))/3
-              if (!isTruthy(info$step)) {
-                values$previous1 <- values$series1
-                values$previous2 <- values$series2
-                values$previous3 <- values$series3
-                values$previous_all <- values$series_all
-              }
-              info$step <- inputs$step
-              withProgress(message = 'Averaging the series',
-                           detail = 'This may take a while ...', value = 0, {
-                             if (info$format == 4) {
-                               w <- as.integer((max(table$x) - min(table$x))/inputs$step)
-                               averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w), simplify = T)
-                               table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
-                             } else {
-                               w <- as.integer((max(table$x) - min(table$x))/inputs$step)
-                               averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance, w = w), simplify = T)
-                               table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
-                             }
-                           })
-              table <- na.omit(table)
-            } else {
-              info$step <- NULL
-              showNotification("The re-sampling period is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            info$step <- NULL
-          }
-        } else {
-          info$step <- NULL
         }
         # Checking for simultaneous values and setting series limits
         if (nrow(table) > 0) {
@@ -6986,7 +7028,7 @@ server <- function(input,output,session) {
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         if (input$tunits == 1) {
-          extracted <- data.frame( x = tableAll[,4] )
+          extracted <- data.frame( x = tableAll[,4] + 0.5)
         } else if (input$tunits == 2) {
           extracted <- data.frame( x = tableAll[,5] + tableAll[,6]/7 )
         } else if (input$tunits == 3) {
@@ -9072,24 +9114,42 @@ server <- function(input,output,session) {
     }
   }
   trim <- function(x) gsub("^\\s+|\\s+$", "", x)
-  average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w) {
-    index <- x >= x[1] + (p - 1)*as.numeric(isolate(inputs$step)) - tol & x < x[1] + p*as.numeric(isolate(inputs$step)) - tol * 2/3
+  average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w,s,second) {
+    index <- x >= x[1] + (p - 1)*s - tol & x < x[1] + p*s - tol * 2/3
     if (length(x[index]) == 1) {
-      x_ <- x[1] + (p - 0.5)*isolate(inputs$step)
-      y1_ <- y1[index & values$previous1 & !is.na(values$previous1)]
-      y2_ <- y2[index & values$previous2 & !is.na(values$previous2)]
-      y3_ <- y3[index & values$previous3 & !is.na(values$previous3)]
-      sy1_ <- sy1[index & values$previous1 & !is.na(values$previous1)]
-      sy2_ <- sy2[index & values$previous2 & !is.na(values$previous2)]
-      sy3_ <- sy3[index & values$previous3 & !is.na(values$previous3)]
+      x_ <- x[1] + (p - 0.5)*s
+      if (isTruthy(second)) {
+        y1_ <- y1[index]
+        y2_ <- y2[index]
+        y3_ <- y3[index]
+        sy1_ <- sy1[index]
+        sy2_ <- sy2[index]
+        sy3_ <- sy3[index]
+      } else {
+        y1_ <- y1[index & values$previous1 & !is.na(values$previous1)]
+        y2_ <- y2[index & values$previous2 & !is.na(values$previous2)]
+        y3_ <- y3[index & values$previous3 & !is.na(values$previous3)]
+        sy1_ <- sy1[index & values$previous1 & !is.na(values$previous1)]
+        sy2_ <- sy2[index & values$previous2 & !is.na(values$previous2)]
+        sy3_ <- sy3[index & values$previous3 & !is.na(values$previous3)]
+      }
     } else if (length(x[index]) > 1) {
-      x_ <- x[1] + (p - 0.5)*isolate(inputs$step)
-      y1_ <- weighted.mean(y1[index & values$previous1 & !is.na(values$previous1)], 1/(sy1[index & values$previous1 & !is.na(values$previous1)])^2)
-      y2_ <- weighted.mean(y2[index & values$previous2 & !is.na(values$previous2)], 1/(sy2[index & values$previous2 & !is.na(values$previous2)])^2)
-      y3_ <- weighted.mean(y3[index & values$previous3 & !is.na(values$previous3)], 1/(sy3[index & values$previous3 & !is.na(values$previous3)])^2)
-      sy1_ <- sqrt(1/sum(1/sy1[index & values$previous1 & !is.na(values$previous1)]^2))
-      sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
-      sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
+      x_ <- x[1] + (p - 0.5)*s
+      if (isTruthy(second)) {
+        y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2)
+        y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2)
+        y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2)
+        sy1_ <- sqrt(1/sum(1/sy1[index]^2))
+        sy2_ <- sqrt(1/sum(1/sy2[index]^2))
+        sy3_ <- sqrt(1/sum(1/sy3[index]^2))
+      } else {
+        y1_ <- weighted.mean(y1[index & values$previous1 & !is.na(values$previous1)], 1/(sy1[index & values$previous1 & !is.na(values$previous1)])^2)
+        y2_ <- weighted.mean(y2[index & values$previous2 & !is.na(values$previous2)], 1/(sy2[index & values$previous2 & !is.na(values$previous2)])^2)
+        y3_ <- weighted.mean(y3[index & values$previous3 & !is.na(values$previous3)], 1/(sy3[index & values$previous3 & !is.na(values$previous3)])^2)
+        sy1_ <- sqrt(1/sum(1/sy1[index & values$previous1 & !is.na(values$previous1)]^2))
+        sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
+        sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
+      }
     } else {
       x_ <- NA
       y1_ <- NA
