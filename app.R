@@ -5588,6 +5588,12 @@ server <- function(input,output,session) {
       trans$kalman <- trans$kalman0 <- NULL
       trans$kalman_unc <- trans$kalman_unc0 <- NULL
     }
+    if (length(trans$offsetEpochs) > 0) {
+      trans$offsetEpochs <- NULL
+      updateTextInput(inputId = "offsetEpoch", value = "")
+    }
+    updateTextInput(inputId = "ExponenRef", value = "")
+    updateTextInput(inputId = "LogariRef", value = "")
     if (isTruthy(input$wavelet)) {
       info$run_wavelet <- F
       updateCheckboxInput(session, inputId = "wavelet", value = F)
