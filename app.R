@@ -3415,7 +3415,8 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
-    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,title,input$symbol)
+    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol)
+    title(title, line = 3)
     abline(h = 0, col = "red", lwd = 2)
     if (input$traceLog && length(info$log) > 0) {
       for (r in info$log[[2]]) {
@@ -8269,6 +8270,23 @@ server <- function(input,output,session) {
     pout <- pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
     axis(2, at = pin, labels = pout)
+    if (input$tunits == 1) {
+      if (isTruthy(rangex)) {
+        ticks <- pretty(x[x > rangex[1] & x < rangex[2]])
+      } else {
+        ticks <- pretty(x)
+      }
+      labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks))
+      axis(3, at = ticks, labels = labels_dyear)
+    } else if (input$tunits == 2) {
+      if (isTruthy(rangex)) {
+        ticks <- pretty(x[x > rangex[1] & x < rangex[2]])
+      } else {
+        ticks <- pretty(x)
+      }
+      labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1980-01-06") + ticks*7))
+      axis(3, at = ticks, labels = labels_dyear)
+    }
     if (sigma == T) {
       ba <- y + z
       bb <- y - z
