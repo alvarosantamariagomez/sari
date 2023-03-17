@@ -3459,7 +3459,7 @@ server <- function(input,output,session) {
   }, width = reactive(info$width), type = "cairo-png")
   
   # Compute stats & histogram ####
-  observeEvent(c(input$histogramType, ranges$x1), {
+  observeEvent(c(input$histogramType, ranges$x1, input$tab), {
     req(obs(), input$histogram)
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
