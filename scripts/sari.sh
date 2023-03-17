@@ -82,7 +82,9 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 # Setting a trap to do a clean exit
 cleaning () {
 	rm -f $saridir/app_$now.R
-	netstat -anp 2> /dev/null | grep :$port | grep LISTEN | grep -E "/R\s+$" | sed 's$/R$$' | awk 'system("kill "$NF"")'
+	if [[ ! -z $pid ]]; then
+		netstat -anp 2> /dev/null | grep :$port | grep LISTEN | grep -E "$pid/R\s+$" | sed 's$/R$$' | awk 'system("kill "$NF"")'
+	fi
 }
 trap cleaning EXIT
 
