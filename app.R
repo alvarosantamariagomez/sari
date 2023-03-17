@@ -1882,9 +1882,9 @@ server <- function(input,output,session) {
   cat(file = stderr(), "\n", "\n", "START", "\n")
   
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
-  # observeEvent(input$browser,{
-  #   browser()
-  # })
+  observeEvent(input$browser,{
+    browser()
+  })
 
   # Initialize reactive variables of the global database
   
@@ -5463,7 +5463,7 @@ server <- function(input,output,session) {
                   if (isTruthy(down) && down == 0) {
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
-                    updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F)
+                    shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F))
                     session$sendCustomMessage("filename2", file$secondary$name)
                   } else {
                     removeNotification("parsing_url2")
@@ -5671,7 +5671,8 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
-                            input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
+                            input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
+                            "   Scale: ", input$scaleFactor, "   Average: ", input$step2, "\n")
     }
   }, priority = 7)
   
@@ -6590,6 +6591,7 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("bad_x")
     removeNotification("bad_series")
+    removeNotification("time_shift")
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
     # Setting column separation
     if (input$separator == "1") {
@@ -6717,7 +6719,7 @@ server <- function(input,output,session) {
           table2 <- extract_table(input$series2$datapath,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
         }
         # Resampling the secondary series
-        if (!is.null(table2)) {
+        if (!is.null(table2) && (input$optionSecondary > 0)) {
           if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
             info$step2 <- NULL
             showNotification("The resampling period of the secondary series is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
@@ -6793,6 +6795,13 @@ server <- function(input,output,session) {
           }
           info$sampling2 <- min(diff(table2$x,1))
         } else if (input$optionSecondary == 2) {
+          if (input$tunits == 1) {
+            delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
+            if (delta != 0) {
+              table2$x <- table2$x + delta
+              showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
           if (info$format == 4) {
             table_common <- data.frame(within(merge(table,table2,by = "x"), {
               y1 <- y1.x - y1.y * inputs$scaleFactor
@@ -6819,6 +6828,13 @@ server <- function(input,output,session) {
           }
           showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
         } else if (input$optionSecondary == 3) {
+          if (input$tunits == 1) {
+            delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
+            if (delta != 0) {
+              table2$x <- table2$x + delta
+              showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
           if (info$format == 4) {
             table_common <- data.frame(within(merge(table,table2,by = "x"), {
               y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
@@ -7033,7 +7049,7 @@ server <- function(input,output,session) {
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
       if (isTruthy(tableAll)) {
         if (input$tunits == 1) {
-          extracted <- data.frame( x = tableAll[,4] + 0.5)
+          extracted <- data.frame( x = tableAll[,4])
         } else if (input$tunits == 2) {
           extracted <- data.frame( x = tableAll[,5] + tableAll[,6]/7 )
         } else if (input$tunits == 3) {
@@ -9286,6 +9302,7 @@ server <- function(input,output,session) {
       }
       updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
       updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+      updateTextInput(session, inputId = "step2", value = "1")
       # LOCAL
     } else if (tolower(server) == "local") {
       if (tolower(product) == "neu") {
