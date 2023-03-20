@@ -515,7 +515,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                              fileInput(inputId = "series2", 
                                                                                        div("Secondary series",
                                                                                            helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
-                                                                                       multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                                       multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                       ),
                                                                       column(3, offset = 1,
                                                                              div(style = "padding: 0px 0px; margin-top:0em",
@@ -5820,7 +5820,7 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 6)
-  observeEvent(c(input$series2, input$separator2, input$ne), {
+  observeEvent(c(input$series2, input$separator2, input$ne, inputs$scaleFactor), {
     req(obs())
     req(file$primary)
     if (input$optionSecondary > 0) {
@@ -6592,7 +6592,9 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("bad_x")
     removeNotification("bad_series")
+    removeNotification("bad_secondary")
     removeNotification("time_shift")
+    removeNotification("different_formats")
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
     # Setting column separation
     if (input$separator == "1") {
@@ -6612,67 +6614,17 @@ server <- function(input,output,session) {
     if (info$format == 4) {
       updateTabsetPanel(session, inputId = "tab", selected = "1")
     }
-    # Getting number of columns in file and setting station ID
-    columns <- columns2 <- 0
-    if (isTruthy(url$station)) {
-      columns <- get_columns(file$primary$name, sep, info$format)
+    # Getting primary series from input file
+    table <- NULL
+    table2 <- NULL
+    if (isTruthy(url$file)) {
+      table <- extract_table(file$primary$name,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
     } else {
-      columns <- get_columns(input$series$datapath, sep, info$format)
+      table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
     }
-    if (columns > 0) {
-      if (isTruthy(url$station)) {
-        file$id1 <- url$station
-      } else {
-        if (!isTruthy(inputs$ids)) {
-          file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
-        }
-      }
-      if (length(file$secondary) > 0 && input$optionSecondary > 0) {
-        if (isTruthy(url$station2)) {
-          columns2 <- get_columns(file$secondary$name, sep2, info$format2)
-        } else {
-          columns2 <- get_columns(file$secondary$datapath, sep2, info$format2)
-        }
-        if (columns2 > 0) {
-          if (isTruthy(url$station2)) {
-            file$id2 <- url$station2
-          } else {
-            if (!isTruthy(inputs$ids)) {
-              file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
-            }
-          }
-        } else {
-          updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 0, inline = F)
-        }
-      }
-      if (isTruthy(file$id1) && isTruthy(file$id2)) {
-        if (input$optionSecondary == 0) {
-          ids_info <- file$id1
-        } else if (input$optionSecondary == 1) {
-          ids_info <- paste(file$id1,file$id2, sep = " & ")
-        } else if (input$optionSecondary == 2) {
-          ids_info <- paste(file$id1,file$id2, sep = " - ")
-        } else if (input$optionSecondary == 3) {
-          ids_info <- paste(file$id1,file$id2, sep = " + ")
-        }
-      } else if (isTruthy(file$id1)) {
-        ids_info <- file$id1
-      } else {
-        ids_info <- ""
-        removeNotification(id = "ids_info", session = getDefaultReactiveDomain())
-        showNotification("Problem extracting the series ID from the file name. No series ID will be used", action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
-      }
-      updateTextInput(session, inputId = "ids", value = ids_info)
-      # Getting data series from input file
-      table <- NULL
-      table2 <- NULL
-      if (isTruthy(url$file)) {
-        table <- extract_table(file$primary$name,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
-      } else {
-        table <- extract_table(input$series$datapath,sep,info$format,columns,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
-      }
+    if (!is.null(table)) {
       # Resampling the primary series
-      if (!is.null(table) && isTruthy(input$average)) {
+      if (isTruthy(input$average)) {
         if (nchar(input$step) > 0 && is.na(inputs$step)) {
           info$step <- NULL
           showNotification("The resampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
@@ -6709,166 +6661,242 @@ server <- function(input,output,session) {
       } else {
         info$step <- NULL
       }
-      if (length(file$secondary) > 0 && input$optionSecondary > 0 && columns2 > 0) {
-        if (info$format < 4 && info$format != info$format2) {
-          removeNotification(id = "formats", session = getDefaultReactiveDomain())
-          showNotification("The primary and secondary series have different format. Verify the time units are the same.", action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
-        }
-        if (isTruthy(url$file2)) {
-          table2 <- extract_table(file$secondary$name,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+      # Setting station ID
+      if (!isTruthy(inputs$ids)) {
+        if (isTruthy(url$station)) {
+          file$id1 <- url$station
         } else {
-          table2 <- extract_table(input$series2$datapath,sep2,info$format2,columns2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+          file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
         }
-        # Resampling the secondary series
-        if (!is.null(table2) && (input$optionSecondary > 0)) {
-          if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
-            info$step2 <- NULL
-            showNotification("The resampling period of the secondary series is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-          } else if (isTruthy(inputs$step2)) {
-            if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
-              tolerance <- min(diff(table2$x,1))/3
-              info$step2 <- inputs$step2
-              withProgress(message = 'Averaging the series',
-                           detail = 'This may take a while ...', value = 0, {
-                             w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
-                             if (info$format2 == 4) {
-                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
-                             } else {
-                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
-                             }
-                           })
-              table2 <- na.omit(table2)
+      }
+      # Getting secondary series from input file(s)
+      if (length(file$secondary) > 0 && input$optionSecondary > 0) {
+        if (isTruthy(url$file2)) {
+          files <- file$secondary$name
+        } else {
+          files <- input$series2
+        }
+        if (dim(files)[1] > 1) {
+          table_stack <- NULL
+          for (i in 1:dim(files)[1]) {
+            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+            if (!is.null(table2)) {
+              if (!is.null(table_stack)) {
+                table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
+                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                  sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
+                  sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
+                  sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
+                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+              } else {
+                table_stack <- table2
+              }
+            } else {
+              showNotification(paste0("Wrong series format in ",files$name[i],". Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            }
+          }
+          if (!is.null(table_stack)) {
+            table2 <- table_stack
+            rm(table_stack)
+          } else {
+            table2 <- NULL
+            showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          table2 <- extract_table(files$datapath,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+        }
+        if (!is.null(table2)) {
+          if (anyNA(table2)) {
+            table2 <- na.omit(table2)
+            showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
+          }
+          # Resampling the secondary series
+          if (input$optionSecondary > 0) {
+            if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
+              info$step2 <- NULL
+              showNotification("The resampling period of the secondary series is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+            } else if (isTruthy(inputs$step2)) {
+              if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
+                tolerance <- min(diff(table2$x,1))/3
+                info$step2 <- inputs$step2
+                withProgress(message = 'Averaging the series',
+                             detail = 'This may take a while ...', value = 0, {
+                               w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
+                               if (info$format2 == 4) {
+                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
+                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
+                               } else {
+                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
+                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                               }
+                             })
+                table2 <- na.omit(table2)
+              } else {
+                info$step2 <- NULL
+                showNotification("The resampling period of the secondary series is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+              }
             } else {
               info$step2 <- NULL
-              showNotification("The resampling period of the secondary series is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+            }
+            if (!is.null(table2)) {
+              if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
+                showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
+              }
+              if (info$format < 4 && info$format != info$format2) {
+                showNotification("The primary and secondary series have different format. Verify the time units from both series are the same.", action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
+              }
+              if (input$optionSecondary == 1) {
+                if (info$format == 4) {
+                  table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+                    y1 <- y1.x
+                    z1 <- y1.y * inputs$scaleFactor
+                    sy1 <- sy1.x
+                    sz1 <- sy1.y  * inputs$scaleFactor
+                  })[,c("x","y1","sy1","z1","sz1")])
+                } else {
+                  table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+                    if (info$format2 == 4) {
+                      y1 <- y1.x
+                      z1 <- y1.y * inputs$scaleFactor
+                      y2 <- y2
+                      z2 <- y1.y * inputs$scaleFactor
+                      y3 <- y3
+                      z3 <- y1.y * inputs$scaleFactor
+                      sy1 <- sy1.x
+                      sz1 <- sy1.y * inputs$scaleFactor
+                      sy2 <- sy2
+                      sz2 <- sy1.y * inputs$scaleFactor
+                      sy3 <- sy3
+                      sz3 <- sy1.y * inputs$scaleFactor
+                    } else {
+                      y1 <- y1.x
+                      z1 <- y1.y * inputs$scaleFactor
+                      y2 <- y2.x
+                      z2 <- y2.y * inputs$scaleFactor
+                      y3 <- y3.x
+                      z3 <- y3.y * inputs$scaleFactor
+                      sy1 <- sy1.x
+                      sz1 <- sy1.y * inputs$scaleFactor
+                      sy2 <- sy2.x
+                      sz2 <- sy2.y * inputs$scaleFactor
+                      sy3 <- sy3.x
+                      sz3 <- sy3.y * inputs$scaleFactor
+                    }
+                  })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
+                }
+                info$sampling2 <- min(diff(table2$x,1))
+              } else if (input$optionSecondary == 2) {
+                if (input$tunits == 1) {
+                  delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
+                  if (delta != 0) {
+                    table2$x <- table2$x + delta
+                    showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                  }
+                }
+                if (info$format == 4) {
+                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                    y1 <- y1.x - y1.y * inputs$scaleFactor
+                    sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                  })[,c("x","y1","sy1")])
+                } else {
+                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                    if (info$format2 == 4) {
+                      y1 <- y1.x - y1.y * inputs$scaleFactor
+                      y2 <- y2 - y1.y * inputs$scaleFactor
+                      y3 <- y3 - y1.y * inputs$scaleFactor
+                      sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                      sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
+                      sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
+                    } else {
+                      y1 <- y1.x - y1.y * inputs$scaleFactor
+                      y2 <- y2.x - y2.y * inputs$scaleFactor
+                      y3 <- y3.x - y3.y * inputs$scaleFactor
+                      sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                      sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
+                      sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
+                    }
+                  })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+                }
+                showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+              } else if (input$optionSecondary == 3) {
+                if (input$tunits == 1) {
+                  delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
+                  if (delta != 0) {
+                    table2$x <- table2$x + delta
+                    showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                  }
+                }
+                if (info$format == 4) {
+                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                    y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                    sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+                  })[,c("x","y1","sy1")])
+                } else {
+                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                    if (info$format2 == 4) {
+                      y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                      y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
+                      y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
+                      sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+                      sy2 <- abs(sy2 - sy1.y * inputs$scaleFactor)/2
+                      sy3 <- abs(sy3 - sy1.y * inputs$scaleFactor)/2
+                    } else {
+                      y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                      y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
+                      y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
+                      sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+                      sy2 <- abs(sy2.x - sy2.y * inputs$scaleFactor)/2
+                      sy3 <- abs(sy3.x - sy3.y * inputs$scaleFactor)/2
+                    }
+                  })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+                }
+                showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+              }
+              if (nrow(table_common) > 0) {
+                table <- table_common
+                rm(table_common)
+              } else {
+                updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1)
+              }
+              # Setting secondary station ID
+              if (!isTruthy(inputs$ids)) {
+                if (isTruthy(url$station2)) {
+                  file$id2 <- url$station2
+                } else {
+                  file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+                }
+              }
+            } else {
+              showNotification("Problem when averaging the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
             }
           } else {
             info$step2 <- NULL
           }
         } else {
-          info$step2 <- NULL
-        }
-        if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
-          showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
+          showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
         }
       }
-      if (length(file$secondary) > 0 && !is.null(table) && !is.null(table2) && columns2 > 0) {
-        if (input$optionSecondary == 1) {
-          if (info$format == 4) {
-            table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-              y1 <- y1.x 
-              z1 <- y1.y * inputs$scaleFactor
-              sy1 <- sy1.x
-              sz1 <- sy1.y  * inputs$scaleFactor
-            })[,c("x","y1","sy1","z1","sz1")])
-          } else {
-            table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-              if (info$format2 == 4) {
-                y1 <- y1.x 
-                z1 <- y1.y * inputs$scaleFactor
-                y2 <- y2
-                z2 <- y1.y * inputs$scaleFactor
-                y3 <- y3
-                z3 <- y1.y * inputs$scaleFactor
-                sy1 <- sy1.x
-                sz1 <- sy1.y * inputs$scaleFactor
-                sy2 <- sy2
-                sz2 <- sy1.y * inputs$scaleFactor
-                sy3 <- sy3
-                sz3 <- sy1.y * inputs$scaleFactor
-              } else {
-                y1 <- y1.x 
-                z1 <- y1.y * inputs$scaleFactor
-                y2 <- y2.x
-                z2 <- y2.y * inputs$scaleFactor
-                y3 <- y3.x
-                z3 <- y3.y * inputs$scaleFactor
-                sy1 <- sy1.x
-                sz1 <- sy1.y * inputs$scaleFactor
-                sy2 <- sy2.x
-                sz2 <- sy2.y * inputs$scaleFactor
-                sy3 <- sy3.x
-                sz3 <- sy3.y * inputs$scaleFactor
-              }
-            })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
-          }
-          info$sampling2 <- min(diff(table2$x,1))
+      # Update IDs
+      if (isTruthy(file$id1) && isTruthy(file$id2)) {
+        if (input$optionSecondary == 0) {
+          ids_info <- file$id1
+        } else if (input$optionSecondary == 1) {
+          ids_info <- paste(file$id1,file$id2, sep = " & ")
         } else if (input$optionSecondary == 2) {
-          if (input$tunits == 1) {
-            delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
-            if (delta != 0) {
-              table2$x <- table2$x + delta
-              showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-            }
-          }
-          if (info$format == 4) {
-            table_common <- data.frame(within(merge(table,table2,by = "x"), {
-              y1 <- y1.x - y1.y * inputs$scaleFactor
-              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-            })[,c("x","y1","sy1")])
-          } else {
-            table_common <- data.frame(within(merge(table,table2,by = "x"), { 
-              if (info$format2 == 4) {
-                y1 <- y1.x - y1.y * inputs$scaleFactor
-                y2 <- y2 - y1.y * inputs$scaleFactor
-                y3 <- y3 - y1.y * inputs$scaleFactor
-                sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
-                sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
-              } else {
-                y1 <- y1.x - y1.y * inputs$scaleFactor
-                y2 <- y2.x - y2.y * inputs$scaleFactor
-                y3 <- y3.x - y3.y * inputs$scaleFactor
-                sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
-                sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
-              }
-            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-          }
-          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+          ids_info <- paste(file$id1,file$id2, sep = " - ")
         } else if (input$optionSecondary == 3) {
-          if (input$tunits == 1) {
-            delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
-            if (delta != 0) {
-              table2$x <- table2$x + delta
-              showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-            }
-          }
-          if (info$format == 4) {
-            table_common <- data.frame(within(merge(table,table2,by = "x"), {
-              y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-              sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-            })[,c("x","y1","sy1")])
-          } else {
-            table_common <- data.frame(within(merge(table,table2,by = "x"), {
-              if (info$format2 == 4) {
-                y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
-                y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
-              	sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-              	sy2 <- abs(sy2 - sy1.y * inputs$scaleFactor)/2
-              	sy3 <- abs(sy3 - sy1.y * inputs$scaleFactor)/2
-              } else {
-                y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
-                y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
-              	sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-              	sy2 <- abs(sy2.x - sy2.y * inputs$scaleFactor)/2
-              	sy3 <- abs(sy3.x - sy3.y * inputs$scaleFactor)/2
-              }
-            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-          }
-          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+          ids_info <- paste(file$id1,file$id2, sep = " + ")
         }
-        if (nrow(table_common) > 0) {
-          table <- table_common
-          rm(table_common)
-        } else {
-          updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1)
-        }
+      } else if (isTruthy(file$id1)) {
+        ids_info <- file$id1
+      } else {
+        ids_info <- ""
+        removeNotification(id = "ids_info", session = getDefaultReactiveDomain())
+        showNotification("Problem extracting the series ID from the file name. No series ID will be used", action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
       }
+      updateTextInput(session, inputId = "ids", value = ids_info)
       # Checking series values and time order 
       if (!is.null(table)) {
         table <- table[order(table$x),]
@@ -6876,10 +6904,6 @@ server <- function(input,output,session) {
         if (anyNA(table) && is.null(table2)) {
           table <- na.omit(table)
           showNotification("The input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
-        }
-        if (anyNA(table2)) {
-          table2 <- na.omit(table2)
-          showNotification("The secondary input file contains records with NA/NaN values. These records were removed", action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
         }
         # Checking for simultaneous values and setting series limits
         if (nrow(table) > 0) {
@@ -6901,88 +6925,15 @@ server <- function(input,output,session) {
           NULL
         }
       } else {
-        showNotification("The input data file is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
+        showNotification("Problem when merging the primary and secondary series. Check both formats", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         NULL
       }
     } else {
-      showNotification("The input data file is empty or contains wrong data. Check all columns contain the same amount of numeric values.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
+      showNotification("The input data file is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
       NULL
     }
   }
-  get_columns <- function(file,sep,format) {
-    removeNotification("rinex_file")
-    removeNotification("no_head")
-    removeNotification("bad_columns")
-    if (any(grepl("RINEX VERSION / TYPE", readLines(file, n = 3)))) {
-      showNotification("It seems you uploaded a RINEX file. Please, consider uploading a time series instead", action = NULL, duration = 15, closeButton = T, id = "rinex_file", type = "error", session = getDefaultReactiveDomain())
-      return(0)
-    }
-    if (format == 1) { #NEU/ENU
-      skip <- 0
-    } else if (format == 2) { #PBO
-      skip <- try(which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F))), silent = F)
-    } else if (format == 3) { #NGL
-      skip <- try(which(grepl("site YYMMMDD", readLines(file, warn = F))), silent = F)
-    } else if (format == 4) { #1D
-      skip <- 0
-    }
-    if (!isTruthy(skip)) {
-      showNotification("Unable to read the expeced header from PBO/NGL series. Check the requested series format", action = NULL, duration = 15, closeButton = T, id = "no_head", type = "error", session = getDefaultReactiveDomain())
-      return(0)
-    }
-    columns <- try(range(count.fields(file, sep = sep, comment.char = "#", skip = skip)), silent = F)
-    if (isTruthy(columns))  {
-      if (format != 2 && columns[1] != columns[2]) {
-        showNotification("The input file contains different number of columns per row. Check the requested input file format. It may contain uncommented text strings.", action = NULL, duration = 15, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-        return(0)
-      }
-      columns <- columns[1]
-      if (isTruthy(columns)) {
-        if (format == 1) { #NEU/ENU
-          if (!isTruthy(url$station)) {
-            if (isTruthy(input$sigmas)) {
-              if (columns < 7) {
-                showNotification("The number of columns in the input ENU/NEU file is less than 7. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-                return(0)
-              }
-            } else {
-              if (columns < 4) {
-                showNotification("The number of columns in the input ENU/NEU file is less than 4. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-                return(0)
-              }
-            }
-          }
-        } else if (format == 2) { #PBO
-          if (columns < 24) {
-            showNotification("The number of columns in the input PBO file is less than 24. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-            return(0)
-          }
-        } else if (format == 3) { #NGL (on May 19, 2022: 3 columns were added to the tenv3 format; before it had only 20 columns)
-          if (columns < 20) {
-            showNotification("The number of columns in the input NGL file is less than 20. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-            return(0)
-          }
-        } else if (format == 4) { # 1D
-          if (isTruthy(input$sigmas)) {
-            if (columns < 3) {
-              showNotification("The number of columns in the input file is less than 3. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-              return(0)
-            }
-          } else {
-            if (columns < 2) {
-              showNotification("The number of columns in the input file is less than 2. Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-              return(0)
-            }
-          }
-        }
-      }
-    } else {
-      showNotification("Impossible to read the columns from the input file. Check the requested input file format.", action = NULL, duration = 15, closeButton = T, id = "bad_columns", type = "error", session = getDefaultReactiveDomain())
-      req(info$stop)
-    }
-    columns
-  }
-  extract_table <- function(file,sep,format,columns,epoch,variable,errorBar,swap) {
+  extract_table <- function(file,sep,format,epoch,variable,errorBar,swap) {
     tableAll <- NULL
     extracted <- NULL
     removeNotification("no_weeks")
@@ -6993,35 +6944,38 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
-      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
+      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll)) {
-        if (isTruthy(swap)) {
-          extracted <- tableAll[,c(1,3,2,4)]
-        } else {
-          extracted <- tableAll[,c(1,2,3,4)]
-        }
-        names(extracted) <- c("x","y1","y2","y3")
-        if (length(extracted) > 0) {
-          if (columns > 4) {
-            if (isTruthy(swap)) {
-              extracted$sy1 <- tableAll[,6]
-              extracted$sy2 <- tableAll[,5]
-              extracted$sy3 <- tableAll[,7]
-            } else {
-              extracted$sy1 <- tableAll[,5]
-              extracted$sy2 <- tableAll[,6]
-              extracted$sy3 <- tableAll[,7]
-            }
+        columns <- dim(tableAll)[2]
+        if (columns > 3) {
+          if (isTruthy(swap)) {
+            extracted <- tableAll[,c(1,3,2,4)]
           } else {
-            extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
-            info$errorbars <- F
+            extracted <- tableAll[,c(1,2,3,4)]
           }
-          extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+          names(extracted) <- c("x","y1","y2","y3")
+          if (length(extracted) > 0) {
+            if (columns > 4) {
+              if (isTruthy(swap)) {
+                extracted$sy1 <- tableAll[,6]
+                extracted$sy2 <- tableAll[,5]
+                extracted$sy3 <- tableAll[,7]
+              } else {
+                extracted$sy1 <- tableAll[,5]
+                extracted$sy2 <- tableAll[,6]
+                extracted$sy3 <- tableAll[,7]
+              }
+            } else {
+              extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
+              info$errorbars <- F
+            }
+            extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+          }
         }
       }
     } else if (format == 2) { #PBO
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
-      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
+      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll)) {
         if (isTruthy(swap)) {
           extracted <- tableAll[,c(17,16,18,20,19,21)]
@@ -7047,7 +7001,7 @@ server <- function(input,output,session) {
       }
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
-      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
+      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll)) {
         if (input$tunits == 1) {
           extracted <- data.frame( x = tableAll[,4])
@@ -7076,29 +7030,32 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 4) { #1D
-      if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && epoch <= columns && !is.na(variable) && is.numeric(variable) && variable > 0 && variable <= columns && epoch != variable) {
+      if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
         skip <- 0
-        tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = F)
+        tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
         if (isTruthy(tableAll)) {
-          extracted <- data.frame( x = tableAll[[epoch]] )
-          extracted$y1 <- tableAll[[variable]]
-          if (columns > 2) {
-            if (input$sigmas == T) {
-              if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
-                extracted$sy1 <- tableAll[[errorBar]]
+          columns <- dim(tableAll)[2]
+          if (epoch <= columns && variable <= columns) {
+            extracted <- data.frame(x = tableAll[[epoch]])
+            extracted$y1 <- tableAll[[variable]]
+            if (columns > 2) {
+              if (input$sigmas == T) {
+                if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
+                  extracted$sy1 <- tableAll[[errorBar]]
+                } else {
+                  showNotification("Invalid column number for the series error bars. Provide a valid column number or uncheck the error bars option.", action = NULL, duration = 10, closeButton = T, id = "no_error_bars", type = "error", session = getDefaultReactiveDomain())
+                  req(info$stop)
+                }
               } else {
-                showNotification("Invalid column number for the series error bars. Provide a valid column number or uncheck the error bars option.", action = NULL, duration = 10, closeButton = T, id = "no_error_bars", type = "error", session = getDefaultReactiveDomain())
-                req(info$stop)
+                extracted$sy1 <- rep(1,length(extracted$x))
               }
             } else {
               extracted$sy1 <- rep(1,length(extracted$x))
+              info$errorbars <- F
             }
-          } else {
-            extracted$sy1 <- rep(1,length(extracted$x))
-            info$errorbars <- F
-          }
-          if (isTruthy(extracted)) {
-            extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+            if (isTruthy(extracted)) {
+              extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+            }
           }
         }
       }
@@ -7162,7 +7119,7 @@ server <- function(input,output,session) {
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
       extracted
     } else {
-      showNotification("Non numeric values extracted from the input series. Check the input file or the requested format.", action = NULL, duration = 15, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
+      showNotification("Non numeric values extracted from the input series. Check the input file or the requested format.", action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
       NULL
     }
   }
