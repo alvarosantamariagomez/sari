@@ -6676,7 +6676,7 @@ server <- function(input,output,session) {
         } else {
           files <- input$series2
         }
-        if (dim(files)[1] > 1) {
+        if (isTruthy(dim(files)) && dim(files)[1] > 1) {
           table_stack <- NULL
           for (i in 1:dim(files)[1]) {
             table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
@@ -6705,7 +6705,7 @@ server <- function(input,output,session) {
             showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
           }
         } else {
-          table2 <- extract_table(files$datapath,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+          table2 <- extract_table(files,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
         }
         if (!is.null(table2)) {
           if (anyNA(table2)) {
