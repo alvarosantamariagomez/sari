@@ -9263,7 +9263,7 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "step2", value = "1")
       # LOCAL
     } else if (tolower(server) == "local") {
-      if (tolower(product) == "neu") {
+      if (tolower(product) == "neu" || tolower(product) == "enu") {
         format <- 1
       } else if (tolower(product) == "pbo") {
         format <- 2
