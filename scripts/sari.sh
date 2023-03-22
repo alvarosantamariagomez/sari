@@ -179,7 +179,7 @@ fi
 
 # Setting list of available URL parameters
 servers=" local renag ngl euref unavco eostls "
-products=" neu pbo ngl 1d uga final rapid cwu nmt atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+products=" enu neu pbo ngl 1d uga final rapid cwu nmt atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Checking valid arguments
 contains() {
