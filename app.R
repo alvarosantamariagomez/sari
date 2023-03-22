@@ -1942,7 +1942,7 @@ server <- function(input,output,session) {
   output_excluded <- reactiveValues(df = NULL)
   
   # 8. input parameters via URL
-  url <- reactiveValues(station = NULL, file = NULL, station2 = NULL, file2 = NULL)
+  url <- reactiveValues(station = NULL, server = "ext", file = NULL, station2 = NULL, server2 = "ext", file2 = NULL)
   
   # Constants ####
   # Some initial values and constants
@@ -5428,6 +5428,7 @@ server <- function(input,output,session) {
                 url$file <- NULL
                 req(info$stop)
               }
+              url$server <- "local"
               showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
               down <- 0
               file$primary$name <- url$file
@@ -5457,6 +5458,7 @@ server <- function(input,output,session) {
                     showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
                     down <- 0
                     file$secondary$name <- url$file2
+                    url$server2 <- "local"
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                     down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
@@ -5465,7 +5467,12 @@ server <- function(input,output,session) {
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F))
-                    session$sendCustomMessage("filename2", file$secondary$name)
+                    if (url$server2 == "local") {
+                      filename2 <- basename(url$file2)
+                    } else if (url$server2 == "ext") {
+                      filename2 <- file$secondary$name
+                    }
+                    session$sendCustomMessage("filename2", filename2)
                   } else {
                     removeNotification("parsing_url2")
                     showNotification(paste0("File ",file$secondary$name," not found in ",toupper(query[['server2']]),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5476,7 +5483,12 @@ server <- function(input,output,session) {
               if (!is.null(data)) {
                 obs(data)
                 values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-                session$sendCustomMessage("filename", file$primary$name)
+                if (url$server == "local") {
+                  filename <- basename(url$file)
+                } else if (url$server == "ext") {
+                  filename <- file$primary$name 
+                }
+                session$sendCustomMessage("filename", filename)
               }
             } else {
               removeNotification("parsing_url1")
@@ -5897,12 +5909,28 @@ server <- function(input,output,session) {
     update <- 0
     file$id1 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1])
     if (!isTruthy(file$id1)) {
-      file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+      if (isTruthy(url$station)) {
+        if (url$server == "local") {
+          file$id1 <- strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1]  
+        } else if (url$server == "ext") {
+          file$id1 <- url$station 
+        }
+      } else {
+        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+      }
       update <- 1
     }
     file$id2 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2])
-    if (isTruthy(input$series2$name) && !isTruthy(file$id2)) {
-      file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+    if (!isTruthy(file$id2)) {
+      if (isTruthy(url$station2)) {
+        if (url$server2 == "local") {
+          file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
+        } else if (url$server2 == "ext") {
+          file$id2 <- url$station2 
+        }
+      } else {
+        file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+      }
       update <- 1
     }
     if (update > 0) {
@@ -6661,14 +6689,6 @@ server <- function(input,output,session) {
       } else {
         info$step <- NULL
       }
-      # Setting station ID
-      if (!isTruthy(inputs$ids)) {
-        if (isTruthy(url$station)) {
-          file$id1 <- url$station
-        } else {
-          file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
-        }
-      }
       # Getting secondary series from input file(s)
       if (length(file$secondary) > 0 && input$optionSecondary > 0) {
         if (isTruthy(url$file2)) {
@@ -6860,14 +6880,6 @@ server <- function(input,output,session) {
               } else {
                 updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1)
               }
-              # Setting secondary station ID
-              if (!isTruthy(inputs$ids)) {
-                if (isTruthy(url$station2)) {
-                  file$id2 <- url$station2
-                } else {
-                  file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
-                }
-              }
             } else {
               showNotification("Problem when averaging the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
             }
@@ -6878,7 +6890,28 @@ server <- function(input,output,session) {
           showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
         }
       }
-      # Update IDs
+      # Setting station IDs
+      if (!isTruthy(inputs$ids)) {
+        if (isTruthy(url$station)) {
+          if (url$server == "local") {
+            file$id1 <- strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1]  
+          } else if (url$server == "ext") {
+            file$id1 <- url$station 
+          }
+        } else {
+          file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+        }
+        if (isTruthy(url$station2)) {
+          if (url$server2 == "local") {
+            file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
+          } else if (url$server2 == "ext") {
+            file$id2 <- url$station2 
+          }
+        } else {
+          file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+        }
+      }
+      # Updating station IDs
       if (isTruthy(file$id1) && isTruthy(file$id2)) {
         if (input$optionSecondary == 0) {
           ids_info <- file$id1
