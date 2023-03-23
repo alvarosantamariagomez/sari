@@ -193,10 +193,22 @@ contains "$servers" $server2
 contains "$products" $product1
 contains "$products" $product2
 
+# Catching SARI installation error
+checkR() {
+	if ! ps -p $pid > /dev/null; then
+		echo Problem running Rscript to start SARI. Check in the log that all the SARI dependencies are correctly installed.
+		exit 1
+	fi
+}
+
 # Setting the type of session from the input command-line options
 waiting() {
-	echo "Press Ctrl+C to stop the SARI session"
-	wait $pid
+	if ! ps -p $pid > /dev/null; then
+		echo Problem running Rscript to start SARI
+	else	
+		echo "Press Ctrl+C to stop the SARI session"
+		wait $pid
+	fi
 }
 
 # Remote session
@@ -240,16 +252,15 @@ if [[ -z $local && ! -z $remote ]]; then
 elif [[ ! -z $local && -z $remote ]]; then
 	if [[ -f $saridir/app_$now.R ]]; then
 
-		Rscript --vanilla --silent -e "library(shiny)" -e "runApp('$saridir/app_$now.R', port = $port, launch.browser = F, display.mode = 'normal')" &> $out &
+		Rscript --vanilla --silent -e "library(shiny)" -e "runApp('$saridir/app_$now.R', port = $port, launch.browser = F, display.mode = 'normal')" &> $out & 
 		pid=$!
-		if ! ps -p $pid > /dev/null; then
-			echo Problem running Rscript
-			exit 1
-		fi
 		if [[ $wsl != 0 ]]; then
 			echo Loading R packages...
 			sleep 4
+		else
+			sleep 2
 		fi
+		checkR
 
 		# Local session with local or remote file
 		if [[ ! -z $server1 && ! -z $product1 && ! -z $station1 ]]; then
@@ -274,9 +285,11 @@ elif [[ ! -z $local && -z $remote ]]; then
 
 			# Primary and secondary series
 			if [[ ! -z $server2 && ! -z $product2 && ! -z $station2 ]]; then
+				checkR
 				xdg-open "http://127.0.0.1:$port/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
 			# Primary series only
 			else
+				checkR
 				xdg-open "http://127.0.0.1:$port/?server=$server1&product=$product1&station=$station1"
 			fi
 			waiting
