@@ -138,6 +138,7 @@ if [[ -z $logging ]]; then
 	out="/dev/null"
 else
 	out="$saridir/SARI_$now.log"
+	echo "Logging the SARI session in $out"
 fi
 
 # Setting the listening port for local sessions
