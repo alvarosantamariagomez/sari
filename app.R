@@ -4765,9 +4765,9 @@ server <- function(input,output,session) {
     req(input$header, file$primary)
     if (length(trans$x) > 0) {
       if (input$sigmas) {
-        header <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)[1:input$lines,]
+        header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y), sy = sprintf("%.*f", info$decimalsy, trans$sy))[1:input$lines,]
       } else {
-        header <- data.frame(x = trans$x, y = trans$y)[1:input$lines,]
+        header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y))[1:input$lines,]
       }
       if (isTruthy(local)) {
         tmpfile <- tempfile()
