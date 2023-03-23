@@ -4769,7 +4769,11 @@ server <- function(input,output,session) {
       } else {
         header <- data.frame(x = trans$x, y = trans$y)[1:input$lines,]
       }
-      tmpfile <- tempfile()
+      if (isTruthy(local)) {
+        tmpfile <- tempfile()
+      } else {
+        tmpfile <- "tmp"
+      }
       write.table(header, file = tmpfile, append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
       noquote(paste(readLines(con = tmpfile, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
@@ -5431,10 +5435,15 @@ server <- function(input,output,session) {
               url$server <- "local"
               showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
               down <- 0
-              file$primary$name <- url$file
+              file$primary$file <- url$file
             } else {
               showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+              if (isTruthy(local)) {
+                file$primary$file <- tempfile()
+              } else {
+                file$primary$file <- file$primary$name
+              }
+              down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
             }
             if (isTruthy(down) && down == 0) {
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
@@ -5457,11 +5466,16 @@ server <- function(input,output,session) {
                     }
                     showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
                     down <- 0
-                    file$secondary$name <- url$file2
+                    file$secondary$file <- url$file2
                     url$server2 <- "local"
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$name, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+                    if (isTruthy(local)) {
+                      file$secondary$file <- tempfile()
+                    } else {
+                      file$secondary$file <- file$secondary$name
+                    }
+                    down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
                   }
                   if (isTruthy(down) && down == 0) {
                     info$menu <- unique(c(info$menu, 3))
@@ -5920,18 +5934,20 @@ server <- function(input,output,session) {
       }
       update <- 1
     }
-    file$id2 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2])
-    if (!isTruthy(file$id2)) {
-      if (isTruthy(url$station2)) {
-        if (url$server2 == "local") {
-          file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
-        } else if (url$server2 == "ext") {
-          file$id2 <- url$station2 
+    if (length(file$secondary) > 0) {
+      file$id2 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2])
+      if (!isTruthy(file$id2)) {
+        if (isTruthy(url$station2)) {
+          if (url$server2 == "local") {
+            file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
+          } else if (url$server2 == "ext") {
+            file$id2 <- url$station2 
+          }
+        } else {
+          file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
         }
-      } else {
-        file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+        update <- 1
       }
-      update <- 1
     }
     if (update > 0) {
       if (!is.null(file$id2)) {
@@ -6646,7 +6662,7 @@ server <- function(input,output,session) {
     table <- NULL
     table2 <- NULL
     if (isTruthy(url$file)) {
-      table <- extract_table(file$primary$name,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
+      table <- extract_table(file$primary$file,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
     } else {
       table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
     }
@@ -6692,9 +6708,9 @@ server <- function(input,output,session) {
       # Getting secondary series from input file(s)
       if (length(file$secondary) > 0 && input$optionSecondary > 0) {
         if (isTruthy(url$file2)) {
-          files <- file$secondary$name
+          files <- file$secondary$file
         } else {
-          files <- input$series2
+          files <- input$series2$datapath
         }
         if (isTruthy(dim(files)) && dim(files)[1] > 1) {
           table_stack <- NULL
@@ -6901,14 +6917,16 @@ server <- function(input,output,session) {
         } else {
           file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
         }
-        if (isTruthy(url$station2)) {
-          if (url$server2 == "local") {
-            file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
-          } else if (url$server2 == "ext") {
-            file$id2 <- url$station2 
+        if (length(file$secondary) > 0) {
+          if (isTruthy(url$station2)) {
+            if (url$server2 == "local") {
+              file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
+            } else if (url$server2 == "ext") {
+              file$id2 <- url$station2 
+            }
+          } else {
+            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
           }
-        } else {
-          file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
         }
       }
       # Updating station IDs
