@@ -7115,6 +7115,7 @@ server <- function(input,output,session) {
       stationCartesian <- c()
       stationGeo <- c()
       poleCartesian <- c()
+      if (messages > 0) cat(file = stderr(), "Plate rotation", "\n")
       vup <- (mean(extracted$y3[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(extracted$y3[1:as.integer(length(extracted$x*0.1))])) / (mean(extracted$x[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(extracted$x[1:as.integer(length(extracted$x*0.1))]))
       if (abs(vup) > 0.05 && sd(extracted$y3 - vup*(extracted$x - mean(extracted$x))) > 0.05) {
         scaling <- 1000
