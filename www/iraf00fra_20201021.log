@@ -1,0 +1,297 @@
+     IRAF00FRA Site Information Form (site log)
+     International GNSS Service
+     See Instructions at:
+       https://files.igscb.org/pub/station/general/sitelog_instr.txt
+
+
+0.   Form
+
+     Prepared by (full name)  : Alvaro Santamaría
+     Date Prepared            : 2020-10-21
+     Report Type              : NEW
+     If Update:
+      Previous Site Log       : (ssssddsss_ccyymmdd.log)
+      Modified/Added Sections : (n.n,n.n,...)
+
+
+1.   Site Identification of the GNSS Monument
+
+     Site Name                : IRATY
+     Four Character ID        : IRAF
+     Monument Inscription     : 
+     IERS DOMES Number        : 18322M001
+     CDP Number               : (A4)
+     Monument Description     : STEEL MAST
+       Height of the Monument : 1.6 m
+       Monument Foundation    : CONCRETE BLOCK
+       Foundation Depth       : (m)
+     Marker Description       : self-centered top of mast
+     Date Installed           : 2020-09-16T10:00Z
+     Geologic Characteristic  : CONGLOMERATE
+       Bedrock Type           : METAMORPHIC
+       Bedrock Condition      : WEATHERED
+       Fracture Spacing       : (0 cm/1-10 cm/11-50 cm/51-200 cm/over 200 cm)
+       Fault zones nearby     : (YES/NO/Name of the zone)
+         Distance/activity    : (multiple lines)
+     Additional Information   : Self-centering antenna mount (SECO) on top of a 
+                              : 200 x 5 cm stainless steel mast introduced 40 cm
+                              : into a concrete slab of unknown depth (ancient 
+                              : telecom tower support). The mast is protected 
+                              : with 13 mm thermal-insulation rubber foam and a 
+                              : sealed UV-resistant PVC pipe.
+
+
+2.   Site Location Information
+
+     City or Town             : Larrau
+     State or Province        : Pyrénées-Atlantiques
+     Country                  : France
+     Tectonic Plate           : EURASIAN
+     Approximate Position (ITRF)
+       X coordinate (m)       : 4669718.471
+       Y coordinate (m)       : -84529.112
+       Z coordinate (m)       : 4331222.561
+       Latitude (N is +)      : +430200.64
+       Longitude (E is +)     : -0010213.30
+       Elevation (m,ellips.)  : 1463.7
+     Additional Information   : (multiple lines)
+
+
+3.   GNSS Receiver Information
+
+3.1  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5816R50341
+     Firmware Version         : 5.44
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2020-09-16T10:00Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Temperature Stabiliz.    : none
+     Additional Information   : (multiple lines)
+
+3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
+     Satellite System         : (GPS+GLO+GAL+BDS+QZSS+IRNSS+SBAS)
+     Serial Number            : (A20, but note the first A5 is used in SINEX)
+     Firmware Version         : (A11)
+     Elevation Cutoff Setting : (deg)
+     Date Installed           : (CCYY-MM-DDThh:mmZ)
+     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Temperature Stabiliz.    : (none or tolerance in degrees C)
+     Additional Information   : (multiple lines)
+
+
+4.   GNSS Antenna Information
+
+4.1  Antenna Type             : TRM115000.00    NONE
+     Serial Number            : 1551000334
+     Antenna Reference Point  : BAM
+     Marker->ARP Up Ecc. (m)  :   0.0530
+     Marker->ARP North Ecc(m) :   0.0000
+     Marker->ARP East Ecc(m)  :   0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : LRM-400
+     Antenna Cable Length     : 30 m
+     Date Installed           : 2020-09-16T10:00Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Additional Information   : The SECO antenna mount is 7.65 cm height, but 
+                              : screws 2.35 cm on top of the steel mast (the 
+                              : marker)
+
+4.x  Antenna Type             : (A20, from rcvr_ant.tab; see instructions)
+     Serial Number            : (A*, but note the first A5 is used in SINEX)
+     Antenna Reference Point  : (BPA/BCR/XXX from "antenna.gra"; see instr.)
+     Marker->ARP Up Ecc. (m)  : (F8.4)
+     Marker->ARP North Ecc(m) : (F8.4)
+     Marker->ARP East Ecc(m)  : (F8.4)
+     Alignment from True N    : (deg; + is clockwise/east)
+     Antenna Radome Type      : (A4 from rcvr_ant.tab; see instructions)
+     Radome Serial Number     : 
+     Antenna Cable Type       : (vendor & type number)
+     Antenna Cable Length     : (m)
+     Date Installed           : (CCYY-MM-DDThh:mmZ)
+     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Additional Information   : (multiple lines)
+
+
+5.   Surveyed Local Ties
+
+5.x  Tied Marker Name         : 
+     Tied Marker Usage        : (SLR/VLBI/LOCAL CONTROL/FOOTPRINT/etc)
+     Tied Marker CDP Number   : (A4)
+     Tied Marker DOMES Number : (A9)
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : (m)
+       dy (m)                 : (m)
+       dz (m)                 : (m)
+     Accuracy (mm)            : (mm)
+     Survey method            : (GPS CAMPAIGN/TRILATERATION/TRIANGULATION/etc)
+     Date Measured            : (CCYY-MM-DDThh:mmZ)
+     Additional Information   : (multiple lines)
+
+
+6.   Frequency Standard
+
+6.1  Standard Type            : INTERNAL 
+       Input Frequency        : (if external)
+       Effective Dates        : 2020-09-16/CCYY-MM-DD
+       Notes                  : (multiple lines)
+
+6.x  Standard Type            : (INTERNAL or EXTERNAL H-MASER/CESIUM/etc)
+       Input Frequency        : (if external)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+
+7.   Collocation Information
+
+7.x  Instrumentation Type     : (GPS/GLONASS/DORIS/PRARE/SLR/VLBI/TIME/etc)
+       Status                 : (PERMANENT/MOBILE)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+
+8.   Meteorological Instrumentation
+
+8.1.x  Humidity Sensor Model  : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy (% rel h)     : (% rel h)
+       Aspiration             : (UNASPIRATED/NATURAL/FAN/etc)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.2.x  Pressure Sensor Model  : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy               : (hPa)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.3.x  Temp. Sensor Model     : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy               : (deg C)
+       Aspiration             : (UNASPIRATED/NATURAL/FAN/etc)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.4.x  Water Vapor Radiometer : 
+       Manufacturer           : 
+       Serial Number          : 
+       Distance to Antenna    : (m)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.5.x  Other Instrumentation  : (multiple lines)
+
+
+9.   Local Ongoing Conditions Possibly Affecting Computed Position
+
+9.1.x  Radio Interferences    : (TV/CELL PHONE ANTENNA/RADAR/etc)
+       Observed Degradations  : (SN RATIO/DATA GAPS/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+9.2.x  Multipath Sources      : (METAL ROOF/DOME/VLBI ANTENNA/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+9.3.x  Signal Obstructions    : (TREES/BUILDINGS/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+
+10.  Local Episodic Effects Possibly Affecting Data Quality
+
+10.x  Date                    : (CCYY-MM-DD/CCYY-MM-DD)
+      Event                   : (TREE CLEARING/CONSTRUCTION/etc)
+
+
+11.  On-Site, Point of Contact Agency Information
+
+     Agency                   : Observatoire Midi-Pyrénées
+     Preferred Abbreviation   : OMP
+     Mailing Address          : avenue Edouard Belin 14
+                              : 31400 Toulouse
+                              : France
+     Primary Contact
+       Contact Name           : Alvaro Santamaría
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : alvaro.santamaria@get.omp.eu
+     Secondary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Additional Information   : (multiple lines)
+
+
+
+
+12.  Responsible Agency (if different from 11.)
+
+     Agency                   : (multiple lines)
+     Preferred Abbreviation   : (A10)
+     Mailing Address          : (multiple lines)
+     Primary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Secondary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Additional Information   : (multiple lines)
+
+
+13.  More Information
+
+     Primary Data Center      : IGN
+     Secondary Data Center    : 
+     URL for More Information : http://webrenag.unice.fr/
+     Hardcopy on File
+       Site Map               : (Y or URL)
+       Site Diagram           : (Y or URL)
+       Horizon Mask           : (Y or URL)
+       Monument Description   : (Y or URL)
+       Site Pictures          : (Y or URL)
+     Additional Information   : (multiple lines)
+     Antenna Graphics with Dimensions
+
+TRM115000.00 NONE
+
+   / --------------------------------------------- \
+  +                                                 +
+   \ --------------------------------------------- /
+                   \       _       /
+                    \     | |     /
+                     \----|+|----/                        <--   0.0000  BAM=ARP
+                     |           |
+										 |           |
+										 | |-------| |                        <--  -0.0530  Marker
+										 | |       | |
+										 |--       --|
+										 |           |
+										 .           .
+										 .           .
+  <--                    0.3396                   -->
