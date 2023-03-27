@@ -3133,6 +3133,7 @@ server <- function(input,output,session) {
     removeNotification("bad_variance")
     removeNotification("bad_kf")
     removeNotification("kf_not_valid")
+    removeNotification("bad_obserror")
     updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
     output$offsetFound <- renderUI({
       NULL
@@ -3171,20 +3172,24 @@ server <- function(input,output,session) {
         if (messages > 1) cat(file = stderr(), m$model, "\n")
         apriori <- as.numeric(m$apriori)
         unc_ini <- as.numeric(m$error)^2
-        if (isTruthy(input$sigmas)) {
-          if (isTruthy(input$ObsError)) {
-            sigmaR <- as.numeric(input$ObsError) * sy / median(sy)
+        sigmaR <- NULL
+        if (isTruthy(input$ObsError)) {
+          if (isTruthy(as.numeric(input$ObsError)) && as.numeric(input$ObsError) > 0) {
+            if (isTruthy(input$sigmas)) {
+              sigmaR <- as.numeric(input$ObsError) * sy / median(sy)
+            } else {
+              sigmaR <- rep(as.numeric(input$ObsError), length(trans$y))
+            }
           } else {
-            sigmaR <- info$noise/5
-            updateTextInput(session, "ObsError", value = sigmaR)
-            sigmaR <- sigmaR * sy / median(sy)
+            showNotification("The input measurement error is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_obserror", type = "error", session = getDefaultReactiveDomain())
           }
-        } else {
-          if (isTruthy(input$ObsError)) {
-            sigmaR <- rep(as.numeric(input$ObsError), length(trans$y))
+        }
+        if (!isTruthy(sigmaR)) {
+          sigmaR <- info$noise/5
+          updateTextInput(session, "ObsError", value = sigmaR)
+          if (isTruthy(input$sigmas)) {
+            sigmaR <- sigmaR * sy / median(sy)
           } else {
-            sigmaR <- info$noise/5
-            updateTextInput(session, "ObsError", value = sigmaR)
             sigmaR <- rep(sigmaR, length(trans$y))
           }
         }
