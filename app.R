@@ -1,16 +1,16 @@
 ### Copyright (C) 2017  Alvaro Santamaria-Gomez, 12 May 2017
 ### alvaro.santamaria@get.omp.eu
-### 
+###
 ### This program is free software: you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
 ### the Free Software Foundation, either version 3 of the License, or
 ### any later version.
-### 
+###
 ### This program is distributed in the hope that it will be useful,
 ### but WITHOUT ANY WARRANTY; without even the implied warranty of
 ### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ### GNU General Public License for more details.
-### 
+###
 ### You should have received a copy of the GNU General Public License
 ### along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -119,7 +119,7 @@ css <- '
 .disabled {
 background: default !important;
 cursor: not-allowed !important;
-pointer-events: none; 
+pointer-events: none;
 color: gray !important;
 }'
 
@@ -139,11 +139,11 @@ Shiny.addCustomMessageHandler('filename2', function(txt) {
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
-                
+
                 # HTTP meta and style header tags
                 # tags$head(includeScript("google-analytics.js")),
                 # tags$head(includeHTML(("google-analytics.html"))),
-                
+
                 tags$style(css),
                 tags$head(
                   tags$script(src = "ddpcr.js"),
@@ -178,7 +178,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
                   tags$style(type = 'text/css', 'form.well { height: 96vh; overflow-y: auto; width: 100%}'),
-                  
+
                   # Getting user screen size (from https://stackoverflow.com/questions/36995142/get-the-size-of-the-window-in-shiny)
                   tags$script('
                                 var size = [0, 0];
@@ -198,24 +198,24 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     Shiny.onInputChange("tactile", tactile);
                                 });
                             '),
-                  
+
                   # update fileInput file name from URL
                   tags$script(HTML(jscode_update_series)),
                   tags$script(HTML(jscode_update_series2))
                 ),
-                
+
                 sidebarLayout(position = "left", fluid = T,
-                              div( id = "menu_all", 
-                                   
+                              div( id = "menu_all",
+
                                    # Sidebar menu ####
                                    sidebarPanel(
                                      width = 4,
                                      style = "position:fixed;width:inherit;",
                                      id = "side-panel",
                                      bsCollapse(id = "menu", open = c(1,2), multiple = T,
-                                                
+
                                                 # Expandable/collapsible blocks
-                                                
+
                                                 # * Input data and format ####
                                                 bsCollapsePanel(value = 1,
                                                                 tags$h4(style = "color:white", icon("database", class = NULL, lib = "font-awesome"), "Input data and format",  icon("caret-down", class = NULL, lib = "font-awesome")),
@@ -326,7 +326,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                     )
                                                                 ),
                                                                 style = "primary"),
-                                                
+
                                                 # * Plot controls ####
                                                 bsCollapsePanel(value = 2,
                                                                 tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
@@ -348,13 +348,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                 div(style = "padding: 0px 0px; margin-top:1em",
                                                                     fluidRow(
                                                                       column(4,
-                                                                             textInput(inputId = "thresholdRes", 
+                                                                             textInput(inputId = "thresholdRes",
                                                                                        div("Residual",
                                                                                            helpPopup("Threshold to delete points with larger absolute residual")),
                                                                                        value = NULL)
                                                                       ),
                                                                       column(4, style = "padding:0px 10px 0px 0px;", align = "left",
-                                                                             textInput(inputId = "thresholdResN", 
+                                                                             textInput(inputId = "thresholdResN",
                                                                                        div("Norm. residual",
                                                                                            helpPopup("Threshold to delete points with larger normalized absolute residual")),
                                                                                        value = NULL)
@@ -384,18 +384,18 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        value = F)
                                                                   ),
                                                                   column(3,
-                                                                         checkboxInput(inputId = "overflow", 
+                                                                         checkboxInput(inputId = "overflow",
                                                                                        div("Scrolling",
                                                                                            helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is deactivated, the user can take a screenshot of the full web page.")),
                                                                                        value = T),
                                                                   )
                                                                 ),
                                                                 style = "primary"),
-                                                
+
                                                 # * Ancillary information ####
                                                 bsCollapsePanel(value = 3,
                                                                 tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                
+
                                                                 # % sitelog ####
                                                                 div(style = "padding: 0px 0px; margin-top:0em",
                                                                     fluidRow(
@@ -416,14 +416,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                              div(style = "padding: 0px 0px; margin-top:-1em",
                                                                                  conditionalPanel(
                                                                                    condition = "output.log",
-                                                                                   checkboxInput(inputId = "traceLog", label = "Plot changes", value = F), 
+                                                                                   checkboxInput(inputId = "traceLog", label = "Plot changes", value = F),
                                                                                    checkboxInput(inputId = "printLog", label = "List changes", value = F)
                                                                                  )
                                                                              )
                                                                       )
                                                                     )
                                                                 ),
-                                                                
+
                                                                 # % station.info ####
                                                                 div(style = "padding: 0px 0px; margin-top:-1em",
                                                                     fluidRow(
@@ -451,7 +451,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                 ),
-                                                                
+
                                                                 # % soln ####
                                                                 div(style = "padding: 0px 0px; margin-top:-1em",
                                                                     fluidRow(
@@ -479,7 +479,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                 ),
-                                                                
+
                                                                 # % Custom ####
                                                                 div(style = "padding: 0px 0px; margin-top:-1em",
                                                                     fluidRow(
@@ -507,12 +507,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                 ),
-                                                                
+
                                                                 # % Secondary series ####
                                                                 div(style = "padding: 0px 0px; margin-top:-1em",
                                                                     fluidRow(
-                                                                      column(8, 
-                                                                             fileInput(inputId = "series2", 
+                                                                      column(8,
+                                                                             fileInput(inputId = "series2",
                                                                                        div("Secondary series",
                                                                                            helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
                                                                                        multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
@@ -534,15 +534,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
                                                                                fluidRow(
                                                                                  column(6,
-                                                                                        textInput(inputId = "scaleFactor", 
+                                                                                        textInput(inputId = "scaleFactor",
                                                                                                   div("Scale factor",
-                                                                                                      helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")), 
+                                                                                                      helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")),
                                                                                                   value = "1")
                                                                                  ),
                                                                                  column(6,
-                                                                                        textInput(inputId = "step2", 
+                                                                                        textInput(inputId = "step2",
                                                                                                   div("Averaging",
-                                                                                                      helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")), 
+                                                                                                      helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
                                                                                                   value = "")
                                                                                  )
                                                                                )
@@ -592,7 +592,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                 ),
-                                                                
+
                                                                 # % Euler ####
                                                                 checkboxInput(inputId = "euler",
                                                                               div(style = "font-weight: bold", "Plate motion model",
@@ -696,7 +696,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                 ),
                                                                 style = "primary"),
-                                                
+
                                                 # * Fit controls ####
                                                 bsCollapsePanel(value = 4,
                                                                 tags$h4(style = "color:white", icon("wand-magic-sparkles", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
@@ -760,7 +760,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
                                                                       checkboxGroupInput(inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
                                                                   ),
-                                                                  
+
                                                                   # % Linear fit ####
                                                                   conditionalPanel(
                                                                     condition = "input.model.indexOf('Linear') != -1",
@@ -780,7 +780,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       conditionalPanel(
                                                                         condition = "input.fitType == 2",
                                                                         column(6,
-                                                                               textInput(inputId = "TrendDev", 
+                                                                               textInput(inputId = "TrendDev",
                                                                                          div("Rate process noise",
                                                                                              helpPopup("Rate variation (standard deviation) for each observation.")),
                                                                                          value = "0.0")
@@ -793,14 +793,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(6,
                                                                                conditionalPanel(
                                                                                  condition = "input.fitType == 2",
-                                                                                 textInput(inputId = "Intercept0", 
+                                                                                 textInput(inputId = "Intercept0",
                                                                                            div("A priori intercept",
                                                                                                helpPopup("Initial state value for the intercept. If empty, an approximate value will be used.")),
                                                                                            value = "")
                                                                                )
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eIntercept0", 
+                                                                               textInput(inputId = "eIntercept0",
                                                                                          div("A priori intercept error",
                                                                                              helpPopup("Initial state uncertainty (standard deviation) for the intercept. If empty, an approximate value will be used.")),
                                                                                          value = "")
@@ -810,14 +810,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(6,
                                                                                conditionalPanel(
                                                                                  condition = "input.fitType == 2",
-                                                                                 textInput(inputId = "Trend0", 
+                                                                                 textInput(inputId = "Trend0",
                                                                                            div("A priori rate",
                                                                                                helpPopup("Initial state value for the rate. If empty, an approximate value will be used.")),
                                                                                            value = "")
                                                                                )
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eTrend0", 
+                                                                               textInput(inputId = "eTrend0",
                                                                                          div("A priori rate error",
                                                                                              helpPopup("Initial state uncertainty (standard deviation) for the rate. If empty, an approximate value will be used.")),
                                                                                          value = "")
@@ -825,30 +825,30 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                   ),
-                                                                  
+
                                                                   # % Sinusoidal fit ####
                                                                   conditionalPanel(
                                                                     condition = "input.model.indexOf('Sinusoidal') != -1",
                                                                     div(style = "padding: 0px 0px; margin-top:0em",
                                                                         tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
                                                                     ),
-                                                                    textInput(inputId = "period", 
+                                                                    textInput(inputId = "period",
                                                                               div("Sinusoidal periods",
-                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")), 
+                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")),
                                                                               value = "1y"),
                                                                     fluidRow(
                                                                       column(6,
-                                                                             textInput(inputId = "periodRef", 
+                                                                             textInput(inputId = "periodRef",
                                                                                        div("Ref. epoch periods",
-                                                                                           helpPopup("Reference epoch for the phase of the periods. If empty, the mean data epoch will be used")), 
+                                                                                           helpPopup("Reference epoch for the phase of the periods. If empty, the mean data epoch will be used")),
                                                                                        value = "")
                                                                       ),
                                                                       conditionalPanel(
                                                                         condition = "input.fitType == 2",
                                                                         column(6,
-                                                                               textInput(inputId = "S0", 
+                                                                               textInput(inputId = "S0",
                                                                                          div("A priori amplitude",
-                                                                                             helpPopup("Initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         )
                                                                       )
@@ -860,16 +860,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                textInput(inputId = "SinusoidalDev",
                                                                                          div("Amplitude process noise",
                                                                                              helpPopup("Sine/cosine amplitude variation (standard deviation) for each observation.")),
-                                                                                         value = "0.0")                                              
+                                                                                         value = "0.0")
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eS0", 
+                                                                               textInput(inputId = "eS0",
                                                                                          div("A priori amplitude error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for sine & cosine amplitudes. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state uncertainty (standard deviation) for sine & cosine amplitudes. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         )
                                                                       ),
-                                                                      tags$div(id = "inline", 
+                                                                      tags$div(id = "inline",
                                                                                radioButtons(inputId = "SineCosine",
                                                                                             div("Amplitude process noise on",
                                                                                                 helpPopup("Choose between varying the sine amplitude only or varying both the sine & cosine amplitudes independently.")),
@@ -877,30 +877,30 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                   ),
-                                                                  
+
                                                                   # % Offset fit ####
                                                                   conditionalPanel(
                                                                     condition = "input.model.indexOf('Offset') != -1",
                                                                     div(style = "padding: 0px 0px; margin-top:0em",
                                                                         tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
                                                                     ),
-                                                                    textInput(inputId = "offsetEpoch", 
+                                                                    textInput(inputId = "offsetEpoch",
                                                                               div("Offset epochs",
-                                                                                  helpPopup("Comma-separated list")), 
+                                                                                  helpPopup("Comma-separated list")),
                                                                               value = ""),
                                                                     conditionalPanel(
                                                                       condition = "input.fitType == 2",
                                                                       fluidRow(
                                                                         column(6,
-                                                                               textInput(inputId = "O0", 
+                                                                               textInput(inputId = "O0",
                                                                                          div("A priori offset",
-                                                                                             helpPopup("Initial state value for the offsets. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state value for the offsets. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eO0", 
+                                                                               textInput(inputId = "eO0",
                                                                                          div("A priori offset error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         )
                                                                       )
@@ -912,7 +912,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                              )
                                                                       ),
                                                                       column(6,
-                                                                             sliderInput("segmentLength", 
+                                                                             sliderInput("segmentLength",
                                                                                          div("Minimum segment",
                                                                                              helpPopup("Minimum segment size given as % of the series length")),
                                                                                          min = 0.1, max = 50, value = 10, step = 1, round = 0, ticks = F, animate = F, width = NULL, sep = "", pre = NULL, post = NULL, timeFormat = NULL, timezone = NULL, dragRange = TRUE)
@@ -939,21 +939,21 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       condition = "input.verif_offsets == true",
                                                                       fluidRow(
                                                                         column(4,
-                                                                               textInput(inputId = "verif_white", 
+                                                                               textInput(inputId = "verif_white",
                                                                                          div("White noise",
-                                                                                             helpPopup("Standard deviation of the expected white noise in the series.")), 
+                                                                                             helpPopup("Standard deviation of the expected white noise in the series.")),
                                                                                          value = "")
                                                                         ),
                                                                         column(4,
-                                                                               textInput(inputId = "verif_pl", 
+                                                                               textInput(inputId = "verif_pl",
                                                                                          div("Power-law",
-                                                                                             helpPopup("Stardard deviation of the expected power-law noise in the series.")), 
+                                                                                             helpPopup("Stardard deviation of the expected power-law noise in the series.")),
                                                                                          value = "")
                                                                         ),
                                                                         column(4,
-                                                                               textInput(inputId = "verif_k", 
+                                                                               textInput(inputId = "verif_k",
                                                                                          div("Spectral index",
-                                                                                             helpPopup("Spectral index of the expected power-law noise in the series.")), 
+                                                                                             helpPopup("Spectral index of the expected power-law noise in the series.")),
                                                                                          value = "")
                                                                         )
                                                                       )
@@ -967,28 +967,28 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                   ),
-                                                                  
+
                                                                   # % Exponential fit ####
                                                                   conditionalPanel(
                                                                     condition = "input.model.indexOf('Exponential') != -1",
                                                                     div(style = "padding: 0px 0px; margin-top:0em",
                                                                         tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
                                                                     ),
-                                                                    textInput(inputId = "ExponenRef", 
+                                                                    textInput(inputId = "ExponenRef",
                                                                               div("Ref. time exponential",
-                                                                                  helpPopup("Comma-separated lisf of the starting time for the exponential decays.")), 
+                                                                                  helpPopup("Comma-separated lisf of the starting time for the exponential decays.")),
                                                                               value = ""),
                                                                     fluidRow(
                                                                       column(6,
-                                                                             textInput(inputId = "E0", 
+                                                                             textInput(inputId = "E0",
                                                                                        div("A priori constant",
-                                                                                           helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")), 
+                                                                                           helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
                                                                                        value = "")
                                                                       ),
                                                                       column(6,
-                                                                             textInput(inputId = "TE0", 
+                                                                             textInput(inputId = "TE0",
                                                                                        div("A priori decay rate",
-                                                                                           helpPopup("Initial value for the exponential decay rates. If empty, an approximate value will be used.")), 
+                                                                                           helpPopup("Initial value for the exponential decay rates. If empty, an approximate value will be used.")),
                                                                                        value = "")
                                                                       )
                                                                     ),
@@ -996,42 +996,42 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       condition = "input.fitType == 2",
                                                                       fluidRow(
                                                                         column(6,
-                                                                               textInput(inputId = "eE0", 
+                                                                               textInput(inputId = "eE0",
                                                                                          div("A priori constant error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eTE0", 
+                                                                               textInput(inputId = "eTE0",
                                                                                          div("A priori decay rate error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the exponential decay rates. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the exponential decay rates. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         )
                                                                       )
                                                                     )
                                                                   ),
-                                                                  
+
                                                                   # % Logarithmic fit ####
                                                                   conditionalPanel(
                                                                     condition = "input.model.indexOf('Logarithmic') != -1",
                                                                     div(style = "padding: 0px 0px; margin-top:0em",
                                                                         tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
                                                                     ),
-                                                                    textInput(inputId = "LogariRef", 
+                                                                    textInput(inputId = "LogariRef",
                                                                               div("Ref. time logarithmic",
-                                                                                  helpPopup("Comma-separated lisf of the starting time for the logarithmic decays.")), 
+                                                                                  helpPopup("Comma-separated lisf of the starting time for the logarithmic decays.")),
                                                                               value = ""),
-                                                                    fluidRow( 
+                                                                    fluidRow(
                                                                       column(6,
-                                                                             textInput(inputId = "L0", 
+                                                                             textInput(inputId = "L0",
                                                                                        div("A priori constant",
-                                                                                           helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")), 
+                                                                                           helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
                                                                                        value = "")
                                                                       ),
                                                                       column(6,
-                                                                             textInput(inputId = "TL0", 
+                                                                             textInput(inputId = "TL0",
                                                                                        div("A priori decay rate",
-                                                                                           helpPopup("Initial value for the logarithmic decay rates. If empty, an approximate value will be used.")), 
+                                                                                           helpPopup("Initial value for the logarithmic decay rates. If empty, an approximate value will be used.")),
                                                                                        value = "")
                                                                       )
                                                                     ),
@@ -1039,21 +1039,21 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       condition = "input.fitType == 2",
                                                                       fluidRow(
                                                                         column(6,
-                                                                               textInput(inputId = "eL0", 
+                                                                               textInput(inputId = "eL0",
                                                                                          div("A priori constant error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eTL0", 
+                                                                               textInput(inputId = "eTL0",
                                                                                          div("A priori decay rate error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the logarithmic decay rates. If empty, an approximate value will be used.")), 
+                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the logarithmic decay rates. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         )
                                                                       )
                                                                     )
                                                                   ),
-                                                                  
+
                                                                   # % Polynomial fit ####
                                                                   conditionalPanel(
                                                                     condition = "input.model.indexOf('Polynomial') != -1",
@@ -1078,13 +1078,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       condition = "input.fitType == 2",
                                                                       fluidRow(
                                                                         column(6,
-                                                                               textInput(inputId = "P0", 
+                                                                               textInput(inputId = "P0",
                                                                                          div("A priori polynomial",
                                                                                              helpPopup("Initial state value for the polynomial coefficients. If empty, an approximate value will be used.")),
                                                                                          value = "")
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "eP0", 
+                                                                               textInput(inputId = "eP0",
                                                                                          div("A priori polynomial error",
                                                                                              helpPopup("Initial state uncertainty (standard deviation) for the polynomial coefficients. If empty, an approximate value will be used.")),
                                                                                          value = "")
@@ -1094,18 +1094,18 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   )
                                                                 ),
                                                                 style = "primary"),
-                                                
+
                                                 # * Additional fit ####
                                                 bsCollapsePanel(value = 5,
                                                                 tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                
+
                                                                 # % Histogram ####
                                                                 fluidRow(
                                                                   column(6,
                                                                          checkboxInput(inputId = "histogram", label = "Histogram", value = F)
                                                                   ),
                                                                   column(6,
-                                                                         checkboxInput(inputId = "midas", 
+                                                                         checkboxInput(inputId = "midas",
                                                                                        div("MIDAS",
                                                                                            helpPopup("Median Interannual Difference Adjusted for Skewness")),
                                                                                        value = F)
@@ -1118,11 +1118,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
                                                                   )
                                                                 ),
-                                                                
+
                                                                 # % Waveform ####
                                                                 fluidRow(
                                                                   column(6,
-                                                                         checkboxInput(inputId = "waveform", 
+                                                                         checkboxInput(inputId = "waveform",
                                                                                        div("Periodic waveform",
                                                                                            helpPopup("To fit a periodic waveform not having a sinusoidal shape")),
                                                                                        value = F)
@@ -1130,9 +1130,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   column(6,
                                                                          conditionalPanel(
                                                                            condition = "input.waveform == true",
-                                                                           textInput(inputId = "waveformPeriod", 
+                                                                           textInput(inputId = "waveformPeriod",
                                                                                      div("Period",
-                                                                                         helpPopup("The waveform period is given in the same units as the time unit of the series. It must be bigger than twice the average sampling period and smaller than half the total period of the series.")), 
+                                                                                         helpPopup("The waveform period is given in the same units as the time unit of the series. It must be bigger than twice the average sampling period and smaller than half the total period of the series.")),
                                                                                      value = "")
                                                                          )
                                                                   )
@@ -1142,7 +1142,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                   fluidRow(
                                                                     column(6,
                                                                            div(style = "margin-top:-4em",
-                                                                               checkboxInput(inputId = "correct_waveform", 
+                                                                               checkboxInput(inputId = "correct_waveform",
                                                                                              div("Remove from series",
                                                                                                  helpPopup("To remove the estimated periodic waveform from the original series before the model fit")),
                                                                                              value = F)
@@ -1153,13 +1153,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
                                                                   )
                                                                 ),
-                                                                
+
                                                                 # % Periodogram ####
                                                                 fluidRow(
                                                                   column(5,
-                                                                         checkboxInput(inputId = "spectrum", 
+                                                                         checkboxInput(inputId = "spectrum",
                                                                                        div("Periodogram",
-                                                                                           helpPopup("Lomb-Scargle amplitude/power spectrum")), 
+                                                                                           helpPopup("Lomb-Scargle amplitude/power spectrum")),
                                                                                        value = F)
                                                                   ),
                                                                   column(6, offset = 1,
@@ -1208,12 +1208,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
                                                                   )
                                                                 ),
-                                                                
+
                                                                 # % Wavelet ####
                                                                 div(style = "padding: 0px 0px; margin-top:0em",
                                                                     fluidRow(
                                                                       column(4,
-                                                                             checkboxInput(inputId = "wavelet", 
+                                                                             checkboxInput(inputId = "wavelet",
                                                                                            div("Wavelets",
                                                                                                helpPopup("To plot the heatmap from the wavelet transform")),
                                                                                            value = F)
@@ -1259,14 +1259,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
                                                                   )
                                                                 ),
-                                                                
+
                                                                 # % Vondrak ####
                                                                 div(style = "padding: 0px 0px; margin-top:0em",
-                                                                    fluidRow( 
-                                                                      column(6, 
-                                                                             checkboxInput(inputId = "filter", 
+                                                                    fluidRow(
+                                                                      column(6,
+                                                                             checkboxInput(inputId = "filter",
                                                                                            div("Band-pass smoother",
-                                                                                               helpPopup("Vondrak smoother for the original or residual series.")), 
+                                                                                               helpPopup("Vondrak smoother for the original or residual series.")),
                                                                                            value = F)
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
@@ -1284,15 +1284,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       condition = "input.filter == true",
                                                                       fluidRow(
                                                                         column(6,
-                                                                               textInput(inputId = "low", 
+                                                                               textInput(inputId = "low",
                                                                                          div("Low-pass period cutoff",
-                                                                                             helpPopup("Maximum recommended = T/4 (T = series length)")), 
+                                                                                             helpPopup("Maximum recommended = T/4 (T = series length)")),
                                                                                          value = "")
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "high", 
+                                                                               textInput(inputId = "high",
                                                                                          div("High-pass period cutoff",
-                                                                                             helpPopup("Maximum recommended = T/4 (T = series length)")), 
+                                                                                             helpPopup("Maximum recommended = T/4 (T = series length)")),
                                                                                          value = "")
                                                                         )
                                                                       ),
@@ -1301,7 +1301,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       )
                                                                     )
                                                                 ),
-                                                                
+
                                                                 # % Noise ####
                                                                 div(style = "padding: 0px 0px; margin-top:0em",
                                                                     fluidRow(
@@ -1433,7 +1433,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                 ),
                                                                 style = "primary")
                                      ),
-                                     
+
                                      # * Local download ####
                                      bsCollapse(id = "localDir", open = "", multiple = F,
                                                 bsCollapsePanel(value = 6,
@@ -1449,9 +1449,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                 div(style = "padding: 0px 0px; margin-top:1em",
                                                                     fluidRow(
                                                                       column(8,
-                                                                             textInput(inputId = "directory", 
+                                                                             textInput(inputId = "directory",
                                                                                        div("Select directory",
-                                                                                           helpPopup("Copy & paste or type in the complete path to the desired download directory")), 
+                                                                                           helpPopup("Copy & paste or type in the complete path to the desired download directory")),
                                                                                        value = NULL)
                                                                       ),
                                                                       column(4,
@@ -1466,7 +1466,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                      )
                                    )
                               ),
-                              
+
                               # Visualization panel ####
                               mainPanel(
                                 # style = "position:fixed; right: 0px; height: 90vh; overflow-y: auto;",
@@ -1484,7 +1484,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                   tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
                                            withMathJax(includeMarkdown("www/about.md"))
                                   ),
-                                  
+
                                   # * component 1 ####
                                   tabPanel(div(style = "font-size: 20px;",uiOutput("tabName")), value = 1,
                                            tags$style(type = "text/css", "body {padding-top: 60px;}"),
@@ -1614,7 +1614,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                )
                                            )
                                   ),
-                                  
+
                                   # * component 2 ####
                                   tabPanel(div(style = "font-size: 20px;","2nd component"), value = 2,
                                            tags$style(type = "text/css", "body {padding-top: 60px;}"),
@@ -1746,7 +1746,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                )
                                            )
                                   ),
-                                  
+
                                   # * component 3 ####
                                   tabPanel(div(style = "font-size: 20px;","3rd component"), value = 3,
                                            tags$style(type = "text/css", "body {padding-top: 60px;}"),
@@ -1892,17 +1892,17 @@ server <- function(input,output,session) {
     selector = "#tab li a[data-value=0]"
   )
   cat(file = stderr(), "\n", "\n", "START", "\n")
-  
+
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
   observeEvent(input$browser,{
     browser()
   })
 
   # Initialize reactive variables of the global database
-  
+
   # 1. input files.
   file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL)
-  
+
   # 2. series ranges:
   #   x1 = original time axis
   #   x2 = residual time axis
@@ -1913,15 +1913,15 @@ server <- function(input,output,session) {
   #   y3 = amplitude/power
   #   y4 = instantaneous rate
   ranges <- reactiveValues(x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL)
-  
+
   # 3. series info
-  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, 
-                         custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL, 
+  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL,
+                         custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, step2 = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL)
-  
+
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
   #   previous: saving of the status of the primary series when merging with a secondary series or downsampling
@@ -1929,42 +1929,42 @@ server <- function(input,output,session) {
   values <- reactiveValues(series1 = NULL, series2 = NULL, series3 = NULL, series_all = NULL,
                            previous1 = NULL, previous2 = NULL, previous3 = NULL, previous_all = NULL,
                            kf1 = NULL, kf2 = NULL, kf3 = NULL, kf_all = NULL)
-  
+
   # 5. user input
-  inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL, 
-                           periodRef = NULL, offsetEpoch = NULL, ExponenRef = NULL, E0 = NULL, TE0 = NULL, 
-                           LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = NULL, 
+  inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL,
+                           periodRef = NULL, offsetEpoch = NULL, ExponenRef = NULL, E0 = NULL, TE0 = NULL,
+                           LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = NULL,
                            long_period = NULL, short_period = NULL, low = NULL, high = NULL, scaleFactor = 1,
                            step = NULL, step2 = NULL)
   obs <- reactiveVal()
-  
+
   # 6. computed values
-  trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL, 
-                          sye = NULL, y2 = NULL, sy2 = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL, 
-                          filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL, 
-                          midas_sig = NULL, midas_all = NULL, tol = NULL, midas_vel2 = NULL, midas_sig2 = NULL, 
+  trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL,
+                          sye = NULL, y2 = NULL, sy2 = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL,
+                          filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
+                          midas_sig = NULL, midas_all = NULL, tol = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
-                          noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL, 
-                          col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL, 
+                          noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
+                          col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
                           x_orig = NULL)
-  
+
   # 7. output
   OutPut <- reactiveValues(df = NULL)
   output_excluded <- reactiveValues(df = NULL)
-  
+
   # 8. input parameters via URL
   url <- reactiveValues(station = NULL, server = "ext", file = NULL, station2 = NULL, server2 = "ext", file2 = NULL)
-  
+
   # Constants ####
   # Some initial values and constants
   options(shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
-  debug <- F # saving the environment 
+  debug <- F # saving the environment
   messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
-  
+
   # Welcome ####
   observe({
     req(input$size, info$intro)
@@ -2019,63 +2019,63 @@ server <- function(input,output,session) {
     }
     info$intro <- F
   }, priority = 2000)
-  
+
   # GUI reactive flags ####
   output$log <- reactive({
     return(!is.null(file$sitelog))
   })
   outputOptions(output, "log", suspendWhenHidden = F)
-  
+
   output$sinfo <- reactive({
     return(!is.null(input$sinfo))
   })
   outputOptions(output, "sinfo", suspendWhenHidden = F)
-  
+
   output$soln <- reactive({
     return(!is.null(input$soln))
   })
   outputOptions(output, "soln", suspendWhenHidden = F)
-  
+
   output$custom <- reactive({
     return(!is.null(input$custom))
   })
   outputOptions(output, "custom", suspendWhenHidden = F)
-  
+
   output$series2 <- reactive({
     return(!is.null(file$secondary))
   })
   outputOptions(output, "series2", suspendWhenHidden = F)
-  
+
   output$run <- reactive({
     return(isTRUE(info$run))
   })
   outputOptions(output, "run", suspendWhenHidden = F)
-  
+
   output$verifhelp <- reactive({
     return(isTruthy(trans$verif))
   })
   outputOptions(output, "verifhelp", suspendWhenHidden = F)
-  
+
   output$data <- reactive({
     return(!is.null(info$rangex))
   })
   outputOptions(output, "data", suspendWhenHidden = F)
-  
+
   output$dataNone <- reactive({
     return(is.null(info$rangex))
   })
   outputOptions(output, "dataNone", suspendWhenHidden = F)
-  
+
   output$residuals <- reactive({
     return(!is.null(trans$res))
   })
   outputOptions(output, "residuals", suspendWhenHidden = F)
-  
+
   output$rate <- reactive({
     return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
-  
+
   # Series summary ####
   output$information <- renderUI({
     line1 <- sprintf("Number of points = %d",info$points)
@@ -2093,12 +2093,12 @@ server <- function(input,output,session) {
     line5 <- "Series completeness = 0 %"
     HTML(paste(line1, line2, line3, line4, line5, sep = "<br/>"))
   })
-  
+
   # Debouncers for reactive inputs ####
   reactive({
     inputs$ObsError <- suppressWarnings(as.numeric(trimws(input$ObsError, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
-  
+
   reactive({
     inputs$thresholdRes <- suppressWarnings(as.numeric(trimws(input$thresholdRes, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
@@ -2194,11 +2194,11 @@ server <- function(input,output,session) {
   reactive({
     inputs$step <- suppressWarnings(as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
-  
+
   reactive({
     inputs$step2 <- suppressWarnings(as.numeric(trimws(input$step2, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
-  
+
   reactive({
     inputs$min_wavelet <- suppressWarnings(as.numeric(trimws(input$min_wavelet, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
@@ -2350,11 +2350,11 @@ server <- function(input,output,session) {
   reactive({
     inputs$pole_rot <- suppressWarnings(as.numeric(trimws(input$pole_rot, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
-  
+
   reactive({
     inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(input$scaleFactor, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(2000, priority = 1001)
-  
+
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
@@ -2368,7 +2368,7 @@ server <- function(input,output,session) {
     removeNotification("kf_not_valid")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
-    
+
     # data$y    = all points read from input series
     # trans$y0  = all points from input series (same as data$y)
     # trans$y   = points valid
@@ -2377,7 +2377,7 @@ server <- function(input,output,session) {
     # trans$sye = sigmas excluded
     # trans$y2  = points from secondary series (independent)
     # trans$sy2 = sigmas from secondary series (independent)
-    
+
     trans$x0 <- data$x
     if ((input$tab == 1) || (input$format == 4)) {
       trans$y0 <- data$y1
@@ -2503,14 +2503,14 @@ server <- function(input,output,session) {
     trans$ordinate <- median(trans$y)
     trans$tol <- min(diff(isolate(trans$x),1)) / 1.5
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
-    updateRadioButtons(session, inputId = "waveletType", label = NULL, 
-                       choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), 
+    updateRadioButtons(session, inputId = "waveletType", label = NULL,
+                       choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5),
                        selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
     updateTextInput(session, "min_wavelet", value = "")
     updateTextInput(session, "max_wavelet", value = "")
     updateTextInput(session, "res_wavelet", value = "")
   }, priority = 3)
-  
+
   # Load SARI file ####
   observeEvent(input$loadSARI, {
     req(file$primary, obs())
@@ -2720,7 +2720,7 @@ server <- function(input,output,session) {
       showNotification("Unable to find the SARI version in the uploaded file. Is this a SARI file?", action = NULL, duration = 10, closeButton = T, id = "no_sari", type = "warning", session = getDefaultReactiveDomain())
     }
   })
-  
+
   # Plot series ####
   output$plot1 <- output$plot2 <- output$plot3 <- renderPlot({
     req(obs(), trans$x, trans$y, trans$sy)
@@ -2814,7 +2814,7 @@ server <- function(input,output,session) {
       }
     })
 }, width = reactive(info$width), type = "cairo-png")
-  
+
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
     req(trans$x, trans$y, trans$tol)
@@ -2879,7 +2879,7 @@ server <- function(input,output,session) {
       trans$midas_vel <- NULL
     }
   })
-  
+
   # Plot MIDAS histogram ####
   output$midas_hist1 <- output$midas_hist2 <- output$midas_hist3 <- renderPlot({
     req(obs(), input$midas, trans$midas_all)
@@ -2887,11 +2887,11 @@ server <- function(input,output,session) {
     values <- trans$midas_all
     hist(values, breaks = "FD", freq = F, xlab = "Selected interannual velocities", ylab = "", main = "MIDAS velocity histogram", col = "lightpink")
     dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
-    xfit <- seq(min(values),max(values),length = 40) 
+    xfit <- seq(min(values),max(values),length = 40)
     yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
     lines(xfit, yfit, col = "red", lwd = 2)
   }, width = reactive(info$width), type = "cairo-png")
-  
+
   # Offset verification ####
   observeEvent(input$runVerif, {
     req(input$verif_offsets, trans$res, trans$x, trans$offsetEpochs)
@@ -2973,10 +2973,10 @@ server <- function(input,output,session) {
       trans$verif <- F
     }
   })
-  
+
   # LS fit ####
-  observeEvent(c(input$model, input$sigmas, inputs$LogariRef, inputs$L0, inputs$TL0, inputs$ExponenRef, inputs$E0, 
-                 inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType, 
+  observeEvent(c(input$model, input$sigmas, inputs$LogariRef, inputs$L0, inputs$TL0, inputs$ExponenRef, inputs$E0,
+                 inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType,
                  input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, input$tunits,
                  trans$y, trans$sy), {
     req(trans$x, trans$y, trans$sy, trans$ordinate)
@@ -3132,8 +3132,8 @@ server <- function(input,output,session) {
         )
       })
     }
-  }, priority = 2) 
-  
+  }, priority = 2)
+
   # KF fit ####
   observeEvent(input$runKF, {
     req(input$model, trans$x, trans$y)
@@ -3216,7 +3216,7 @@ server <- function(input,output,session) {
           if (k == 1) {
             obs <- e[1,1]
           } else {
-            obs <- eval(parse(text = model_kf)) 
+            obs <- eval(parse(text = model_kf))
           }
           c(obs)
         }
@@ -3270,7 +3270,7 @@ server <- function(input,output,session) {
               sigmaR <- sqrt(exp(mod$par))
               seParms <- sqrt(diag(solve(mod$hessian)))
               if (isTruthy(seParms)) {
-                rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1))) 
+                rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
               } else {
                 rangoR <- sqrt(exp(mod$par))
               }
@@ -3361,7 +3361,7 @@ server <- function(input,output,session) {
         if (isTruthy(kfs$s)) {
           info$run <- T
           e <- kfs$s[2:nrow(kfs$s),]
-          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) { 
+          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
             trans$mod <- trans$mod0 <- sapply(1:length(x), function(k) if (k == 1) { e[1,1] } else { eval(parse(text = sub("+ e[k,2]*(x[k] - x[k-1])", "", model_kf, fixed = T))) })
           } else {
             trans$mod <- trans$mod0 <- sapply(1:length(x), function(k) eval(parse(text = model_kf)) )
@@ -3411,7 +3411,7 @@ server <- function(input,output,session) {
           # Plot instantaneous rate
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
             if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
-              title <- "Instantaneous linear rate" 
+              title <- "Instantaneous linear rate"
               plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
             }
           }, width = reactive(info$width), type = "cairo-png")
@@ -3420,7 +3420,7 @@ server <- function(input,output,session) {
       })
     }
   })
-  
+
   # Plot residuals ####
   output$res1 <- output$res2 <- output$res3 <- renderPlot({
     req(obs(), trans$res, trans$x, trans$sy, info$run)
@@ -3481,7 +3481,7 @@ server <- function(input,output,session) {
       }
     }
   }, width = reactive(info$width), type = "cairo-png")
-  
+
   # Compute stats & histogram ####
   observeEvent(c(input$histogramType, ranges$x1, input$tab), {
     req(obs(), input$histogram)
@@ -3511,7 +3511,7 @@ server <- function(input,output,session) {
       output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
         hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
         dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
-        xfit <- seq(min(values),max(values),length = 40) 
+        xfit <- seq(min(values),max(values),length = 40)
         yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
         lines(xfit, yfit, col = "red", lwd = 2)
       }, width = reactive(info$width), type = "cairo-png")
@@ -3541,7 +3541,7 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
     }
   })
-  
+
   # Fit summary ####
   output$summary1 <- output$summary2 <- output$summary3 <- renderPrint({
     req(obs())
@@ -3567,7 +3567,7 @@ server <- function(input,output,session) {
         cat("KF estimate")
         cat(paste0("\n",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", trans$equation, perl = T)))))))), "\n\n")
       } else if (input$fitType == 1) {
-        cat("LS estimate") 
+        cat("LS estimate")
         trans$results$formula <- sub("y ~","Model =",trans$results$formula)
       }
       options(max.print = 1000)
@@ -3579,7 +3579,7 @@ server <- function(input,output,session) {
       }
     }
   })
-  
+
   # Periodic waveform ####
   observeEvent(c(input$waveformPeriod, inputs$waveformPeriod, input$waveform, inputs$low, inputs$high, input$fitType), {
     req(trans$x)
@@ -3598,7 +3598,7 @@ server <- function(input,output,session) {
         if (nchar(inputs$waveformPeriod) > 0 && !is.na(as.numeric(inputs$waveformPeriod)) && as.numeric(inputs$waveformPeriod) > 2*info$sampling  && as.numeric(inputs$waveformPeriod) < abs(info$rangex)/2) {
           x <- trans$x %% as.numeric(inputs$waveformPeriod)
           if (length(trans$res) > 0) {
-            serie <- data.frame(x0 = trans$x, x = x, y = trans$res, sy = trans$sy)[order(x),]  
+            serie <- data.frame(x0 = trans$x, x = x, y = trans$res, sy = trans$sy)[order(x),]
           } else if (length(trans$filterRes) > 0) {
             serie <- data.frame(x0 = trans$x, x = x, y = trans$filterRes, sy = trans$sy)[order(x),]
           }
@@ -3606,7 +3606,7 @@ server <- function(input,output,session) {
           table <- as.data.table(serie, keep.rownames = T)
           uniques <- sum(setDT(table)[, .N, z]$N ==  1)
           if (uniques > 0) {
-            showNotification(paste0(uniques," data epochs are not repeated in the series. The waveform may be wrong at these epochs."), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())          
+            showNotification(paste0(uniques," data epochs are not repeated in the series. The waveform may be wrong at these epochs."), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())
           }
           average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2)), by = z])
           result <- merge(serie,average, by = "z")
@@ -3615,7 +3615,7 @@ server <- function(input,output,session) {
           if (messages > 0) cat(file = stderr(), "Computing periodic waveform", "\n")
           if (length(trans$res) > 0) {
             trans$mod <- trans$mod + trans$pattern
-            trans$res <- trans$res - trans$pattern  
+            trans$res <- trans$res - trans$pattern
           } else if (length(trans$filterRes) > 0) {
             trans$filter <- trans$filter + trans$pattern
             trans$filterRes <- trans$filterRes - trans$pattern
@@ -3624,7 +3624,7 @@ server <- function(input,output,session) {
           output$waveform1 <- output$waveform2 <- output$waveform3 <- renderPlot({
             if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
               if (length(trans$res) > 0) {
-                title <- "Periodic waveform from model residuals" 
+                title <- "Periodic waveform from model residuals"
               } else if (length(trans$filterRes) > 0) {
                 title <- "Periodic waveform from filter residuals"
               }
@@ -3645,7 +3645,7 @@ server <- function(input,output,session) {
           if (length(trans$pattern) > 0) {
             if (length(trans$res) > 0) {
               trans$mod <- trans$mod - trans$pattern
-              trans$res <- trans$res + trans$pattern  
+              trans$res <- trans$res + trans$pattern
             }
             trans$pattern <- NULL
           }
@@ -3654,14 +3654,14 @@ server <- function(input,output,session) {
         if (length(trans$pattern) > 0) {
           if (length(trans$res) > 0) {
             trans$mod <- trans$mod - trans$pattern
-            trans$res <- trans$res + trans$pattern  
+            trans$res <- trans$res + trans$pattern
           }
           trans$pattern <- NULL
         }
       }
     }
   })
-  
+
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
     req(obs(), input$spectrum)
@@ -3691,7 +3691,7 @@ server <- function(input,output,session) {
     intervals <- as.data.frame(table(diff(trans$x)))
     # min_period <- 2*gcd(trans$x[-1]*10^info$decimalsx-trans$x[1]*10^info$decimalsx)/10^info$decimalsx #following Eyer and Bartholdi 1999
     min_period <- 2*as.numeric(as.character(intervals$Var1[intervals$Freq/length(trans$x) >= 0.5][1])) #approximate the shortest period by twice the shortest interval repeating itself at least 50% of the time
-    
+
     if (!isTruthy(min_period)) {
       min_period <- 2*min(abs(diff(trans$x)))
     }
@@ -3916,7 +3916,7 @@ server <- function(input,output,session) {
       periodogram(c("filter","filterRes"))
     }
   })
-  
+
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
     req(obs(), input$spectrum, trans$fs, trans$psd)
@@ -4034,7 +4034,7 @@ server <- function(input,output,session) {
           if (inputs$ofac == 1) {
             if (input$spectrumType == 0) {
               amp <- as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)])[,ncol(as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)]))]
-              paste("Periodogram coordinates = ", input$lomb_1click$x, input$lomb_1click$y, "\t", " Series scatter = ",sqrt(0.5*sum(amp[trans$fs > 1/input$lomb_1click$x]^2)), sep = "\t")  
+              paste("Periodogram coordinates = ", input$lomb_1click$x, input$lomb_1click$y, "\t", " Series scatter = ",sqrt(0.5*sum(amp[trans$fs > 1/input$lomb_1click$x]^2)), sep = "\t")
             } else if (input$spectrumType == 1) {
               psd <- as.matrix(trans$psd[,colSums(is.na(trans$psd)) < nrow(trans$psd)])[,ncol(as.matrix(trans$psd[,colSums(is.na(trans$psd)) < nrow(trans$psd)]))]
               paste("Periodogram coordinates = ", input$lomb_1click$x, input$lomb_1click$y, "\t", " Series scatter = ",sqrt(sum(psd[trans$fs > 1/input$lomb_1click$x])), sep = "\t")
@@ -4046,7 +4046,7 @@ server <- function(input,output,session) {
       })
     }
   }, width = reactive(info$width), type = "cairo-png")
-  
+
   # Plot wavelet ####
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
     trans$wavelet <- NULL
@@ -4078,7 +4078,7 @@ server <- function(input,output,session) {
         } else {
           num_epochs <- 500
         }
-        num_epocs <- 
+        num_epocs <-
         loc <- info$rangex/num_epochs
         if (loc < info$sampling) {
           loc <- info$sampling
@@ -4188,7 +4188,7 @@ server <- function(input,output,session) {
         if (length(input$wavelet_1click$x) > 0) {
           idx <- which.min(abs(trans$wavelet$x - input$wavelet_1click$x))
           idy <- which.min(abs(trans$wavelet$y - input$wavelet_1click$y))
-          paste0("\tEpoch = ", input$wavelet_1click$x, "\tPeriod (", period, ") = ", input$wavelet_1click$y, "\t\tAmplitude = ", amplitude_approx[idx,idy,1])  
+          paste0("\tEpoch = ", input$wavelet_1click$x, "\tPeriod (", period, ") = ", input$wavelet_1click$y, "\t\tAmplitude = ", amplitude_approx[idx,idy,1])
         }
       })
     } else {
@@ -4197,7 +4197,7 @@ server <- function(input,output,session) {
       info$run_wavelet <- T
     }
   }, width = reactive(info$width), type = "cairo-png")
-  
+
   # Compute smoother ####
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
     req(trans$x, trans$sy, input$series2filter, input$filter)
@@ -4296,7 +4296,7 @@ server <- function(input,output,session) {
       info$run_filter <- T
     }
   }, priority = 1)
-  
+
   # Plot smoother ####
   output$vondrak1 <- output$vondrak2 <- output$vondrak3 <- output$Vondrak1 <- output$Vondrak2 <- output$Vondrak3 <- renderPlot({
     req(obs(),input$filter)
@@ -4309,18 +4309,18 @@ server <- function(input,output,session) {
           sigmas <- T
         }
         if (input$series2filter == 1) {
-          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol)  
+          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol)
         } else if (input$series2filter == 2 && length(trans$res) > 0) {
           if (input$fitType == 1) {
             plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,title,input$symbol)
           } else if (input$fitType == 2) {
-            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol) 
+            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol)
           }
         }
       }
     }
   }, width = reactive(info$width), type = "cairo-png")
-  
+
   # Noise analysis ####
   observeEvent(input$runmle, {
     removeNotification("bad_flicker")
@@ -4718,7 +4718,7 @@ server <- function(input,output,session) {
       }
     }
   })
-  
+
   # Search offsets ####
   observeEvent(input$search, {
     req(file$primary)
@@ -4774,7 +4774,7 @@ server <- function(input,output,session) {
       showNotification("Finding discontinuities is only possible from detrended series or, more generally, residual series.", action = NULL, duration = 10, closeButton = T, id = "no_search", type = "error", session = getDefaultReactiveDomain())
     }
   })
-  
+
   # Download results ####
   output$localDirectory <- renderPrint({
     if (isTruthy(info$directory)) {
@@ -4783,7 +4783,7 @@ server <- function(input,output,session) {
   })
   observeEvent(input$autoDownload, {
     removeNotification("no_directory")
-    withBusyIndicatorServer("autoDownload", { 
+    withBusyIndicatorServer("autoDownload", {
       if (isTruthy(info$directory)) {
         if (input$format != 4) {
           file_out <- paste0(info$directory, "\\", file$primary$name, "_", input$tab, ".sari")
@@ -4827,7 +4827,7 @@ server <- function(input,output,session) {
       file.copy("www/about.pdf", file)
     }
   )
-  
+
   # Control plots ####
   output$header <- renderText({
     req(input$header, file$primary)
@@ -4966,7 +4966,7 @@ server <- function(input,output,session) {
       ranges$y12 <- NULL
     }
   })
-  
+
   # Enable/disable options ####
   observe({
     if (input$tab == "4") {
@@ -5095,7 +5095,7 @@ server <- function(input,output,session) {
         enable("add_excluded")
         enable("permanent")
         if (isTruthy(info$errorbars)) {
-          enable("sigmas") 
+          enable("sigmas")
         } else {
           updateCheckboxInput(session, inputId = "sigmas", value = F)
           disable("sigmas")
@@ -5119,7 +5119,7 @@ server <- function(input,output,session) {
           enable("midas")
           enable("reset")
           if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0) {
-            enable("remove")  
+            enable("remove")
           } else {
             disable("remove")
           }
@@ -5461,14 +5461,14 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 100)
-  
+
   # Observe screen ####
   observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width), {
     if (messages > 2) cat(file = stderr(), "Screen size change", "\n")
     info$pixelratio <- session$clientData$pixelratio
     info$width <- session$clientData$output_plot1_width
   }, priority = 2000)
-  
+
   # Observe URL ####
   observeEvent(c(session$clientData$url_search), {
     if (!isTruthy(url$station)) {
@@ -5568,7 +5568,7 @@ server <- function(input,output,session) {
                 if (url$server == "local") {
                   filename <- basename(url$file)
                 } else if (url$server == "ext") {
-                  filename <- file$primary$name 
+                  filename <- file$primary$name
                 }
                 session$sendCustomMessage("filename", filename)
               }
@@ -5590,7 +5590,7 @@ server <- function(input,output,session) {
       }
     }
   })
-  
+
   # Observe Euler ####
   observeEvent(c(inputs$station_x, inputs$station_y, inputs$station_z, inputs$station_lat, inputs$station_lon, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot), {
     if (input$eulerType != 0) {
@@ -5644,7 +5644,7 @@ server <- function(input,output,session) {
       }
     }
   })
-  
+
   # Observe wavelet ####
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
     req(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet)
@@ -5663,7 +5663,7 @@ server <- function(input,output,session) {
       showNotification(paste0("Invalid bounds to compute the wavelet. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_wavelet", type = "error", session = getDefaultReactiveDomain())
     }
   })
-  
+
   # Observe time units ####
   observeEvent(input$tunits, {
     removeNotification("new_units")
@@ -5711,7 +5711,7 @@ server <- function(input,output,session) {
       updateCheckboxInput(session, inputId = "filter", value = F)
     }
   }, priority = 100)
-  
+
   # Observe tab ####
   observeEvent(input$tab, {
     ranges$y1 <- NULL
@@ -5749,13 +5749,13 @@ server <- function(input,output,session) {
     req(file$primary)
     file$sitelog <- isolate(input$log)
   }, priority = 8)
-  
+
   # Observe secondary file ####
   observeEvent(input$series2, {
     req(file$primary)
     file$secondary <- isolate(input$series2)
   }, priority = 8)
-  
+
   # Observe series info ####
   observeEvent(c(input$tab, input$format, input$format2, input$tunits, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
     if (input$tab == "4") {
@@ -5766,13 +5766,13 @@ server <- function(input,output,session) {
       info$format <- input$format
       info$format2 <- input$format2
       if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
-                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
-                            file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
+                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
+                            file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
                             "   Scale: ", input$scaleFactor, "   Average: ", input$step2, "\n")
     }
   }, priority = 7)
-  
+
   # Observe primary series ####
   observeEvent(c(input$series), {
     file$primary <- isolate(input$series)
@@ -5804,7 +5804,7 @@ server <- function(input,output,session) {
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
   }, priority = 6)
-  
+
   # Observe format 1D ####
   observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(obs())
@@ -5839,7 +5839,7 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 6)
-  
+
   # Observe primary series format ####
   observeEvent(c(input$format), {
     req(obs())
@@ -5855,7 +5855,7 @@ server <- function(input,output,session) {
     data <- digest()
     obs(data)
   }, priority = 6)
-  
+
   # Observe averaging ####
   observeEvent(c(inputs$step, inputs$step2), {
     req(file$primary)
@@ -5902,7 +5902,7 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 6)
-  
+
   # Observe secondary series ####
   observeEvent(c(input$format2), {
     req(obs())
@@ -5956,7 +5956,7 @@ server <- function(input,output,session) {
         } else {
           values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
           values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
-          values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s  
+          values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s
         }
       } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
         if (isTruthy(input$remove3D)) {
@@ -5986,7 +5986,7 @@ server <- function(input,output,session) {
       info$last_optionSecondary <- input$optionSecondary
     }
   }, priority = 6)
-  
+
   # Observe ids ####
   observeEvent(c(inputs$ids, input$optionSecondary), {
     req(file$primary)
@@ -6036,7 +6036,7 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "ids", value = ids_info)
     }
   }, priority = 5)
-  
+
   # Observe remove fit ####
   observeEvent(c(input$series, input$separator, input$format, input$format2, inputs$epoch, inputs$epoch2, input$separator2), {
     req(trans$res)
@@ -6067,7 +6067,7 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 5)
-  
+
   # Observe fit type ####
   observeEvent(input$fitType, {
     req(trans$res)
@@ -6092,7 +6092,7 @@ server <- function(input,output,session) {
     updateTextInput(session, "L0", value = "")
     updateTextInput(session, "TL0", value = "")
   }, priority = 5)
-  
+
   # Observe delete model ####
   observeEvent(input$model, {
     req(trans$res)
@@ -6115,7 +6115,7 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 5)
-  
+
   # Observe hide buttons ####
   observeEvent(input$format, {
     if (input$format == 4) {
@@ -6128,14 +6128,14 @@ server <- function(input,output,session) {
       showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
     }
   }, priority = 10)
-  
+
   # Observe plotting ####
   observeEvent(input$plot, {
     req(file$primary)
     removeNotification("no_component")
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                          "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ", 
-                          file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ", 
+                          "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
+                          file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     if (input$tab < 1) {
       showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
@@ -6149,7 +6149,7 @@ server <- function(input,output,session) {
       values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
     }
   }, priority = 4)
-  
+
   # Observe removing points manual ####
   observeEvent(input$remove, {
     req(file$primary)
@@ -6284,7 +6284,7 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 4)
-  
+
   # Observe removing points auto ####
   observeEvent(input$removeAuto, {
     req(file$primary)
@@ -6341,7 +6341,7 @@ server <- function(input,output,session) {
     if (nchar(input$thresholdRes) > 0) {
       if (!is.na(inputs$thresholdRes)) {
         if (abs(inputs$thresholdRes) < min(abs(residuals))) {
-          showNotification("The residual threshold will remove all data from the residual series. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())	        
+          showNotification("The residual threshold will remove all data from the residual series. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())
         } else {
           if (messages > 0) cat(file = stderr(), "Limit absolute residual ", inputs$thresholdRes, "\n")
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
@@ -6400,7 +6400,7 @@ server <- function(input,output,session) {
       showNotification("No point was selected to be removed automatically. Check the input threshold.", action = NULL, duration = 10, closeButton = T, id = "no_point_auto", type = "warning", session = getDefaultReactiveDomain())
     }
   }, priority = 4)
-  
+
   # Observe restore removed ####
   observeEvent(input$delete_excluded, {
     req(file$primary)
@@ -6432,7 +6432,7 @@ server <- function(input,output,session) {
     updateTextInput(session, "thresholdRes", value = "")
     updateTextInput(session, "thresholdResN", value = "")
   }, priority = 4)
-  
+
   # Observe station.info ####
   observeEvent(c(input$sinfo, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
     req(input$sinfo,file$id1)
@@ -6466,7 +6466,7 @@ server <- function(input,output,session) {
       }
     })
   })
-  
+
   # Observe soln.snx ####
   observeEvent(c(input$soln, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
     req(input$soln,file$id1)
@@ -6493,7 +6493,7 @@ server <- function(input,output,session) {
       }
     })
   })
-  
+
   # Observe custom ####
   observeEvent(c(input$custom, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
     req(input$custom,file$id1)
@@ -6520,7 +6520,7 @@ server <- function(input,output,session) {
       }
     })
   })
-  
+
   # Observe sitelog ####
   observeEvent(file$sitelog, {
     if (messages > 0) cat(file = stderr(), "Reading sitelog", "\n")
@@ -6543,7 +6543,7 @@ server <- function(input,output,session) {
       }
     })
   })
-  
+
   # Observe reset ####
   observeEvent(input$reset, {
     req(file$primary)
@@ -6627,7 +6627,7 @@ server <- function(input,output,session) {
       NULL
     })
   })
-  
+
   # Observe hide buttons ####
   observeEvent(c(input$tab, trans$filter, trans$res, trans$y, inputs$step, input$optionSecondary), {
     if (input$tab == 4) {
@@ -6651,14 +6651,14 @@ server <- function(input,output,session) {
       hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     }
   }, priority = 0)
-  
+
   # Observe directory ####
   observeEvent(input$directory, {
     if (isTruthy(input$directory)) {
       info$directory <- input$directory
     }
   })
-  
+
   # Observe scrolling ####
   observeEvent(input$overflow, {
     if (isTruthy(input$overflow)) {
@@ -6674,7 +6674,7 @@ server <- function(input,output,session) {
       runjs("window.scrollTo(0,0)")
     }
   })
-  
+
   # Observe ??? ####
   observe({
     if (length(input$model) == 0) {
@@ -6693,9 +6693,9 @@ server <- function(input,output,session) {
       shinyjs::delay(1000, disable("spectrumFilterRes"))
     }
   }, priority = 0)
-  
-  
-  
+
+
+
   # Functions ####
   digest <- function() {
     req(file$primary)
@@ -7018,7 +7018,7 @@ server <- function(input,output,session) {
         showNotification("Problem extracting the series ID from the file name. No series ID will be used", action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
       }
       updateTextInput(session, inputId = "ids", value = ids_info)
-      # Checking series values and time order 
+      # Checking series values and time order
       if (!is.null(table)) {
         table <- table[order(table$x),]
         table <- table[!is.infinite(rowSums(table)),]
@@ -7318,7 +7318,7 @@ server <- function(input,output,session) {
                 model <- paste(model, paste0("Intercept + Rate*(x-",text_rate,")"), sep = " ")
               } else {
                 showNotification("The process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_rate_noise", type = "error", session = getDefaultReactiveDomain())
-                return(NULL)                
+                return(NULL)
               }
             } else {
               showNotification("The process noise for the trend is not valid. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "bad_rate_noise", type = "error", session = getDefaultReactiveDomain())
@@ -7361,7 +7361,7 @@ server <- function(input,output,session) {
             showNotification("The a priori trend error is zero. Check the input value.", action = NULL, duration = 15, closeButton = T, id = "no_trend_error", type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
           } else {
-            sigma_rate <- as.numeric(input$eTrend0)  
+            sigma_rate <- as.numeric(input$eTrend0)
           }
         }
         if (input$fitType == 1) {
@@ -7404,7 +7404,7 @@ server <- function(input,output,session) {
         j <- j + 1
         if (isTruthy(match("Intercept", trans$names))) {
           if (input$fitType == 1) {
-            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate 
+            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate
           } else if (input$fitType == 2) {
             ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
           }
@@ -8021,7 +8021,7 @@ server <- function(input,output,session) {
                     L0[i] <- coeff * (mean(y1) - mean(y0))
                     sampling_tauL <- function(x) {
                       if (length(apriori_x_after[apriori_x_after > (span/x) - sample & apriori_x_after < span/x]) > 3) {
-                        mean(apriori_x_after[apriori_x_after > (span/x) - sample & apriori_x_after < span/x])/(exp(mean(flat[apriori_x_after > (span/x) - sample & apriori_x_after < span/x])/as.numeric(L0[i])) - 1) 
+                        mean(apriori_x_after[apriori_x_after > (span/x) - sample & apriori_x_after < span/x])/(exp(mean(flat[apriori_x_after > (span/x) - sample & apriori_x_after < span/x])/as.numeric(L0[i])) - 1)
                       } else {
                         NA
                       }
@@ -8161,7 +8161,7 @@ server <- function(input,output,session) {
         }
       }
       if (input$fitType == 1) {
-        list(model = model, model_lm = model_lm, apriori = apriori) 
+        list(model = model, model_lm = model_lm, apriori = apriori)
       } else if (input$fitType == 2) {
         list(model = model, model_kf_mean = model_kf_mean, model_kf_inst = model_kf_inst, apriori = apriori, nouns = nouns, processNoise = processNoise, error = error)
       }
@@ -8187,7 +8187,7 @@ server <- function(input,output,session) {
             } else if (input$tunits == 2) {
               e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
             } else if (input$tunits == 3) {
-              e <- decimal_date(t)  
+              e <- decimal_date(t)
             }
             if (grepl('Antenna',antrec[[l]])) {
               ante <- c(ante,e)
@@ -8552,7 +8552,7 @@ server <- function(input,output,session) {
         aa[4,n] <- aa[4,n] - aa[5,j1]*coef
         yl[n] <- yl[n] - yl[j1]*coef
         yl[n] <- yl[n]/aa[4,n]
-        yl[j1] <- (yl[j1] - aa[5,j1]*yl[n])/aa[4,j1] 
+        yl[j1] <- (yl[j1] - aa[5,j1]*yl[n])/aa[4,j1]
         j2 <- n - 2
         yl[j2] <- (yl[j2] - aa[5,j2]*yl[j1] - aa[6,j2]*yl[n])/aa[4,j2]
         jl <- n - 3
@@ -8570,7 +8570,7 @@ server <- function(input,output,session) {
           il1 <- 3
           for (il in i2:ls) {
             il1 <- il1 + 1
-            aa[il,j2] <- aa[il,j2] - aa[il1,j1]*coef 
+            aa[il,j2] <- aa[il,j2] - aa[il1,j1]*coef
           }
           yl[j2] <- yl[j2] - yl[j1]*coef
           i2 <- i2 - 1
@@ -8639,9 +8639,9 @@ server <- function(input,output,session) {
         if (isTruthy(trans$vondrak[1]) && isTruthy(trans$vondrak[2])) {
           cat(paste0(sprintf('# Vondrak: %f (low) %f (high)',as.numeric(trans$vondrak[1]),as.numeric(trans$vondrak[2])), origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[1])) {
-          cat(paste0(sprintf('# Vondrak: %f (low)',as.numeric(trans$vondrak[1])), origen), file = file_out, sep = "\n", fill = F, append = T) 
+          cat(paste0(sprintf('# Vondrak: %f (low)',as.numeric(trans$vondrak[1])), origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[2])) {
-          cat(sprintf('# Vondrak: %f (high)',as.numeric(trans$vondrak[2])), file = file_out, sep = "\n", fill = F, append = T) 
+          cat(sprintf('# Vondrak: %f (high)',as.numeric(trans$vondrak[2])), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
     }
@@ -8734,7 +8734,7 @@ server <- function(input,output,session) {
       if (isTruthy(input$sigmas)) {
         OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
       } else {
-        OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T) 
+        OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
       }
       excluded <- c(unique(which(is.na(OutPut$df), arr.ind = T)[,1]))
       for (i in excluded) {
@@ -8801,19 +8801,19 @@ server <- function(input,output,session) {
     ym <- ncol(y)
     yAttr <- attributes(y)
     p <- length(mod$m0)
-    
+
     if (!is.null(mod$FF) | !is.null(mod$GG))
       warning("FF or GG matrix will not be used in the UKF")
-    
+
     if (!is.null(mod$JFF) | !is.null(mod$JGG))
       warning("Time varying FF or GG matrix will not be used in the UKF")
-    
+
     if (!is.null(mod$JW) | !is.null(mod$JV))
       warning("Time varying V or W matrix will not be used in the UKF")
-    
+
     if (!(sqrtMethod == "Cholesky" | sqrtMethod == "svd"))
       stop("Name of sqrtMethod is incorrect")
-    
+
     m <- rbind(mod$m0, matrix(0, nrow = nrow(y), ncol = length(mod$m0))) # a posteriori estimated state
     a <- matrix(0, nrow = nrow(y), ncol = length(mod$m0)) # a priori state in time update
     f <- matrix(0, nrow = nrow(y), ncol = ncol(y)) # predicted measurement from a priori state
@@ -8821,15 +8821,15 @@ server <- function(input,output,session) {
     R <- vector(nrow(y), mode = "list") # a priori state covariance in time update
     ll <- 0 # log-likelihood
     w <- as.vector(c(kappa/(p + kappa), rep(1/(2*(p + kappa)), 2*p))) # weights of sigma points
-    
+
     C[[1]] <- mod$C0
-    
+
     for (i in seq(length = nrow(y))) {
-      
+
       setProgress(round(i/info$points, digits = 1))
-      
+
       ##time update
-      
+
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
       ## This implies the series must be sampled regularly with data gaps
       gapFactor <- 1
@@ -8849,9 +8849,9 @@ server <- function(input,output,session) {
       #a priori error covariance
       # R[[i]] <- tcrossprod(crossprod(t(tmpx - a[i, ]), diag(w)), tmpx - a[i, ]) + mod$W
       R[[i]] <- tcrossprod(crossprod(t(tmpx - a[i, ]), diag(w)), tmpx - a[i, ]) + mod$W * gapFactor
-      
+
       ##measurement update
-      
+
       #compute sigma points
       if (sqrtMethod == "Cholesky") {
         sigmaPlus <- t(chol((p + kappa)*R[[i]]))}
@@ -8871,29 +8871,29 @@ server <- function(input,output,session) {
       Qy <- tcrossprod(crossprod(t(tmpy - f[i, ]), diag(w)), tmpy - f[i, ]) + mod$V[i]
       #cross covariance between a priori state estimate and predicted measurement
       Qxy <- tcrossprod(crossprod(t(t(sigmay) - a[i, ]), diag(w)), tmpy - f[i, ])
-      
+
       ##a posteriori estimates
-      
+
       #Kalman gain
       Kk <- crossprod(t(Qxy), solve(Qy, tol = 1e-30))
       #a posteriori state estimate
       m[i + 1, ] <- a[i, ] + crossprod(t(Kk), as.matrix(y[i, ] - f[i, ]))
       #a posteriori error covariance
       C[[i + 1]] <- R[[i]] - crossprod(t(Kk), tcrossprod(Qy, Kk))
-      
+
       #compute log-likelihood
       if (logLik) {
         e <- as.matrix(y[i, ] - f[i,])
         ll <- ll + ym*log(2*pi) + sum(log(eigen(Qy)$values)) + crossprod(e, tcrossprod(solve(Qy, tol = 1e-30), t(e)))}
     }
     ans <- list(m = m, C = C, a = a, R = R, f = f)
-    
+
     attributes(ans$f) <- yAttr
-    
+
     if (logLik)
       ans <- c(ans, logLik = 0.5*ll)
-    
-    if (simplify) 
+
+    if (simplify)
       ans <- c(mod = list(mod1), kappa = list(kappa), GGfunction = list(GGfunction), FFfunction = list(FFfunction), sqrtMethod = list(sqrtMethod), ans)
     else {
       attributes(y) <- yAttr
@@ -8902,7 +8902,7 @@ server <- function(input,output,session) {
     return(ans)
   }
   UKFsmooth <- function(filterData, GGfunction) {
-    
+
     mod <- filterData
     mAttr <- attributes(mod$m)
     mod$m <- as.matrix(mod$m)
@@ -8910,20 +8910,20 @@ server <- function(input,output,session) {
     mod$W <- as.matrix(mod$mod$W)
     kappa <- mod$kappa
     sqrtMethod <- mod$sqrtMethod
-    
+
     n <- length(mod$R)
     p <- ncol(mod$m)
     w <- as.vector(c(kappa/(p + kappa), rep(1/(2*(p + kappa)), 2*p)))
     s <- rbind(matrix(0, n, p), mod$m[n + 1, ])
     S <- vector("list", length = n + 1)
-    
+
     S[[n + 1]] <- mod$C[[n + 1]]
-    
-    if (n > 0) 
+
+    if (n > 0)
       for (i in n:1) {
-        
+
         # setProgress(0.5*i/info$points + 0.5)
-        
+
         #compute sigma points
         if (sqrtMethod == "Cholesky") {
           sigmaPlus <- t(chol((p + kappa)*mod$C[[i]]))}
@@ -8932,20 +8932,20 @@ server <- function(input,output,session) {
           sigmaPlus <- t(sqrt(tmpxs$d)*tmpxs$vt)}
         sigmax <- t(mod$m[i, ] + cbind(0, sigmaPlus, -sigmaPlus))
         tmpx <- matrix(sapply(1:nrow(sigmax), function(x) GGfunction(x = sigmax[x,], k = i)), nrow = p)
-        
+
         #cross covariance between a priori state estimate (at k+1) and posterior state estimate (at k)
         Qxy <- tcrossprod(crossprod(t(t(sigmax) - mod$m[i, ]), diag(w)), tmpx - mod$a[i, ])
-        
+
         #smoother Kalman gain
         Kk <- crossprod(t(Qxy), solve(mod$R[[i]], tol = 1e-30))
         #smoothed state estimate
         s[i, ] <- mod$m[i, ] + crossprod(t(Kk), s[i + 1, ] - mod$a[i,])
         #smoothed error covariance
         S[[i]] <- mod$C[[i]] + tcrossprod(crossprod(t(Kk), S[[i + 1]] - mod$R[[i]]), Kk)
-        
+
       }
     ans <- list(s = s, S = S)
-    
+
     attributes(ans$s) <- mAttr
     return(ans)
   }
@@ -8953,23 +8953,23 @@ server <- function(input,output,session) {
   dlmExtFilter <- function(y, mod, GGfunction, FFfunction,
                             GGjacobian=NULL, FFjacobian=NULL,
                             logLik=FALSE, simplify=FALSE) {
-    
+
     eps <- .Machine$double.eps^0.3
     mod1 <- mod
     y <- as.matrix(y)
     ym <- ncol(y)
     yAttr <- attributes(y)
     p <- length(mod$m0)
-    
+
     if (!is.null(mod$FF) | !is.null(mod$GG))
       warning("FF or GG matrix will not be used in the EKF")
-    
+
     if (!is.null(mod$JFF) | !is.null(mod$JGG))
       warning("Time varying FF or GG matrix will not be used in the EKF")
-    
+
     if (!is.null(mod$JW) | !is.null(mod$JV))
       warning("Time varying V or W matrix will not be used in the EKF")
-    
+
     m <- rbind(mod$m0, matrix(0, nrow = nrow(y), ncol = length(mod$m0)))
     a <- matrix(0, nrow = nrow(y), ncol = length(mod$m0))
     f <- matrix(0, nrow = nrow(y), ncol = ncol(y))
@@ -8980,7 +8980,7 @@ server <- function(input,output,session) {
     U.R <- vector(nrow(y), mode = "list")
     D.R <- matrix(0, nrow(y), length(mod$m0))
     ll <- 0
-    
+
     # this code is now run below for each observation
     # svdV <- La.svd(mod$V, nu = 0)
     # Uv <- t(svdV$vt)
@@ -8995,15 +8995,15 @@ server <- function(input,output,session) {
 
     # svdW <- La.svd(mod$W, nu = 0)
     # sqrtW <- sqrt(svdW$d) * svdW$vt
-    
+
     tmp <- La.svd(mod$C0, nu = 0)
     U.C[[1]] <- t(tmp$vt)
     D.C[1, ] <- sqrt(tmp$d)
-    
+
     for (i in seq(length = nrow(y))) {
-      
+
       setProgress(round(i/info$points, digits = 1))
-      
+
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
       ## This implies the series must be sampled regularly with data gaps
       svdV <- La.svd(mod$V[i], nu = 0)
@@ -9022,15 +9022,15 @@ server <- function(input,output,session) {
       }
       svdW <- La.svd(mod$W * gapFactor, nu = 0)
       sqrtW <- sqrt(svdW$d) * svdW$vt
-      
+
       if (is.null(GGjacobian)) {
         dGG.dx[[i]] <- jacobian(GGfunction, x = m[i,], k = i)
       } else {
         dGG.dx[[i]] <- matrix(GGjacobian(x = m[i,], k = i), ncol = p, byrow = T)
       }
-      
+
       if (!any(whereNA <- is.na(y[i, ]))) {
-        
+
         a[i, ] <- GGfunction(x = m[i, ], k = i)
         if (is.null(FFjacobian)) {
           dFF.dx[[i]] <- jacobian(FFfunction, x = a[i,], k = i)
@@ -9068,10 +9068,10 @@ server <- function(input,output,session) {
           else dFF.dx[[i]] <- matrix(FFjacobian(x = a[i,], k = i), ncol = p, byrow = T)
           f[i, ] <- FFfunction(x = a[i, ], k = i)
         }
-        
+
         else {
           good <- !whereNA
-          
+
           a[i, ] <- GGfunction(x = m[i, ], k = i)
           tmp <- La.svd(rbind(D.C[i, ] * t(dGG.dx[[i]] %*% U.C[[i]]), sqrtW), nu = 0)
           U.R[[i]] <- t(tmp$vt)
@@ -9104,13 +9104,13 @@ server <- function(input,output,session) {
       }
     }
     ans <- list(m = m, U.C = U.C, D.C = D.C, a = a, U.R = U.R, D.R = D.R, f = f , dGG.dx = dGG.dx, dFF.dx = dFF.dx)
-    
+
     attributes(ans$f) <- yAttr
-    
+
     if (logLik)
       ans <- c(ans, logLik = 0.5*ll)
-    
-    if (simplify) 
+
+    if (simplify)
       ans <- c(mod = list(mod1), GGfunction = list(GGfunction), FFfunction = list(FFfunction), GGjacobian = list(GGjacobian), FFjacobian = list(FFjacobian), ans)
     else {
       attributes(y) <- yAttr
@@ -9120,30 +9120,30 @@ server <- function(input,output,session) {
     return(ans)
   }
   dlmExtSmooth <- function(filterData) {
-    
+
     big <- 1/sqrt(.Machine$double.eps)
     mod <- filterData
     mAttr <- attributes(mod$m)
     mod$m <- as.matrix(mod$m)
     mod$a <- as.matrix(mod$a)
     mod$W <- as.matrix(mod$mod$W)
-    
+
     n <- length(mod$U.R)
     p <- NCOL(mod$m)
     s <- rbind(matrix(0, n, p), mod$m[n + 1, ])
     U.S <- vector("list", length = n + 1)
     U.S[[n + 1]] <- mod$U.C[[n + 1]]
     D.S <- rbind(matrix(0, n, p), mod$D.C[n + 1, ])
-    
+
     # this code is now run below for each observation
     # svdW <- La.svd(mod$W, nu = 0)
     # Dw <- sqrt(svdW$d)
     # Dw.inv <- pmin(1/Dw, big)
     # sqrtWinv <- Dw.inv * svdW$vt
-    
-    if (n > 0) 
+
+    if (n > 0)
       for (i in n:1) {
-        
+
         gapFactor <- 1
         if (i > 1 && info$regular == T) {
           gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
@@ -9152,7 +9152,7 @@ server <- function(input,output,session) {
         Dw <- sqrt(svdW$d)
         Dw.inv <- pmin(1/Dw, big)
         sqrtWinv <- Dw.inv * svdW$vt
-        
+
         Dinv <- 1/mod$D.R[i, ]
         Dinv[abs(Dinv) == Inf] <- 0
         H <- crossprod(mod$D.C[i, ] * t(mod$U.C[[i]])) %*% t(mod$dGG.dx[[i]]) %*% crossprod(Dinv * t(mod$U.R[[i]]))
@@ -9167,7 +9167,7 @@ server <- function(input,output,session) {
         s[i, ] <- mod$m[i, ] + H %*% (s[i + 1, ] - mod$a[i, ])
       }
     ans <- list(s = s, U.S = U.S, D.S = D.S)
-    
+
     attributes(ans$s) <- mAttr
     return(ans)
   }
