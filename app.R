@@ -1584,30 +1584,34 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                              condition = "input.midas == true",
                                              plotOutput("midas_hist1")
                                            ),
-                                           conditionalPanel(
-                                             condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
-                                             withSpinner(
-                                               plotOutput("res1_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             ),
-                                             downloadLink('downloadSpectrum1', div(id = "downloadlink1", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
-                                             verbatimTextOutput("lomb1_info", placeholder = F)
+                                           div(id = "lomb1",
+                                               conditionalPanel(
+                                                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
+                                                 withSpinner(
+                                                   plotOutput("res1_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                                                   type = getOption("spinner.type", default = 1),
+                                                   color = getOption("spinner.color", default = "#0080ff"),
+                                                   size = getOption("spinner.size", default = 2),
+                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                                                 ),
+                                                 downloadLink('downloadSpectrum1', div(id = "downloadlink1", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                                 verbatimTextOutput("lomb1_info", placeholder = F)
+                                               )
                                            ),
-                                           conditionalPanel(
-                                             condition = "input.wavelet == true && input.waveletType.length > 0",
-                                             withSpinner(
-                                               plotOutput("wavelet1", click = "wavelet_1click"),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             ),
-                                             verbatimTextOutput("wavelet1_info", placeholder = F)
+                                           div(id = "wl1",
+                                               conditionalPanel(
+                                                 condition = "input.wavelet == true && input.waveletType.length > 0",
+                                                 withSpinner(
+                                                   plotOutput("wavelet1", click = "wavelet_1click"),
+                                                   type = getOption("spinner.type", default = 1),
+                                                   color = getOption("spinner.color", default = "#0080ff"),
+                                                   size = getOption("spinner.size", default = 2),
+                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                                                 ),
+                                                 verbatimTextOutput("wavelet1_info", placeholder = F)
+                                               )
                                            )
                                   ),
                                   
@@ -1710,32 +1714,36 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                              condition = "input.midas == true",
                                              plotOutput("midas_hist2")
                                            ),
-                                           conditionalPanel(
-                                             condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
-                                             withSpinner(
-                                               plotOutput("res2_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                             ),
-                                             downloadLink('downloadSpectrum2', div(id = "downloadlink2", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
-                                             verbatimTextOutput("lomb2_info", placeholder = F)
+                                           div(id = "lomb2",
+                                               conditionalPanel(
+                                                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
+                                                 withSpinner(
+                                                   plotOutput("res2_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                                                   type = getOption("spinner.type", default = 1),
+                                                   color = getOption("spinner.color", default = "#0080ff"),
+                                                   size = getOption("spinner.size", default = 2),
+                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
+                                                 ),
+                                                 downloadLink('downloadSpectrum2', div(id = "downloadlink2", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                                 verbatimTextOutput("lomb2_info", placeholder = F)
+                                               )
                                            ),
-                                           conditionalPanel(
-                                             condition = "input.wavelet == true && input.waveletType.length > 0",
-                                             # div(style = "background-color: OliveDrab;",
-                                             withSpinner(
-                                               plotOutput("wavelet2", click = "wavelet_1click"),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                             ),
-                                             verbatimTextOutput("wavelet2_info", placeholder = F)
-                                             # )
+                                           div(id = "wl2",
+                                               conditionalPanel(
+                                                 condition = "input.wavelet == true && input.waveletType.length > 0",
+                                                 # div(style = "background-color: OliveDrab;",
+                                                 withSpinner(
+                                                   plotOutput("wavelet2", click = "wavelet_1click"),
+                                                   type = getOption("spinner.type", default = 1),
+                                                   color = getOption("spinner.color", default = "#0080ff"),
+                                                   size = getOption("spinner.size", default = 2),
+                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
+                                                 ),
+                                                 verbatimTextOutput("wavelet2_info", placeholder = F)
+                                                 # )
+                                               )
                                            )
                                   ),
                                   
@@ -1838,30 +1846,34 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                              condition = "input.midas == true",
                                              plotOutput("midas_hist3")
                                            ),
-                                           conditionalPanel(
-                                             condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
-                                             withSpinner(
-                                               plotOutput("res3_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                             ),
-                                             downloadLink('downloadSpectrum3', div(id = "downloadlink3", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
-                                             verbatimTextOutput("lomb3_info", placeholder = F)
+                                           div(id = "lomb3",
+                                               conditionalPanel(
+                                                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
+                                                 withSpinner(
+                                                   plotOutput("res3_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                                                   type = getOption("spinner.type", default = 1),
+                                                   color = getOption("spinner.color", default = "#0080ff"),
+                                                   size = getOption("spinner.size", default = 2),
+                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
+                                                 ),
+                                                 downloadLink('downloadSpectrum3', div(id = "downloadlink3", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
+                                                 verbatimTextOutput("lomb3_info", placeholder = F)
+                                               )
                                            ),
-                                           conditionalPanel(
-                                             condition = "input.wavelet == true && input.waveletType.length > 0",
-                                             withSpinner(
-                                               plotOutput("wavelet3", click = "wavelet_1click"),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                             ),
-                                             verbatimTextOutput("wavelet3_info", placeholder = F)
+                                           div(id = "wl3",
+                                               conditionalPanel(
+                                                 condition = "input.wavelet == true && input.waveletType.length > 0",
+                                                 withSpinner(
+                                                   plotOutput("wavelet3", click = "wavelet_1click"),
+                                                   type = getOption("spinner.type", default = 1),
+                                                   color = getOption("spinner.color", default = "#0080ff"),
+                                                   size = getOption("spinner.size", default = 2),
+                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
+                                                 ),
+                                                 verbatimTextOutput("wavelet3_info", placeholder = F)
+                                               )
                                            )
                                   ),
                                   tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
@@ -3784,6 +3796,13 @@ server <- function(input,output,session) {
       trans$title[2] <- NA
     } else {
       periodogram("original")
+      if (input$tab == 1 || input$format == 4) {
+        runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
+      } else if (input$tab == 2) {
+        runjs("window.scrollTo(0,document.getElementById('lomb2').offsetTop);")
+      } else if (input$tab == 3) {
+        runjs("window.scrollTo(0,document.getElementById('lomb3').offsetTop);")
+      }
     }
   })
   observeEvent(c(input$spectrumModel), {
@@ -3798,6 +3817,13 @@ server <- function(input,output,session) {
       trans$title[3] <- NA
     } else {
       periodogram("model")
+      if (input$tab == 1 || input$format == 4) {
+        runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
+      } else if (input$tab == 2) {
+        runjs("window.scrollTo(0,document.getElementById('lomb2').offsetTop);")
+      } else if (input$tab == 3) {
+        runjs("window.scrollTo(0,document.getElementById('lomb3').offsetTop);")
+      }
     }
   })
   observeEvent(c(input$periodogram_residuals), {
@@ -3812,6 +3838,13 @@ server <- function(input,output,session) {
       trans$title[4] <- NA
     } else {
       periodogram("residuals")
+      if (input$tab == 1 || input$format == 4) {
+        runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
+      } else if (input$tab == 2) {
+        runjs("window.scrollTo(0,document.getElementById('lomb2').offsetTop);")
+      } else if (input$tab == 3) {
+        runjs("window.scrollTo(0,document.getElementById('lomb3').offsetTop);")
+      }
     }
   })
   observeEvent(c(input$spectrumFilter), {
@@ -3826,6 +3859,13 @@ server <- function(input,output,session) {
       trans$title[5] <- NA
     } else {
       periodogram("filter")
+      if (input$tab == 1 || input$format == 4) {
+        runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
+      } else if (input$tab == 2) {
+        runjs("window.scrollTo(0,document.getElementById('lomb2').offsetTop);")
+      } else if (input$tab == 3) {
+        runjs("window.scrollTo(0,document.getElementById('lomb3').offsetTop);")
+      }
     }
   })
   observeEvent(c(input$spectrumFilterRes), {
@@ -3840,6 +3880,13 @@ server <- function(input,output,session) {
       trans$title[6] <- NA
     } else {
       periodogram("filterRes")
+      if (input$tab == 1 || input$format == 4) {
+        runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
+      } else if (input$tab == 2) {
+        runjs("window.scrollTo(0,document.getElementById('lomb2').offsetTop);")
+      } else if (input$tab == 3) {
+        runjs("window.scrollTo(0,document.getElementById('lomb3').offsetTop);")
+      }
     }
   })
   observeEvent(c(trans$y, trans$sy), {
@@ -4072,20 +4119,22 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       if (messages > 0) cat(file = stderr(), "Computing wavelet", "\n")
-      start.time <- Sys.time()
-      suppressWarnings({
-        withProgress(message = 'Computing wavelet transform',
-                     detail = 'This may take a while ...', value = 0.1, {
-                       trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
-                       setProgress(0.7) # just for progress bar lovers
-                       Sys.sleep(1)
-                       setProgress(1)
-                       Sys.sleep(1)
-                     })
-      })
-      end.time <- Sys.time()
-      time.taken <- difftime(end.time, start.time, units = "secs")
-      if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+      if (input$waveletType > 0) {
+        start.time <- Sys.time()
+        suppressWarnings({
+          withProgress(message = 'Computing wavelet transform',
+                       detail = 'This may take a while ...', value = 0.1, {
+                         trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
+                         setProgress(0.7) # just for progress bar lovers
+                         Sys.sleep(1)
+                         setProgress(1)
+                         Sys.sleep(1)
+                       })
+        })
+        end.time <- Sys.time()
+        time.taken <- difftime(end.time, start.time, units = "secs")
+        if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+      }
       isolate({
         levels <- suppressWarnings(signif(sd(trans$wavelet$z), 4))
         z.fun <- match.fun("Mod")
@@ -4116,6 +4165,13 @@ server <- function(input,output,session) {
         lines(min(trans$wavelet$x) + trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
         lines(max(trans$wavelet$x) - trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
       })
+      if (input$tab == 1 || input$format == 4) {
+        runjs("window.scrollTo(0,document.getElementById('wl1').offsetTop);")
+      } else if (input$tab == 2) {
+        runjs("window.scrollTo(0,document.getElementById('wl2').offsetTop);")
+      } else if (input$tab == 3) {
+        runjs("window.scrollTo(0,document.getElementById('wl3').offsetTop);")
+      }
       #
       if (isTruthy(debug)) {
         env <- environment()
@@ -5676,6 +5732,7 @@ server <- function(input,output,session) {
     trans$pattern <- NULL
     trans$names <- NULL
     trans$noise <- NULL
+    inputs$min_wavelet <- ""
     updateTextInput(session, "ObsError", value = "")
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
@@ -5684,6 +5741,7 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    updateRadioButtons(session, inputId = "waveletType", label = NULL, selected = 0)
   }, priority = 100)
 
   # Observe sitelog ####
