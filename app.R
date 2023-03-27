@@ -2080,8 +2080,8 @@ server <- function(input,output,session) {
   output$information <- renderUI({
     line1 <- sprintf("Number of points = %d",info$points)
     line2 <- sprintf("Series length = %.1f time units",info$rangex)
-    line3 <- sprintf("Series range = %f - %f",trans$x[1],trans$x[length(trans$x)])
-    line4 <- sprintf("Series sampling = %f time units",info$sampling)
+    line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx,trans$x[1],info$decimalsx,trans$x[length(trans$x)])
+    line4 <- sprintf("Series sampling = %.*f time units",info$decimalsx,info$sampling)
     line5 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
     HTML(paste(line1, line2, line3, line4, line5, sep = "<br/>"))
   })
