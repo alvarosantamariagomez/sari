@@ -3231,17 +3231,20 @@ server <- function(input,output,session) {
             W = diag(m$processNoise))
           UKF(y = data, mod = mod, FFfunction = FFfunction, GGfunction = GGfunction, simplify = T, logLik = T)$logLik
         }
-        if (input$errorm) {
-          if (inputs$min_optirange == "" || inputs$max_optirange == "") {
-            min_optirange <- info$noise/10
-            max_optirange <- info$noise*10
-            updateTextInput(session, "min_optirange", value = min_optirange)
-            updateTextInput(session, "max_optirange", value = max_optirange)
-          } else {
+        if (isTruthy(input$errorm)) {
+          if (isTruthy(inputs$min_optirange)) {
             min_optirange <- inputs$min_optirange
-            max_optirange <- inputs$max_optirange
+          } else {
+            min_optirange <- info$noise/10
+            updateTextInput(session, "min_optirange", value = min_optirange)
           }
-          if (nchar(min_optirange) > 0 && nchar(max_optirange) > 0 && min_optirange > 0 && !is.na(as.numeric(min_optirange)) && max_optirange > 0 && !is.na(as.numeric(max_optirange))) {
+          if (isTruthy(inputs$max_optirange)) {
+            max_optirange <- inputs$max_optirange
+          } else {
+            max_optirange <- info$noise*10
+            updateTextInput(session, "max_optirange", value = max_optirange)
+          }
+          if (min_optirange > 0 && max_optirange > 0 && max_optirange > min_optirange) {
             if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
             info$KFiter <- 0
             mod <- optim(log(median(sigmaR)^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
