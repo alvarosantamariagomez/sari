@@ -1908,7 +1908,7 @@ server <- function(input,output,session) {
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = 0, step2 = 0, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
-                         last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T)
+                         last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL)
   
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -3221,6 +3221,8 @@ server <- function(input,output,session) {
         start.time <- Sys.time()
         llikss <- function(x, data) {
           if (messages > 2) cat(file = stderr(), "This iteration = ", sqrt(exp(x[1])), "\n")
+          info$KFiter <- info$KFiter + 1
+          showNotification(paste0("Running KF iteration ", info$KFiter), action = NULL, duration = NULL, closeButton = T, id = "KF_iter", type = "warning", session = getDefaultReactiveDomain())
           mod <- NULL
           mod <- list(
             m0 = apriori,
@@ -3241,7 +3243,9 @@ server <- function(input,output,session) {
           }
           if (nchar(min_optirange) > 0 && nchar(max_optirange) > 0 && min_optirange > 0 && !is.na(as.numeric(min_optirange)) && max_optirange > 0 && !is.na(as.numeric(max_optirange))) {
             if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
+            info$KFiter <- 0
             mod <- optim(log(median(sigmaR)^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
+            removeNotification("KF_iter")
             if (mod$convergence == 0) {
               sigmaR <- sqrt(exp(mod$par))
               seParms <- sqrt(diag(solve(mod$hessian)))
