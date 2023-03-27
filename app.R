@@ -5991,30 +5991,30 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$ids, input$optionSecondary), {
     req(file$primary)
     update <- 0
-    file$id1 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1])
+    file$id1 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1]))
     if (!isTruthy(file$id1)) {
       if (isTruthy(url$station)) {
         if (url$server == "local") {
-          file$id1 <- strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1]  
+          file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
         } else if (url$server == "ext") {
-          file$id1 <- url$station 
+          file$id1 <- toupper(url$station)
         }
       } else {
-        file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+        file$id1 <- toupper(strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1])
       }
       update <- 1
     }
     if (length(file$secondary) > 0) {
-      file$id2 <- trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2])
+      file$id2 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2]))
       if (!isTruthy(file$id2)) {
         if (isTruthy(url$station2)) {
           if (url$server2 == "local") {
-            file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
+            toupper(file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
           } else if (url$server2 == "ext") {
-            file$id2 <- url$station2 
+            file$id2 <- toupper(url$station2)
           }
         } else {
-          file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+          file$id2 <- toupper(strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1])
         }
         update <- 1
       }
@@ -6980,22 +6980,22 @@ server <- function(input,output,session) {
       if (!isTruthy(inputs$ids)) {
         if (isTruthy(url$station)) {
           if (url$server == "local") {
-            file$id1 <- strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1]  
+            file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
           } else if (url$server == "ext") {
-            file$id1 <- url$station 
+            file$id1 <- toupper(url$station)
           }
         } else {
-          file$id1 <- strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1]
+          file$id1 <- toupper(strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1])
         }
         if (length(file$secondary) > 0) {
           if (isTruthy(url$station2)) {
             if (url$server2 == "local") {
-              file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1]  
+              file$id2 <- toupper(strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
             } else if (url$server2 == "ext") {
-              file$id2 <- url$station2 
+              file$id2 <- toupper(url$station2)
             }
           } else {
-            file$id2 <- strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1]
+            file$id2 <- toupper(strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1])
           }
         }
       }
