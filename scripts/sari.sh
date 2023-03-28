@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 
-# Alvaro Santamaria 07/03/2023
+### Copyright (C) 2023 Alvaro Santamaria-Gomez, 7 March 2023
+### alvaro.santamaria at get.omp.eu
+###
+### This program is free software: you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation, either version 3 of the License, or
+### any later version.
+###
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #########################################################################################################################
 
@@ -9,7 +23,7 @@ usage () { echo "
 
 This script only runs on desktop environnements of Unix-like systems.
 The SARI session can be either local (running on your machine) or remote (running on the Shinyapps server).
-To open a local session, all the R packages required to run SARI must be installed first (see the INSTALL file).
+To open a local session, all the R packages required to run SARI must be installed beforehand (see the INSTALL file).
 Time series can be uploaded using local or remote files from specific servers and products indicaded below.
 
 Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
@@ -31,12 +45,12 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 	Local session with remote series	$(basename $0) -l -w server -p product -s ID
 	Remote session with remote series	$(basename $0) -r -w server -p product -s ID
 
-	server1+server2, product1+product2 and station1+station2 are used to load two series (primary and secondary) 
+	server1+server2, product1+product2 and station1+station2 are used to load one or two series (primary+secondary) 
 	at the same time from the same or different servers/products.
 
-	The remote series will be downloaded to the local server (your machine in $saridir)
-	or the remote server (Shinyapps). It is not possible to upload a local series to the Shinyapps server via
-	this script. The in-app SARI interface must be used for that.
+	The remote series will be downloaded to the local server (your machine) or the remote server (Shinyapps).
+	It is not possible to upload a local series to the Shinyapps server via this script. The in-app SARI interface 
+	must be used for that.
 
 	In a local session, the SARI app runs in the background of your machine till this script is interrupted by 
 	pressing Ctrl+C. The script also exits if the SARI app stops.
@@ -44,7 +58,7 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         +--------+--------------------------------------+---------+----------------------------------------------------+
         | Server | Product                              | Station | Reference                                          |
         +--------+--------------------------------------+---------+----------------------------------------------------+
-        | LOCAL  | NEU, PBO, NGL, 1D                    | path    |                                                    |
+        | LOCAL  | ENU, NEU, PBO, NGL, 1D               | path    |                                                    |
         | RENAG  | UGA                                  | 4 char  | http://renag.resif.fr/en/                          |
         | NGL    | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                            |
         | EUREF  | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php           |
@@ -202,7 +216,7 @@ checkR() {
 	fi
 }
 
-# Setting the type of session from the input command-line options
+# Blocking the foreground of the terminal
 waiting() {
 	if ! ps -p $pid > /dev/null; then
 		echo Problem running Rscript to start SARI
@@ -212,6 +226,7 @@ waiting() {
 	fi
 }
 
+# Setting the type of session from the input command-line options
 # Remote session
 if [[ -z $local && ! -z $remote ]]; then
 

@@ -1,4 +1,4 @@
-### Copyright (C) 2017  Alvaro Santamaria-Gomez, 12 May 2017
+### Copyright (C) 2017-2023  Alvaro Santamaria-Gomez, 12 May 2017
 ### alvaro.santamaria@get.omp.eu
 ###
 ### This program is free software: you can redistribute it and/or modify
