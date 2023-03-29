@@ -5522,7 +5522,9 @@ server <- function(input,output,session) {
                   url$file2 <- url_info[2]
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
-                  if ((info$format == 2 && info$format2 == 3) || (info$format == 3 && info$format2 == 2)) {
+                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['server2']]) != "local") || 
+                      (tolower(query[['server2']]) == "ngl" && tolower(query[['server2']]) == "jpl") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['server']]) != "local")) {
+                  # if ((info$format == 2 && info$format2 == 3) || (info$format == 3 && info$format2 == 2)) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
                   updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
@@ -9300,7 +9302,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      # RENAG
+    # RENAG
     } else if (tolower(server) == "renag") {
       format <- 2
       if (tolower(product) == "uga") {
@@ -9310,7 +9312,17 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      #UNAVCO
+    #JPL
+    } else if (tolower(server) == "jpl") {
+      format <- 1
+      if (tolower(product) == "point") {
+        name <- paste0(toupper(station),".series")
+        file <- paste0("https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+    #UNAVCO
     } else if (tolower(server) == "unavco") {
       format <- 2
       if (tolower(product) == "cwu") {
@@ -9326,7 +9338,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      # EUREF
+    # EUREF
     } else if (tolower(server) == "euref") {
       format <- 2
       if (tolower(product) == "pbo") {
@@ -9336,7 +9348,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      # EOST Loading Service
+    # EOST Loading Service
     } else if (tolower(server) == "eostls") {
       format <- 1
       name <- paste0(toupper(station),"_NEU.",tolower(product))
@@ -9384,7 +9396,7 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
       updateTextInput(session, inputId = "scaleFactor", value = "0.001")
       updateTextInput(session, inputId = "step2", value = "1")
-      # LOCAL
+    # LOCAL
     } else if (tolower(server) == "local") {
       if (tolower(product) == "neu" || tolower(product) == "enu") {
         format <- 1
