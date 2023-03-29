@@ -2436,7 +2436,7 @@ server <- function(input,output,session) {
     trans$y <- trans$ye <- trans$y0[!is.na(trans$y0)]
     trans$y <- trans$y[series & !is.na(series)]
     trans$ye <- trans$ye[!series & !is.na(series)]
-    trans$sy <- trans$sy0[!is.na(trans$y0)]
+    trans$sy <- trans$sye <- trans$sy0[!is.na(trans$y0)]
     trans$sy <- trans$sy[series & !is.na(series)]
     trans$sye <- trans$sye[!series & !is.na(series)]
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
