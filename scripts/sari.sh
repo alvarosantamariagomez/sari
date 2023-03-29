@@ -284,14 +284,18 @@ elif [[ ! -z $local && -z $remote ]]; then
 
 			# local file
 			if [[ $server1 == local ]]; then
-				station1="$currentdir/$station1"
+				if [[ ${station1:0:1} != "/" ]]; then
+					station1="$currentdir/$station1"
+				fi
 				if [[ ! -f $station1 ]]; then
 					echo File not found: $station1
 					exit 1
 				fi
 			fi
 			if [[ $server2 == local ]]; then
-				station2="$currentdir/$station2"
+				if [[ ${station2:0:1} != "/" ]]; then
+					station2="$currentdir/$station2"
+				fi
 				if [[ ! -f $station2 ]]; then
 					echo File not found: $station2
 					station2=""
