@@ -4309,14 +4309,15 @@ server <- function(input,output,session) {
           sigmas <- T
         }
         if (input$series2filter == 1) {
-          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol)
+          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol)
         } else if (input$series2filter == 2 && length(trans$res) > 0) {
           if (input$fitType == 1) {
-            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,title,input$symbol)
+            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,"",input$symbol)
           } else if (input$fitType == 2) {
-            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,title,input$symbol)
+            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol)
           }
         }
+        title(title, line = 3)
       }
     }
   }, width = reactive(info$width), type = "cairo-png")
