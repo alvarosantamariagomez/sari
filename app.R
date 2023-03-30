@@ -1954,7 +1954,7 @@ server <- function(input,output,session) {
   output_excluded <- reactiveValues(df = NULL)
 
   # 8. input parameters via URL
-  url <- reactiveValues(station = NULL, server = "ext", file = NULL, station2 = NULL, server2 = "ext", file2 = NULL)
+  url <- reactiveValues(station = NULL, server = NULL, file = NULL, station2 = NULL, server2 = NULL, file2 = NULL)
 
   # Constants ####
   # Some initial values and constants
@@ -5491,6 +5491,7 @@ server <- function(input,output,session) {
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
+            url$server <- query[['server']]
             file$primary$name <- url_info[3]
             info$format <- url_info[4]
             updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
@@ -5501,7 +5502,6 @@ server <- function(input,output,session) {
                 url$file <- NULL
                 req(info$stop)
               }
-              url$server <- "local"
               showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
               down <- 0
               file$primary$file <- url$file
@@ -5520,11 +5520,11 @@ server <- function(input,output,session) {
                 if (isTruthy(url_info)) {
                   url$station2 <- url_info[1]
                   url$file2 <- url_info[2]
+                  url$server2 <- query[['server2']]
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
                   if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['server2']]) != "local") || 
-                      (tolower(query[['server2']]) == "ngl" && tolower(query[['server2']]) == "jpl") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['server']]) != "local")) {
-                  # if ((info$format == 2 && info$format2 == 3) || (info$format == 3 && info$format2 == 2)) {
+                      (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "jpl") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['server']]) != "local")) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
                   updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
@@ -5538,7 +5538,6 @@ server <- function(input,output,session) {
                     showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
                     down <- 0
                     file$secondary$file <- url$file2
-                    url$server2 <- "local"
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                     if (isTruthy(local)) {
@@ -5554,7 +5553,7 @@ server <- function(input,output,session) {
                     shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F))
                     if (url$server2 == "local") {
                       filename2 <- basename(url$file2)
-                    } else if (url$server2 == "ext") {
+                    } else {
                       filename2 <- file$secondary$name
                     }
                     session$sendCustomMessage("filename2", filename2)
@@ -5570,7 +5569,7 @@ server <- function(input,output,session) {
                 values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
                 if (url$server == "local") {
                   filename <- basename(url$file)
-                } else if (url$server == "ext") {
+                } else {
                   filename <- file$primary$name
                 }
                 session$sendCustomMessage("filename", filename)
@@ -5999,7 +5998,7 @@ server <- function(input,output,session) {
       if (isTruthy(url$station)) {
         if (url$server == "local") {
           file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
-        } else if (url$server == "ext") {
+        } else {
           file$id1 <- toupper(url$station)
         }
       } else {
@@ -6013,7 +6012,7 @@ server <- function(input,output,session) {
         if (isTruthy(url$station2)) {
           if (url$server2 == "local") {
             toupper(file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
-          } else if (url$server2 == "ext") {
+          } else {
             file$id2 <- toupper(url$station2)
           }
         } else {
@@ -6735,9 +6734,9 @@ server <- function(input,output,session) {
     table <- NULL
     table2 <- NULL
     if (isTruthy(url$file)) {
-      table <- extract_table(file$primary$file,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
+      table <- extract_table(file$primary$file,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server)
     } else {
-      table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F)
+      table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,NULL)
     }
     if (!is.null(table)) {
       # Resampling the primary series
@@ -6782,13 +6781,15 @@ server <- function(input,output,session) {
       if (length(file$secondary) > 0 && input$optionSecondary > 0) {
         if (isTruthy(url$file2)) {
           files <- file$secondary$file
+          server <- url$server2
         } else {
           files <- input$series2$datapath
+          server <- NULL
         }
         if (isTruthy(dim(files)) && dim(files)[1] > 1) {
           table_stack <- NULL
           for (i in 1:dim(files)[1]) {
-            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,NULL)
             if (!is.null(table2)) {
               if (!is.null(table_stack)) {
                 table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
@@ -6814,7 +6815,7 @@ server <- function(input,output,session) {
             showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
           }
         } else {
-          table2 <- extract_table(files,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne)
+          table2 <- extract_table(files,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server)
         }
         if (!is.null(table2)) {
           if (anyNA(table2)) {
@@ -6898,10 +6899,10 @@ server <- function(input,output,session) {
                 info$sampling2 <- min(diff(table2$x,1))
               } else if (input$optionSecondary == 2) {
                 if (input$tunits == 1) {
-                  delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
-                  if (delta != 0) {
+                  delta <- as.numeric(names(sort(table(table$x - floor(table$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
+                  if (length(delta) == 1 && delta != 0) {
                     table2$x <- table2$x + delta
-                    showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                    showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
                   }
                 }
                 if (info$format == 4) {
@@ -6984,7 +6985,7 @@ server <- function(input,output,session) {
         if (isTruthy(url$station)) {
           if (url$server == "local") {
             file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
-          } else if (url$server == "ext") {
+          } else {
             file$id1 <- toupper(url$station)
           }
         } else {
@@ -6994,7 +6995,7 @@ server <- function(input,output,session) {
           if (isTruthy(url$station2)) {
             if (url$server2 == "local") {
               file$id2 <- toupper(strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
-            } else if (url$server2 == "ext") {
+            } else {
               file$id2 <- toupper(url$station2)
             }
           } else {
@@ -7057,7 +7058,7 @@ server <- function(input,output,session) {
       NULL
     }
   }
-  extract_table <- function(file,sep,format,epoch,variable,errorBar,swap) {
+  extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server) {
     tableAll <- NULL
     extracted <- NULL
     removeNotification("no_weeks")
@@ -7088,6 +7089,14 @@ server <- function(input,output,session) {
                 extracted$sy1 <- tableAll[,5]
                 extracted$sy2 <- tableAll[,6]
                 extracted$sy3 <- tableAll[,7]
+              }
+              # get other time units for JPL series
+              if (server == "jpl" && columns > 16) {
+                if (input$tunits == 1) {
+                  extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                } else if (input$tunits == 2) {
+                  extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                }
               }
             } else {
               extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
