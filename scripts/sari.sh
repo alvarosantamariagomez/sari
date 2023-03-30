@@ -222,6 +222,7 @@ waiting() {
 	if ! ps -p $pid > /dev/null; then
 		echo Problem running Rscript to start SARI
 	else	
+		echo "SARI session available at http://127.0.0.1:$port"
 		echo "Press Ctrl+C to stop the SARI session"
 		wait $pid
 	fi
