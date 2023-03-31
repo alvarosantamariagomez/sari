@@ -9361,7 +9361,7 @@ server <- function(input,output,session) {
       format <- 2
       if (tolower(product) == "pbo") {
         name <- paste0(toupper(station),".pos")
-        file <- paste0("https://epncb.eu/ftp/product/cumulative/C2220/pbo/",name)
+        file <- paste0("https://epncb.eu/ftp/product/cumulative/C2235/pbo/",name)
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
