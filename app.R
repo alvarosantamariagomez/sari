@@ -7455,12 +7455,13 @@ server <- function(input,output,session) {
           for (p in periods) {
             f <- NULL
             i <- i + 1
+            h <- 0
             if (grepl("x",p)) {
               harmonics <- unlist(strsplit(p, split = "x"))
               p <- harmonics[1]
-              h <- as.numeric(harmonics[2])
-            } else {
-              h <- 0
+              if (isTruthy(as.numeric(harmonics[2]))) {
+                h <- as.integer(harmonics[2])
+              }
             }
             if (grepl("d",p)) {
               f <- gsub("d", "", p)
