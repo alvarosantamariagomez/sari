@@ -5518,6 +5518,7 @@ server <- function(input,output,session) {
               }
             }
             if (isTruthy(down) && down == 0) {
+              if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
                 url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]))
                 if (isTruthy(url_info)) {
@@ -5554,6 +5555,7 @@ server <- function(input,output,session) {
                     }
                   }
                   if (isTruthy(down) && down == 0) {
+                    if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F))
