@@ -254,11 +254,11 @@ if [[ -z $local && ! -z $remote ]]; then
 				exit 1
 			fi
 			
-			xdg-open "https://alvarosg.shinyapps.io/saribeta/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
+			xdg-open "https://alvarosg.shinyapps.io/sari/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
 
 		# Primary series only
 		else
-			xdg-open "https://alvarosg.shinyapps.io/saribeta/?server=$server1&product=$product1&station=$station1"
+			xdg-open "https://alvarosg.shinyapps.io/sari/?server=$server1&product=$product1&station=$station1"
 		fi
 	
 	else
