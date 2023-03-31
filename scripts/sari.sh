@@ -63,7 +63,6 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         | NGL    | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                            |
         | EUREF  | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php           |
         | JPL    | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
-        | UNAVCO | CWU, NMT, PBO                        | 4 char  | https://www.unavco.org/data/gps-gnss/gps-gnss.html |
         | EOSTLS | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                       |
         |        | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                    |
         |        | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                    |
@@ -95,8 +94,8 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag ngl euref jpl unavco eostls "
-products=" enu neu pbo ngl 1d uga final rapid point cwu nmt atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+servers=" local renag ngl euref jpl eostls "
+products=" enu neu pbo ngl 1d uga final rapid point atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit
 cleaning () {
