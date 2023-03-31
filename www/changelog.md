@@ -1,5 +1,41 @@
 # **SARI changelog**
 
+# abril 2023 [2023.04]
+
+### Fixed
+
+- Correcting path of some EOSTLS products
+- Bug related to daylight saving time changes when transforming calendar dates into decimal year
+- Bug when reading the min & max measurement noise values in KF
+- Bug with error bars not defined for the removed points
+- Bug when typing the higher harmonics in the sinusoidal fit
+
+### Changed
+
+- Shifting the secondary series to match the sampling of the primary series
+- Updating plots when chaging the scale factor of the secondary series
+- Improved computation of the error bars for averaged series
+- Checking output when merging primary and secondary series
+- Showing header of current used series when available
+- Deleting reference epochs in the fitted model when changing the time units
+- Improved formating of the information on the series range and sampling
+- Station IDs in upper case
+- Updating EUREF server series to C2235
+
+### Added
+
+- Shell script to launch SARI from a Unix-like terminal
+- Progress bar on some long computations
+- Option to upload several secondary series at the same time
+- Secondary time axis with decimal years at the top of the plots
+- Checking sampling of primary vs secondary series
+- Option to average the secondary series
+- Transforming PBO dates into GPS weeks
+- Message on screen with the number of KF iterations
+- Automatically scrolling the page when the periodogram or the wavelet finish
+- Series from the JPL server
+- Removing UNAVCO from the available servers (problem with IdM)
+
 # marzo 2023 [2023.03]
 
 ### Fixed

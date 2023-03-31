@@ -1,6 +1,8 @@
 Instructions to run SARI locally using R/RStudio on Windows, Linux or MacOS
 ----------------------------------------------------------------------------
 
+Note on the Windows Subsystem for Linux: if using scripts/sari.sh to launch SARI from a WSL terminal, R and all the package dependencies must be installed on WSL as well. The Windows install will only be accessible from Windows itself, for instance with RStudio, and will not be necessary from WSL.
+
 1) Install R following the official R documentation here  
 https://cran.r-project.org/
 
@@ -22,8 +24,7 @@ https://mac.r-project.org/tools/
 
 3.3) If using Linux: you're good to go.
 
-4) Install all the packages indicated below and their dependencies from CRAN.
-There are two ways of installing the required packages:
+4) Install all the packages indicated below and their dependencies from CRAN. Note that installing package versions different from those indicated below may produce a different behaviour of the SARI app. There are two ways of installing the required packages:  
 
 4.1) On Rstudio, go to Tools -> Install Packages
 Then copy&paste the following list of packages separated by spaces or commas:  
@@ -44,7 +45,7 @@ To install this package there are again two options:
 5.2) On the R/Rstudio console type: 
 install.packages("/path/to/the/mvcwt/tar.gz/file")
 
-The list below shows the package versions used with R version 4.1.2 when accessing SARI from Docker or the online server:
+The list below shows the package versions used with R version 4.1.2 when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce differences.  
 
   (data.table) #v1.14.2
   (dlm) #v1.1-5
