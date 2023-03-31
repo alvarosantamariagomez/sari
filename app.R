@@ -9339,21 +9339,21 @@ server <- function(input,output,session) {
         return(NULL)
       }
     #UNAVCO
-    } else if (tolower(server) == "unavco") {
-      format <- 2
-      if (tolower(product) == "cwu") {
-        name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-        file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
-      } else if (tolower(product) == "nmt") {
-        name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-        file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
-      } else if (tolower(product) == "pbo") {
-        name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-        file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
-      } else {
-        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-        return(NULL)
-      }
+    # } else if (tolower(server) == "unavco") {
+    #   format <- 2
+    #   if (tolower(product) == "cwu") {
+    #     name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+    #     file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
+    #   } else if (tolower(product) == "nmt") {
+    #     name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+    #     file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
+    #   } else if (tolower(product) == "pbo") {
+    #     name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+    #     file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
+    #   } else {
+    #     showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+    #     return(NULL)
+    #   }
     # EUREF
     } else if (tolower(server) == "euref") {
       format <- 2
