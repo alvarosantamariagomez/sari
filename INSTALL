@@ -97,6 +97,9 @@ or
 After cloning/downloading the SARI repo:
 runApp("/path/to/the/downloaded/SARI/app.R/file")
 
+6.3) On a Unix-like terminal using the sari.sh shell script
+This shell script can also be used to launch a SARI session on Shinyapps.io without the need of installing the R packages
+
 
 
 For any comment or question, send an email to:
