@@ -6562,7 +6562,7 @@ server <- function(input,output,session) {
   observeEvent(input$reset, {
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Reset all", "\n")
-    if (length(session$clientData$url_search) > 0) {
+    if (session$clientData$url_search != "") {
       if (session$clientData$url_pathname == "/") {
         path <- ""
       } else {
