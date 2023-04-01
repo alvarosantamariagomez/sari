@@ -14,13 +14,13 @@
 ### Changed
 
 - Shifting the secondary series to match the sampling of the primary series
-- Updating plots when chaging the scale factor of the secondary series
+- Updating plots when changing the scale factor of the secondary series
 - Improved computation of the error bars for averaged series
 - Checking output when merging primary and secondary series
 - Checking downloaded remote series
 - Showing header of current used series when available
 - Deleting reference epochs in the fitted model when changing the time units
-- Improved formating of the information on the series range and sampling
+- Improved formatting of the information on the series range and sampling
 - Station IDs in upper case
 - Updating EUREF server series to C2235
 
