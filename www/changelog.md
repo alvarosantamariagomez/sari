@@ -9,6 +9,7 @@
 - Bug when reading the min & max measurement noise values in KF
 - Bug with error bars not defined for the removed points
 - Bug when typing the higher harmonics in the sinusoidal fit
+- Bug when resetting the analysis
 
 ### Changed
 
@@ -16,6 +17,7 @@
 - Updating plots when chaging the scale factor of the secondary series
 - Improved computation of the error bars for averaged series
 - Checking output when merging primary and secondary series
+- Checking downloaded remote series
 - Showing header of current used series when available
 - Deleting reference epochs in the fitted model when changing the time units
 - Improved formating of the information on the series range and sampling
