@@ -5513,8 +5513,10 @@ server <- function(input,output,session) {
                 file$primary$file <- file$primary$name
               }
               down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
-              if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
-                down <- 1
+              if (file.exists(file$primary$file)) {
+                if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
+                  down <- 1
+                }
               }
             }
             if (isTruthy(down) && down == 0) {
@@ -5550,8 +5552,10 @@ server <- function(input,output,session) {
                       file$secondary$file <- file$secondary$name
                     }
                     down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
-                    if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
-                      down <- 1
+                    if (file.exists(file$secondary$file)) {
+                      if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
+                        down <- 1
+                      }
                     }
                   }
                   if (isTruthy(down) && down == 0) {
