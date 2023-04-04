@@ -63,6 +63,7 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         | NGL    | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                            |
         | EUREF  | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php           |
         | JPL    | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
+        | SIRGAS | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/       |
         | EOSTLS | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                       |
         |        | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                    |
         |        | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                    |
@@ -94,7 +95,7 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag ngl euref jpl eostls "
+servers=" local renag ngl euref jpl sirgas eostls "
 products=" enu neu pbo ngl 1d uga final rapid point atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit
@@ -199,7 +200,7 @@ fi
 # Checking valid arguments
 contains() {
 	if [[ ! " $1 " =~ " $2 " ]]; then
-		echo FATAL: $2 in not a valid input argument
+		echo FATAL: $2 is not a valid input argument
 		exit 1
 	fi
 }
@@ -221,8 +222,8 @@ waiting() {
 	if ! ps -p $pid > /dev/null; then
 		echo Problem running Rscript to start SARI
 	else	
-		echo "SARI session available at http://127.0.0.1:$port"
-		echo "Press Ctrl+C to stop the SARI session"
+		echo SARI session available at http://127.0.0.1:$port
+		echo Press Ctrl+C to stop the SARI session
 		wait $pid
 	fi
 }

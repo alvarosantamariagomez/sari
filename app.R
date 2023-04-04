@@ -38,7 +38,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 
 # version ####
@@ -7081,7 +7081,13 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
-      tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
+      # extracting series from SIRGAS NEU format
+      if (server == "sirgas") {
+        sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
+        tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
+      } else {
+        tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
+      }
       if (isTruthy(tableAll)) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
@@ -7102,12 +7108,18 @@ server <- function(input,output,session) {
                 extracted$sy2 <- tableAll[,6]
                 extracted$sy3 <- tableAll[,7]
               }
-              # get other time units for JPL series
+              # get other time units for diferent series
               if (server == "jpl" && columns > 16) {
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                }
+              } else if (server == "sirgas") {
+                if (input$tunits == 1) {
+                  extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                } else if (input$tunits == 3) {
+                  extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
                 }
               }
             } else {
@@ -9418,6 +9430,16 @@ server <- function(input,output,session) {
       updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
       updateTextInput(session, inputId = "scaleFactor", value = "0.001")
       updateTextInput(session, inputId = "step2", value = "1")
+    # SIRGAS
+    } else if (tolower(server) == "sirgas") {
+      format <- 1
+      if (tolower(product) == "neu") {
+        name <- paste0(toupper(station),".NEU")
+        file <- paste0("https://www.sirgas.org/fileadmin/docs/SIRGAS_TS/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
     # LOCAL
     } else if (tolower(server) == "local") {
       if (tolower(product) == "neu" || tolower(product) == "enu") {

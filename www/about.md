@@ -49,9 +49,9 @@ Local and external links are given in this <a href="#" target="_self">blue</a>.
 Further details and some examples can be found in  
 Santamar&#237;a-G&#243;mez, A. (2019) SARI: interactive GNSS position time series analysis software. GPS solutions, 23:52. DOI: [10.1007/s10291-019-0846-y](https://link.springer.com/article/10.1007/s10291-019-0846-y)
 
-A SARI prebuilt image is available in [DockerHub](https://hub.docker.com/r/alvarosg/sari)
+A SARI prebuilt image is available in [DockerHub](https://hub.docker.com/r/alvarosg/sari).
 
-The code source and installation instructions can be found in [GitHub](https://github.com/alvarosantamariagomez/sari)
+The code source and installation instructions can be found in [GitHub](https://github.com/alvarosantamariagomez/sari).
 
 A ~40 min video tutorial is also available in [YouTube](https://youtu.be/Zt61jzehhoc). This tutorial was made with SARI version "mayo 2021".  
 
@@ -114,14 +114,20 @@ At this moment, the following servers and products are available via the URL:
    <td style="text-align:left;">9 characters</td>
    <td style="text-align:left;">PBO</td>
   </tr>
-   <tr>
+  <tr>
    <td style="text-align:left;"><a href="https://sideshow.jpl.nasa.gov/post/series.html" target="_blank">JPL</a><sup>4</sup></td>
+   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td style="text-align:left;">4 characters</td>
+   <td style="text-align:left;">NEU</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="https://www.sirgas.org/en/sirgas-definition" target="_blank">SIRGAS</a><sup>5</sup></td>
    <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
    <td style="text-align:left;">4 characters</td>
    <td style="text-align:left;">POINT</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a><sup>5</sup></td>
+   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a><sup>6</sup></td>
    <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
    <td style="text-align:left;">14 characters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
    <td style="text-align:left;">ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN, GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD</td>
@@ -133,7 +139,8 @@ At this moment, the following servers and products are available via the URL:
 <sup>2</sup> The NGL series correspond to the *IGS14* solution.  
 <sup>3</sup> The EUREF series correspond to the *C2235* solution.  
 <sup>4</sup> The JPL series correspond to the *repro2018a* solution.  
-<sup>5</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
+<sup>5</sup> The SIRGAS series correspond to the *repro2* solution.  
+<sup>6</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
 
 The server/product parameters can be defined for both the primary and secondary series. For example, adding this query string  
 <span style="color: red;"> ?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI </span>  
