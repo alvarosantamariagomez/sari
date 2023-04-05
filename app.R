@@ -40,6 +40,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 
 devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
+Sys.setlocale('LC_ALL','C')
 
 # version ####
 version <- "SARI abril 2023"
