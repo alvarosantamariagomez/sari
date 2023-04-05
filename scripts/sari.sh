@@ -62,7 +62,8 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         | RENAG  | UGA                                  | 4 char  | http://renag.resif.fr/en/                          |
         | NGL    | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                            |
         | EUREF  | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php           |
-        | JPL    | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
+        | JPL    | ENU                                  | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
+        | IGS    | NEU                                  | 4 char  | https://igs.org/products/                          |
         | SIRGAS | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/       |
         | EOSTLS | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                       |
         |        | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                    |
@@ -95,8 +96,8 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag ngl euref jpl sirgas eostls "
-products=" enu neu pbo ngl 1d uga final rapid point atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+servers=" local renag ngl euref jpl igs sirgas eostls "
+products=" enu neu pbo ngl 1d uga final rapid atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit
 cleaning () {

@@ -80,56 +80,78 @@ This feature allows webmasters of any GNSS series database (or any other type of
 This also allows to run SARI from the command line in a UNIX-like desktop environnment using the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
 At this moment, the following servers and products are available via the URL:  
 
-<table>
+<table style="width: 100%">
+ <colgroup>
+  <col span="1" style="width: 6%;">
+  <col span="1" style="width: 4%;">
+  <col span="1" style="width: 11%;">
+  <col span="1" style="width: 4%;">
+  <col span="1" style="width: 70%;">
+ </colgroup>
  <thead>
   <tr>
-   <th style="text-align:left;">Server</th>
-   <th style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</th>
-   <th style="text-align:left;">Station</th>
-   <th style="text-align:left;">Product</th>
+   <th style="text-align:left; border-bottom: 1px solid black"> Server </th>
+   <th style="text-align:left;"> </th>
+   <th style="text-align:left; border-bottom: 1px solid black"">Station</th>
+   <th style="text-align:left;"> </th>
+   <th style="text-align:left; border-bottom: 1px solid black"">Product</th>
   </tr>
  </thead>
 <tbody>
   <tr>
-   <td style="text-align:left;">LOCAL<sup>1</sup></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td style="text-align:left;">LOCAL</td>
+   <td style="text-align:left;"><sup>1</sup></td>
    <td style="text-align:left;">file path</td>
-   <td style="text-align:left;">ENU/NEU, PBO, NGL, 1D</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">ENU, NEU, PBO, NGL, 1D</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="http://renag.resif.fr/en/" target="_blank">RENAG</a></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td style="text-align:left;"> </td>
    <td style="text-align:left;">4 characters</td>
+   <td style="text-align:left;"> </td>
    <td style="text-align:left;">UGA</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="http://geodesy.unr.edu/" target="_blank">NGL</a><sup>2</sup></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td style="text-align:left;"><a href="https://igs.org/products/" target="_blank">IGS</a></td>
+   <td style="text-align:left;"><sup>5</sup></td>
    <td style="text-align:left;">4 characters</td>
-   <td style="text-align:left;">FINAL, RAPID</td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"><a href="https://epncb.eu/_organisation/about.php" target="_blank">EUREF</a><sup>3</sup></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-   <td style="text-align:left;">9 characters</td>
-   <td style="text-align:left;">PBO</td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"><a href="https://sideshow.jpl.nasa.gov/post/series.html" target="_blank">JPL</a><sup>4</sup></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-   <td style="text-align:left;">4 characters</td>
+   <td style="text-align:left;"> </td>
    <td style="text-align:left;">NEU</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="https://www.sirgas.org/en/sirgas-definition" target="_blank">SIRGAS</a><sup>5</sup></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-   <td style="text-align:left;">4 characters</td>
-   <td style="text-align:left;">POINT</td>
+   <td style="text-align:left;"><a href="https://epncb.eu/_organisation/about.php" target="_blank">EUREF</a></td>
+   <td style="text-align:left;"><sup>3</sup></td>
+   <td style="text-align:left;">9 characters</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">PBO</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a><sup>6</sup></td>
-   <td style="text-align:right;">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-   <td style="text-align:left;">14 characters&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+   <td style="text-align:left;"><a href="https://www.sirgas.org/en/sirgas-definition" target="_blank">SIRGAS</a></td>
+   <td style="text-align:left;"><sup>6</sup></td>
+   <td style="text-align:left;">4 characters</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">NEU</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="http://geodesy.unr.edu/" target="_blank">NGL</a></td>
+   <td style="text-align:left;"><sup>2</sup></td>
+   <td style="text-align:left;">4 characters</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">FINAL, RAPID</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="https://sideshow.jpl.nasa.gov/post/series.html" target="_blank">JPL</a></td>
+   <td style="text-align:left;"><sup>4</sup></td>
+   <td style="text-align:left;">4 characters</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">ENU</td>
+  </tr>
+  <tr style="vertical-align: top">
+   <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a></td>
+   <td style="text-align:left;"><sup>7</sup></td>
+   <td style="text-align:left;">14 characters</td>
+   <td style="text-align:left;"> </td>
    <td style="text-align:left;">ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN, GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD</td>
   </tr>
 </tbody>
@@ -139,8 +161,9 @@ At this moment, the following servers and products are available via the URL:
 <sup>2</sup> The NGL series correspond to the *IGS14* solution.  
 <sup>3</sup> The EUREF series correspond to the *C2235* solution.  
 <sup>4</sup> The JPL series correspond to the *repro2018a* solution.  
-<sup>5</sup> The SIRGAS series correspond to the *repro2* solution.  
-<sup>6</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
+<sup>5</sup> The IGS series correspond to the *IGS20* solution.  
+<sup>6</sup> The SIRGAS series correspond to the *repro2* solution.  
+<sup>7</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, opening these series may take longer than expected.  
 
 The server/product parameters can be defined for both the primary and secondary series. For example, adding this query string  
 <span style="color: red;"> ?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI </span>  

@@ -7088,6 +7088,18 @@ server <- function(input,output,session) {
       } else {
         tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       }
+      # transforming series from IGS lat lon into NEU format
+      if (server == "igs") {
+        a <- 6378137
+        b <- 6356752.314140347
+        e2 <- (a^2 - b^2) / a^2
+        N <- a / sqrt( 1 - e2 * sin(tableAll[,5]*pi/180)^2) + tableAll[,7]
+        dn <- N * (tableAll[,5] - tableAll[1,5]) * pi/180
+        sdn <- N * tableAll[,8] * pi/180
+        de <- N * (tableAll[,6] - tableAll[1,6]) * pi/180 * cos(tableAll[,5]*pi/180)
+        sde <- N * tableAll[,9] * pi/180 * cos(tableAll[,5]*pi/180)
+        tableAll <- cbind(dn, de, sdn, sde, tableAll)[,c(7,1,2,11,3,4,14,5,6)]
+      }
       if (isTruthy(tableAll)) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
@@ -7108,7 +7120,7 @@ server <- function(input,output,session) {
                 extracted$sy2 <- tableAll[,6]
                 extracted$sy3 <- tableAll[,7]
               }
-              # get other time units for diferent series
+              # get other time units for different series
               if (server == "jpl" && columns > 16) {
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
@@ -7120,6 +7132,13 @@ server <- function(input,output,session) {
                   extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 3) {
                   extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
+                }
+              } else if (server == "igs") {
+                if (input$tunits == 2) {
+                  extracted$x <- tableAll[,8] + tableAll[,9]/7
+                } else if (input$tunits == 3) {
+                  extracted$x <- tableAll[,8] + tableAll[,9]/7
+                  extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7)
                 }
               }
             } else {
@@ -9356,6 +9375,16 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
+    #IGS
+    } else if (tolower(server) == "igs") {
+      format <- 1
+      if (tolower(product) == "neu") {
+        name <- paste0(toupper(station),"_igs.plh")
+        file <- paste0("ftp://igs-rf.ign.fr/pub/crd/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
     #UNAVCO
     # } else if (tolower(server) == "unavco") {
     #   format <- 2
@@ -9463,6 +9492,16 @@ server <- function(input,output,session) {
       return(NULL)
     }
     return(list(station,file,name,format))
+  }
+  deg2m <- function(lat,lon,h,dlat,dlon) {
+    #lat, lon, dlat, dlon in radians; h in m
+    a <- 6378137
+    b <- 6356752.314140347
+    e2 <- (a^2 - b^2) / a^2
+    N <- a / sqrt( 1 - e2 * sin(lat)^2) + h
+    n <- N * dlat
+    e <- N * dlon * cos(lat)
+    return(n,e)
   }
 }
 
