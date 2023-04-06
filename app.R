@@ -2740,9 +2740,9 @@ server <- function(input,output,session) {
         symbol <- 'o'
       }
       if (isTruthy(input$sameScale)) {
-        half <- abs(ranges$y1[1] - (ranges$y1[1] + ranges$y1[2]) / 2)
+        half <- abs(ranges$y1[1] - mean(ranges$y1))
         if (isTruthy(ranges$y12)[1]) {
-          middle <- (ranges$y12[1] + ranges$y12[2]) / 2
+          middle <- median(trans$y2[trans$y2 >= ranges$y12[1] & trans$y2 <= ranges$y12[2]], na.rm = T)
         } else {
           middle <- median(trans$y2, na.rm = T)
         }
@@ -6749,7 +6749,7 @@ server <- function(input,output,session) {
     if (isTruthy(url$file)) {
       table <- extract_table(file$primary$file,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server)
     } else {
-      table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,NULL)
+      table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
     }
     if (!is.null(table)) {
       # Resampling the primary series
@@ -6797,12 +6797,12 @@ server <- function(input,output,session) {
           server <- url$server2
         } else {
           files <- input$series2$datapath
-          server <- NULL
+          server <- ""
         }
         if (isTruthy(dim(files)) && dim(files)[1] > 1) {
           table_stack <- NULL
           for (i in 1:dim(files)[1]) {
-            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,NULL)
+            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,"")
             if (!is.null(table2)) {
               if (!is.null(table_stack)) {
                 table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
