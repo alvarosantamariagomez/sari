@@ -1,78 +1,234 @@
 Instructions to run SARI locally using R/RStudio on Windows, Linux or MacOS
 ----------------------------------------------------------------------------
 
-Note on the Windows Subsystem for Linux: if using scripts/sari.sh to launch SARI from a WSL terminal, R and all the package dependencies must be installed on WSL as well. The Windows install will only be accessible from Windows itself, for instance with RStudio, and will not be necessary from WSL.
+Note on the Windows Subsystem for Linux: if using scripts/sari.sh to launch SARI from a WSL terminal, R and all the package dependencies must be installed on WSL as well. The Windows install will only be accessible from Windows itself, for instance with RStudio. The windows install is not necessary if running SARI from WSL.
+
+
 
 1) Install R following the official R documentation here  
 https://cran.r-project.org/
 
-2) It is recommended to install RStudio (free desktop version), though it is not mandatory to run SARI  
+SARI has been tested on R version 4.2 (specifically patch 4.2.3). It is recommended to install this R release.
+
+
+
+2) It is recommended to install RStudio (free desktop version), especially if using Windows, though this is not mandatory to run SARI  
 https://www.rstudio.com/products/rstudio/download/
 
-3) With R (and RStudio) installed, some extras are needed to install R packages
+
+
+3) With R (and RStudio) installed, some extras may be needed before installing the SARI dependencies
 
 3.1) If using Windows: install Rtools following these instructions  
 https://cran.r-project.org/bin/windows/Rtools/
 
 Once Rtools is installed, in order to use it, you need first to install and load the package devtools.  
-On the R/RStudio console type:  
-install.packages("devtools")
+On the R/RStudio console type:    
+`
+install.packages("devtools")  
 library(devtools)
+`
 
-3.2) If using MacOS: install Xcode and a GNU Fortran compiler (not fully tested, feedback is welcome) following:  
+3.2) If using macOS: install Xcode and a GNU Fortran compiler (not fully tested, feedback is welcome) following:  
 https://mac.r-project.org/tools/
 
-3.3) If using Linux: you're good to go.
+3.3) If using Linux/WSL: install the following packages on your system (it may vary depending on the distro):  
+`
+sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjpeg-dev libpng-dev libtiff-dev pandoc libicu-dev libxml2-dev git libgit2-dev
+`
 
-4) Install all the packages indicated below and their dependencies from CRAN. Note that installing package versions different from those indicated below may produce a different behaviour of the SARI app. There are two ways of installing the required packages:  
 
-4.1) On Rstudio, go to Tools -> Install Packages
-Then copy&paste the following list of packages separated by spaces or commas:  
 
-data.table, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, psych, RColorBrewer, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach
+4) Install all the packages indicated below and their dependencies from CRAN. There are several ways of installing the required packages:  
+
+4.1) On Rstudio, go to Tools -> Install Packages  
+Then copy&paste the following list of packages separated by spaces or commas:
+
+data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach
 
 4.2) On the R/RStudio console, the following command will install the packages at once:  
+`
+install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach"))
+`
 
-install.packages(c("data.table", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach"))
+4.3) The above two methods will either install package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
 
-5) In addition, the package mvcwt needs to be downloaded and compiled from here:  
-https://cran.r-project.org/src/contrib/Archive/mvcwt/  
 
-To install this package there are again two options:
 
-5.1) On Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file.
+5) In addition, the package mvcwt needs to be downloaded from here:  
+https://cran.r-project.org/src/contrib/Archive/mvcwt/
 
-5.2) On the R/Rstudio console type: 
+To install this package there are two options:
+
+5.1) On Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file from your machine.
+
+5.2) On the R/Rstudio console type:  
+`
 install.packages("/path/to/the/mvcwt/tar.gz/file")
+`
 
-The list below shows the package versions used with R version 4.1.2 when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce differences.  
+The list below shows the package versions used with R 4.2.3 when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce different results. 
 
-  (data.table) #v1.14.2
-  (dlm) #v1.1-5
-  (fields) #v13.3
-  (foreach) #1.5.1
-  (lubridate) #v1.8.0
-  (magrittr) #v2.0.3
-  (markdown) #v1.1
-  (matrixStats) #v0.61.0
-  (mvcwt) #v1.3.1
-  (numDeriv) #v2016.8-1.1
-  (psych) #v2.1.9
-  (RColorBrewer) #v1.1-2
-  (shinyBS) #v0.61
-  (shinycssloaders) #v1.0.0.9000
-  (shinyjs) #v2.0
-  (shinythemes) #v1.2.0
-  (shiny) #v1.7.3
-  (spectral) #v2.0
-  (strucchange) #v1.5-2
-  (tseries) #v0.10-49
-  (pracma) #v2.3.8
+         Package    Version
+         askpass        1.1
+       base64enc      0.1-3
+            brew      1.0-8
+            brio      1.1.3
+           bslib      0.4.2
+          cachem      1.0.7
+           callr      3.7.3
+             cli      3.6.1
+           clipr      0.8.0
+      colorspace      2.1-0
+      commonmark      1.9.0
+           cpp11      0.4.3
+          crayon      1.5.2
+     credentials      1.3.2
+            curl      5.0.0
+      data.table     1.14.8
+            desc      1.4.2
+        devtools      2.4.5
+         diffobj      0.3.5
+          digest     0.6.31
+             dlm      1.1-6
+       dotCall64      1.0-2
+         downlit      0.4.2
+        ellipsis      0.3.2
+        evaluate       0.20
+           fansi      1.0.4
+          farver      2.1.1
+         fastmap      1.1.1
+          fields       14.1
+     fontawesome      0.5.0
+         foreach      1.5.2
+              fs      1.6.1
+        generics      0.1.3
+            gert      1.9.2
+         ggplot2      3.4.2
+              gh      1.4.0
+        gitcreds      0.1.2
+            glue      1.6.2
+       gridExtra        2.3
+          gtable      0.3.3
+           highr       0.10
+       htmltools      0.5.5
+     htmlwidgets      1.6.2
+          httpuv      1.6.9
+            httr      1.4.5
+           httr2      0.2.2
+             ini      0.3.1
+         isoband      0.2.7
+       iterators     1.0.14
+       jquerylib      0.1.4
+        jsonlite      1.8.4
+           knitr       1.42
+        labeling      0.4.2
+           later      1.3.0
+       lifecycle      1.0.3
+       lubridate      1.9.2
+        magrittr      2.0.3
+            maps      3.4.1
+        markdown        1.5
+     matrixStats     0.63.0
+         memoise      2.0.1
+            mime       0.12
+          miniUI    0.1.1.1
+          mnormt      2.1.1
+         munsell      0.5.0
+           mvcwt      1.3.1
+        numDeriv 2016.8-1.1
+         openssl      2.0.6
+         pbapply      1.7-0
+          pillar      1.9.0
+        pkgbuild      1.4.0
+       pkgconfig      2.0.3
+         pkgdown      2.0.7
+         pkgload      1.3.2
+         plotrix      3.8-2
+          pracma      2.4.2
+          praise      1.0.0
+     prettyunits      1.1.1
+        processx      3.8.0
+         profvis      0.3.7
+        promises    1.2.0.1
+              ps      1.7.4
+           psych      2.3.3
+           purrr      1.0.1
+        quadprog      1.5-8
+        quantmod     0.4.21
+              R6      2.5.1
+            ragg      1.2.5
+        rappdirs      0.3.3
+     rasterImage      0.4.0
+       rcmdcheck      1.4.0
+    RColorBrewer      1.1-3
+            Rcpp     1.0.10
+        rematch2      2.1.2
+         remotes      2.4.2
+     RhpcBLASctl    0.23-42
+           rlang      1.1.0
+       rmarkdown       2.21
+        roxygen2      7.2.3
+       rprojroot      2.0.3
+      rstudioapi       0.14
+       rversions      2.1.2
+        sandwich      3.0-2
+            sass      0.4.5
+          scales      1.2.1
+     sessioninfo      1.2.2
+           shiny      1.7.4
+         shinyBS     0.61.1
+ shinycssloaders 1.0.0.9004
+         shinyjs      2.1.0
+     shinythemes      1.2.0
+     sourcetools    0.1.7-1
+            spam      2.9-1
+        spectral        2.0
+         stringi     1.7.12
+         stringr      1.5.0
+     strucchange      1.5-3
+             sys      3.4.1
+     systemfonts      1.0.4
+        testthat      3.1.7
+     textshaping      0.3.6
+          tibble      3.2.1
+      timechange      0.2.0
+         tinytex       0.44
+         tseries    0.10-53
+             TTR     0.24.3
+      urlchecker      1.0.1
+         usethis      2.1.6
+            utf8      1.2.3
+           vctrs      0.6.1
+         viridis      0.6.2
+     viridisLite      0.4.1
+           waldo      0.4.0
+         whisker      0.4.1
+           withr      2.5.0
+            xfun       0.38
+            xml2      1.3.3
+           xopen      1.0.0
+          xtable      1.8-4
+             xts     0.13.0
+            yaml      2.3.7
+             zip      2.2.2
+             zoo     1.8-11
 
-If the installed shinycssloaders package is not version 1.0.0.9 or later, you need to install this version from its github repo using:  
+This list can be extracted with:  
+`
+packs <- as.data.frame(installed.packages()[,c(1,3:4)])  
+packs <- packs[is.na(packs$Priority),1:2,drop=FALSE]  
+print(packs, row.names=FALSE)
+`
+
+If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to install this version from its github repo using:  
+`
 devtools::install_github("daattali/shinycssloaders")
+`
 
-6) Once all the packages are installed, there are several ways to run SARI:
+
+
+6) Once all the packages are installed, there are three ways to run SARI:
 
 6.1) On RStudio: clone/download the SARI repo, open the app.R script and use one of these:
 
@@ -88,21 +244,25 @@ Ctrl + Shift + S
 
 6.2) On the R/RStudio console type one of these:
 
-To run SARI without cloning/downloading the repo:
-library(shiny)
+To run SARI without cloning/downloading the repo:  
+`
+library(shiny)  
 runGitHub("sari", "alvarosantamariagomez", launch.browser=T)
+`
 
 or
 
-After cloning/downloading the SARI repo:
+After cloning/downloading the SARI repo:  
+`
 runApp("/path/to/the/downloaded/SARI/app.R/file")
+`
 
-6.3) On a Unix-like terminal using the sari.sh shell script
-This shell script can also be used to launch a SARI session on Shinyapps.io without the need of installing the R packages
+6.3) On a Unix-like terminal using the sari.sh shell script from the SARI repo.  
+This shell script can also be used to launch a SARI session on Shinyapps.io without installing SARI.
 
 
 
-For any comment or question, send an email to:
+For any comment or question, send an email to:  
 
 Alvaro Santamaria
 alvaro.santamaria at get.omp.eu
