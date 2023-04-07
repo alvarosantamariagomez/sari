@@ -62,9 +62,9 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         | RENAG  | UGA                                  | 4 char  | http://renag.resif.fr/en/                          |
         | NGL    | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                            |
         | EUREF  | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php           |
-        | JPL    | ENU                                  | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
-        | IGS    | NEU                                  | 4 char  | https://igs.org/products/                          |
-        | SIRGAS | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/       |
+	| IGS    | NEU                                  | 4 char  | https://igs.org/products/                          |
+	| SIRGAS | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/       |
+        | JPL    | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
         | EOSTLS | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                       |
         |        | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                    |
         |        | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                    |
@@ -176,15 +176,11 @@ if [[ ! -z $local ]]; then
 	done
 fi
 
-# Removing calls to png-cairo (problem in WSL) and deactivating devmode (problem with local session reload)
+# Removing calls to png-cairo and deactivating devmode (problem with local session reload)
 uname -a | grep microsoft > /dev/null 2>&1
 wsl=$?
 if [[ ! -f $saridir/app_$now.R ]]; then
-	if [[ $wsl == 0 ]]; then
-		sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
-	else
-		sed 's/devmode(TRUE)/devmode(FALSE)/' $saridir/app.R > $saridir/app_$now.R
-	fi
+	sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
 fi
 
 # Splitting parameters of the primary and secondary series
