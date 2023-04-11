@@ -9291,6 +9291,7 @@ server <- function(input,output,session) {
   trim <- function(x) gsub("^\\s+|\\s+$", "", x)
   average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w,s,second) {
     index <- x >= x[1] + (p - 1)*s - tol & x < x[1] + p*s - tol * 2/3
+    x_ <- y1_ <- y2_ <- y3_ <- sy1_ <- sy2_ <- sy3_ <- NULL
     if (length(x[index]) == 1) {
       x_ <- x[1] + (p - 0.5)*s
       if (isTruthy(second)) {
@@ -9325,19 +9326,19 @@ server <- function(input,output,session) {
         sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
         sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
       }
-    } else {
-      x_ <- NA
-      y1_ <- NA
-      y2_ <- NA
-      y3_ <- NA
-      sy1_ <- NA
-      sy2_ <- NA
-      sy3_ <- NA
     }
     if (input$format == 4) {
-      out <- c(x_,y1_,sy1_)
+      if (isTruthy(x_) && isTruthy(y1_) && isTruthy(sy1_)) {
+        out <- c(x_,y1_,sy1_)  
+      } else {
+        out <- c(NA,NA,NA)
+      }
     } else {
-      out <- c(x_,y1_,y2_,y3_,sy1_,sy2_,sy3_)
+      if (isTruthy(x_) && isTruthy(y1_) && isTruthy(sy1_) && isTruthy(y2_) && isTruthy(sy2_) && isTruthy(y3_) && isTruthy(sy3_)) {
+        out <- c(x_,y1_,y2_,y3_,sy1_,sy2_,sy3_)
+      } else {
+        out <- c(NA,NA,NA,NA,NA,NA,NA)
+      }
     }
     setProgress(round(p/w, digits = 1))
     return(out)
