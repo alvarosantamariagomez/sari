@@ -136,10 +136,23 @@ Shiny.addCustomMessageHandler('filename2', function(txt) {
   target.val(txt);
 }); "
 
+# Hide loading page from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
+load_data <- function(seconds) {
+  Sys.sleep(seconds)
+  hide("loading_page")
+  show("main_content")
+}
+
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
+                div(
+                  id = "loading_page",
+                  h1(style = "color: black; font-weight: bold; text-align: center;", HTML("SARI session established.<br><br><br>Loading user interface ..."))
+                ),
+                hidden(
+                  div(id = "main_content",
 
                 # HTTP meta and style header tags
                 # tags$head(includeScript("google-analytics.js")),
@@ -179,6 +192,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
                   tags$style(type = 'text/css', 'form.well { height: 96vh; overflow-y: auto; width: 100%}'),
+                  tags$head(tags$style(".modal-body {padding: 10px}
+                     .modal-content  {-webkit-border-radius: 6px !important;-moz-border-radius: 6px !important;border-radius: 6px !important;}
+                     .modal-dialog { width: 90%; max-width: 600px; vertical-align: center;}
+                     .modal { color: black; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}")),
 
                   # Getting user screen size (from https://stackoverflow.com/questions/36995142/get-the-size-of-the-window-in-shiny)
                   tags$script('
@@ -1882,6 +1899,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                 )
                               )
                 )
+                )
+                )
 )
 
 
@@ -1974,20 +1993,20 @@ server <- function(input,output,session) {
       cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
       cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
       shinyjs::hide(id = "menu")
+      shinyjs::hide(id = "localDir")
       shinyjs::hide(selector = "#tab li a[data-value=1]")
       shinyjs::hide(selector = "#tab li a[data-value=2]")
       shinyjs::hide(selector = "#tab li a[data-value=3]")
       shinyjs::hide(selector = "#tab li a[data-value=6]")
       updateNavbarPage(session, "tab", selected = "4")
       shinyjs::hide(selector = "#tab li a[data-value=4]")
+      shinyjs::hideElement(id = "side-panel", anim = F)
       showModal(modalDialog(
-        title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
+        title = tags$h3("Dear SARI user"),
+        HTML("It is strongly discouraged to use SARI on small-screen devices.<br>Please, consider using a desktop connection instead."),
         size = "m",
         easyClose = F,
-        fade = F,
-        tags$h3(style = "color: black; font-weight: bold; text-align: center;", "It is strongly discouraged to use SARI on small-screen devices."),
-        tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Please, consider using a desktop connection instead."),
-        tags$h3(style = "color: blue; text-align: center;", "https://alvarosg.shinyapps.io/sari")
+        fade = F
       ))
     } else {
       if (local) {
@@ -2005,12 +2024,11 @@ server <- function(input,output,session) {
             if (input$tactile > 0) {
               if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
               showModal(modalDialog(
-                title = tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Dear user"),
+                title = tags$h3("Dear SARI user"),
+                HTML("It is strongly discouraged to use the touchscreen with SARI.<br>Please, consider using the mouse instead."),
                 size = "m",
                 easyClose = T,
-                fade = F,
-                tags$h3(style = "color: black; font-weight: bold; text-align: center;", "It is strongly discouraged to use the touchscreen with SARI."),
-                tags$h3(style = "color: black; font-weight: bold; text-align: center;", "Please, consider using the mouse instead.")
+                fade = F
               ))
             }
           }
@@ -2018,6 +2036,7 @@ server <- function(input,output,session) {
         }
       }
     }
+    load_data(2)
     info$intro <- F
   }, priority = 2000)
 
