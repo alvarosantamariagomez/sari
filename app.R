@@ -4833,7 +4833,7 @@ server <- function(input,output,session) {
   # Control plots ####
   output$header <- renderText({
     req(input$header, file$primary)
-    if (length(trans$x) > 0) {
+    if (length(trans$x) > 0 && input$format < 4) {
       if (input$sigmas) {
         header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y), sy = sprintf("%.*f", info$decimalsy, trans$sy))[1:input$lines,]
       } else {
