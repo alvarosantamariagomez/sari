@@ -8680,6 +8680,11 @@ server <- function(input,output,session) {
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
         cat(sprintf('# Parameter: %s = %f +/- %f',dimnames(trans$LScoefs)[[1]][i],trans$LScoefs[i,1],trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
       }
+      if (isTruthy(trans$results$sinusoidales)) {
+        for (i in 1:dim(trans$results$sinusoidales)[1]) {
+          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f   Phase %f +/- %f', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
+        } 
+      }
     } else if (input$fitType == 2 && length(trans$kalman) > 0) {
       if (input$kf == 1) {
         cat(paste0("# Model EKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
