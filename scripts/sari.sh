@@ -55,21 +55,22 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 	In a local session, the SARI app runs in the background of your machine till this script is interrupted by 
 	pressing Ctrl+C. The script also exits if the SARI app stops.
 
-        +--------+--------------------------------------+---------+----------------------------------------------------+
-        | Server | Product                              | Station | Reference                                          |
-        +--------+--------------------------------------+---------+----------------------------------------------------+
-        | LOCAL  | ENU, NEU, PBO, NGL, 1D               | path    |                                                    |
-        | RENAG  | UGA                                  | 4 char  | http://renag.resif.fr/en/                          |
-        | NGL    | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                            |
-        | EUREF  | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php           |
-	| IGS    | NEU                                  | 4 char  | https://igs.org/products/                          |
-	| SIRGAS | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/       |
-        | JPL    | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html     |
-        | EOSTLS | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                       |
-        |        | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                    |
-        |        | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                    |
-        |        | MERRA2ATM, MERRA2HYD                 |         |                                                    |
-        +--------+--------------------------------------+--------------------------------------------------------------+
+        +----------+--------------------------------------+---------+------------------------------------------------+
+        | Server   | Product                              | Station | Reference                                      |
+        +----------+--------------------------------------+---------+------------------------------------------------+
+        | LOCAL    | ENU, NEU, PBO, NGL                   | path    |                                                |
+        | RENAG    | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
+        | FORMATER | SPOTGINS_POS, UGA                    | 9 char  | https://en.poleterresolide.fr/                 |
+	| IGS      | NEU                                  | 4 char  | https://igs.org/products/                      |
+        | EUREF    | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php       |
+	| SIRGAS   | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/   |
+        | NGL      | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                        |
+        | JPL      | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
+        | EOSTLS   | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                   |
+        |          | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                |
+        |          | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
+        |          | MERRA2ATM, MERRA2HYD                 |         |                                                |
+        +----------+--------------------------------------+---------+------------------------------------------------+
 
 " 1>&2; exit 1; }
 
@@ -96,8 +97,8 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag ngl euref jpl igs sirgas eostls "
-products=" enu neu pbo ngl 1d uga final rapid atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+servers=" local renag formater igs euref sirgas ngl jpl eostls "
+products=" enu neu pbo ngl uga spotgins_pos final rapid atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit
 cleaning () {
@@ -122,10 +123,24 @@ if [[ $? != 0 ]]; then
 	echo FATAL: uname is not available.
 	exit 1
 fi
-xdg-open --help > /dev/null 2>&1
-if [[ $? != 0 ]]; then
-	echo FATAL: xdg-utils is not available.
-	exit 1
+
+uname -a | grep microsoft > /dev/null 2>&1
+wsl=$?
+
+if [[ $wsl == 0 ]]; then # we are on WSL
+	wslview -v > /dev/null 2>&1
+	if [[ $? != 0 ]]; then
+		echo FATAL: wslview is not available.
+		exit 1
+	fi
+	browser=wslview
+else
+	xdg-open --help > /dev/null 2>&1
+	if [[ $? != 0 ]]; then
+		echo FATAL: xdg-utils is not available.
+		exit 1
+	fi
+	browser=xdg-open
 fi
 
 # Setting directory paths and checking the SARI app file
@@ -177,8 +192,6 @@ if [[ ! -z $local ]]; then
 fi
 
 # Removing calls to png-cairo and deactivating devmode (problem with local session reload)
-uname -a | grep microsoft > /dev/null 2>&1
-wsl=$?
 if [[ ! -f $saridir/app_$now.R ]]; then
 	sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
 fi
@@ -231,7 +244,8 @@ if [[ -z $local && ! -z $remote ]]; then
 
 	# Empty remote session
 	if [[ -z $server1 && -z $product1 && -z $station1 ]]; then
-		xdg-open "https://alvarosg.shinyapps.io/sari"
+		echo Opening new SARI session on the browser
+		$browser "https://alvarosg.shinyapps.io/sari"
 
 	# Remote session with remote file
 	elif [[ ! -z $server1 && ! -z $product1 && ! -z $station1 ]]; then
@@ -251,11 +265,13 @@ if [[ -z $local && ! -z $remote ]]; then
 				exit 1
 			fi
 			
-			xdg-open "https://alvarosg.shinyapps.io/sari/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
+			echo Opening new SARI session on the browser
+			$browser "https://alvarosg.shinyapps.io/sari/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
 
 		# Primary series only
 		else
-			xdg-open "https://alvarosg.shinyapps.io/sari/?server=$server1&product=$product1&station=$station1"
+			echo Opening new SARI session on the browser
+			$browser "https://alvarosg.shinyapps.io/sari/?server=$server1&product=$product1&station=$station1"
 		fi
 	
 	else
@@ -305,17 +321,20 @@ elif [[ ! -z $local && -z $remote ]]; then
 			# Primary and secondary series
 			if [[ ! -z $server2 && ! -z $product2 && ! -z $station2 ]]; then
 				checkR
-				xdg-open "http://127.0.0.1:$port/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
+				echo Opening new SARI session on the browser
+				$browser "http://127.0.0.1:$port/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
 			# Primary series only
 			else
 				checkR
-				xdg-open "http://127.0.0.1:$port/?server=$server1&product=$product1&station=$station1"
+				echo Opening new SARI session on the browser
+				$browser "http://127.0.0.1:$port/?server=$server1&product=$product1&station=$station1"
 			fi
 			waiting
 
 		# Empty local session
 		elif [[ -z $server1 && -z $product1 && -z $station1 ]]; then
-			xdg-open "http://127.0.0.1:$port"
+			echo Opening new SARI session on the browser
+			$browser "http://127.0.0.1:$port"
 			waiting
 
 		else
