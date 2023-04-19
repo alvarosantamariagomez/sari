@@ -151,8 +151,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   id = "loading_page",
                   h1(style = "color: black; font-weight: bold; text-align: center;", HTML("SARI session established.<br><br><br>Loading user interface ..."))
                 ),
-                hidden(
-                  div(id = "main_content",
 
                 # HTTP meta and style header tags
                 # tags$head(includeScript("google-analytics.js")),
@@ -221,6 +219,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$script(HTML(jscode_update_series)),
                   tags$script(HTML(jscode_update_series2))
                 ),
+                
+                hidden(
+                  div(id = "main_content",
 
                 sidebarLayout(position = "left", fluid = T,
                               div( id = "menu_all",
@@ -2008,8 +2009,10 @@ server <- function(input,output,session) {
         easyClose = F,
         fade = F
       ))
+      load_data(2)
     } else {
       if (local) {
+        load_data(0)
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
       } else {
@@ -2034,9 +2037,9 @@ server <- function(input,output,session) {
           }
           info$welcome <- F
         }
+        load_data(2)
       }
     }
-    load_data(2)
     info$intro <- F
   }, priority = 2000)
 
@@ -5549,7 +5552,7 @@ server <- function(input,output,session) {
                   url$server2 <- query[['server2']]
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
-                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['server2']]) != "local") || 
+                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['server2']]) != "local") ||
                       (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "jpl") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['server']]) != "local")) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
