@@ -5552,8 +5552,8 @@ server <- function(input,output,session) {
                   url$server2 <- query[['server2']]
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
-                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['server2']]) != "local") ||
-                      (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "jpl") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['server']]) != "local")) {
+                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
+                      (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
                   updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
@@ -9440,6 +9440,20 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
+    # FORMATER
+    } else if (tolower(server) == "formater") {
+      if (tolower(product) == "spotgins_pos") {
+        format <- 1
+        updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
+        name <- paste0(toupper(station),".enu")
+      } else if (tolower(product) == "uga_pos") {
+        format <- 2
+        name <- paste0(toupper(substr(station, 1, 4)),".pos")
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+      file <- paste0("https://gnss-terresolide.ipgp.fr/data/",toupper(station),"/",name)
     # EOST Loading Service
     } else if (tolower(server) == "eostls") {
       format <- 1
