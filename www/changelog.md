@@ -1,5 +1,28 @@
 # **SARI changelog**
 
+# mayo 2023 [2023.05]
+
+### Fixed
+- Problem running xdg-open in WSL2
+- Histogram reacting to changes of the column numbers
+- Saving removed points before averaging the series
+- Problem with png-cairo in R 4.2.3
+- Forcing the C locale to avoid warnings on Linux
+
+### Changed
+- Hiding interface when webpage is loading
+- Much faster offset verification
+- Showing original file header only for 1D series
+- Improved messages for the noise analysis results
+- Checking output when averaging the series
+- Improving centering of the secondary series with the same scale option
+
+### Added
+- Sinusoidal amplitude & phase estimates in the results file
+- Access to series from the Formater server
+- Access to series from the IGS server
+- Access to series from the SIRGAS server
+
 # abril 2023 [2023.04]
 
 ### Fixed

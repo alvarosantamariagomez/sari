@@ -38,12 +38,12 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-devmode(TRUE)
+# devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI abril 2023"
+version <- "SARI mayo 2023"
 
 # Some GUI functions
 
