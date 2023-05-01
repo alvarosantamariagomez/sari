@@ -3004,6 +3004,9 @@ server <- function(input,output,session) {
     output$offsetFound <- renderUI({
       NULL
     })
+    output$est.unc <- renderUI({
+      NULL
+    })
     if (length(input$model) > 0) {
       if (input$fitType == 1) {
         if (isTruthy(trans$model_old)) {
@@ -3163,6 +3166,9 @@ server <- function(input,output,session) {
     removeNotification("bad_obserror")
     updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
     output$offsetFound <- renderUI({
+      NULL
+    })
+    output$est.unc <- renderUI({
       NULL
     })
     if (input$fitType == 2) {
@@ -4706,8 +4712,10 @@ server <- function(input,output,session) {
                                      unc <- trans$unc
                                      trans$LScoefs[2,2] <- trans$unc
                                    }
-                                   line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f",unc/unc_white)
-                                   HTML(line1)
+                                   if (isTruthy(sigmaFL) || isTruthy(sigmaRW) || isTruthy(sigmaPL)) {
+                                     line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f",unc/unc_white)
+                                     HTML(line1)
+                                   }
                                  } else {
                                    NULL
                                  }
