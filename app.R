@@ -2922,75 +2922,67 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "Verifying offsets", "\n")
       n <- length(trans$res)
       C <- matrix(0,n,n)
-      scaling <- 1000 # making things much bigger
       withBusyIndicatorServer("runVerif", {
-        if (isTruthy(inputs$verif_white)) {
-          C <- C + (inputs$verif_white*scaling)^2*diag(n)
-        }
-        if (isTruthy(inputs$verif_pl) && isTruthy(inputs$verif_k) && inputs$verif_k < 0) {
-          if (inputs$verif_k == -1) {
-            Delta <- sapply(1:n, function(i) if (i < 150) {gamma(i - 1 + 0.5)/(factorial(i - 1)*gamma(0.5))} else {((i - 1)^-0.5)/gamma(0.5)})
-            Z <- matrix(0,n,n)
-            for (i in seq_len(n)) {
-              for (j in i:n) {
-                Z[j,i] <- Delta[j - i + 1]
-              }
-            }
-            Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]*(trans$x[t + 1] - trans$x[t])^(-k/4)} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = -1)
-            Cfl <- Zscaled %*% t(Zscaled)
-            C <- C + (as.numeric(inputs$verif_pl)*scaling)^2*Cfl
-          } else if (inputs$verif_k == -2) {
-            Z <- lower.tri(matrix(1, n, n), diag = T)*1
-            Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = -2)
-            Zscaled[,1] <- Zscaled[,2]
-            Zscaled[1,1] <- Zscaled[2,2]
-            Crw <- Zscaled %*% t(Zscaled)
-            C <- C + (as.numeric(inputs$verif_pl)*scaling)^2*Crw
-          } else {
-            k <- inputs$verif_k
-            Delta <- sapply(1:n, function(i) if (i < 150) {gamma(i - 1 - (k/2))/(factorial(i - 1)*gamma(-k/2))} else {((i - 1)^((-k/2) - 1))/gamma(-k/2)})
-            Z <- matrix(0,n,n)
-            for (i in seq_len(n)) {
-              for (j in i:n) {
-                Z[j,i] <- Delta[j - i + 1]
-              }
-            }
-            Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]*(trans$x[t + 1] - trans$x[t])^(-k/4)} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = k)
-            Cpl <- Zscaled %*% t(Zscaled)
-            C <- C + (inputs$verif_pl*scaling)^2*Cpl
-          }
-        }
-        if (!all(C == 0)) {
-          y <- (trans$res*scaling - mean(trans$res*scaling))
-          mle_after <- (-0.5*(length(n)*log(2*pi) + determinant(C)$modulus[[1]] + ( crossprod(y,solve(C)) %*% y) ))[1]
-          offsets <- grep(pattern = "O", rownames(trans$LScoefs), ignore.case = F, perl = F, fixed = T)
-          mle_before <- c()
-          line <- c()
-          for (i in seq_len(length(trans$offsetEpochs))) {
-            y <- (trans$res*scaling - mean(trans$res*scaling))
-            if (input$fitType == 1) {
-              offsets <- grep(pattern = "O", rownames(trans$LScoefs), ignore.case = F, perl = F, fixed = T)
-              y <- y + trans$LScoefs[offsets[i]]*scaling*I(trans$x > trans$offsetEpochs[i])
-            } else if (input$fitType == 2) {
-              offsets <- grep(pattern = "O", colnames(trans$kalmanman), ignore.case = F, perl = F, fixed = T)
-              y <- y + colMeans(trans$kalmanman)[offsets[i]]*scaling*I(trans$x > trans$offsetEpochs[i])
-            }
-            mle_before <- c(mle_before, (-0.5*(length(n)*log(2*pi) + determinant(C)$modulus[[1]] + ( crossprod(y,solve(C)) %*% y) ))[1])
-            line <- c(line, paste(paste0("O",i)," log-likelihood:", sprintf("%.4f",mle_after - mle_before[i]),"(", sprintf("%.4f",mle_after),"vs",sprintf("%.4f",mle_before[i]),")", sep = " "))
-          }
-          if (isTruthy(mle_after) && isTruthy(mle_before)) {
-            trans$verif <- T
-          } else {
-            trans$verif <- F
-          }
-          output$verif <- renderUI({
-            if (isTruthy(trans$verif)) {
-              HTML(paste0(paste(line,"<br/>")))
-            } else {
-              NULL
-            }
-          })
-        }
+        withProgress(message = 'Verifying offset values',
+                     detail = 'This should take less than 1 min ...', value = 0, {
+                       if (isTruthy(inputs$verif_white)) {
+                         C <- C + (inputs$verif_white)^2*diag(n)
+                       }
+                       if (isTruthy(inputs$verif_pl) && isTruthy(inputs$verif_k) && inputs$verif_k < 0) {
+                         if (inputs$verif_k == -1) {
+                           Delta <- 1
+                           for (i in 2:n) {
+                             Delta[i] <- Delta[i - 1] * (1/2 + i - 1 - 1)/(i - 1)
+                           }
+                           Cfl <- toeplitz(Delta)
+                           C <- C + as.numeric(inputs$verif_pl)^2 * Cfl
+                         } else if (inputs$verif_k == -2) {
+                           Z <- lower.tri(matrix(1, n, n), diag = T)*1
+                           Crw <- Z %*% t(Z)
+                           C <- C + as.numeric(inputs$verif_pl)^2 * Crw
+                         } else {
+                           k <- inputs$verif_k
+                           Delta <- 1
+                           for (i in 2:n) {
+                             Delta[i] <- Delta[i - 1] * (-k/2 + i - 1 - 1)/(i - 1)
+                           }
+                           Cpl <- toeplitz(Delta)
+                           C <- C + as.numeric(inputs$verif_pl)^2 * Cpl
+                         }
+                       }
+                       Sys.sleep(1)
+                       setProgress(0.2)
+                       if (!all(C == 0)) {
+                         y0 <- (trans$res - mean(trans$res))
+                         line <- c()
+                         Cinv <- Matrix::chol2inv(C)
+                         setProgress(0.9)
+                         Sys.sleep(1)
+                         for (i in seq_len(length(trans$offsetEpochs))) {
+                           if (input$fitType == 1) {
+                             offsets <- grep(pattern = "O", rownames(trans$LScoefs), ignore.case = F, perl = F, fixed = T)
+                             ya <- y0 + trans$LScoefs[offsets[i]]*I(trans$x > trans$offsetEpochs[i])
+                           } else if (input$fitType == 2) {
+                             offsets <- grep(pattern = "O", colnames(trans$kalmanman), ignore.case = F, perl = F, fixed = T)
+                             ya <- y0 + colMeans(trans$kalmanman)[offsets[i]]*I(trans$x > trans$offsetEpochs[i])
+                           }
+                           Tq <- t(ya) %*% Cinv %*% ya - t(y0) %*% Cinv %*% y0
+                           line <- c(line, paste("Offset",i,"significance:", sprintf("%.0f",pchisq(Tq, df = 1)*100),"%", sep = " "))
+                         }
+                         if (isTruthy(Tq)) {
+                           trans$verif <- T
+                         } else {
+                           trans$verif <- F
+                         }
+                         output$verif <- renderUI({
+                           if (isTruthy(trans$verif)) {
+                             HTML(paste0(paste(line,"<br/>")))
+                           } else {
+                             NULL
+                           }
+                         })
+                       }
+                     })
       })
     } else {
       trans$verif <- F
