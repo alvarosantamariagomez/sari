@@ -38,7 +38,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -7071,7 +7071,8 @@ server <- function(input,output,session) {
             NULL
           } else {
             if (any(diff(table$x) <= 0)) {
-              showNotification("Negative or null increment in abscissa (probably 2 or more points at the same epoch).", action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+              bad_x <- which(diff(table$x) <= 0)
+              showNotification(paste("Negative or null increment in abscissa (probably 2 or more points at the same epoch). Check points", paste(bad_x, collapse = " ")), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
               NULL
             } else {
               info$minx <- min(table$x, na.rm = T)
