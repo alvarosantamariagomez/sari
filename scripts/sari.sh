@@ -197,13 +197,15 @@ if [[ ! -f $saridir/app_$now.R ]]; then
 fi
 
 # Splitting parameters of the primary and secondary series
-if [[ ! -z $server && ! -z $product && ! -z $station ]]; then
+if [[ ! -z $server && ! -z $product ]]; then
 	IFS=+ read -r server1 server2 <<< $server
 	server1=$(echo $server1 | tr '[:upper:]' '[:lower:]')
 	server2=$(echo $server2 | tr '[:upper:]' '[:lower:]')
 	IFS=+ read -r product1 product2 <<< $product
 	product1=$(echo $product1 | tr '[:upper:]' '[:lower:]')
 	product2=$(echo $product2 | tr '[:upper:]' '[:lower:]')
+fi
+if [[ ! -z $station ]]; then
 	IFS=+ read -r station1 station2 <<< $station
 fi
 
@@ -294,6 +296,18 @@ elif [[ ! -z $local && -z $remote ]]; then
 		checkR
 
 		# Local session with local or remote file
+		if [[ -z $server1 && ! -z $station1 ]]; then
+			server1=local
+		fi
+		if [[ -z $product1 && ! -z $station1 ]]; then
+			product1=enu
+		fi
+		if [[ -z $server2 && ! -z $station2 ]]; then
+			server2=local
+		fi
+		if [[ -z $product2 && ! -z $station2 ]]; then
+			product2=enu
+		fi
 		if [[ ! -z $server1 && ! -z $product1 && ! -z $station1 ]]; then
 
 			# local file
