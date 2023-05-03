@@ -7134,7 +7134,7 @@ server <- function(input,output,session) {
           }
           names(extracted) <- c("x","y1","y2","y3")
           if (length(extracted) > 0) {
-            if (columns > 4) {
+            if (columns > 6) {
               if (isTruthy(swap)) {
                 extracted$sy1 <- tableAll[,6]
                 extracted$sy2 <- tableAll[,5]
