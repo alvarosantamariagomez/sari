@@ -143,6 +143,144 @@ load_data <- function(seconds) {
   show("main_content")
 }
 
+tabContents <- function(tabNum) {
+  if (tabNum == 1) {
+    tabName <- uiOutput("tabName")
+  } else if (tabNum == 2) {
+    tabName <- "2nd component"
+  } else if (tabNum == 3) {
+    tabName <- "3rd component"
+  }
+  tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
+           tags$style(type = "text/css", "body {padding-top: 60px;}"),
+           withSpinner(
+             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)),
+             type = getOption("spinner.type", default = 1),
+             color = getOption("spinner.color", default = "#0080ff"),
+             size = getOption("spinner.size", default = 2),
+             color.background = getOption("spinner.color.background", default = "#ffffff"),
+             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+           ),
+           conditionalPanel(
+             condition = "output.run",
+             withSpinner(
+               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               type = getOption("spinner.type", default = 1),
+               color = getOption("spinner.color", default = "#0080ff"),
+               size = getOption("spinner.size", default = 2),
+               color.background = getOption("spinner.color.background", default = "#ffffff"),
+               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+             )
+           ),
+           verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F),
+           conditionalPanel(
+             condition = "output.rate",
+             withSpinner(
+               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               type = getOption("spinner.type", default = 1),
+               color = getOption("spinner.color", default = "#0080ff"),
+               size = getOption("spinner.size", default = 2),
+               color.background = getOption("spinner.color.background", default = "#ffffff"),
+               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+             )
+           ),
+           conditionalPanel(
+             condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
+             withSpinner(
+               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               type = getOption("spinner.type", default = 1),
+               color = getOption("spinner.color", default = "#0080ff"),
+               size = getOption("spinner.size", default = 2),
+               color.background = getOption("spinner.color.background", default = "#ffffff"),
+               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+             )
+           ),
+           conditionalPanel(
+             condition = "input.filter == true && input.low !== input.high && output.residuals == true && input.series2filter == 2",
+             withSpinner(
+               plotOutput(paste0("Vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               type = getOption("spinner.type", default = 1),
+               color = getOption("spinner.color", default = "#0080ff"),
+               size = getOption("spinner.size", default = 2),
+               color.background = getOption("spinner.color.background", default = "#ffffff"),
+               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+             )
+           ),
+           conditionalPanel(
+             condition = "input.waveform == true && input.waveformPeriod.length > 0",
+             withSpinner(
+               plotOutput(paste0("waveform",tabNum), click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               type = getOption("spinner.type", default = 1),
+               color = getOption("spinner.color", default = "#0080ff"),
+               size = getOption("spinner.size", default = 2),
+               color.background = getOption("spinner.color.background", default = "#ffffff"),
+               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+             )
+           ),
+           conditionalPanel(
+             condition = "input.printLog == true",
+             verbatimTextOutput(paste0("changes_ant",tabNum), placeholder = F),
+             verbatimTextOutput(paste0("changes_rec",tabNum), placeholder = F)
+           ),
+           conditionalPanel(
+             condition = "input.printSinfo == true",
+             verbatimTextOutput(paste0("changes_ant",tabNum,"s"), placeholder = F),
+             verbatimTextOutput(paste0("changes_rec",tabNum,"s"), placeholder = F)
+           ),
+           conditionalPanel(
+             condition = "input.printSoln == true",
+             verbatimTextOutput(paste0("changes_ant",tabNum,"so"), placeholder = F),
+             verbatimTextOutput(paste0("changes_rec",tabNum,"so"), placeholder = F)
+           ),
+           conditionalPanel(
+             condition = "input.printCustom == true",
+             verbatimTextOutput(paste0("changes_ant",tabNum,"c"), placeholder = F)
+           ),
+           conditionalPanel(
+             condition = "input.model.length > 0 || input.midas == true || input.optionSecondary == 1",
+             verbatimTextOutput(paste0("summary",tabNum), placeholder = F)
+           ),
+           conditionalPanel(
+             condition = "input.histogram == true && input.histogramType > 0",
+             plotOutput(paste0("hist",tabNum)),
+             verbatimTextOutput(paste0("stats",tabNum))
+           ),
+           conditionalPanel(
+             condition = "input.midas == true",
+             plotOutput(paste0("midas_hist",tabNum))
+           ),
+           div(id = paste0("lomb",tabNum),
+               conditionalPanel(
+                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
+                 withSpinner(
+                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                   type = getOption("spinner.type", default = 1),
+                   color = getOption("spinner.color", default = "#0080ff"),
+                   size = getOption("spinner.size", default = 2),
+                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                 ),
+                 downloadLink(paste0("downloadSpectrum",tabNum), div(id = paste0("downloadlink",tabNum), style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
+                 verbatimTextOutput(paste0("lomb",tabNum,"_info"), placeholder = F)
+               )
+           ),
+           div(id = paste0("wl",tabNum),
+               conditionalPanel(
+                 condition = "input.wavelet == true && input.waveletType.length > 0",
+                 withSpinner(
+                   plotOutput(paste0("wavelet",tabNum), click = "wavelet_1click"),
+                   type = getOption("spinner.type", default = 1),
+                   color = getOption("spinner.color", default = "#0080ff"),
+                   size = getOption("spinner.size", default = 2),
+                   color.background = getOption("spinner.color.background", default = "#ffffff"),
+                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                 ),
+                 verbatimTextOutput(paste0("wavelet",tabNum,"_info"), placeholder = F)
+               )
+           )
+  )
+}
+
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
@@ -151,11 +289,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   id = "loading_page",
                   h1(style = "color: black; font-weight: bold; text-align: center;", HTML("SARI session established.<br><br><br>Loading user interface ..."))
                 ),
-
+                
                 # HTTP meta and style header tags
                 # tags$head(includeScript("google-analytics.js")),
                 # tags$head(includeHTML(("google-analytics.html"))),
-
+                
                 tags$style(css),
                 tags$head(
                   tags$script(src = "ddpcr.js"),
@@ -194,7 +332,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                      .modal-content  {-webkit-border-radius: 6px !important;-moz-border-radius: 6px !important;border-radius: 6px !important;}
                      .modal-dialog { width: 90%; max-width: 600px; vertical-align: center;}
                      .modal { color: black; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}")),
-
+                  
                   # Getting user screen size (from https://stackoverflow.com/questions/36995142/get-the-size-of-the-window-in-shiny)
                   tags$script('
                                 var size = [0, 0];
@@ -214,7 +352,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     Shiny.onInputChange("tactile", tactile);
                                 });
                             '),
-
+                  
                   # update fileInput file name from URL
                   tags$script(HTML(jscode_update_series)),
                   tags$script(HTML(jscode_update_series2))
@@ -222,1685 +360,1303 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                 
                 hidden(
                   div(id = "main_content",
-
-                sidebarLayout(position = "left", fluid = T,
-                              div( id = "menu_all",
-
-                                   # Sidebar menu ####
-                                   sidebarPanel(
-                                     width = 4,
-                                     style = "position:fixed;width:inherit;",
-                                     id = "side-panel",
-                                     bsCollapse(id = "menu", open = c(1,2), multiple = T,
-
-                                                # Expandable/collapsible blocks
-
-                                                # * Input data and format ####
-                                                bsCollapsePanel(value = 1,
-                                                                tags$h4(style = "color:white", icon("database", class = NULL, lib = "font-awesome"), "Input data and format",  icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                div(style = "padding: 0px 0px; margin-top:-2em",
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             br(),
-                                                                             div(style = "font-weight: bold", "Input series",
-                                                                                 helpPopup("Select a column-based text file; comments must start with '#'")
-                                                                             ),
-                                                                             div(style = "margin-right: -1em", tags$a(href = "TLSE.neu", "Show file example", targe = "_blank"))
+                      
+                      sidebarLayout(position = "left", fluid = T,
+                                    div( id = "menu_all",
+                                         
+                                         # Sidebar menu ####
+                                         sidebarPanel(
+                                           width = 4,
+                                           style = "position:fixed;width:inherit;",
+                                           id = "side-panel",
+                                           bsCollapse(id = "menu", open = c(1,2), multiple = T,
+                                                      
+                                                      # Expandable/collapsible blocks
+                                                      
+                                                      # * Input data and format ####
+                                                      bsCollapsePanel(value = 1,
+                                                                      tags$h4(style = "color:white", icon("database", class = NULL, lib = "font-awesome"), "Input data and format",  icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      div(style = "padding: 0px 0px; margin-top:-2em",
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   br(),
+                                                                                   div(style = "font-weight: bold", "Input series",
+                                                                                       helpPopup("Select a column-based text file; comments must start with '#'")
+                                                                                   ),
+                                                                                   div(style = "margin-right: -1em", tags$a(href = "TLSE.neu", "Show file example", targe = "_blank"))
+                                                                            ),
+                                                                            column(8,
+                                                                                   fileInput(inputId = "series", label = "", multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            )
+                                                                          )
                                                                       ),
-                                                                      column(8,
-                                                                             fileInput(inputId = "series", label = "", multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                fluidRow(
-                                                                  column(4,
-                                                                         div(style = "font-weight: bold; margin-top:-1.75em",
-                                                                             textInput(inputId = "ids", label = "Series ID", value = "")
-                                                                         )
-                                                                  ),
-                                                                  column(8,
-                                                                         fileInput(inputId = "loadSARI", label = NULL, multiple = F, accept = NULL, width = NULL, buttonLabel = "Load SARI model", placeholder = "Empty")
-                                                                  )
-                                                                ),
-                                                                div(style = "padding: 0px 0px; margin-top:-20em",
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             div(style = "font-weight: bold", "Series format", helpPopup("Select 1D if the other formats are unknown"))
-                                                                      ),
-                                                                      column(8,
-                                                                             radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                div(style = "padding: 0px 0px; margin-top:-0em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
-                                                                             checkboxInput(inputId = "header", label = "Show series header", value = F),
-                                                                             conditionalPanel(
-                                                                               condition = "input.header == true",
-                                                                               sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
-                                                                      ),
-                                                                      column(6,
-                                                                             radioButtons(inputId = "tunits",
-                                                                                          div("Time units",
-                                                                                              helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
-                                                                                          choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.format == 4",
-                                                                  fluidRow(
-                                                                    column(6,
-                                                                           selectInput(inputId = "separator", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
-                                                                    ),
-                                                                    column(6,
-                                                                           div(style = "font-weight: bold", "Column selection",
-                                                                               helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively.")
-                                                                           ),
-                                                                           div(style = "margin-top:-1em",
-                                                                               fluidRow(
-                                                                                 column(4,
-                                                                                        textInput(inputId = "epoch", label = "", value = "1")
-                                                                                 ),
-                                                                                 column(4, offset = -2,
-                                                                                        textInput(inputId = "variable", label = "", value = "2")
-                                                                                 ),
-                                                                                 column(4, offset = -2,
-                                                                                        textInput(inputId = "errorBar", label = "", value = "3")
-                                                                                 )
-                                                                               )
-                                                                           )
-                                                                    )
-                                                                  )
-                                                                ),
-                                                                fluidRow(
-                                                                  column(6,
-                                                                         checkboxInput(inputId = "average",
-                                                                                       div("Reduce sampling",
-                                                                                           helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
-                                                                                       value = F)
-                                                                  ),
-                                                                  column(6,
-                                                                         div(style = "padding: 0px 0px; margin-top:1em",
-                                                                             conditionalPanel(
-                                                                               condition = "input.average == true",
-                                                                               textInput(inputId = "step", label = "Averaging time period", value = "")
-                                                                             )
-                                                                         )
-                                                                  )
-                                                                ),
-                                                                div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                    tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                ),
-                                                                div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                    conditionalPanel(
-                                                                      condition = "output.data",
-                                                                      htmlOutput("information")
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "output.dataNone",
-                                                                      htmlOutput("informationNone")
-                                                                    )
-                                                                ),
-                                                                style = "primary"),
-
-                                                # * Plot controls ####
-                                                bsCollapsePanel(value = 2,
-                                                                tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T),
-                                                                fluidRow(
-                                                                  column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
-                                                                         actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                  ),
-                                                                  column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
-                                                                         actionButton(inputId = "reset", label = "Reset", icon = icon("eye-slash", class = NULL, lib = "font-awesome"), style = "font-size: small; color: #FF6700")
-                                                                  ),
-                                                                  column(4, style = 'padding:0px 0px 0px 0px;', align = "right",
-                                                                         actionButton(inputId = "remove", label = "Toggle points", icon =  icon("ban", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                  ),
-                                                                  column(4, style = 'padding:0px 10px 0px 0px;', align = "right",
-                                                                         actionButton(inputId = "delete_excluded", label = "Reset toggle", icon = icon("backward", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                  )
-                                                                ),
-                                                                div(style = "padding: 0px 0px; margin-top:1em",
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             textInput(inputId = "thresholdRes",
-                                                                                       div("Residual",
-                                                                                           helpPopup("Threshold to delete points with larger absolute residual")),
-                                                                                       value = NULL)
-                                                                      ),
-                                                                      column(4, style = "padding:0px 10px 0px 0px;", align = "left",
-                                                                             textInput(inputId = "thresholdResN",
-                                                                                       div("Norm. residual",
-                                                                                           helpPopup("Threshold to delete points with larger normalized absolute residual")),
-                                                                                       value = NULL)
-                                                                      ),
-                                                                      column(4, style = "padding:0px 10px 0px 0px; margin-top:1.75em", align = "right",
-                                                                             actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")#width = NULL)
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                fluidRow(
-                                                                  column(3,
-                                                                         checkboxInput(inputId = "remove3D",
-                                                                                       div("All components", align = "right",
-                                                                                           helpPopup("To remove points from all components simultaneously")),
-                                                                                       value = T)
-                                                                  ),
-                                                                  column(3,
-                                                                         checkboxInput(inputId = "permanent",
-                                                                                       div("Permanent", align = "right",
-                                                                                           helpPopup("To delete points from the series permanently, unless the series are reset and reloaded")),
-                                                                                       value = F)
-                                                                  ),
-                                                                  column(3,
-                                                                         checkboxInput(inputId = "add_excluded",
-                                                                                       div("Include in file", align = "right",
-                                                                                           helpPopup("To include the removed points in the downloaded results file")),
-                                                                                       value = F)
-                                                                  ),
-                                                                  column(3,
-                                                                         checkboxInput(inputId = "overflow",
-                                                                                       div("Scrolling",
-                                                                                           helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is deactivated, the user can take a screenshot of the full web page.")),
-                                                                                       value = T),
-                                                                  )
-                                                                ),
-                                                                style = "primary"),
-
-                                                # * Ancillary information ####
-                                                bsCollapsePanel(value = 3,
-                                                                tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
-
-                                                                # % sitelog ####
-                                                                div(style = "padding: 0px 0px; margin-top:0em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             div(style = "font-weight: bold", "Input log file",
-                                                                                 helpPopup("IGS-like sitelog file")
-                                                                             )
-                                                                      ),
-                                                                      column(6, align = "right",
-                                                                             tags$a(href = "iraf00fra_20201021.log", "Show file example", target = "_blank")
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(8,
-                                                                             fileInput(inputId = "log", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                      ),
-                                                                      column(4,
-                                                                             div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                                 conditionalPanel(
-                                                                                   condition = "output.log",
-                                                                                   checkboxInput(inputId = "traceLog", label = "Plot changes", value = F),
-                                                                                   checkboxInput(inputId = "printLog", label = "List changes", value = F)
-                                                                                 )
-                                                                             )
-                                                                      )
-                                                                    )
-                                                                ),
-
-                                                                # % station.info ####
-                                                                div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             div(style = "font-weight: bold", "Input station.info file",
-                                                                                 helpPopup("GAMIT/GLOBK-like station.info file")
-                                                                             )
-                                                                      ),
-                                                                      column(6, align = "right",
-                                                                             tags$a(href = "station.info", "Show file example", target = "_blank")
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(8,
-                                                                             fileInput(inputId = "sinfo", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                      ),
-                                                                      column(4,
-                                                                             div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                                 conditionalPanel(
-                                                                                   condition = "output.sinfo",
-                                                                                   checkboxInput(inputId = "traceSinfo", label = "Plot changes", value = F),
-                                                                                   checkboxInput(inputId = "printSinfo", label = "List changes", value = F)
-                                                                                 )
-                                                                             )
-                                                                      )
-                                                                    )
-                                                                ),
-
-                                                                # % soln ####
-                                                                div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             div(style = "font-weight: bold", "Input soln file",
-                                                                                 helpPopup("IGS-like soln file")
-                                                                             )
-                                                                      ),
-                                                                      column(6, align = "right",
-                                                                             tags$a(href = "soln.snx", "Show file example", target = "_blank")
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(8,
-                                                                             fileInput(inputId = "soln", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                      ),
-                                                                      column(4,
-                                                                             div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                                 conditionalPanel(
-                                                                                   condition = "output.soln",
-                                                                                   checkboxInput(inputId = "traceSoln", label = "Plot changes", value = F),
-                                                                                   checkboxInput(inputId = "printSoln", label = "List changes", value = F)
-                                                                                 )
-                                                                             )
-                                                                      )
-                                                                    )
-                                                                ),
-
-                                                                # % Custom ####
-                                                                div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             div(style = "font-weight: bold", "Input custom offset file",
-                                                                                 helpPopup("User-defined offset list to be shown")
-                                                                             )
-                                                                      ),
-                                                                      column(6, align = "right",
-                                                                             tags$a(href = "http://geodesy.unr.edu/NGLStationPages/steps.txt", "Show file example", target = "_blank")
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(8,
-                                                                             fileInput(inputId = "custom", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                      ),
-                                                                      column(4,
-                                                                             div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                                 conditionalPanel(
-                                                                                   condition = "output.custom",
-                                                                                   checkboxInput(inputId = "traceCustom", label = "Plot changes", value = F),
-                                                                                   checkboxInput(inputId = "printCustom", label = "List changes", value = F)
-                                                                                 )
-                                                                             )
-                                                                      )
-                                                                    )
-                                                                ),
-
-                                                                # % Secondary series ####
-                                                                div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                    fluidRow(
-                                                                      column(8,
-                                                                             fileInput(inputId = "series2",
-                                                                                       div("Secondary series",
-                                                                                           helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
-                                                                                       multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                      ),
-                                                                      column(3, offset = 1,
-                                                                             div(style = "padding: 0px 0px; margin-top:0em",
-                                                                                 conditionalPanel(
-                                                                                   condition = "output.series2",
-                                                                                   radioButtons(inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = NULL, inline = F, width = NULL),
-                                                                                 )
-                                                                             )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "output.series2",
                                                                       fluidRow(
-                                                                        column(8,
-                                                                               # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T),
-                                                                               radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
-                                                                               fluidRow(
-                                                                                 column(6,
-                                                                                        textInput(inputId = "scaleFactor",
-                                                                                                  div("Scale factor",
-                                                                                                      helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")),
-                                                                                                  value = "1")
-                                                                                 ),
-                                                                                 column(6,
-                                                                                        textInput(inputId = "step2",
-                                                                                                  div("Averaging",
-                                                                                                      helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
-                                                                                                  value = "")
-                                                                                 )
-                                                                               )
-                                                                        ),
                                                                         column(4,
-                                                                               div(style = "padding: 0px 0px; margin-top:1em",
-                                                                                   checkboxInput(inputId = "sameScale",
-                                                                                                 div("Same scale",
-                                                                                                     helpPopup("Force the y-axis of the secondary series on the right to have the same scale as the y-axis of the primary series on the left")),
-                                                                                                 value = F),
-                                                                                   checkboxInput(inputId = "same_axis",
-                                                                                                 div("Same axis",
-                                                                                                     helpPopup("Force the y-axis of the secondary series on the right to be the same as the y-axis of the primary series on the left")),
-                                                                                                 value = F),
-                                                                                   checkboxInput(inputId = "ne",
-                                                                                                 div(HTML("N @ E"),
-                                                                                                     helpPopup("Swap the columns of the North and East components of the series")),
-                                                                                                 value = F)
+                                                                               div(style = "font-weight: bold; margin-top:-1.75em",
+                                                                                   textInput(inputId = "ids", label = "Series ID", value = "")
                                                                                )
+                                                                        ),
+                                                                        column(8,
+                                                                               fileInput(inputId = "loadSARI", label = NULL, multiple = F, accept = NULL, width = NULL, buttonLabel = "Load SARI model", placeholder = "Empty")
                                                                         )
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
+                                                                      ),
+                                                                      div(style = "padding: 0px 0px; margin-top:-20em",
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   div(style = "font-weight: bold", "Series format", helpPopup("Select 1D if the other formats are unknown"))
+                                                                            ),
+                                                                            column(8,
+                                                                                   radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      div(style = "padding: 0px 0px; margin-top:-0em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
+                                                                                   checkboxInput(inputId = "header", label = "Show series header", value = F),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.header == true",
+                                                                                     sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
+                                                                            ),
+                                                                            column(6,
+                                                                                   radioButtons(inputId = "tunits",
+                                                                                                div("Time units",
+                                                                                                    helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
+                                                                                                choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
+                                                                            )
+                                                                          )
+                                                                      ),
                                                                       conditionalPanel(
-                                                                        condition = "input.format2 == 4 && output.series2 == true",
+                                                                        condition = "input.format == 4",
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 selectInput(inputId = "separator", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
+                                                                          ),
+                                                                          column(6,
+                                                                                 div(style = "font-weight: bold", "Column selection",
+                                                                                     helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively.")
+                                                                                 ),
+                                                                                 div(style = "margin-top:-1em",
+                                                                                     fluidRow(
+                                                                                       column(4,
+                                                                                              textInput(inputId = "epoch", label = "", value = "1")
+                                                                                       ),
+                                                                                       column(4, offset = -2,
+                                                                                              textInput(inputId = "variable", label = "", value = "2")
+                                                                                       ),
+                                                                                       column(4, offset = -2,
+                                                                                              textInput(inputId = "errorBar", label = "", value = "3")
+                                                                                       )
+                                                                                     )
+                                                                                 )
+                                                                          )
+                                                                        )
+                                                                      ),
+                                                                      fluidRow(
                                                                         column(6,
-                                                                               selectInput(inputId = "separator2", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
+                                                                               checkboxInput(inputId = "average",
+                                                                                             div("Reduce sampling",
+                                                                                                 helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
+                                                                                             value = F)
                                                                         ),
                                                                         column(6,
-                                                                               div(style = "font-weight: bold", "Column selection",
-                                                                                   helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively, of the secondary series.")
-                                                                               ),
-                                                                               div(style = "margin-top:-1em",
-                                                                                   fluidRow(
-                                                                                     column(4,
-                                                                                            textInput(inputId = "epoch2", label = "", value = "1")
-                                                                                     ),
-                                                                                     column(4, offset = -2,
-                                                                                            textInput(inputId = "variable2", label = "", value = "2")
-                                                                                     ),
-                                                                                     column(4, offset = -2,
-                                                                                            textInput(inputId = "errorBar2", label = "", value = "3")
-                                                                                     )
+                                                                               div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.average == true",
+                                                                                     textInput(inputId = "step", label = "Averaging time period", value = "")
                                                                                    )
                                                                                )
                                                                         )
-                                                                      )
-                                                                    )
-                                                                ),
-
-                                                                # % Euler ####
-                                                                checkboxInput(inputId = "euler",
-                                                                              div(style = "font-weight: bold", "Plate motion model",
-                                                                                  helpPopup("Shows or removes a plate motion model at the series location given the parameters of an Euler pole")),
-                                                                              value = F),
-                                                                fluidRow(
-                                                                  column(6,
-                                                                         conditionalPanel(
-                                                                           condition = "input.euler == true",
-                                                                           div(style = "padding: 0px 0px; margin-top:0.75em",
-                                                                               radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
-                                                                           )
-                                                                         )
-                                                                  ),
-                                                                  column(6,
-                                                                         conditionalPanel(
-                                                                           condition = "input.euler == true && input.format == 1",
-                                                                           div(style = "padding: 0px 0px; margin-top:0.75em",
-                                                                               radioButtons(inputId = "neuenu", label = NULL, choices = list("NEU" = 1, "ENU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
-                                                                           )
-                                                                         )
-                                                                  )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.euler == true",
-                                                                  fluidRow(
-                                                                    column(6,
-                                                                           div("Station coordinates", helpPopup("Cartesian coordinates in the same units as the series. Geographic coordinates in decimal degrees"))
-                                                                    ),
-                                                                    column(6,
-                                                                           radioButtons(inputId = "coordenadas_estacion", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
-                                                                    )
-                                                                  ),
-                                                                  fluidRow(
-                                                                    conditionalPanel(
-                                                                      condition = "input.coordenadas_estacion == 1",
-                                                                      column(4,
-                                                                             textInput(inputId = "station_x", label = "Station X", value = "")
                                                                       ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "station_y", label = "Station Y", value = "")
+                                                                      div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                          tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
                                                                       ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "station_z", label = "Station Z", value = "")
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.coordenadas_estacion == 2",
-                                                                      column(4,
-                                                                             textInput(inputId = "station_lat", label = "Station latitude", value = "")
-                                                                      ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "station_lon", label = "Station longitude", value = "")
-                                                                      )
-                                                                    )
-                                                                  ),
-                                                                  fluidRow(
-                                                                    column(6,
-                                                                           div("Euler's pole", helpPopup("Cartesian rotation rates in decimal degrees/Ma. Geographic position in decimal degrees and rotation rate in decimal degrees/Ma"))
-                                                                    ),
-                                                                    column(6,
-                                                                           radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
-                                                                    )
-                                                                  ),
-                                                                  fluidRow(
-                                                                    conditionalPanel(
-                                                                      condition = "input.pole_coordinates == 1",
-                                                                      column(4,
-                                                                             textInput(inputId = "pole_x", label = "Pole rotation X", value = "")
-                                                                      ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "pole_y", label = "Pole rotation Y", value = "")
-                                                                      ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "pole_z", label = "Pole rotation Z", value = "")
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.pole_coordinates == 2",
-                                                                      column(4,
-                                                                             textInput(inputId = "pole_lat", label = "Pole latitude", value = "")
-                                                                      ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "pole_lon", label = "Pole longitude", value = "")
-                                                                      ),
-                                                                      column(4, offset = -2,
-                                                                             textInput(inputId = "pole_rot", label = "Pole rotation", value = "")
-                                                                      )
-                                                                    )
-                                                                  ),
-                                                                  fluidRow(
-                                                                    column(6,
-                                                                           div(style = "font-weight: bold", "Euler poles file",
-                                                                               helpPopup("File with a list of stations and their associated Euler pole(s)")
-                                                                           )
-                                                                    ),
-                                                                    column(6, align = "right",
-                                                                           tags$a(href = "euler.txt", "Show file example", target = "_blank")
-                                                                    )
-                                                                  ),
-                                                                  fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                ),
-                                                                style = "primary"),
-
-                                                # * Fit controls ####
-                                                bsCollapsePanel(value = 4,
-                                                                tags$h4(style = "color:white", icon("wand-magic-sparkles", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                div(style = "padding: 0px 0px; margin-top:0em",
-                                                                    radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               radioButtons(inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T)
-                                                                        ),
-                                                                        column(width = 6, offset = 0, style = "margin-top:-2em; padding: 0px 40px 0px 0px", align = "right",
-                                                                               withBusyIndicatorUI(
-                                                                                 actionButton(inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                               )
-                                                                        )
-                                                                      ),
-                                                                      fluidRow(
-                                                                        column(7,
-                                                                               checkboxInput(inputId = "errorm",
-                                                                                             div("Compute measurement noise",
-                                                                                                 helpPopup("To estimate the measurement noise within the provided bounds (WARNING: slower KF fit)")),
-                                                                                             value = F)
-                                                                        ),
-                                                                        conditionalPanel(
-                                                                          condition = "input.errorm == false",
-                                                                          column(5,
-                                                                                 textInput(inputId = "ObsError",
-                                                                                           div("Measurement noise",
-                                                                                               helpPopup("Measurement standard deviation in the same units as the observations. If empty, an approximate value will be used.")),
-                                                                                           value = "")
-                                                                          )
-                                                                        )
-                                                                      ),
-                                                                      fluidRow(
-                                                                        conditionalPanel(
-                                                                          condition = "input.errorm == true",
-                                                                          column(3, style = "padding: 0px 5px 0px 5px;", align = "left",
-                                                                                 textInput(inputId = "min_optirange",
-                                                                                           div("Min bound",
-                                                                                               helpPopup("Lower & upper bounds of the measurement standard deviation in the same units as the observations")),
-                                                                                           value = "")
+                                                                      div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                          conditionalPanel(
+                                                                            condition = "output.data",
+                                                                            htmlOutput("information")
                                                                           ),
-                                                                          column(3,
-                                                                                 textInput(inputId = "max_optirange", label = "Max bound", value = "")
-                                                                          ),
-                                                                          column(6,
-                                                                                 htmlOutput("noise")
+                                                                          conditionalPanel(
+                                                                            condition = "output.dataNone",
+                                                                            htmlOutput("informationNone")
                                                                           )
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.fitType == 1 || input.fitType == 2",
-                                                                  div(style = "padding: 0px 0px; margin-top:0.0em",
-                                                                      tags$div(class = "header", checked = NA,
-                                                                               tags$h4(icon("puzzle-piece", class = NULL, lib = "font-awesome"), "Select model components")
-                                                                      )
-                                                                  ),
-                                                                  div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                      checkboxGroupInput(inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
-                                                                  ),
-
-                                                                  # % Linear fit ####
-                                                                  conditionalPanel(
-                                                                    condition = "input.model.indexOf('Linear') != -1",
-                                                                    div(style = "padding: 0px 0px; margin-top:0em",
-                                                                        tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             conditionalPanel(
-                                                                               condition = "input.fitType == 1",
-                                                                               textInput(inputId = "trendRef",
-                                                                                         div("Ref. epoch rate",
-                                                                                             helpPopup("Reference epoch for the rate. If empty, the mean data epoch will be used.")),
-                                                                                         value = "")
-                                                                             )
                                                                       ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.fitType == 2",
-                                                                        column(6,
-                                                                               textInput(inputId = "TrendDev",
-                                                                                         div("Rate process noise",
-                                                                                             helpPopup("Rate variation (standard deviation) for each observation.")),
-                                                                                         value = "0.0")
-                                                                        )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
+                                                                      style = "primary"),
+                                                      
+                                                      # * Plot controls ####
+                                                      bsCollapsePanel(value = 2,
+                                                                      tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T),
                                                                       fluidRow(
-                                                                        column(6,
-                                                                               conditionalPanel(
-                                                                                 condition = "input.fitType == 2",
-                                                                                 textInput(inputId = "Intercept0",
-                                                                                           div("A priori intercept",
-                                                                                               helpPopup("Initial state value for the intercept. If empty, an approximate value will be used.")),
-                                                                                           value = "")
-                                                                               )
+                                                                        column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
+                                                                               actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eIntercept0",
-                                                                                         div("A priori intercept error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the intercept. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      ),
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               conditionalPanel(
-                                                                                 condition = "input.fitType == 2",
-                                                                                 textInput(inputId = "Trend0",
-                                                                                           div("A priori rate",
-                                                                                               helpPopup("Initial state value for the rate. If empty, an approximate value will be used.")),
-                                                                                           value = "")
-                                                                               )
+                                                                        column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
+                                                                               actionButton(inputId = "reset", label = "Reset", icon = icon("eye-slash", class = NULL, lib = "font-awesome"), style = "font-size: small; color: #FF6700")
                                                                         ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eTrend0",
-                                                                                         div("A priori rate error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the rate. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                  ),
-
-                                                                  # % Sinusoidal fit ####
-                                                                  conditionalPanel(
-                                                                    condition = "input.model.indexOf('Sinusoidal') != -1",
-                                                                    div(style = "padding: 0px 0px; margin-top:0em",
-                                                                        tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                    ),
-                                                                    textInput(inputId = "period",
-                                                                              div("Sinusoidal periods",
-                                                                                  helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")),
-                                                                              value = "1y"),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             textInput(inputId = "periodRef",
-                                                                                       div("Ref. epoch periods",
-                                                                                           helpPopup("Reference epoch for the phase of the periods. If empty, the mean data epoch will be used")),
-                                                                                       value = "")
-                                                                      ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.fitType == 2",
-                                                                        column(6,
-                                                                               textInput(inputId = "S0",
-                                                                                         div("A priori amplitude",
-                                                                                             helpPopup("Initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               textInput(inputId = "SinusoidalDev",
-                                                                                         div("Amplitude process noise",
-                                                                                             helpPopup("Sine/cosine amplitude variation (standard deviation) for each observation.")),
-                                                                                         value = "0.0")
+                                                                        column(4, style = 'padding:0px 0px 0px 0px;', align = "right",
+                                                                               actionButton(inputId = "remove", label = "Toggle points", icon =  icon("ban", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eS0",
-                                                                                         div("A priori amplitude error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for sine & cosine amplitudes. If empty, an approximate value will be used.")),
-                                                                                         value = "")
+                                                                        column(4, style = 'padding:0px 10px 0px 0px;', align = "right",
+                                                                               actionButton(inputId = "delete_excluded", label = "Reset toggle", icon = icon("backward", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         )
-                                                                      ),
-                                                                      tags$div(id = "inline",
-                                                                               radioButtons(inputId = "SineCosine",
-                                                                                            div("Amplitude process noise on",
-                                                                                                helpPopup("Choose between varying the sine amplitude only or varying both the sine & cosine amplitudes independently.")),
-                                                                                            choices = list("Sine" = 1, "Sine & Cosine" = 2), selected = 2, inline = T)
-                                                                      )
-                                                                    )
-                                                                  ),
-
-                                                                  # % Offset fit ####
-                                                                  conditionalPanel(
-                                                                    condition = "input.model.indexOf('Offset') != -1",
-                                                                    div(style = "padding: 0px 0px; margin-top:0em",
-                                                                        tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                    ),
-                                                                    textInput(inputId = "offsetEpoch",
-                                                                              div("Offset epochs",
-                                                                                  helpPopup("Comma-separated list")),
-                                                                              value = ""),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               textInput(inputId = "O0",
-                                                                                         div("A priori offset",
-                                                                                             helpPopup("Initial state value for the offsets. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eO0",
-                                                                                         div("A priori offset error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             withBusyIndicatorUI(
-                                                                               actionButton(inputId = "search", label = "Search discontinuities", icon = icon("magnifying-glass", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                             )
-                                                                      ),
-                                                                      column(6,
-                                                                             sliderInput("segmentLength",
-                                                                                         div("Minimum segment",
-                                                                                             helpPopup("Minimum segment size given as % of the series length")),
-                                                                                         min = 0.1, max = 50, value = 10, step = 1, round = 0, ticks = F, animate = F, width = NULL, sep = "", pre = NULL, post = NULL, timeFormat = NULL, timezone = NULL, dragRange = TRUE)
-                                                                      )
-                                                                    ),
-                                                                    htmlOutput("offsetFound"),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             checkboxInput(inputId = "verif_offsets",
-                                                                                           div("Offset verification",
-                                                                                               helpPopup("To test if the estimated offsets may be due to random noise fluctuations.<br/>Roughly, if the estimated log-likelihood difference is < 6, offsets are likely generated by random noise."),
-                                                                                               value = F))
-                                                                      ),
-                                                                      column(width = 6, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
-                                                                             conditionalPanel(
-                                                                               condition = "input.verif_offsets == true",
-                                                                               withBusyIndicatorUI(
-                                                                                 actionButton(inputId = "runVerif", label = "Run verification", icon = icon("shuffle", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                               )
-                                                                             )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.verif_offsets == true",
-                                                                      fluidRow(
-                                                                        column(4,
-                                                                               textInput(inputId = "verif_white",
-                                                                                         div("White noise",
-                                                                                             helpPopup("Standard deviation of the expected white noise in the series.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(4,
-                                                                               textInput(inputId = "verif_pl",
-                                                                                         div("Power-law",
-                                                                                             helpPopup("Stardard deviation of the expected power-law noise in the series.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(4,
-                                                                               textInput(inputId = "verif_k",
-                                                                                         div("Spectral index",
-                                                                                             helpPopup("Spectral index of the expected power-law noise in the series.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "output.verifhelp",
-                                                                      fluidRow(
-                                                                        div(style = "padding: 0px 30px;",
-                                                                            htmlOutput("verif", inline = T)
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                  ),
-
-                                                                  # % Exponential fit ####
-                                                                  conditionalPanel(
-                                                                    condition = "input.model.indexOf('Exponential') != -1",
-                                                                    div(style = "padding: 0px 0px; margin-top:0em",
-                                                                        tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                    ),
-                                                                    textInput(inputId = "ExponenRef",
-                                                                              div("Ref. time exponential",
-                                                                                  helpPopup("Comma-separated lisf of the starting time for the exponential decays.")),
-                                                                              value = ""),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             textInput(inputId = "E0",
-                                                                                       div("A priori constant",
-                                                                                           helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
-                                                                                       value = "")
-                                                                      ),
-                                                                      column(6,
-                                                                             textInput(inputId = "TE0",
-                                                                                       div("A priori decay rate",
-                                                                                           helpPopup("Initial value for the exponential decay rates. If empty, an approximate value will be used.")),
-                                                                                       value = "")
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               textInput(inputId = "eE0",
-                                                                                         div("A priori constant error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eTE0",
-                                                                                         div("A priori decay rate error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the exponential decay rates. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                  ),
-
-                                                                  # % Logarithmic fit ####
-                                                                  conditionalPanel(
-                                                                    condition = "input.model.indexOf('Logarithmic') != -1",
-                                                                    div(style = "padding: 0px 0px; margin-top:0em",
-                                                                        tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                    ),
-                                                                    textInput(inputId = "LogariRef",
-                                                                              div("Ref. time logarithmic",
-                                                                                  helpPopup("Comma-separated lisf of the starting time for the logarithmic decays.")),
-                                                                              value = ""),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             textInput(inputId = "L0",
-                                                                                       div("A priori constant",
-                                                                                           helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
-                                                                                       value = "")
-                                                                      ),
-                                                                      column(6,
-                                                                             textInput(inputId = "TL0",
-                                                                                       div("A priori decay rate",
-                                                                                           helpPopup("Initial value for the logarithmic decay rates. If empty, an approximate value will be used.")),
-                                                                                       value = "")
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               textInput(inputId = "eL0",
-                                                                                         div("A priori constant error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eTL0",
-                                                                                         div("A priori decay rate error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the logarithmic decay rates. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                  ),
-
-                                                                  # % Polynomial fit ####
-                                                                  conditionalPanel(
-                                                                    condition = "input.model.indexOf('Polynomial') != -1",
-                                                                    div(style = "padding: 0px 0px; margin-top:0em",
-                                                                        tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             textInput(inputId = "PolyRef",
-                                                                                       div("Ref. epoch polynomial",
-                                                                                           helpPopup("Reference epoch for the polynomial. If empty, the rate reference epoch or the mean data epoch will be used.")),
-                                                                                       value = "")
-                                                                      ),
-                                                                      column(6,
-                                                                             textInput(inputId = "PolyCoef",
-                                                                                       div("Polynomial degree",
-                                                                                           helpPopup("The degree must be > 1 & < 20. Degrees 0 and 1 are estimated within the linear component.")),
-                                                                                       value = "")
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.fitType == 2",
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               textInput(inputId = "P0",
-                                                                                         div("A priori polynomial",
-                                                                                             helpPopup("Initial state value for the polynomial coefficients. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(6,
-                                                                               textInput(inputId = "eP0",
-                                                                                         div("A priori polynomial error",
-                                                                                             helpPopup("Initial state uncertainty (standard deviation) for the polynomial coefficients. If empty, an approximate value will be used.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                  )
-                                                                ),
-                                                                style = "primary"),
-
-                                                # * Additional fit ####
-                                                bsCollapsePanel(value = 5,
-                                                                tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
-
-                                                                # % Histogram ####
-                                                                fluidRow(
-                                                                  column(6,
-                                                                         checkboxInput(inputId = "histogram", label = "Histogram", value = F)
-                                                                  ),
-                                                                  column(6,
-                                                                         checkboxInput(inputId = "midas",
-                                                                                       div("MIDAS",
-                                                                                           helpPopup("Median Interannual Difference Adjusted for Skewness")),
-                                                                                       value = F)
-                                                                  )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.histogram == true",
-                                                                  radioButtons(inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
-                                                                  div(style = "padding: 0px 0px; margin-top:0em",
-                                                                      tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
-                                                                  )
-                                                                ),
-
-                                                                # % Waveform ####
-                                                                fluidRow(
-                                                                  column(6,
-                                                                         checkboxInput(inputId = "waveform",
-                                                                                       div("Periodic waveform",
-                                                                                           helpPopup("To fit a periodic waveform not having a sinusoidal shape")),
-                                                                                       value = F)
-                                                                  ),
-                                                                  column(6,
-                                                                         conditionalPanel(
-                                                                           condition = "input.waveform == true",
-                                                                           textInput(inputId = "waveformPeriod",
-                                                                                     div("Period",
-                                                                                         helpPopup("The waveform period is given in the same units as the time unit of the series. It must be bigger than twice the average sampling period and smaller than half the total period of the series.")),
-                                                                                     value = "")
-                                                                         )
-                                                                  )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.waveform == true",
-                                                                  fluidRow(
-                                                                    column(6,
-                                                                           div(style = "margin-top:-4em",
-                                                                               checkboxInput(inputId = "correct_waveform",
-                                                                                             div("Remove from series",
-                                                                                                 helpPopup("To remove the estimated periodic waveform from the original series before the model fit")),
-                                                                                             value = F)
-                                                                           )
-                                                                    )
-                                                                  ),
-                                                                  div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                      tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
-                                                                  )
-                                                                ),
-
-                                                                # % Periodogram ####
-                                                                fluidRow(
-                                                                  column(5,
-                                                                         checkboxInput(inputId = "spectrum",
-                                                                                       div("Periodogram",
-                                                                                           helpPopup("Lomb-Scargle amplitude/power spectrum")),
-                                                                                       value = F)
-                                                                  ),
-                                                                  column(6, offset = 1,
-                                                                         div(style = "margin-top:0.6em;",
-                                                                             conditionalPanel(
-                                                                               condition = "input.spectrum == true",
-                                                                               radioButtons(inputId = "spectrumType", label = NULL, choices = list("Amplitude" = 0, "Power" = 1), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
-                                                                             )
-                                                                         )
-                                                                  )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.spectrum == true",
-                                                                  fluidRow(
-                                                                    column(2,
-                                                                           checkboxInput(inputId = "spectrumOriginal", label = "Original", value = F)
-                                                                    ),
-                                                                    column(2,
-                                                                           checkboxInput(inputId = "spectrumModel", label = "Model", value = F)
-                                                                    ),
-                                                                    column(3,
-                                                                           checkboxInput(inputId = "periodogram_residuals", label = "Model res.", value = F)
-                                                                    ),
-                                                                    column(2,
-                                                                           checkboxInput(inputId = "spectrumFilter", label = "Filter", value = F)
-                                                                    ),
-                                                                    column(3,
-                                                                           checkboxInput(inputId = "spectrumFilterRes", label = "Filter res.", value = F)
-                                                                    )
-                                                                  )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.spectrum == true",
-                                                                  fluidRow(
-                                                                    column(4,
-                                                                           textInput(inputId = "ofac", label = "Oversampling", value = NULL)
-                                                                    ),
-                                                                    column(4,
-                                                                           textInput(inputId = "long_period", label = "Longest period", value = NULL)
-                                                                    ),
-                                                                    column(4,
-                                                                           textInput(inputId = "short_period", label = "Shortest period", value = NULL)
-                                                                    )
-                                                                  ),
-                                                                  div(style = "padding: 0px 0px; margin-top:-0.5em",
-                                                                      tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
-                                                                  )
-                                                                ),
-
-                                                                # % Wavelet ####
-                                                                div(style = "padding: 0px 0px; margin-top:0em",
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             checkboxInput(inputId = "wavelet",
-                                                                                           div("Wavelets",
-                                                                                               helpPopup("To plot the heatmap from the wavelet transform")),
-                                                                                           value = F)
-                                                                      ),
-                                                                      column(4, offset = 4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.wavelet == true",
-                                                                               textInput(inputId = "loc_wavelet",
-                                                                                         div("Sampling",
-                                                                                             helpPopup("The temporal resolution or time separation between wavelets. The maximum valid is half the total observed period. The minimum valid is the sampling period of the series.")),
-                                                                                         value = "")
-                                                                             )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.wavelet == true",
-                                                                      fluidRow(
-                                                                        column(4,
-                                                                               textInput(inputId = "min_wavelet",
-                                                                                         div("Min.",
-                                                                                             helpPopup("The shortest period to compute the wavelet. The minimum valid is twice the median sampling period.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(4,
-                                                                               textInput(inputId = "max_wavelet",
-                                                                                         div("Max.",
-                                                                                             helpPopup("The longest period to compute the wavelet. The maximum valid is half the total observed period.")),
-                                                                                         value = "")
-                                                                        ),
-                                                                        column(4,
-                                                                               textInput(inputId = "res_wavelet",
-                                                                                         div("Step",
-                                                                                             helpPopup("The resolution or separation between the periods to compute the wavelet.")),
-                                                                                         value = "")
-                                                                        )
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                conditionalPanel(
-                                                                  condition = "input.wavelet == true",
-                                                                  radioButtons(inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
-                                                                  div(style = "padding: 0px 0px; margin-top:-0.5em",
-                                                                      tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
-                                                                  )
-                                                                ),
-
-                                                                # % Vondrak ####
-                                                                div(style = "padding: 0px 0px; margin-top:0em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             checkboxInput(inputId = "filter",
-                                                                                           div("Band-pass smoother",
-                                                                                               helpPopup("Vondrak smoother for the original or residual series.")),
-                                                                                           value = F)
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
-                                                                          column(6,
-                                                                                 conditionalPanel(
-                                                                                   condition = "input.filter == true",
-                                                                                   div(style = "padding: 0px 0px; margin-top:-0.4em",
-                                                                                       radioButtons(inputId = "series2filter", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T)
-                                                                                   )
-                                                                                 )
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   textInput(inputId = "thresholdRes",
+                                                                                             div("Residual",
+                                                                                                 helpPopup("Threshold to delete points with larger absolute residual")),
+                                                                                             value = NULL)
+                                                                            ),
+                                                                            column(4, style = "padding:0px 10px 0px 0px;", align = "left",
+                                                                                   textInput(inputId = "thresholdResN",
+                                                                                             div("Norm. residual",
+                                                                                                 helpPopup("Threshold to delete points with larger normalized absolute residual")),
+                                                                                             value = NULL)
+                                                                            ),
+                                                                            column(4, style = "padding:0px 10px 0px 0px; margin-top:1.75em", align = "right",
+                                                                                   actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")#width = NULL)
+                                                                            )
                                                                           )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.filter == true",
+                                                                      ),
+                                                                      fluidRow(
+                                                                        column(3,
+                                                                               checkboxInput(inputId = "remove3D",
+                                                                                             div("All components", align = "right",
+                                                                                                 helpPopup("To remove points from all components simultaneously")),
+                                                                                             value = T)
+                                                                        ),
+                                                                        column(3,
+                                                                               checkboxInput(inputId = "permanent",
+                                                                                             div("Permanent", align = "right",
+                                                                                                 helpPopup("To delete points from the series permanently, unless the series are reset and reloaded")),
+                                                                                             value = F)
+                                                                        ),
+                                                                        column(3,
+                                                                               checkboxInput(inputId = "add_excluded",
+                                                                                             div("Include in file", align = "right",
+                                                                                                 helpPopup("To include the removed points in the downloaded results file")),
+                                                                                             value = F)
+                                                                        ),
+                                                                        column(3,
+                                                                               checkboxInput(inputId = "overflow",
+                                                                                             div("Scrolling",
+                                                                                                 helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is deactivated, the user can take a screenshot of the full web page.")),
+                                                                                             value = T),
+                                                                        )
+                                                                      ),
+                                                                      style = "primary"),
+                                                      
+                                                      # * Ancillary information ####
+                                                      bsCollapsePanel(value = 3,
+                                                                      tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      
+                                                                      # % sitelog ####
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div(style = "font-weight: bold", "Input log file",
+                                                                                       helpPopup("IGS-like sitelog file")
+                                                                                   )
+                                                                            ),
+                                                                            column(6, align = "right",
+                                                                                   tags$a(href = "iraf00fra_20201021.log", "Show file example", target = "_blank")
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   fileInput(inputId = "log", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            ),
+                                                                            column(4,
+                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                       conditionalPanel(
+                                                                                         condition = "output.log",
+                                                                                         checkboxInput(inputId = "traceLog", label = "Plot changes", value = F),
+                                                                                         checkboxInput(inputId = "printLog", label = "List changes", value = F)
+                                                                                       )
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      
+                                                                      # % station.info ####
+                                                                      div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div(style = "font-weight: bold", "Input station.info file",
+                                                                                       helpPopup("GAMIT/GLOBK-like station.info file")
+                                                                                   )
+                                                                            ),
+                                                                            column(6, align = "right",
+                                                                                   tags$a(href = "station.info", "Show file example", target = "_blank")
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   fileInput(inputId = "sinfo", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            ),
+                                                                            column(4,
+                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                       conditionalPanel(
+                                                                                         condition = "output.sinfo",
+                                                                                         checkboxInput(inputId = "traceSinfo", label = "Plot changes", value = F),
+                                                                                         checkboxInput(inputId = "printSinfo", label = "List changes", value = F)
+                                                                                       )
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      
+                                                                      # % soln ####
+                                                                      div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div(style = "font-weight: bold", "Input soln file",
+                                                                                       helpPopup("IGS-like soln file")
+                                                                                   )
+                                                                            ),
+                                                                            column(6, align = "right",
+                                                                                   tags$a(href = "soln.snx", "Show file example", target = "_blank")
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   fileInput(inputId = "soln", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            ),
+                                                                            column(4,
+                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                       conditionalPanel(
+                                                                                         condition = "output.soln",
+                                                                                         checkboxInput(inputId = "traceSoln", label = "Plot changes", value = F),
+                                                                                         checkboxInput(inputId = "printSoln", label = "List changes", value = F)
+                                                                                       )
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      
+                                                                      # % Custom ####
+                                                                      div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div(style = "font-weight: bold", "Input custom offset file",
+                                                                                       helpPopup("User-defined offset list to be shown")
+                                                                                   )
+                                                                            ),
+                                                                            column(6, align = "right",
+                                                                                   tags$a(href = "http://geodesy.unr.edu/NGLStationPages/steps.txt", "Show file example", target = "_blank")
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   fileInput(inputId = "custom", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            ),
+                                                                            column(4,
+                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                       conditionalPanel(
+                                                                                         condition = "output.custom",
+                                                                                         checkboxInput(inputId = "traceCustom", label = "Plot changes", value = F),
+                                                                                         checkboxInput(inputId = "printCustom", label = "List changes", value = F)
+                                                                                       )
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      
+                                                                      # % Secondary series ####
+                                                                      div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   fileInput(inputId = "series2",
+                                                                                             div("Secondary series",
+                                                                                                 helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
+                                                                                             multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            ),
+                                                                            column(3, offset = 1,
+                                                                                   div(style = "padding: 0px 0px; margin-top:0em",
+                                                                                       conditionalPanel(
+                                                                                         condition = "output.series2",
+                                                                                         radioButtons(inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = NULL, inline = F, width = NULL),
+                                                                                       )
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "output.series2",
+                                                                            fluidRow(
+                                                                              column(8,
+                                                                                     # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T),
+                                                                                     radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                                     fluidRow(
+                                                                                       column(6,
+                                                                                              textInput(inputId = "scaleFactor",
+                                                                                                        div("Scale factor",
+                                                                                                            helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")),
+                                                                                                        value = "1")
+                                                                                       ),
+                                                                                       column(6,
+                                                                                              textInput(inputId = "step2",
+                                                                                                        div("Averaging",
+                                                                                                            helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
+                                                                                                        value = "")
+                                                                                       )
+                                                                                     )
+                                                                              ),
+                                                                              column(4,
+                                                                                     div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                         checkboxInput(inputId = "sameScale",
+                                                                                                       div("Same scale",
+                                                                                                           helpPopup("Force the y-axis of the secondary series on the right to have the same scale as the y-axis of the primary series on the left")),
+                                                                                                       value = F),
+                                                                                         checkboxInput(inputId = "same_axis",
+                                                                                                       div("Same axis",
+                                                                                                           helpPopup("Force the y-axis of the secondary series on the right to be the same as the y-axis of the primary series on the left")),
+                                                                                                       value = F),
+                                                                                         checkboxInput(inputId = "ne",
+                                                                                                       div(HTML("N @ E"),
+                                                                                                           helpPopup("Swap the columns of the North and East components of the series")),
+                                                                                                       value = F)
+                                                                                     )
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            conditionalPanel(
+                                                                              condition = "input.format2 == 4 && output.series2 == true",
+                                                                              column(6,
+                                                                                     selectInput(inputId = "separator2", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
+                                                                              ),
+                                                                              column(6,
+                                                                                     div(style = "font-weight: bold", "Column selection",
+                                                                                         helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively, of the secondary series.")
+                                                                                     ),
+                                                                                     div(style = "margin-top:-1em",
+                                                                                         fluidRow(
+                                                                                           column(4,
+                                                                                                  textInput(inputId = "epoch2", label = "", value = "1")
+                                                                                           ),
+                                                                                           column(4, offset = -2,
+                                                                                                  textInput(inputId = "variable2", label = "", value = "2")
+                                                                                           ),
+                                                                                           column(4, offset = -2,
+                                                                                                  textInput(inputId = "errorBar2", label = "", value = "3")
+                                                                                           )
+                                                                                         )
+                                                                                     )
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      
+                                                                      # % Euler ####
+                                                                      checkboxInput(inputId = "euler",
+                                                                                    div(style = "font-weight: bold", "Plate motion model",
+                                                                                        helpPopup("Shows or removes a plate motion model at the series location given the parameters of an Euler pole")),
+                                                                                    value = F),
                                                                       fluidRow(
                                                                         column(6,
-                                                                               textInput(inputId = "low",
-                                                                                         div("Low-pass period cutoff",
-                                                                                             helpPopup("Maximum recommended = T/4 (T = series length)")),
-                                                                                         value = "")
+                                                                               conditionalPanel(
+                                                                                 condition = "input.euler == true",
+                                                                                 div(style = "padding: 0px 0px; margin-top:0.75em",
+                                                                                     radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                 )
+                                                                               )
                                                                         ),
                                                                         column(6,
-                                                                               textInput(inputId = "high",
-                                                                                         div("High-pass period cutoff",
-                                                                                             helpPopup("Maximum recommended = T/4 (T = series length)")),
-                                                                                         value = "")
-                                                                        )
-                                                                      ),
-                                                                      div(style = "padding: 0px 0px; margin-top:-0.5em",
-                                                                          tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
-                                                                      )
-                                                                    )
-                                                                ),
-
-                                                                # % Noise ####
-                                                                div(style = "padding: 0px 0px; margin-top:0em",
-                                                                    fluidRow(
-                                                                      column(6,
-                                                                             checkboxInput(inputId = "mle",
-                                                                                           div("Noise analysis",
-                                                                                               helpPopup("To estimate the parameters of a noise model for the covariance matrix of the residual series")),
-                                                                                           value = F)
-                                                                      ),
-                                                                      column(width = 6, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
-                                                                             conditionalPanel(
-                                                                               condition = "input.mle == true",
-                                                                               withBusyIndicatorUI(
-                                                                                 actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                               )
-                                                                             )
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      conditionalPanel(
-                                                                        condition = "input.mle == true",
-                                                                        column(2, style = "padding: 0px 0px 0px 10px;",
-                                                                               checkboxInput(inputId = "white", label = "White", value = F, width = '25%')
-                                                                        ),
-                                                                        column(2, style = "padding: 0px 0px 0px 0px;",
-                                                                               checkboxInput(inputId = "flicker", label = "Flicker", value = F, width = '25%')
-                                                                        ),
-                                                                        column(4, style = "padding: 0px 0px 0px 0px;",
-                                                                               checkboxInput(inputId = "randomw", label = "Random walk", value = F, width = '200%')
-                                                                        ),
-                                                                        column(4, style = "padding: 0px 10px 0px 10px;",
-                                                                               checkboxInput(inputId = "powerl", label = "Power-law", value = F, width = '150%')
-                                                                        )
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.white",
-                                                                               textInput(inputId = "max_white", label = "max wn", value = "")
-                                                                             )
-                                                                      ),
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.flicker",
-                                                                               textInput(inputId = "max_fl", label = "max fn", value = "")
-                                                                             ),
-                                                                             conditionalPanel(
-                                                                               condition = "input.powerl",
-                                                                               textInput(inputId = "max_pl", label = "max pl", value = "")
-                                                                             )
-                                                                      ),
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.randomw",
-                                                                               textInput(inputId = "max_rw", label = "max rw", value = "")
-                                                                             ),
-                                                                             conditionalPanel(
-                                                                               condition = "input.powerl",
-                                                                               textInput(inputId = "max_k", label = "max k", value = "")
-                                                                             )
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.white",
-                                                                               textInput(inputId = "min_white", label = "min wn", value = "")
-                                                                             )
-                                                                      ),
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.flicker",
-                                                                               textInput(inputId = "min_fl", label = "min fn", value = "")
-                                                                             ),
-                                                                             conditionalPanel(
-                                                                               condition = "input.powerl",
-                                                                               textInput(inputId = "min_pl", label = "min pl", value = "")
-                                                                             )
-                                                                      ),
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.randomw",
-                                                                               textInput(inputId = "min_rw", label = "min rw", value = "")
-                                                                             ),
-                                                                             conditionalPanel(
-                                                                               condition = "input.powerl",
-                                                                               textInput(inputId = "min_k", label = "min k", value = "")
-                                                                             )
-                                                                      )
-                                                                    ),
-                                                                    fluidRow(
-                                                                      column(4,
-                                                                             conditionalPanel(
-                                                                               condition = "input.white == true",
-                                                                               htmlOutput("est.white")
-                                                                             )
-                                                                      ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.powerl == true",
-                                                                        column(4,
-                                                                               htmlOutput("est.powerl")
-                                                                        ),
-                                                                        column(4,
-                                                                               htmlOutput("est.index")
-                                                                        )
-                                                                      ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.powerl != true",
-                                                                        column(4,
                                                                                conditionalPanel(
-                                                                                 condition = "input.flicker == true",
-                                                                                 htmlOutput("est.flicker")
-                                                                               )
-                                                                        ),
-                                                                        column(4,
-                                                                               conditionalPanel(
-                                                                                 condition = "input.randomw == true",
-                                                                                 htmlOutput("est.randomw")
+                                                                                 condition = "input.euler == true && input.format == 1",
+                                                                                 div(style = "padding: 0px 0px; margin-top:0.75em",
+                                                                                     radioButtons(inputId = "neuenu", label = NULL, choices = list("NEU" = 1, "ENU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
+                                                                                 )
                                                                                )
                                                                         )
-                                                                      )
-                                                                    ),
-                                                                    conditionalPanel(
-                                                                      condition = "input.mle == true",
-                                                                      htmlOutput("est.mle"),
-                                                                      htmlOutput("est.unc")
-                                                                    )
-                                                                ),
-                                                                style = "primary")
-                                     ),
-
-                                     # * Local download ####
-                                     bsCollapse(id = "localDir", open = "", multiple = F,
-                                                bsCollapsePanel(value = 6,
-                                                                tags$h4(style = "color:white", icon("box-archive", class = NULL, lib = "font-awesome"), "Save results"),
-                                                                fluidRow(
-                                                                  column(2,
-                                                                         downloadButton(outputId = "downloadAs", label = "Save as")
-                                                                  ),
-                                                                  column(10,
-                                                                         verbatimTextOutput("localDirectory", placeholder = T)
-                                                                  )
-                                                                ),
-                                                                div(style = "padding: 0px 0px; margin-top:1em",
-                                                                    fluidRow(
-                                                                      column(8,
-                                                                             textInput(inputId = "directory",
-                                                                                       div("Select directory",
-                                                                                           helpPopup("Copy & paste or type in the complete path to the desired download directory")),
-                                                                                       value = NULL)
                                                                       ),
-                                                                      column(4,
-                                                                             div(style = "padding: 0px 0px; margin-top:2em",
-                                                                                 actionButton(inputId = "autoDownload", label = "Automatic save", icon = icon("floppy-disk", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                             )
-                                                                      )
-                                                                    )
-                                                                ),
-                                                                actionButton(inputId = "browser", label = "Debug pit stop"),
-                                                                style = "primary")
-                                     )
-                                   )
-                              ),
-
-                              # Visualization panel ####
-                              mainPanel(
-                                # style = "position:fixed; right: 0px; height: 90vh; overflow-y: auto;",
-                                id = "main-panel",
-                                conditionalPanel(
-                                  condition = "input.header == true",
-                                  verbatimTextOutput("header", placeholder = F)
-                                ),
-                                fluidPage(
-                                  tableOutput('debug')
-                                ),
-                                navbarPage(
-                                  title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
-                                  tabPanel(div(style = "display: inline-block; font-size: 40px; color: black", "SARI"), value = 0, id = "SARI"),
-                                  tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
-                                           withMathJax(includeMarkdown("www/about.md"))
-                                  ),
-
-                                  # * component 1 ####
-                                  tabPanel(div(style = "font-size: 20px;",uiOutput("tabName")), value = 1,
-                                           tags$style(type = "text/css", "body {padding-top: 60px;}"),
-                                           withSpinner(
-                                             plotOutput("plot1", click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)),
-                                             type = getOption("spinner.type", default = 1),
-                                             color = getOption("spinner.color", default = "#0080ff"),
-                                             size = getOption("spinner.size", default = 2),
-                                             color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+                                                                      conditionalPanel(
+                                                                        condition = "input.euler == true",
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 div("Station coordinates", helpPopup("Cartesian coordinates in the same units as the series. Geographic coordinates in decimal degrees"))
+                                                                          ),
+                                                                          column(6,
+                                                                                 radioButtons(inputId = "coordenadas_estacion", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                          )
+                                                                        ),
+                                                                        fluidRow(
+                                                                          conditionalPanel(
+                                                                            condition = "input.coordenadas_estacion == 1",
+                                                                            column(4,
+                                                                                   textInput(inputId = "station_x", label = "Station X", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "station_y", label = "Station Y", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "station_z", label = "Station Z", value = "")
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.coordenadas_estacion == 2",
+                                                                            column(4,
+                                                                                   textInput(inputId = "station_lat", label = "Station latitude", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "station_lon", label = "Station longitude", value = "")
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 div("Euler's pole", helpPopup("Cartesian rotation rates in decimal degrees/Ma. Geographic position in decimal degrees and rotation rate in decimal degrees/Ma"))
+                                                                          ),
+                                                                          column(6,
+                                                                                 radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                          )
+                                                                        ),
+                                                                        fluidRow(
+                                                                          conditionalPanel(
+                                                                            condition = "input.pole_coordinates == 1",
+                                                                            column(4,
+                                                                                   textInput(inputId = "pole_x", label = "Pole rotation X", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "pole_y", label = "Pole rotation Y", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "pole_z", label = "Pole rotation Z", value = "")
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.pole_coordinates == 2",
+                                                                            column(4,
+                                                                                   textInput(inputId = "pole_lat", label = "Pole latitude", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "pole_lon", label = "Pole longitude", value = "")
+                                                                            ),
+                                                                            column(4, offset = -2,
+                                                                                   textInput(inputId = "pole_rot", label = "Pole rotation", value = "")
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 div(style = "font-weight: bold", "Euler poles file",
+                                                                                     helpPopup("File with a list of stations and their associated Euler pole(s)")
+                                                                                 )
+                                                                          ),
+                                                                          column(6, align = "right",
+                                                                                 tags$a(href = "euler.txt", "Show file example", target = "_blank")
+                                                                          )
+                                                                        ),
+                                                                        fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                      ),
+                                                                      style = "primary"),
+                                                      
+                                                      # * Fit controls ####
+                                                      bsCollapsePanel(value = 4,
+                                                                      tags$h4(style = "color:white", icon("wand-magic-sparkles", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
+                                                                          radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     radioButtons(inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T)
+                                                                              ),
+                                                                              column(width = 6, offset = 0, style = "margin-top:-2em; padding: 0px 40px 0px 0px", align = "right",
+                                                                                     withBusyIndicatorUI(
+                                                                                       actionButton(inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                     )
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              column(7,
+                                                                                     checkboxInput(inputId = "errorm",
+                                                                                                   div("Compute measurement noise",
+                                                                                                       helpPopup("To estimate the measurement noise within the provided bounds (WARNING: slower KF fit)")),
+                                                                                                   value = F)
+                                                                              ),
+                                                                              conditionalPanel(
+                                                                                condition = "input.errorm == false",
+                                                                                column(5,
+                                                                                       textInput(inputId = "ObsError",
+                                                                                                 div("Measurement noise",
+                                                                                                     helpPopup("Measurement standard deviation in the same units as the observations. If empty, an approximate value will be used.")),
+                                                                                                 value = "")
+                                                                                )
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              conditionalPanel(
+                                                                                condition = "input.errorm == true",
+                                                                                column(3, style = "padding: 0px 5px 0px 5px;", align = "left",
+                                                                                       textInput(inputId = "min_optirange",
+                                                                                                 div("Min bound",
+                                                                                                     helpPopup("Lower & upper bounds of the measurement standard deviation in the same units as the observations")),
+                                                                                                 value = "")
+                                                                                ),
+                                                                                column(3,
+                                                                                       textInput(inputId = "max_optirange", label = "Max bound", value = "")
+                                                                                ),
+                                                                                column(6,
+                                                                                       htmlOutput("noise")
+                                                                                )
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.fitType == 1 || input.fitType == 2",
+                                                                        div(style = "padding: 0px 0px; margin-top:0.0em",
+                                                                            tags$div(class = "header", checked = NA,
+                                                                                     tags$h4(icon("puzzle-piece", class = NULL, lib = "font-awesome"), "Select model components")
+                                                                            )
+                                                                        ),
+                                                                        div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                            checkboxGroupInput(inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+                                                                        ),
+                                                                        
+                                                                        # % Linear fit ####
+                                                                        conditionalPanel(
+                                                                          condition = "input.model.indexOf('Linear') != -1",
+                                                                          div(style = "padding: 0px 0px; margin-top:0em",
+                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.fitType == 1",
+                                                                                     textInput(inputId = "trendRef",
+                                                                                               div("Ref. epoch rate",
+                                                                                                   helpPopup("Reference epoch for the rate. If empty, the mean data epoch will be used.")),
+                                                                                               value = "")
+                                                                                   )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.fitType == 2",
+                                                                              column(6,
+                                                                                     textInput(inputId = "TrendDev",
+                                                                                               div("Rate process noise",
+                                                                                                   helpPopup("Rate variation (standard deviation) for each observation.")),
+                                                                                               value = "0.0")
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.fitType == 2",
+                                                                                       textInput(inputId = "Intercept0",
+                                                                                                 div("A priori intercept",
+                                                                                                     helpPopup("Initial state value for the intercept. If empty, an approximate value will be used.")),
+                                                                                                 value = "")
+                                                                                     )
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eIntercept0",
+                                                                                               div("A priori intercept error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the intercept. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.fitType == 2",
+                                                                                       textInput(inputId = "Trend0",
+                                                                                                 div("A priori rate",
+                                                                                                     helpPopup("Initial state value for the rate. If empty, an approximate value will be used.")),
+                                                                                                 value = "")
+                                                                                     )
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eTrend0",
+                                                                                               div("A priori rate error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the rate. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        
+                                                                        # % Sinusoidal fit ####
+                                                                        conditionalPanel(
+                                                                          condition = "input.model.indexOf('Sinusoidal') != -1",
+                                                                          div(style = "padding: 0px 0px; margin-top:0em",
+                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          ),
+                                                                          textInput(inputId = "period",
+                                                                                    div("Sinusoidal periods",
+                                                                                        helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")),
+                                                                                    value = "1y"),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   textInput(inputId = "periodRef",
+                                                                                             div("Ref. epoch periods",
+                                                                                                 helpPopup("Reference epoch for the phase of the periods. If empty, the mean data epoch will be used")),
+                                                                                             value = "")
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.fitType == 2",
+                                                                              column(6,
+                                                                                     textInput(inputId = "S0",
+                                                                                               div("A priori amplitude",
+                                                                                                   helpPopup("Initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "SinusoidalDev",
+                                                                                               div("Amplitude process noise",
+                                                                                                   helpPopup("Sine/cosine amplitude variation (standard deviation) for each observation.")),
+                                                                                               value = "0.0")
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eS0",
+                                                                                               div("A priori amplitude error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for sine & cosine amplitudes. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            ),
+                                                                            tags$div(id = "inline",
+                                                                                     radioButtons(inputId = "SineCosine",
+                                                                                                  div("Amplitude process noise on",
+                                                                                                      helpPopup("Choose between varying the sine amplitude only or varying both the sine & cosine amplitudes independently.")),
+                                                                                                  choices = list("Sine" = 1, "Sine & Cosine" = 2), selected = 2, inline = T)
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        
+                                                                        # % Offset fit ####
+                                                                        conditionalPanel(
+                                                                          condition = "input.model.indexOf('Offset') != -1",
+                                                                          div(style = "padding: 0px 0px; margin-top:0em",
+                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          ),
+                                                                          textInput(inputId = "offsetEpoch",
+                                                                                    div("Offset epochs",
+                                                                                        helpPopup("Comma-separated list")),
+                                                                                    value = ""),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "O0",
+                                                                                               div("A priori offset",
+                                                                                                   helpPopup("Initial state value for the offsets. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eO0",
+                                                                                               div("A priori offset error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   withBusyIndicatorUI(
+                                                                                     actionButton(inputId = "search", label = "Search discontinuities", icon = icon("magnifying-glass", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                   )
+                                                                            ),
+                                                                            column(6,
+                                                                                   sliderInput("segmentLength",
+                                                                                               div("Minimum segment",
+                                                                                                   helpPopup("Minimum segment size given as % of the series length")),
+                                                                                               min = 0.1, max = 50, value = 10, step = 1, round = 0, ticks = F, animate = F, width = NULL, sep = "", pre = NULL, post = NULL, timeFormat = NULL, timezone = NULL, dragRange = TRUE)
+                                                                            )
+                                                                          ),
+                                                                          htmlOutput("offsetFound"),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   checkboxInput(inputId = "verif_offsets",
+                                                                                                 div("Offset verification",
+                                                                                                     helpPopup("To test if the estimated offsets may be due to random noise fluctuations.<br/>Roughly, if the estimated log-likelihood difference is < 6, offsets are likely generated by random noise."),
+                                                                                                     value = F))
+                                                                            ),
+                                                                            column(width = 6, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.verif_offsets == true",
+                                                                                     withBusyIndicatorUI(
+                                                                                       actionButton(inputId = "runVerif", label = "Run verification", icon = icon("shuffle", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                     )
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.verif_offsets == true",
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     textInput(inputId = "verif_white",
+                                                                                               div("White noise",
+                                                                                                   helpPopup("Standard deviation of the expected white noise in the series.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "verif_pl",
+                                                                                               div("Power-law",
+                                                                                                   helpPopup("Stardard deviation of the expected power-law noise in the series.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "verif_k",
+                                                                                               div("Spectral index",
+                                                                                                   helpPopup("Spectral index of the expected power-law noise in the series.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "output.verifhelp",
+                                                                            fluidRow(
+                                                                              div(style = "padding: 0px 30px;",
+                                                                                  htmlOutput("verif", inline = T)
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        
+                                                                        # % Exponential fit ####
+                                                                        conditionalPanel(
+                                                                          condition = "input.model.indexOf('Exponential') != -1",
+                                                                          div(style = "padding: 0px 0px; margin-top:0em",
+                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          ),
+                                                                          textInput(inputId = "ExponenRef",
+                                                                                    div("Ref. time exponential",
+                                                                                        helpPopup("Comma-separated lisf of the starting time for the exponential decays.")),
+                                                                                    value = ""),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   textInput(inputId = "E0",
+                                                                                             div("A priori constant",
+                                                                                                 helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                             value = "")
+                                                                            ),
+                                                                            column(6,
+                                                                                   textInput(inputId = "TE0",
+                                                                                             div("A priori decay rate",
+                                                                                                 helpPopup("Initial value for the exponential decay rates. If empty, an approximate value will be used.")),
+                                                                                             value = "")
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "eE0",
+                                                                                               div("A priori constant error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eTE0",
+                                                                                               div("A priori decay rate error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the exponential decay rates. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        
+                                                                        # % Logarithmic fit ####
+                                                                        conditionalPanel(
+                                                                          condition = "input.model.indexOf('Logarithmic') != -1",
+                                                                          div(style = "padding: 0px 0px; margin-top:0em",
+                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          ),
+                                                                          textInput(inputId = "LogariRef",
+                                                                                    div("Ref. time logarithmic",
+                                                                                        helpPopup("Comma-separated lisf of the starting time for the logarithmic decays.")),
+                                                                                    value = ""),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   textInput(inputId = "L0",
+                                                                                             div("A priori constant",
+                                                                                                 helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                             value = "")
+                                                                            ),
+                                                                            column(6,
+                                                                                   textInput(inputId = "TL0",
+                                                                                             div("A priori decay rate",
+                                                                                                 helpPopup("Initial value for the logarithmic decay rates. If empty, an approximate value will be used.")),
+                                                                                             value = "")
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "eL0",
+                                                                                               div("A priori constant error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eTL0",
+                                                                                               div("A priori decay rate error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the logarithmic decay rates. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        
+                                                                        # % Polynomial fit ####
+                                                                        conditionalPanel(
+                                                                          condition = "input.model.indexOf('Polynomial') != -1",
+                                                                          div(style = "padding: 0px 0px; margin-top:0em",
+                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   textInput(inputId = "PolyRef",
+                                                                                             div("Ref. epoch polynomial",
+                                                                                                 helpPopup("Reference epoch for the polynomial. If empty, the rate reference epoch or the mean data epoch will be used.")),
+                                                                                             value = "")
+                                                                            ),
+                                                                            column(6,
+                                                                                   textInput(inputId = "PolyCoef",
+                                                                                             div("Polynomial degree",
+                                                                                                 helpPopup("The degree must be > 1 & < 20. Degrees 0 and 1 are estimated within the linear component.")),
+                                                                                             value = "")
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.fitType == 2",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "P0",
+                                                                                               div("A priori polynomial",
+                                                                                                   helpPopup("Initial state value for the polynomial coefficients. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "eP0",
+                                                                                               div("A priori polynomial error",
+                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the polynomial coefficients. If empty, an approximate value will be used.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      ),
+                                                                      style = "primary"),
+                                                      
+                                                      # * Additional fit ####
+                                                      bsCollapsePanel(value = 5,
+                                                                      tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      
+                                                                      # % Histogram ####
+                                                                      fluidRow(
+                                                                        column(6,
+                                                                               checkboxInput(inputId = "histogram", label = "Histogram", value = F)
+                                                                        ),
+                                                                        column(6,
+                                                                               checkboxInput(inputId = "midas",
+                                                                                             div("MIDAS",
+                                                                                                 helpPopup("Median Interannual Difference Adjusted for Skewness")),
+                                                                                             value = F)
+                                                                        )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.histogram == true",
+                                                                        radioButtons(inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
+                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                        )
+                                                                      ),
+                                                                      
+                                                                      # % Waveform ####
+                                                                      fluidRow(
+                                                                        column(6,
+                                                                               checkboxInput(inputId = "waveform",
+                                                                                             div("Periodic waveform",
+                                                                                                 helpPopup("To fit a periodic waveform not having a sinusoidal shape")),
+                                                                                             value = F)
+                                                                        ),
+                                                                        column(6,
+                                                                               conditionalPanel(
+                                                                                 condition = "input.waveform == true",
+                                                                                 textInput(inputId = "waveformPeriod",
+                                                                                           div("Period",
+                                                                                               helpPopup("The waveform period is given in the same units as the time unit of the series. It must be bigger than twice the average sampling period and smaller than half the total period of the series.")),
+                                                                                           value = "")
+                                                                               )
+                                                                        )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.waveform == true",
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 div(style = "margin-top:-4em",
+                                                                                     checkboxInput(inputId = "correct_waveform",
+                                                                                                   div("Remove from series",
+                                                                                                       helpPopup("To remove the estimated periodic waveform from the original series before the model fit")),
+                                                                                                   value = F)
+                                                                                 )
+                                                                          )
+                                                                        ),
+                                                                        div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                        )
+                                                                      ),
+                                                                      
+                                                                      # % Periodogram ####
+                                                                      fluidRow(
+                                                                        column(5,
+                                                                               checkboxInput(inputId = "spectrum",
+                                                                                             div("Periodogram",
+                                                                                                 helpPopup("Lomb-Scargle amplitude/power spectrum")),
+                                                                                             value = F)
+                                                                        ),
+                                                                        column(6, offset = 1,
+                                                                               div(style = "margin-top:0.6em;",
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.spectrum == true",
+                                                                                     radioButtons(inputId = "spectrumType", label = NULL, choices = list("Amplitude" = 0, "Power" = 1), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                   )
+                                                                               )
+                                                                        )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.spectrum == true",
+                                                                        fluidRow(
+                                                                          column(2,
+                                                                                 checkboxInput(inputId = "spectrumOriginal", label = "Original", value = F)
+                                                                          ),
+                                                                          column(2,
+                                                                                 checkboxInput(inputId = "spectrumModel", label = "Model", value = F)
+                                                                          ),
+                                                                          column(3,
+                                                                                 checkboxInput(inputId = "periodogram_residuals", label = "Model res.", value = F)
+                                                                          ),
+                                                                          column(2,
+                                                                                 checkboxInput(inputId = "spectrumFilter", label = "Filter", value = F)
+                                                                          ),
+                                                                          column(3,
+                                                                                 checkboxInput(inputId = "spectrumFilterRes", label = "Filter res.", value = F)
+                                                                          )
+                                                                        )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.spectrum == true",
+                                                                        fluidRow(
+                                                                          column(4,
+                                                                                 textInput(inputId = "ofac", label = "Oversampling", value = NULL)
+                                                                          ),
+                                                                          column(4,
+                                                                                 textInput(inputId = "long_period", label = "Longest period", value = NULL)
+                                                                          ),
+                                                                          column(4,
+                                                                                 textInput(inputId = "short_period", label = "Shortest period", value = NULL)
+                                                                          )
+                                                                        ),
+                                                                        div(style = "padding: 0px 0px; margin-top:-0.5em",
+                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                        )
+                                                                      ),
+                                                                      
+                                                                      # % Wavelet ####
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   checkboxInput(inputId = "wavelet",
+                                                                                                 div("Wavelets",
+                                                                                                     helpPopup("To plot the heatmap from the wavelet transform")),
+                                                                                                 value = F)
+                                                                            ),
+                                                                            column(4, offset = 4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.wavelet == true",
+                                                                                     textInput(inputId = "loc_wavelet",
+                                                                                               div("Sampling",
+                                                                                                   helpPopup("The temporal resolution or time separation between wavelets. The maximum valid is half the total observed period. The minimum valid is the sampling period of the series.")),
+                                                                                               value = "")
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.wavelet == true",
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     textInput(inputId = "min_wavelet",
+                                                                                               div("Min.",
+                                                                                                   helpPopup("The shortest period to compute the wavelet. The minimum valid is twice the median sampling period.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "max_wavelet",
+                                                                                               div("Max.",
+                                                                                                   helpPopup("The longest period to compute the wavelet. The maximum valid is half the total observed period.")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "res_wavelet",
+                                                                                               div("Step",
+                                                                                                   helpPopup("The resolution or separation between the periods to compute the wavelet.")),
+                                                                                               value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.wavelet == true",
+                                                                        radioButtons(inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
+                                                                        div(style = "padding: 0px 0px; margin-top:-0.5em",
+                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                        )
+                                                                      ),
+                                                                      
+                                                                      # % Vondrak ####
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   checkboxInput(inputId = "filter",
+                                                                                                 div("Band-pass smoother",
+                                                                                                     helpPopup("Vondrak smoother for the original or residual series.")),
+                                                                                                 value = F)
+                                                                            ),
+                                                                            div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                column(6,
+                                                                                       conditionalPanel(
+                                                                                         condition = "input.filter == true",
+                                                                                         div(style = "padding: 0px 0px; margin-top:-0.4em",
+                                                                                             radioButtons(inputId = "series2filter", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T)
+                                                                                         )
+                                                                                       )
+                                                                                )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.filter == true",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "low",
+                                                                                               div("Low-pass period cutoff",
+                                                                                                   helpPopup("Maximum recommended = T/4 (T = series length)")),
+                                                                                               value = "")
+                                                                              ),
+                                                                              column(6,
+                                                                                     textInput(inputId = "high",
+                                                                                               div("High-pass period cutoff",
+                                                                                                   helpPopup("Maximum recommended = T/4 (T = series length)")),
+                                                                                               value = "")
+                                                                              )
+                                                                            ),
+                                                                            div(style = "padding: 0px 0px; margin-top:-0.5em",
+                                                                                tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      
+                                                                      # % Noise ####
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   checkboxInput(inputId = "mle",
+                                                                                                 div("Noise analysis",
+                                                                                                     helpPopup("To estimate the parameters of a noise model for the covariance matrix of the residual series")),
+                                                                                                 value = F)
+                                                                            ),
+                                                                            column(width = 6, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.mle == true",
+                                                                                     withBusyIndicatorUI(
+                                                                                       actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                     )
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            conditionalPanel(
+                                                                              condition = "input.mle == true",
+                                                                              column(2, style = "padding: 0px 0px 0px 10px;",
+                                                                                     checkboxInput(inputId = "white", label = "White", value = F, width = '25%')
+                                                                              ),
+                                                                              column(2, style = "padding: 0px 0px 0px 0px;",
+                                                                                     checkboxInput(inputId = "flicker", label = "Flicker", value = F, width = '25%')
+                                                                              ),
+                                                                              column(4, style = "padding: 0px 0px 0px 0px;",
+                                                                                     checkboxInput(inputId = "randomw", label = "Random walk", value = F, width = '200%')
+                                                                              ),
+                                                                              column(4, style = "padding: 0px 10px 0px 10px;",
+                                                                                     checkboxInput(inputId = "powerl", label = "Power-law", value = F, width = '150%')
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.white",
+                                                                                     textInput(inputId = "max_white", label = "max wn", value = "")
+                                                                                   )
+                                                                            ),
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.flicker",
+                                                                                     textInput(inputId = "max_fl", label = "max fn", value = "")
+                                                                                   ),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.powerl",
+                                                                                     textInput(inputId = "max_pl", label = "max pl", value = "")
+                                                                                   )
+                                                                            ),
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.randomw",
+                                                                                     textInput(inputId = "max_rw", label = "max rw", value = "")
+                                                                                   ),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.powerl",
+                                                                                     textInput(inputId = "max_k", label = "max k", value = "")
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.white",
+                                                                                     textInput(inputId = "min_white", label = "min wn", value = "")
+                                                                                   )
+                                                                            ),
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.flicker",
+                                                                                     textInput(inputId = "min_fl", label = "min fn", value = "")
+                                                                                   ),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.powerl",
+                                                                                     textInput(inputId = "min_pl", label = "min pl", value = "")
+                                                                                   )
+                                                                            ),
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.randomw",
+                                                                                     textInput(inputId = "min_rw", label = "min rw", value = "")
+                                                                                   ),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.powerl",
+                                                                                     textInput(inputId = "min_k", label = "min k", value = "")
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.white == true",
+                                                                                     htmlOutput("est.white")
+                                                                                   )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.powerl == true",
+                                                                              column(4,
+                                                                                     htmlOutput("est.powerl")
+                                                                              ),
+                                                                              column(4,
+                                                                                     htmlOutput("est.index")
+                                                                              )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.powerl != true",
+                                                                              column(4,
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.flicker == true",
+                                                                                       htmlOutput("est.flicker")
+                                                                                     )
+                                                                              ),
+                                                                              column(4,
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.randomw == true",
+                                                                                       htmlOutput("est.randomw")
+                                                                                     )
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.mle == true",
+                                                                            htmlOutput("est.mle"),
+                                                                            htmlOutput("est.unc")
+                                                                          )
+                                                                      ),
+                                                                      style = "primary")
                                            ),
-                                           conditionalPanel(
-                                             condition = "output.run",
-                                             withSpinner(
-                                               plotOutput("res1", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           verbatimTextOutput("plot1_info", placeholder = F),
-                                           conditionalPanel(
-                                             condition = "output.rate",
-                                             withSpinner(
-                                               plotOutput("rate1", click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
-                                             withSpinner(
-                                               plotOutput("vondrak1", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.filter == true && input.low !== input.high && output.residuals == true && input.series2filter == 2",
-                                             withSpinner(
-                                               plotOutput("Vondrak1", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.waveform == true && input.waveformPeriod.length > 0",
-                                             withSpinner(
-                                               plotOutput("waveform1", click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printLog == true",
-                                             verbatimTextOutput("changes_ant1", placeholder = F),
-                                             verbatimTextOutput("changes_rec1", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printSinfo == true",
-                                             verbatimTextOutput("changes_ant1s", placeholder = F),
-                                             verbatimTextOutput("changes_rec1s", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printSoln == true",
-                                             verbatimTextOutput("changes_ant1so", placeholder = F),
-                                             verbatimTextOutput("changes_rec1so", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printCustom == true",
-                                             verbatimTextOutput("changes_ant1c", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.model.length > 0 || input.midas == true || input.optionSecondary == 1",
-                                             verbatimTextOutput("summary1", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.histogram == true && input.histogramType > 0",
-                                             plotOutput("hist1"),
-                                             verbatimTextOutput("stats1")
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.midas == true",
-                                             plotOutput("midas_hist1")
-                                           ),
-                                           div(id = "lomb1",
-                                               conditionalPanel(
-                                                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
-                                                 withSpinner(
-                                                   plotOutput("res1_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                                   type = getOption("spinner.type", default = 1),
-                                                   color = getOption("spinner.color", default = "#0080ff"),
-                                                   size = getOption("spinner.size", default = 2),
-                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                                 ),
-                                                 downloadLink('downloadSpectrum1', div(id = "downloadlink1", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
-                                                 verbatimTextOutput("lomb1_info", placeholder = F)
-                                               )
-                                           ),
-                                           div(id = "wl1",
-                                               conditionalPanel(
-                                                 condition = "input.wavelet == true && input.waveletType.length > 0",
-                                                 withSpinner(
-                                                   plotOutput("wavelet1", click = "wavelet_1click"),
-                                                   type = getOption("spinner.type", default = 1),
-                                                   color = getOption("spinner.color", default = "#0080ff"),
-                                                   size = getOption("spinner.size", default = 2),
-                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                                 ),
-                                                 verbatimTextOutput("wavelet1_info", placeholder = F)
-                                               )
+                                           
+                                           # * Local download ####
+                                           bsCollapse(id = "localDir", open = "", multiple = F,
+                                                      bsCollapsePanel(value = 6,
+                                                                      tags$h4(style = "color:white", icon("box-archive", class = NULL, lib = "font-awesome"), "Save results"),
+                                                                      fluidRow(
+                                                                        column(2,
+                                                                               downloadButton(outputId = "downloadAs", label = "Save as")
+                                                                        ),
+                                                                        column(10,
+                                                                               verbatimTextOutput("localDirectory", placeholder = T)
+                                                                        )
+                                                                      ),
+                                                                      div(style = "padding: 0px 0px; margin-top:1em",
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   textInput(inputId = "directory",
+                                                                                             div("Select directory",
+                                                                                                 helpPopup("Copy & paste or type in the complete path to the desired download directory")),
+                                                                                             value = NULL)
+                                                                            ),
+                                                                            column(4,
+                                                                                   div(style = "padding: 0px 0px; margin-top:2em",
+                                                                                       actionButton(inputId = "autoDownload", label = "Automatic save", icon = icon("floppy-disk", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      actionButton(inputId = "browser", label = "Debug pit stop"),
+                                                                      style = "primary")
                                            )
-                                  ),
-
-                                  # * component 2 ####
-                                  tabPanel(div(style = "font-size: 20px;","2nd component"), value = 2,
-                                           tags$style(type = "text/css", "body {padding-top: 60px;}"),
-                                           withSpinner(
-                                             plotOutput("plot2", click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)),
-                                             type = getOption("spinner.type", default = 1),
-                                             color = getOption("spinner.color", default = "#0080ff"),
-                                             size = getOption("spinner.size", default = 2),
-                                             color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot2")) NULL else "400px"
-                                           ),
-                                           conditionalPanel(
-                                             condition = "output.run",
-                                             withSpinner(
-                                               plotOutput("res2", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                             )
-                                           ),
-                                           verbatimTextOutput("plot2_info", placeholder = F),
-                                           conditionalPanel(
-                                             condition = "output.rate",
-                                             withSpinner(
-                                               plotOutput("rate2", click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
-                                             withSpinner(
-                                               plotOutput("vondrak2", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.filter == true && input.low !== input.high && output.residuals == true && input.series2filter == 2",
-                                             withSpinner(
-                                               plotOutput("Vondrak2", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.waveform == true && input.waveformPeriod.length > 0",
-                                             withSpinner(
-                                               plotOutput("waveform2", click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printLog == true",
-                                             verbatimTextOutput("changes_ant2", placeholder = F),
-                                             verbatimTextOutput("changes_rec2", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printSinfo == true",
-                                             verbatimTextOutput("changes_ant2s", placeholder = F),
-                                             verbatimTextOutput("changes_rec2s", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printSoln == true",
-                                             verbatimTextOutput("changes_ant2so", placeholder = F),
-                                             verbatimTextOutput("changes_rec2so", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printCustom == true",
-                                             verbatimTextOutput("changes_ant2c", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.model.length > 0 || input.midas == true || input.optionSecondary == 1",
-                                             verbatimTextOutput("summary2", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.histogram == true && input.histogramType > 0",
-                                             plotOutput("hist2"),
-                                             verbatimTextOutput("stats2")
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.midas == true",
-                                             plotOutput("midas_hist2")
-                                           ),
-                                           div(id = "lomb2",
-                                               conditionalPanel(
-                                                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
-                                                 withSpinner(
-                                                   plotOutput("res2_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                                   type = getOption("spinner.type", default = 1),
-                                                   color = getOption("spinner.color", default = "#0080ff"),
-                                                   size = getOption("spinner.size", default = 2),
-                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                                 ),
-                                                 downloadLink('downloadSpectrum2', div(id = "downloadlink2", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
-                                                 verbatimTextOutput("lomb2_info", placeholder = F)
-                                               )
-                                           ),
-                                           div(id = "wl2",
-                                               conditionalPanel(
-                                                 condition = "input.wavelet == true && input.waveletType.length > 0",
-                                                 # div(style = "background-color: OliveDrab;",
-                                                 withSpinner(
-                                                   plotOutput("wavelet2", click = "wavelet_1click"),
-                                                   type = getOption("spinner.type", default = 1),
-                                                   color = getOption("spinner.color", default = "#0080ff"),
-                                                   size = getOption("spinner.size", default = 2),
-                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res2")) NULL else "400px"
-                                                 ),
-                                                 verbatimTextOutput("wavelet2_info", placeholder = F)
-                                                 # )
-                                               )
-                                           )
-                                  ),
-
-                                  # * component 3 ####
-                                  tabPanel(div(style = "font-size: 20px;","3rd component"), value = 3,
-                                           tags$style(type = "text/css", "body {padding-top: 60px;}"),
-                                           withSpinner(
-                                             plotOutput("plot3", click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)),
-                                             type = getOption("spinner.type", default = 1),
-                                             color = getOption("spinner.color", default = "#0080ff"),
-                                             size = getOption("spinner.size", default = 2),
-                                             color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot3")) NULL else "400px"
-                                           ),
-                                           conditionalPanel(
-                                             condition = "output.run",
-                                             withSpinner(
-                                               plotOutput("res3", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                             )
-                                           ),
-                                           verbatimTextOutput("plot3_info", placeholder = F),
-                                           conditionalPanel(
-                                             condition = "output.rate",
-                                             withSpinner(
-                                               plotOutput("rate3", click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
-                                             withSpinner(
-                                               plotOutput("vondrak3", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.filter == true && input.low !== input.high && output.residuals == true && input.series2filter == 2",
-                                             withSpinner(
-                                               plotOutput("Vondrak3", click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.waveform == true && input.waveformPeriod.length > 0",
-                                             withSpinner(
-                                               plotOutput("waveform3", click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                               type = getOption("spinner.type", default = 1),
-                                               color = getOption("spinner.color", default = "#0080ff"),
-                                               size = getOption("spinner.size", default = 2),
-                                               color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                             )
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printLog == true",
-                                             verbatimTextOutput("changes_ant3", placeholder = F),
-                                             verbatimTextOutput("changes_rec3", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printSinfo == true",
-                                             verbatimTextOutput("changes_ant3s", placeholder = F),
-                                             verbatimTextOutput("changes_rec3s", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printSoln == true",
-                                             verbatimTextOutput("changes_ant3so", placeholder = F),
-                                             verbatimTextOutput("changes_rec3so", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.printCustom == true",
-                                             verbatimTextOutput("changes_ant3c", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.model.length > 0 || input.midas == true || input.optionSecondary == 1",
-                                             verbatimTextOutput("summary3", placeholder = F)
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.histogram == true && input.histogramType > 0",
-                                             plotOutput("hist3"),
-                                             verbatimTextOutput("stats3")
-                                           ),
-                                           conditionalPanel(
-                                             condition = "input.midas == true",
-                                             plotOutput("midas_hist3")
-                                           ),
-                                           div(id = "lomb3",
-                                               conditionalPanel(
-                                                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
-                                                 withSpinner(
-                                                   plotOutput("res3_espectral", click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
-                                                   type = getOption("spinner.type", default = 1),
-                                                   color = getOption("spinner.color", default = "#0080ff"),
-                                                   size = getOption("spinner.size", default = 2),
-                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                                 ),
-                                                 downloadLink('downloadSpectrum3', div(id = "downloadlink3", style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
-                                                 verbatimTextOutput("lomb3_info", placeholder = F)
-                                               )
-                                           ),
-                                           div(id = "wl3",
-                                               conditionalPanel(
-                                                 condition = "input.wavelet == true && input.waveletType.length > 0",
-                                                 withSpinner(
-                                                   plotOutput("wavelet3", click = "wavelet_1click"),
-                                                   type = getOption("spinner.type", default = 1),
-                                                   color = getOption("spinner.color", default = "#0080ff"),
-                                                   size = getOption("spinner.size", default = 2),
-                                                   color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res3")) NULL else "400px"
-                                                 ),
-                                                 verbatimTextOutput("wavelet3_info", placeholder = F)
-                                               )
-                                           )
-                                  ),
-                                  tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
-                                  tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Save"), class = "fa-solid fa-floppy-disk", style = "font-size:30px; margin-top:-0.9em"), value = 5)
-                                )
-                              )
-                )
-                )
+                                         )
+                                    ),
+                                    
+                                    # Visualization panel ####
+                                    mainPanel(
+                                      # style = "position:fixed; right: 0px; height: 90vh; overflow-y: auto;",
+                                      id = "main-panel",
+                                      conditionalPanel(
+                                        condition = "input.header == true",
+                                        verbatimTextOutput("header", placeholder = F)
+                                      ),
+                                      fluidPage(
+                                        tableOutput('debug')
+                                      ),
+                                      navbarPage(
+                                        title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
+                                        tabPanel(div(style = "display: inline-block; font-size: 40px; color: black", "SARI"), value = 0, id = "SARI"),
+                                        tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
+                                                 withMathJax(includeMarkdown("www/about.md"))
+                                        ),
+                                        
+                                        # * component 1 ####
+                                        tabContents(1),
+                                        
+                                        # * component 2 ####
+                                        tabContents(2),
+                                        
+                                        # * component 3 ####
+                                        tabContents(3),
+                                        
+                                        tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
+                                        tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Save"), class = "fa-solid fa-floppy-disk", style = "font-size:30px; margin-top:-0.9em"), value = 5)
+                                      )
+                                    )
+                      )
+                  )
                 )
 )
 
