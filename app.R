@@ -2157,12 +2157,12 @@ server <- function(input,output,session) {
     # trans$y2  = points from secondary series (independent)
     # trans$sy2 = sigmas from secondary series (independent)
 
-    trans$x0 <- data$x
+    trans$x0 <- as.numeric(data$x)
     if ((input$tab == 1) || (input$format == 4)) {
-      trans$y0 <- data$y1
-      trans$sy0 <- data$sy1
-      trans$y2 <- data$z1[!is.na(data$z1)]
-      trans$sy2 <- data$sz1[!is.na(data$z1)]
+      trans$y0 <- as.numeric(data$y1)
+      trans$sy0 <- as.numeric(data$sy1)
+      trans$y2 <- as.numeric(data$z1[!is.na(data$z1)])
+      trans$sy2 <- as.numeric(data$sz1[!is.na(data$z1)])
       if (isTruthy(input$remove3D)) {
         series <- values$series_all
         kf <- values$kf_all
@@ -2171,10 +2171,10 @@ server <- function(input,output,session) {
         kf <- values$kf1
       }
     } else if (input$tab == 2) {
-      trans$y0 <- data$y2
-      trans$sy0 <- data$sy2
-      trans$y2 <- data$z2[!is.na(data$z2)]
-      trans$sy2 <- data$sz2[!is.na(data$z2)]
+      trans$y0 <- as.numeric(data$y2)
+      trans$sy0 <- as.numeric(data$sy2)
+      trans$y2 <- as.numeric(data$z2[!is.na(data$z2)])
+      trans$sy2 <- as.numeric(data$sz2[!is.na(data$z2)])
       if (isTruthy(input$remove3D)) {
         series <- values$series_all
         kf <- values$kf_all
@@ -2183,10 +2183,10 @@ server <- function(input,output,session) {
         kf <- values$kf2
       }
     } else if (input$tab == 3) {
-      trans$y0 <- data$y3
-      trans$sy0 <- data$sy3
-      trans$y2 <- data$z3[!is.na(data$z3)]
-      trans$sy2 <- data$sz3[!is.na(data$z3)]
+      trans$y0 <- as.numeric(data$y3)
+      trans$sy0 <- as.numeric(data$sy3)
+      trans$y2 <- as.numeric(data$z3[!is.na(data$z3)])
+      trans$sy2 <- as.numeric(data$sz3[!is.na(data$z3)])
       if (isTruthy(input$remove3D)) {
         series <- values$series_all
         kf <- values$kf_all
