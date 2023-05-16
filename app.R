@@ -6015,10 +6015,10 @@ server <- function(input,output,session) {
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series1 <- xor(values$series1, excluding_plotres$selected_)
+                values$series1[excluding_plotres$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series2 <- xor(values$series2, excluding_plotres$selected_)
+                values$series1 <- xor(values$series1, excluding_plotres$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
                 values$kf1 <- xor(values$kf1, excluding_plotres_kf$selected_)
@@ -6038,7 +6038,7 @@ server <- function(input,output,session) {
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series2 <- xor(values$series2, excluding_plotres$selected_)
+                values$series2[excluding_plotres$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
                 values$series2 <- xor(values$series2, excluding_plotres$selected_)
@@ -6061,7 +6061,7 @@ server <- function(input,output,session) {
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series3 <- xor(values$series3, excluding_plotres$selected_)
+                values$series3[excluding_plotres$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
                 values$series3 <- xor(values$series3, excluding_plotres$selected_)
