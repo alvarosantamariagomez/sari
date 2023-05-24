@@ -6866,7 +6866,7 @@ server <- function(input,output,session) {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
         tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
       } else {
-        tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
+        tableAll <- try(read.table(text = trimws(readLines(file)), comment.char = "#", sep = sep, skip = skip), silent = T)
       }
       # transforming series from IGS lat lon into NEU format
       if (server == "igs") {
@@ -6988,7 +6988,7 @@ server <- function(input,output,session) {
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
         skip <- 0
-        tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
+        tableAll <- try(read.table(text = trimws(readLines(file)), comment.char = "#", sep = sep, skip = skip), silent = T)
         if (isTruthy(tableAll)) {
           columns <- dim(tableAll)[2]
           if (epoch <= columns && variable <= columns) {
