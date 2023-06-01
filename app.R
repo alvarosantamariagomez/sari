@@ -38,12 +38,12 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-devmode(TRUE)
+# devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI mayo 2023"
+version <- "SARI junio 2023"
 
 # Some GUI functions
 
@@ -1692,9 +1692,9 @@ server <- function(input,output,session) {
   cat(file = stderr(), "\n", "\n", "START", "\n")
 
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
-  observeEvent(input$browser,{
-    browser()
-  })
+  # observeEvent(input$browser,{
+  #   browser()
+  # })
 
   # Initialize reactive variables of the global database
 

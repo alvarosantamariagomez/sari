@@ -1,5 +1,21 @@
 # **SARI changelog**
 
+# junio 2023 [2023.06]
+
+### Fixed
+- Bug with empty spaces before a comment at the begining of the line
+- Bug when removing residuals manually and the removed3D option is not active
+- Bug with extremely large integers in the input series
+- Bug when loading a NEU file with more than 4 and less than 7 columns (not standard NEU, but OK)
+
+### Changed
+- Faster verification of the significance of offsets
+- Loading a local series on a SARI session without using options -w and -p in sari.sh
+
+### Added
+- New ui function for the different coordinate tabs
+- Bad epochs in the series are indicated on the screen when loading a file
+
 # mayo 2023 [2023.05]
 
 ### Fixed
