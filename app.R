@@ -9215,7 +9215,7 @@ server <- function(input,output,session) {
         name <- paste0(toupper(station),".enu")
       } else if (tolower(product) == "uga_pos") {
         format <- 2
-        name <- paste0(toupper(substr(station, 1, 4)),".pos")
+        name <- paste0("UGA_",toupper(substr(station, 1, 4)),".pos")
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
