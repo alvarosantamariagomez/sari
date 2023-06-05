@@ -38,7 +38,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -1692,9 +1692,9 @@ server <- function(input,output,session) {
   cat(file = stderr(), "\n", "\n", "START", "\n")
 
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
-  # observeEvent(input$browser,{
-  #   browser()
-  # })
+  observeEvent(input$browser,{
+    browser()
+  })
 
   # Initialize reactive variables of the global database
 
@@ -5690,10 +5690,18 @@ server <- function(input,output,session) {
           values$series3 <- rep(T, length(data$x[!is.na(data$y3)]))
         }
       } else {
-        values$series1 <- values$previous1
-        values$series2 <- values$previous2
-        values$series3 <- values$previous3
-        values$series_all <- values$previous_all
+        if (isTruthy(values$previous1)) {
+          values$series1 <- values$previous1  
+        }
+        if (isTruthy(values$previous2)) {
+          values$series2 <- values$previous2  
+        }
+        if (isTruthy(values$previous3)) {
+          values$series3 <- values$previous3  
+        }
+        if (isTruthy(values$previous_all)) {
+          values$series_all <- values$previous_all 
+        }
       }
     }
   }, priority = 6)
