@@ -7307,7 +7307,7 @@ server <- function(input,output,session) {
             if (grepl("d",p)) {
               f <- gsub("d", "", p)
               if (h > 1) {
-                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"d",sep = ""))
               }
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
                 trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
@@ -7324,7 +7324,7 @@ server <- function(input,output,session) {
             } else if (grepl("w",p)) {
               f <- gsub("w", "", p)
               if (h > 1) {
-                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
+                periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"w",sep = ""))
               }
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
                 trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
