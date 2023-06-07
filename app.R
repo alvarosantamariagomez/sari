@@ -850,7 +850,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  tags$a(href = "euler.txt", "Show file example", target = "_blank")
                                                                           )
                                                                         ),
-                                                                        fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                        fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty"),
+                                                                        div(style = "margin-top:-2em",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     textInput(inputId = "plateModel", 
+                                                                                               div("ITRF plate",
+                                                                                                   helpPopup("Tectonic plate acronym (4 characters) in the ITRF2014 plate model")),
+                                                                                               value = NULL)
+                                                                              ),
+                                                                              column(6, align = "right",
+                                                                                     tags$a(href = "Table-S1.txt", "ITRF plate model", target = "_blank")
+                                                                              )
+                                                                            )
+                                                                        )
                                                                       ),
                                                                       style = "primary"),
                                                       
@@ -2161,6 +2174,10 @@ server <- function(input,output,session) {
 
   reactive({
     inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(input$scaleFactor, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(2000, priority = 1001)
+  
+  reactive({
+    inputs$plateModel <- suppressWarnings(trimws(input$plateModel, which = "both", whitespace = "[ \t\r\n]"))
   }) %>% debounce(2000, priority = 1001)
 
   # Update data ####
@@ -4905,6 +4922,7 @@ server <- function(input,output,session) {
         }
         if (!isTruthy(input$euler)) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          updateTextInput(inputId = "plateModel", value = "")
         }
         enable("plot")
         enable("overflow")
@@ -5436,6 +5454,34 @@ server <- function(input,output,session) {
             updateTextInput(session, inputId = "pole_z", value = poleCartesian[3])
           }
         }
+      }
+    }
+  })
+  observeEvent(c(inputs$plateModel), {
+    req(input$euler)
+    removeNotification("bad_plate")
+    removeNotification("wrong_plate")
+    if (isTruthy(inputs$plateModel)) {
+      listPlates <- c("ANTA", "ARAB", "AUST", "EURA", "INDI", "NAZC", "NOAM", "NUBI", "PCFC", "SOAM", "SOMA")
+      if (inputs$plateModel %in% listPlates) {
+        pattern <- paste0("^   ",inputs$plateModel," ")
+        record <- grep(pattern, readLines(con = "www/Table-S1.txt", n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+        if (length(record) == 1) {
+          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))
+          updateTextInput(session, inputId = "pole_x", value = elements[3])
+          updateTextInput(session, inputId = "pole_y", value = elements[4])
+          updateTextInput(session, inputId = "pole_z", value = elements[5])
+        } else {
+          showNotification(paste("Plate",inputs$plateModel,"not found in the ITRF plate model file."), action = NULL, duration = 10, closeButton = T, id = "bad_plate", type = "warning", session = getDefaultReactiveDomain())
+          updateTextInput(session, inputId = "pole_x", value = "")
+          updateTextInput(session, inputId = "pole_y", value = "")
+          updateTextInput(session, inputId = "pole_z", value = "")
+        }
+      } else {
+        showNotification(paste("Plate",inputs$plateModel,"ot found in the ITRF plate model file."), action = NULL, duration = 10, closeButton = T, id = "wrong_plate", type = "warning", session = getDefaultReactiveDomain())
+        updateTextInput(session, inputId = "pole_x", value = "")
+        updateTextInput(session, inputId = "pole_y", value = "")
+        updateTextInput(session, inputId = "pole_z", value = "")
       }
     }
   })
