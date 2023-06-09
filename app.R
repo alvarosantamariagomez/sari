@@ -6934,6 +6934,9 @@ server <- function(input,output,session) {
       }
       # transforming series from IGS lat lon into NEU format
       if (server == "igs") {
+        updateRadioButtons(inputId = "coordenadas_estacion", selected = 2)
+        updateTextInput(inputId = "station_lat", value = tableAll[1,5])
+        updateTextInput(inputId = "station_lon", value = tableAll[1,6])
         a <- 6378137
         b <- 6356752.314140347
         e2 <- (a^2 - b^2) / a^2
