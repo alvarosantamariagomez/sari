@@ -6925,8 +6925,16 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
+      # estracting coordinates from SPOTGINS series
+      if (server == "formater") {
+        coordinates <- unlist(strsplit(grep("_pos ", readLines(file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
+        updateRadioButtons(inputId = "coordenadas_estacion", selected = 1)
+        updateTextInput(inputId = "station_x", value = coordinates[1])
+        updateTextInput(inputId = "station_y", value = coordinates[2])
+        updateTextInput(inputId = "station_z", value = coordinates[3])
+      }
       # extracting series from SIRGAS NEU format
-      # if (server == "sirgas") {
+      # } else if (server == "sirgas") {
       #   sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
       #   tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
       # } else {
