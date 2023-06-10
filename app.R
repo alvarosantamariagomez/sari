@@ -154,7 +154,7 @@ tabContents <- function(tabNum) {
   tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
            tags$style(type = "text/css", "body {padding-top: 60px;}"),
            withSpinner(
-             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = 'black', opacity = '0.5', clip = T)),
+             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = '#333333', opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
              color = getOption("spinner.color", default = "#0080ff"),
              size = getOption("spinner.size", default = 2),
@@ -164,7 +164,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "output.run",
              withSpinner(
-               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -176,7 +176,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "output.rate",
              withSpinner(
-               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -187,7 +187,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
              withSpinner(
-               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -198,7 +198,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "input.filter == true && input.low !== input.high && output.residuals == true && input.series2filter == 2",
              withSpinner(
-               plotOutput(paste0("Vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               plotOutput(paste0("Vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -209,7 +209,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "input.waveform == true && input.waveformPeriod.length > 0",
              withSpinner(
-               plotOutput(paste0("waveform",tabNum), click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+               plotOutput(paste0("waveform",tabNum), click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -253,7 +253,7 @@ tabContents <- function(tabNum) {
                conditionalPanel(
                  condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
-                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = 'black', opacity = '0.5', clip = T)),
+                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
                    type = getOption("spinner.type", default = 1),
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
@@ -287,7 +287,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                 useShinyjs(),
                 div(
                   id = "loading_page",
-                  h1(style = "color: black; font-weight: bold; text-align: center;", HTML("SARI session established.<br><br><br>Loading user interface ..."))
+                  h1(style = "color: #333333; font-weight: bold; text-align: center;", HTML("SARI session established.<br><br><br>Loading user interface ..."))
                 ),
                 
                 # HTTP meta and style header tags
@@ -312,11 +312,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .navbar-nav li:nth-child(7) { float: right }
                       .navbar-nav li:nth-child(2) { width: 17%; }
                       .navbar-nav li:nth-child(1) { width: 17%; }
-                      .tabbable > .nav > li[class=active] > a { background-color: black; color:white; }
-                      .shiny-notification { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #000000; padding: 10px 8px 10px 10px; margin: 2px; }
+                      .tabbable > .nav > li[class=active] > a { background-color: #333333; color:white; }
+                      .shiny-notification { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; }
                       .shiny-notification-warning { color: #ffffff; }
                       .shiny-notification-error { color: #fbc317; }
-                      .shiny-notification-message { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #000000; padding: 10px 8px 10px 10px; margin: 2px; position:fixed; top: 0; left: calc(28%); width: 71%}
+                      .shiny-notification-message { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; position:fixed; top: 0; left: calc(28%); width: 71%}
                       .shiny-notification-close:hover { color: #ffffff; }
                       .fa-caret-down { float: right; }
                       @import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono');
@@ -331,7 +331,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$head(tags$style(".modal-body {padding: 10px}
                      .modal-content  {-webkit-border-radius: 6px !important;-moz-border-radius: 6px !important;border-radius: 6px !important;}
                      .modal-dialog { width: 90%; max-width: 600px; vertical-align: center;}
-                     .modal { color: black; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}")),
+                     .modal { color: #333333; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}")),
                   
                   # Getting user screen size (from https://stackoverflow.com/questions/36995142/get-the-size-of-the-window-in-shiny)
                   tags$script('
@@ -392,12 +392,25 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               div(style = "font-weight: bold; margin-top:-1.75em",
-                                                                                   textInput(inputId = "ids", label = "Series ID", value = "")
-                                                                               )
+                                                                               textInput(inputId = "station1",
+                                                                                         div("Station", helpPopup("ID of the GNSS station to be searched for in the selected server")),
+                                                                                         value = "")
+                                                                               ),
+                                                                        column(4,
+                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                        ),
+                                                                        column(4,
+                                                                               selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
+                                                                        ),
+                                                                      ),
+                                                                      fluidRow(
+                                                                        column(4,
+                                                                               textInput(inputId = "ids", label = "Series ID", value = "")
                                                                         ),
                                                                         column(8,
-                                                                               fileInput(inputId = "loadSARI", label = NULL, multiple = F, accept = NULL, width = NULL, buttonLabel = "Load SARI model", placeholder = "Empty")
+                                                                               div(style = "margin-top:1.75em",
+                                                                                   fileInput(inputId = "loadSARI", label = NULL, multiple = F, accept = NULL, width = NULL, buttonLabel = "Load SARI model", placeholder = "Empty")
+                                                                               )
                                                                         )
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:-20em",
@@ -407,23 +420,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             ),
                                                                             column(8,
                                                                                    radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
-                                                                            )
-                                                                          )
-                                                                      ),
-                                                                      div(style = "padding: 0px 0px; margin-top:-0em",
-                                                                          fluidRow(
-                                                                            column(6,
-                                                                                   checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
-                                                                                   checkboxInput(inputId = "header", label = "Show series header", value = F),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.header == true",
-                                                                                     sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
-                                                                            ),
-                                                                            column(6,
-                                                                                   radioButtons(inputId = "tunits",
-                                                                                                div("Time units",
-                                                                                                    helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
-                                                                                                choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
                                                                             )
                                                                           )
                                                                       ),
@@ -453,6 +449,25 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         )
                                                                       ),
+                                                                      div(style = "padding: 0px 0px; margin-top:-0em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
+                                                                                   checkboxInput(inputId = "header", label = "Show series header", value = F),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.header == true",
+                                                                                     sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
+                                                                            ),
+                                                                            column(4, offset = 2,
+                                                                                   div(style = "margin-top:1em",
+                                                                                       radioButtons(inputId = "tunits",
+                                                                                                    div("Time units",
+                                                                                                        helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
+                                                                                                    choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                      ),
                                                                       fluidRow(
                                                                         column(6,
                                                                                checkboxInput(inputId = "average",
@@ -470,7 +485,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         )
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                          tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                          tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top: -1em",
                                                                           conditionalPanel(
@@ -683,6 +698,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             )
                                                                           ),
+                                                                          fluidRow(
+                                                                            column(4,
+                                                                                   textInput(inputId = "station2",
+                                                                                             div("Station", helpPopup("ID of the GNSS station to be searched for in the selected server")),
+                                                                                             value = "")
+                                                                            ),
+                                                                            column(4,
+                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                            ),
+                                                                            column(4,
+                                                                                   selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
+                                                                            ),
+                                                                          ),
                                                                           conditionalPanel(
                                                                             condition = "output.series2",
                                                                             fluidRow(
@@ -748,6 +776,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               )
                                                                             )
                                                                           )
+                                                                      ),
+                                                                      
+                                                                      div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                          tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                       ),
                                                                       
                                                                       # % Euler ####
@@ -936,7 +968,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Linear') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
-                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
                                                                           fluidRow(
                                                                             column(6,
@@ -1001,7 +1033,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Sinusoidal') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
-                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
                                                                           textInput(inputId = "period",
                                                                                     div("Sinusoidal periods",
@@ -1053,7 +1085,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Offset') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
-                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
                                                                           textInput(inputId = "offsetEpoch",
                                                                                     div("Offset epochs",
@@ -1164,7 +1196,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Exponential') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
-                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
                                                                           textInput(inputId = "ExponenRef",
                                                                                     div("Ref. time exponential",
@@ -1207,7 +1239,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Logarithmic') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
-                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
                                                                           textInput(inputId = "LogariRef",
                                                                                     div("Ref. time logarithmic",
@@ -1250,7 +1282,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Polynomial') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
-                                                                              tags$hr(style = "border-color: black; border-top: 1px solid #000000;")
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
                                                                           fluidRow(
                                                                             column(6,
@@ -1307,7 +1339,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         condition = "input.histogram == true",
                                                                         radioButtons(inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
                                                                         div(style = "padding: 0px 0px; margin-top:0em",
-                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                         )
                                                                       ),
                                                                       
@@ -1342,7 +1374,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                         )
                                                                       ),
                                                                       
@@ -1397,7 +1429,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         div(style = "padding: 0px 0px; margin-top:-0.5em",
-                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                         )
                                                                       ),
                                                                       
@@ -1448,7 +1480,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         condition = "input.wavelet == true",
                                                                         radioButtons(inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
                                                                         div(style = "padding: 0px 0px; margin-top:-0.5em",
-                                                                            tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                         )
                                                                       ),
                                                                       
@@ -1489,7 +1521,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               )
                                                                             ),
                                                                             div(style = "padding: 0px 0px; margin-top:-0.5em",
-                                                                                tags$hr(style = "border-color: black; border-bottom: 1px solid #000000;")
+                                                                                tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                             )
                                                                           )
                                                                       ),
@@ -1672,7 +1704,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       ),
                                       navbarPage(
                                         title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
-                                        tabPanel(div(style = "display: inline-block; font-size: 40px; color: black", "SARI"), value = 0, id = "SARI"),
+                                        tabPanel(div(style = "display: inline-block; font-size: 40px; color: #333333", "SARI"), value = 0, id = "SARI"),
                                         tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
                                                  withMathJax(includeMarkdown("www/about.md"))
                                         ),
@@ -2193,6 +2225,30 @@ server <- function(input,output,session) {
   reactive({
     inputs$plate <- suppressWarnings(trimws(input$plate, which = "both", whitespace = "[ \t\r\n]"))
   }) %>% debounce(2000, priority = 1001)
+  
+  reactive({
+    inputs$server1 <- suppressWarnings(tolower(trimws(input$server1, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(4000, priority = 1001)
+  
+  reactive({
+    inputs$server2 <- suppressWarnings(tolower(trimws(input$server2, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(4000, priority = 1001)
+  
+  reactive({
+    inputs$station1 <- suppressWarnings(trimws(input$station1, which = "both", whitespace = "[ \t\r\n]"))
+  }) %>% debounce(4000, priority = 1001)
+  
+  reactive({
+    inputs$station2 <- suppressWarnings(trimws(input$station2, which = "both", whitespace = "[ \t\r\n]"))
+  }) %>% debounce(4000, priority = 1001)
+  
+  reactive({
+    inputs$product1 <- suppressWarnings(tolower(trimws(input$product1, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(4000, priority = 1001)
+  
+  reactive({
+    inputs$product2 <- suppressWarnings(tolower(trimws(input$product2, which = "both", whitespace = "[ \t\r\n]")))
+  }) %>% debounce(4000, priority = 1001)
 
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
@@ -4004,7 +4060,7 @@ server <- function(input,output,session) {
         contour(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), levels = c(levels, levels*2, levels*3), add = T, labcex = 1.1, drawlabels = F)
         title(main = title)
         coord <- unlist(as.list(which(amplitude_approx == max(amplitude_approx), arr.ind = T)))
-        points(trans$wavelet$x[coord[1]], trans$wavelet$y[coord[2]], pch = "*", cex = 3, col = "black")
+        points(trans$wavelet$x[coord[1]], trans$wavelet$y[coord[2]], pch = "*", cex = 3, col = "#333333")
         lines(min(trans$wavelet$x) + trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
         lines(max(trans$wavelet$x) - trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
       })
@@ -4886,8 +4942,25 @@ server <- function(input,output,session) {
       disable("units")
       disable("verif_offsets")
       disable("euler")
+      disable("server1")
+      disable("station1")
+      disable("product1")
+      disable("server2")
+      disable("station2")
+      disable("product2")
     } else {
       if (length(file$primary) > 0) {
+        disable("server1")
+        disable("station1")
+        disable("product1")
+        enable("station2")
+        if (isTruthy(inputs$station2)) {
+          enable("server2")
+          enable("product2")
+        } else {
+          disable("server2")
+          disable("product2")
+        }
         enable("ids")
         enable("symbol")
         enable("header")
@@ -5278,6 +5351,17 @@ server <- function(input,output,session) {
         disable("thresholdResN")
         disable("units")
         disable("verif_offsets")
+        enable("station1")
+        if (isTruthy(inputs$station1)) {
+          enable("server1")
+          enable("product1")
+        } else {
+          disable("server1")
+          disable("product1")
+        }
+        disable("station2")
+        disable("server2")
+        disable("product2")
       }
     }
   }, priority = 100)
@@ -5360,7 +5444,7 @@ server <- function(input,output,session) {
                       url$file2 <- NULL
                       req(info$stop)
                     }
-                    showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+                    showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                     down <- 0
                     file$secondary$file <- url$file2
                   } else {
@@ -5421,6 +5505,138 @@ server <- function(input,output,session) {
         url$station <- NULL
         url$file <- NULL
       }
+    }
+  })
+  
+  # Observe remote series ####
+  observeEvent(c(inputs$server1, inputs$server2), {
+    if (isTruthy(inputs$station1)) {
+      if (inputs$server1 == "renag") {
+        updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "")
+      } else if (inputs$server1 == "formater") {
+        updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+      } else if (inputs$server1 == "igs") {
+        updateSelectInput(session, inputId = "product1", choices = list("NEU"), selected = "")
+      } else if (inputs$server1 == "euref") {
+        updateSelectInput(session, inputId = "product1", choices = list("PBO"), selected = "")
+      } else if (inputs$server1 == "ngl") {
+        updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
+      } else if (inputs$server1 == "jpl") {
+        updateSelectInput(session, inputId = "product1", choices = list("ENU"), selected = "")
+      } else if (inputs$server1 == "eostls") {
+        updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      }
+    }
+    if (isTruthy(inputs$station2)) {
+      if (inputs$server2 == "renag") {
+        updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
+      } else if (inputs$server2 == "formater") {
+        updateSelectInput(session, inputId = "product2", choices = list("", "SPOTGINS_POS", "UGA_POS"), selected = "")
+      } else if (inputs$server2 == "igs") {
+        updateSelectInput(session, inputId = "product2", choices = list("NEU"), selected = "NEU")
+      } else if (inputs$server2 == "euref") {
+        updateSelectInput(session, inputId = "product2", choices = list("PBO"), selected = "PBO")
+      } else if (inputs$server2 == "ngl") {
+        updateSelectInput(session, inputId = "product2", choices = list("", "FINAL", "RAPID"), selected = "")
+      } else if (inputs$server2 == "jpl") {
+        updateSelectInput(session, inputId = "product2", choices = list("ENU"), selected = "ENU")
+      } else if (inputs$server2 == "eostls") {
+        updateSelectInput(session, inputId = "product2", choices = list("", "ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      }
+    }
+  })
+  observeEvent(c(inputs$product1), {
+    if (isTruthy(inputs$station1) && isTruthy(inputs$server1) && isTruthy(inputs$product1)) {
+      removeNotification("bad_remote")
+      removeNotification("bad_url")
+      removeNotification("parsing_url1")
+      url_info <- unlist(get_URL_info(inputs$server1,inputs$station1,inputs$product1))
+      if (isTruthy(url_info)) {
+        url$station <- url_info[1]
+        url$file <- url_info[2]
+        url$server <- inputs$server1
+        file$primary$name <- url_info[3]
+        info$format <- url_info[4]
+        showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(inputs$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+        if (isTruthy(local)) {
+          file$primary$file <- tempfile()
+        } else {
+          file$primary$file <- file$primary$name
+        }
+        down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+        if (file.exists(file$primary$file)) {
+          if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
+            down <- 1
+          }
+        }
+        if (isTruthy(down) && down == 0) {
+          if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
+          data <- digest()
+          if (!is.null(data)) {
+            obs(data)
+            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+            filename <- file$primary$name
+            session$sendCustomMessage("filename", filename)
+            updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
+          }
+        } else {
+          removeNotification("parsing_url1")
+          showNotification(paste0("File ",file$primary$name," not found in ",toupper(inputs$server1),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+          updateSelectInput(session, inputId = "product1", selected = "")
+          file$primary <- NULL
+        }
+      } else {
+        showNotification(paste0("Product ", inputs$product1, "for station ", inputs$station1," not found in ",toupper(inputs$server1)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
+        updateSelectInput(session, inputId = "product1", selected = "")
+      }
+    }
+  })
+  observeEvent(c(inputs$product2, inputs$station2), {
+    if (isTruthy(inputs$station2) && isTruthy(inputs$server2) && isTruthy(inputs$product2)) {
+      removeNotification("bad_remote")
+      removeNotification("bad_url")
+      url_info <- unlist(get_URL_info(inputs$server2,inputs$station2,inputs$product2))
+      if (isTruthy(url_info)) {
+        url$station2 <- url_info[1]
+        url$file2 <- url_info[2]
+        url$server2 <- inputs$server2
+        file$secondary$name <- url_info[3]
+        info$format2 <- url_info[4]
+        showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(inputs$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+        if (isTruthy(local)) {
+          file$secondary$file <- tempfile()
+        } else {
+          file$secondary$file <- file$secondary$name
+        }
+        down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+        if (file.exists(file$secondary$file)) {
+          if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
+            down <- 1
+          }
+        }
+        if (isTruthy(down) && down == 0) {
+          if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
+          data <- digest()
+          if (!is.null(data)) {
+            obs(data)
+            filename2 <- file$secondary$name
+            session$sendCustomMessage("filename2", filename2)
+            if ((inputs$server1 == "ngl" || inputs$server1 == "jpl" || inputs$product1 == "spotgins_pos") && (inputs$server2 != "ngl" && inputs$server2 != "jpl" && inputs$product2 != "spotgins_pos") ||
+                (inputs$server2 == "ngl" || inputs$server2 == "jpl" || inputs$product2 == "spotgins_pos") && (inputs$server1 != "ngl" && inputs$server1 != "jpl" && inputs$product1 != "spotgins_pos")) {
+              updateCheckboxInput(session, inputId = "ne", value = T)
+            }
+            updateRadioButtons(session, inputId = "format2", selected = info$format2)
+          }
+        } else {
+          removeNotification("parsing_url2")
+          showNotification(paste0("File ",file$secondary$name," not found in ",toupper(inputs$server2),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        }
+      } else {
+        showNotification(paste0("Product ", inputs$product2, "for station ", inputs$station2," not found in ",toupper(inputs$server2)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
+      }
+    } else {
+      url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$file <- NULL
+      updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 0)
     }
   })
 
@@ -6628,6 +6844,8 @@ server <- function(input,output,session) {
     removeNotification("bad_secondary")
     removeNotification("time_shift")
     removeNotification("different_formats")
+    removeNotification("parsing_url1")
+    removeNotification("parsing_url2")
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
     # Setting column separation
     if (input$separator == "1") {
@@ -6762,7 +6980,7 @@ server <- function(input,output,session) {
                 table2 <- na.omit(table2)
               } else {
                 info$step2 <- NULL
-                showNotification("The resampling period of the secondary series is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+                # showNotification("The resampling period of the secondary series is not valid. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
               }
             } else {
               info$step2 <- NULL
