@@ -34,7 +34,7 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 	-p product1+product2 	: uploads primary (+secondary) file from product (see available products below)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
 				  or more 14 (e.g., PIMI_10025M001) depending on the server used
-	-v 			: saves a log of the current SARI session in $saridir
+	-v 			: keeps the log of the current SARI session in $saridir
 	-h			: shows this help
 
 	Five different sessions can be started:
@@ -63,7 +63,6 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         | FORMATER | SPOTGINS_POS, UGA                    | 9 char  | https://en.poleterresolide.fr/                 |
 	| IGS      | NEU                                  | 4 char  | https://igs.org/products/                      |
         | EUREF    | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php       |
-	| SIRGAS   | NEU                                  | 4 char  | https://www.sirgas.org/en/sirgas-definition/   |
         | NGL      | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                        |
         | JPL      | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
         | EOSTLS   | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                   |
@@ -83,7 +82,7 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 	-p product1+product2 	: uploads primary (+secondary) file from product (see available products below)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA) 
 				  or 14 characters (e.g., PIMI_10025M001) depending on the server used
-	-v 			: saves a log of the current SARI session in $saridir
+	-v 			: keeps the log of the current SARI session in $saridir
 	-h			: shows the full help
 
 	Empty local session 			$(basename $0) -l
@@ -97,12 +96,15 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag formater igs euref sirgas ngl jpl eostls "
+servers=" local renag formater igs euref ngl jpl eostls "
 products=" enu neu pbo ngl uga spotgins_pos final rapid atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit
 cleaning () {
 	rm -f $saridir/app_$now.R
+	if [[ ! $logging ]]; then
+		rm -f $out
+	fi
 	if [[ ! -z $pid ]]; then
 		netstat -anp 2> /dev/null | grep :$port | grep LISTEN | grep -E "$pid/R\s+$" | sed 's$/R$$' | awk 'system("kill "$NF"")'
 	fi
@@ -169,12 +171,8 @@ done
 
 # Setting output log file
 now=$(date '+%Y%m%d_%H%M%S')
-if [[ -z $logging ]]; then
-	out="/dev/null"
-else
-	out="$saridir/SARI_$now.log"
-	echo "Logging the SARI session in $out"
-fi
+out="$saridir/SARI_$now.log"
+echo "Logging the SARI session in $out"
 
 # Setting the listening port for local sessions
 if [[ ! -z $local ]]; then
