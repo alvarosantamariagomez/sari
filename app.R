@@ -397,7 +397,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          value = "")
                                                                                ),
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -705,7 +705,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              value = "")
                                                                             ),
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -5525,6 +5525,8 @@ server <- function(input,output,session) {
         updateSelectInput(session, inputId = "product1", choices = list("ENU"), selected = "")
       } else if (inputs$server1 == "eostls") {
         updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      } else if (inputs$server1 == "sonel") {
+        updateSelectInput(session, inputId = "product1", choices = list("NEU"), selected = "")
       }
     }
     if (isTruthy(inputs$station2)) {
@@ -5542,6 +5544,8 @@ server <- function(input,output,session) {
         updateSelectInput(session, inputId = "product2", choices = list("ENU"), selected = "ENU")
       } else if (inputs$server2 == "eostls") {
         updateSelectInput(session, inputId = "product2", choices = list("", "ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      } else if (inputs$server2 == "sonel") {
+        updateSelectInput(session, inputId = "product2", choices = list("NEU"), selected = "")
       }
     }
   })
@@ -7213,6 +7217,15 @@ server <- function(input,output,session) {
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
         updateRadioButtons(session, inputId = "neuenu", selected = 2)
+      }
+      # estracting coordinates from SONEL series
+      if (server == "sonel") {
+        coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
+        updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
+        updateTextInput(session, inputId = "station_x", value = coordinates[1])
+        updateTextInput(session, inputId = "station_y", value = coordinates[2])
+        updateTextInput(session, inputId = "station_z", value = coordinates[3])
+        updateRadioButtons(session, inputId = "neuenu", selected = 1)
       }
       # extracting series from SIRGAS NEU format
       # } else if (server == "sirgas") {
@@ -9533,6 +9546,16 @@ server <- function(input,output,session) {
       if (tolower(product) == "neu") {
         name <- paste0(toupper(station),"_igs.plh")
         file <- paste0("ftp://igs-rf.ign.fr/pub/crd/",name)
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+    #SONEL
+    } else if (tolower(server) == "sonel") {
+      format <- 1
+      if (tolower(product) == "neu") {
+        name <- paste0(toupper(station))
+        file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
