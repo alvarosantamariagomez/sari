@@ -23,8 +23,10 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(magrittr, verbose = F, quietly = T) #v2.0.1
   library(markdown, verbose = F, quietly = T) #v1.1
   library(matrixStats, verbose = F, quietly = T) #v0.59.0
+  library(mnormt, verbose = F, quietly = T) #v2.0.2
   library(mvcwt, verbose = F, quietly = T) #v1.3.1
   library(numDeriv, verbose = F, quietly = T) #v2016.8-1.1
+  library(pracma, verbose = F, quietly = T) #v2.3.8
   library(psych, verbose = F, quietly = T) #v2.1.6
   library(RColorBrewer, verbose = F, quietly = T) #v1.1-2
   library(shinyBS, verbose = F, quietly = T) #v0.61
@@ -35,7 +37,8 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(spectral, verbose = F, quietly = T) #v2.0
   library(strucchange, verbose = F, quietly = T) #v1.5-2
   library(tseries, verbose = F, quietly = T) #v0.10-48
-  library(pracma, verbose = F, quietly = T) #v2.3.8
+  # library(parallel)
+  # library(optimParallel)
 })))
 
 devmode(TRUE)
@@ -1529,19 +1532,28 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       # % Noise ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
-                                                                            column(6,
+                                                                            column(4,
                                                                                    checkboxInput(inputId = "mle",
                                                                                                  div("Noise analysis",
                                                                                                      helpPopup("To estimate the parameters of a noise model for the covariance matrix of the residual series")),
                                                                                                  value = F)
                                                                             ),
-                                                                            column(width = 6, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.mle == true",
-                                                                                     withBusyIndicatorUI(
-                                                                                       actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                            conditionalPanel(
+                                                                              condition = "input.mle == true",
+                                                                              column(4,
+                                                                                     checkboxInput(inputId = "noise_unc",
+                                                                                                   div("Noise unc.",
+                                                                                                       helpPopup("To estimate the formal uncertainties of the parameters of the noise model")),
+                                                                                                   value = T)
+                                                                              ),
+                                                                              column(width = 4, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.mle == true",
+                                                                                       withBusyIndicatorUI(
+                                                                                         actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                       )
                                                                                      )
-                                                                                   )
+                                                                              )
                                                                             )
                                                                           ),
                                                                           fluidRow(
@@ -1559,62 +1571,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(4, style = "padding: 0px 10px 0px 10px;",
                                                                                      checkboxInput(inputId = "powerl", label = "Power-law", value = F, width = '150%')
                                                                               )
-                                                                            )
-                                                                          ),
-                                                                          fluidRow(
-                                                                            column(4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.white",
-                                                                                     textInput(inputId = "max_white", label = "max wn", value = "")
-                                                                                   )
-                                                                            ),
-                                                                            column(4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.flicker",
-                                                                                     textInput(inputId = "max_fl", label = "max fn", value = "")
-                                                                                   ),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.powerl",
-                                                                                     textInput(inputId = "max_pl", label = "max pl", value = "")
-                                                                                   )
-                                                                            ),
-                                                                            column(4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.randomw",
-                                                                                     textInput(inputId = "max_rw", label = "max rw", value = "")
-                                                                                   ),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.powerl",
-                                                                                     textInput(inputId = "max_k", label = "max k", value = "")
-                                                                                   )
-                                                                            )
-                                                                          ),
-                                                                          fluidRow(
-                                                                            column(4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.white",
-                                                                                     textInput(inputId = "min_white", label = "min wn", value = "")
-                                                                                   )
-                                                                            ),
-                                                                            column(4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.flicker",
-                                                                                     textInput(inputId = "min_fl", label = "min fn", value = "")
-                                                                                   ),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.powerl",
-                                                                                     textInput(inputId = "min_pl", label = "min pl", value = "")
-                                                                                   )
-                                                                            ),
-                                                                            column(4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.randomw",
-                                                                                     textInput(inputId = "min_rw", label = "min rw", value = "")
-                                                                                   ),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.powerl",
-                                                                                     textInput(inputId = "min_k", label = "min k", value = "")
-                                                                                   )
                                                                             )
                                                                           ),
                                                                           fluidRow(
@@ -1761,10 +1717,11 @@ server <- function(input,output,session) {
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
-                         decimalsy = NULL, menu = c(1,2), sampling = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
+                         decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, regular = NULL, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
-                         last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL)
+                         run = F, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
+                         last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
+                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL)
 
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1786,12 +1743,12 @@ server <- function(input,output,session) {
   trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL,
                           sye = NULL, y2 = NULL, sy2 = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL,
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
-                          midas_sig = NULL, midas_all = NULL, tol = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
+                          midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
-                          x_orig = NULL)
+                          x_orig = NULL, gaps = NULL)
 
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -2260,6 +2217,7 @@ server <- function(input,output,session) {
       req(info$stop)
     }
     removeNotification("kf_not_valid")
+    removeNotification("regular")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
     data <- obs()
 
@@ -2392,10 +2350,12 @@ server <- function(input,output,session) {
     }
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
-    info$regular <- (median(diff(trans$x))/info$sampling < 1.25)
+    info$sampling_regular <- median(diff(trans$x))
+    info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
+    times <- round(diff(trans$x)/info$sampling)
+    trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
     trans$ordinate <- median(trans$y)
-    trans$tol <- min(diff(isolate(trans$x),1)) / 1.5
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     updateRadioButtons(session, inputId = "waveletType", label = NULL,
                        choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5),
@@ -2711,7 +2671,7 @@ server <- function(input,output,session) {
 
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
-    req(trans$x, trans$y, trans$tol)
+    req(trans$x, trans$y, info$tol)
     removeNotification("no_interannual")
     if (isTruthy(input$midas)) {
       if (input$tunits == 1) {
@@ -2795,33 +2755,33 @@ server <- function(input,output,session) {
         (nchar(inputs$verif_rw) > 0 && !is.na(inputs$verif_rw) && inputs$verif_rw > 0)) {
       if (messages > 0) cat(file = stderr(), "Verifying offsets", "\n")
       n <- length(trans$res)
-      # n_all <- length(trans$gaps)
-      n_all <- n
+      n_all <- length(trans$gaps)
       C <- matrix(0,n,n)
+      scaling <- 10^signifdecimal(sd(trans$res))
       if (isTruthy(inputs$verif_fl) || isTruthy(inputs$verif_rw) || isTruthy(inputs$verif_pl)) {
-        estimatedTime <- as.integer(round(1.3547*exp(0.0007*n)/60 + 0.5))
+        estimatedTime <- as.integer(ceiling(1.3547*exp(0.0007*n)/60))
       } else {
-        estimatedTime <- as.integer(round(1.3988*exp(0.0006*n)/60 + 0.5))
+        estimatedTime <- as.integer(ceiling(1.3988*exp(0.0006*n)/60))
       }
       withBusyIndicatorServer("runVerif", {
         withProgress(message = 'Verifying offset values',
                      detail = paste("This should take about", estimatedTime, "min"), value = 0, {
                        start.time <- Sys.time()
-                       if (isTruthy(inputs$verif_white)) {
-                         C <- C + as.numeric(inputs$verif_white)^2*diag(n)
+                       if (isTruthy(inputs$verif_white) && inputs$verif_white > 0) {
+                         C <- C + as.numeric(inputs$verif_white)^2 * diag(n) * scaling^2
                        }
-                       if (isTruthy(inputs$verif_fl)) {
-                         Cfl <- cov_powerlaw(-1,n_all)
-                         C <- C + as.numeric(inputs$verif_fl)^2 * Cfl
+                       if (isTruthy(inputs$verif_fl) && inputs$verif_fl > 0) {
+                         Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
+                         C <- C + as.numeric(inputs$verif_fl)^2 * Cfl * scaling^2
                        }
-                       if (isTruthy(inputs$verif_rw)) {
-                         Crw <- cov_powerlaw(-2,n_all)
-                         C <- C + as.numeric(inputs$verif_rw)^2 * Crw
+                       if (isTruthy(inputs$verif_rw) && inputs$verif_rw > 0) {
+                         Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
+                         C <- C + as.numeric(inputs$verif_rw)^2 * Crw * scaling^2
                        }
-                       if (isTruthy(inputs$verif_pl) && isTruthy(inputs$verif_k) && inputs$verif_k < 0) {
+                       if (isTruthy(inputs$verif_pl) && inputs$verif_pl > 0 && isTruthy(inputs$verif_k) && inputs$verif_k < 0) {
                          k <- as.numeric(inputs$verif_k)
-                         Cpl <- cov_powerlaw(k,n_all)
-                         C <- C + as.numeric(inputs$verif_pl)^2 * Cpl
+                         Cpl <- cov_powerlaw(k,n_all,F,trans$gaps,info$sampling)[[1]]
+                         C <- C + as.numeric(inputs$verif_pl)^2 * Cpl * scaling^2
                        } else {
                          updateTextInput(session, inputId = "verif_pl", value = "")
                          updateTextInput(session, inputId = "verif_k", value = "")
@@ -2829,26 +2789,24 @@ server <- function(input,output,session) {
                        Sys.sleep(1)
                        setProgress(0.2)
                        if (!all(C == 0)) {
-                         y0 <- (trans$res - mean(trans$res))
+                         trans$verif <- F
+                         y0 <- (trans$res - mean(trans$res)) * scaling
                          line <- c()
-                         # Cinv <- pd.solve(C)
                          setProgress(0.9)
                          Sys.sleep(1)
                          for (i in seq_len(length(trans$offsetEpochs))) {
                            if (input$fitType == 1) {
                              offsets <- grep(pattern = "O", rownames(trans$LScoefs), ignore.case = F, perl = F, fixed = T)
-                             ya <- y0 + trans$LScoefs[offsets[i]]*I(trans$x > trans$offsetEpochs[i])
+                             ya <- y0 + trans$LScoefs[offsets[i]]*scaling*I(trans$x > trans$offsetEpochs[i])
                            } else if (input$fitType == 2) {
                              offsets <- grep(pattern = "O", colnames(trans$kalmanman), ignore.case = F, perl = F, fixed = T)
-                             ya <- y0 + colMeans(trans$kalmanman)[offsets[i]]*I(trans$x > trans$offsetEpochs[i])
+                             ya <- y0 + colMeans(trans$kalmanman)[offsets[i]]*scaling*I(trans$x > trans$offsetEpochs[i])
                            }
                            Tq <- crossprod(ya, solve(C, ya)) - crossprod(y0, solve(C, y0))
                            line <- c(line, paste("Offset",i,"significance:", sprintf("%.0f",pchisq(Tq, df = 1)*100),"%", sep = " "))
                          }
                          if (isTruthy(Tq)) {
                            trans$verif <- T
-                         } else {
-                           trans$verif <- F
                          }
                          output$verif <- renderUI({
                            if (isTruthy(trans$verif)) {
@@ -2963,7 +2921,6 @@ server <- function(input,output,session) {
                   amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
                   phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
                   if (isTruthy(amp_err) && isTruthy(phase_err)) {
-                    # info_out <- (info_out, trans$periods[ss], amp, amp_err, phase, phase_err)
                     for (i in list(noquote(trans$periods[ss]), amp, amp_err, phase, phase_err)) {
                       info_out[[length(info_out) + 1]] = i
                     }
@@ -3103,9 +3060,6 @@ server <- function(input,output,session) {
           } else {
             sigmaR <- rep(sigmaR, length(trans$y))
           }
-        }
-        if (!isTruthy(info$regular)) {
-          showNotification("The series is not evenly sampled. The KF process noise will not change after a data gap.", action = NULL, duration = 10, closeButton = T, id = "not_even", type = "warning", session = getDefaultReactiveDomain())
         }
         #Measurement function
         FFfunction <- function(x,k) {
@@ -3857,7 +3811,7 @@ server <- function(input,output,session) {
           }
           fs_hz <- 1/(info$sampling*f_scale)
           f_hz <- trans$fs/f_scale
-          if (isTruthy(input$white)) {
+          if (isTruthy(info$white)) {
             k <- 0
             b0 <- trans$noise[1]
           } else {
@@ -3867,13 +3821,13 @@ server <- function(input,output,session) {
           Dk <- 2*(2*pi)^k * f_scale^(k/2)
           wn <- b0^2 * Dk / (fs_hz^(1 + (k/2))) #from Williams 2003 (Eq. 10)
           pwn <- wn * f_hz^k
-          if (isTruthy(input$flicker) && isTruthy(trans$noise[3])) {
+          if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
             bk <- trans$noise[3]
             k <- -1
-          } else if (isTruthy(input$randomw) && isTruthy(trans$noise[5])) {
+          } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
             bk <- trans$noise[5]
             k <- -2
-          } else if (isTruthy(input$powerl) && isTruthy(trans$noise[7])) {
+          } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
             bk <- trans$noise[7]
             k <- trans$noise[9]
           } else {
@@ -4223,404 +4177,520 @@ server <- function(input,output,session) {
 
   # Noise analysis ####
   observeEvent(input$runmle, {
-    removeNotification("bad_flicker")
-    removeNotification("bad_rw")
-    removeNotification("bad_pl")
     removeNotification("no_mle")
+    removeNotification("too_long")
+    removeNotification("timeWillTake")
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
+      if (messages > 0) cat(file = stderr(), "MLE fit start", "\n")
       trans$noise <- vector(length = 11)
       if (length(trans$res) > 0) {
-        series <- trans$res
+        res <- trans$res
       } else if (length(trans$filterRes) > 0) {
-        series <- trans$filterRes
+        res <- trans$filterRes
       }
-      if (sd(series) < 1) {
-        scaling <- 10/sd(series)
-      } else {
-        scaling <- 1
-      }
-      new_series <- series * scaling
-      n <- length(new_series)
+      vari <- var(res)
+      n <- length(res)
+      n_all <- length(trans$gaps)
       component <- 0
-      variances <- c()
-      bottom <- c()
-      top <- c()
-      start.time <- Sys.time()
-      vari <- var(new_series)
-      if (input$white) {
-        component <- component + 1
-        if (nchar(inputs$max_white) > 0 && !is.na(as.numeric(inputs$max_white)) && as.numeric(inputs$max_white) > 0 && nchar(inputs$min_white) > 0 && !is.na(as.numeric(inputs$min_white)) && as.numeric(inputs$min_white) > 0 && as.numeric(inputs$max_white) > as.numeric(inputs$min_white)) {
-          top[component] <- (as.numeric(inputs$max_white)*scaling)
-          bottom[component] <- (as.numeric(inputs$min_white)*scaling)
-        } else {
-          updateTextInput(session, "max_white", value = (sqrt(vari)/scaling)*10)
-          updateTextInput(session, "min_white", value = (sqrt(vari)/scaling)/1000)
-          click("runmle")
-          req(info$stop)
-        }
-        variances[component] <- mean(c(top[component],bottom[component]))
-        Cwh <- diag(n)
-      }
-      if (input$flicker) {
-        component <- component + 1
-        if (nchar(inputs$max_fl) > 0 && !is.na(as.numeric(inputs$max_fl)) && as.numeric(inputs$max_fl) > 0 ) {
-          top[component] <- (as.numeric(inputs$max_fl)*scaling)
-        } else {
-          updateTextInput(session, "max_fl", value = (sqrt(vari)/scaling)*10)
-          click("runmle")
-          req(info$stop)
-        }
-        if (nchar(inputs$min_fl) > 0 && !is.na(as.numeric(inputs$min_fl)) && as.numeric(inputs$min_fl) > 0) {
-          bottom[component] <- (as.numeric(inputs$min_fl)*scaling)
-        } else {
-          updateTextInput(session, "min_fl", value = (sqrt(vari)/scaling)/1000)
-          click("runmle")
-          req(info$stop)
-        }
-        if (as.numeric(inputs$max_fl) > as.numeric(inputs$min_fl)) {
-          variances[component] <- mean(c(top[component],bottom[component]))
-          Delta <- sapply(1:n, function(i) if (i < 150) {gamma(i - 1 + 0.5)/(factorial(i - 1)*gamma(0.5))} else {((i - 1)^-0.5)/gamma(0.5)})
-          Z <- matrix(0,n,n)
-          for (i in seq_len(n)) {
-            for (j in i:n) {
-              Z[j,i] <- Delta[j - i + 1]
-            }
-          }
-          Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]*(trans$x[t + 1] - trans$x[t])^(-k/4)} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = -1)
-          Cfl <- Zscaled %*% t(Zscaled)
-        } else {
-          showNotification("Max flicker noise value is equal or smaller than min flicker noise value. Change the flicker noise bounds.", action = NULL, duration = 10, closeButton = T, id = "bad_flicker", type = "error", session = getDefaultReactiveDomain())
-        }
-      }
-      if (input$randomw) {
-        component <- component + 1
-        if (nchar(inputs$max_rw) > 0 && !is.na(as.numeric(inputs$max_rw)) && as.numeric(inputs$max_rw) > 0) {
-          top[component] <- (as.numeric(inputs$max_rw)*scaling)
-        } else {
-          updateTextInput(session, "max_rw", value = (sqrt(vari)/scaling)*10)
-          click("runmle")
-          req(info$stop)
-        }
-        if (nchar(inputs$min_rw) > 0 && !is.na(as.numeric(inputs$min_rw)) && as.numeric(inputs$min_rw) > 0) {
-          bottom[component] <- (as.numeric(inputs$min_rw)*scaling)
-        } else {
-          updateTextInput(session, "min_rw", value = (sqrt(vari)/scaling)/1000)
-          click("runmle")
-          req(info$stop)
-        }
-        if (as.numeric(inputs$max_rw) > as.numeric(inputs$min_rw)) {
-          variances[component] <- mean(c(top[component],bottom[component]))
-          Z <- lower.tri(matrix(1, n, n), diag = T)*1
-          Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = -2)
-          Zscaled[,1] <- Zscaled[,2]
-          Zscaled[1,1] <- Zscaled[2,2]
-          Crw <- Zscaled %*% t(Zscaled)
-        } else {
-          showNotification("Max random-walk noise value is equal or smaller than min random-walk noise value. Change the randow-walk noise bounds.", action = NULL, duration = 10, closeButton = T, id = "bad_rw", type = "error", session = getDefaultReactiveDomain())
-        }
-      }
-      if (input$powerl) {
-        component <- component + 1
-        if (nchar(inputs$max_pl) > 0 && !is.na(as.numeric(inputs$max_pl)) && as.numeric(inputs$max_pl) > 0) {
-          top[component] <- (as.numeric(inputs$max_pl)*scaling)
-        } else {
-          updateTextInput(session, "max_pl", value = (sqrt(vari)/scaling)*10)
-          click("runmle")
-          req(info$stop)
-        }
-        if (nchar(inputs$min_pl) > 0 && !is.na(as.numeric(inputs$min_pl)) && as.numeric(inputs$min_pl) > 0) {
-          bottom[component] <- (as.numeric(inputs$min_pl)*scaling)
-        } else {
-          updateTextInput(session, "min_pl", value = (sqrt(vari)/scaling)/1000)
-          click("runmle")
-          req(info$stop)
-        }
-        if (as.numeric(inputs$max_pl) > as.numeric(inputs$min_pl)) {
-          variances[component] <- mean(c(top[component],bottom[component]))
-          component <- component + 1
-          if (nchar(inputs$max_k) > 0 && !is.na(as.numeric(inputs$max_k)) && as.numeric(inputs$max_k) < 0 && nchar(inputs$min_k) > 0 && !is.na(as.numeric(inputs$min_k)) && as.numeric(inputs$min_k) < 0 && as.numeric(inputs$max_k) > as.numeric(inputs$min_k)) {
-            top[component] <- -1*as.numeric(inputs$min_k) + 1
-            bottom[component] <- -1*as.numeric(inputs$max_k) + 1
-          } else {
-            updateTextInput(session, "max_k", value = -0.01)
-            updateTextInput(session, "min_k", value = -3)
-            click("runmle")
-            req(info$stop)
-          }
-          variances[component] <- 2
-        } else {
-          showNotification("Max power-law noise value is equal or smaller than min power-law noise value. Change the power-law noise bounds.", action = NULL, duration = 10, closeButton = T, id = "bad_pl", type = "error", session = getDefaultReactiveDomain())
-        }
-      }
-      loglik <- function(x) {
-        incProgress(0.007) # off the top of my head
-        h <- 0
-        C <- matrix(0,n,n)
-        if (input$white) {
-          h <- h + 1
-          C <- C + exp(x[h])^2*Cwh
-        }
-        if (input$flicker) {
-          h <- h + 1
-          C <- C + exp(x[h])^2*Cfl
-        }
-        if (input$randomw) {
-          h <- h + 1
-          C <- C + exp(x[h])^2*Crw
-        }
-        if (input$powerl) {
-          h <- h + 1
-          pl <- exp(x[h])^2
-          h <- h + 1
-          k <- 1 - exp(x[h])
-          Delta <- sapply(1:n, function(i) if (i < 150) {gamma(i - 1 - (k/2))/(factorial(i - 1)*gamma(-k/2))} else {((i - 1)^((-k/2) - 1))/gamma(-k/2)})
-          Z <- matrix(0,n,n)
-          for (i in seq_len(n)) {
-            for (j in i:n) {
-              Z[j,i] <- Delta[j - i + 1]
-            }
-          }
-          Zscaled <- sapply(1:ncol(Z), function(t,k) if (t < 2) {Z[,t]*(trans$x[t + 1] - trans$x[t])^(-k/4)} else {Z[,t]*(trans$x[t] - trans$x[t - 1])^(-k/4)}, k = k)
-          Cpl <- Zscaled %*% t(Zscaled)
-          C <- C + pl*Cpl
-        } else {
-          k <- 0
-        }
-        y <- new_series - mean(new_series)
-        ll <- -0.5*(length(n)*log(2*pi) + determinant(C)$modulus[[1]] + ( crossprod(y,solve(C)) %*% y) )
-        if (messages > 2) cat(file = stderr(), "Std Dev noises = ", exp(x)/scaling, " Index = ", k, " loglik = ", sprintf("%f",ll), "\n")
-        ll
-      }
-      if (messages > 0) cat(file = stderr(), "MLE fit start", "\n")
-      start.time <- Sys.time()
-      if (component > 0) {
+      convergence <- 1
+      withBusyIndicatorServer("runmle", {
+        start.time <- Sys.time()
         if (messages > 2) print(paste0("Inicio optimizacion ",Sys.time()))
-        withProgress(message = 'Fitting noise model',
-                     detail = 'This may take a while ...', value = 0, {
-                       withBusyIndicatorServer("runmle", {
-                         modmle <- optim(par = log(variances),
-                                         fn = loglik,
-                                         lower = log(bottom),
-                                         upper = log(top),
-                                         method = "L-BFGS-B",
-                                         hessian = T,
-                                         control = c(fnscale = -1, factr = 1e11)
-                         )
-                         if (messages > 2) print(paste0("Fin optimizacion ",Sys.time()))
-                         end.time <- Sys.time()
-                         time.taken <- end.time - start.time
-                         if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
-                         if (modmle$convergence == 0) {
-                           trans$mle <- 1
-                           sd_noises <- sqrt(diag(solve(-modmle$hessian)))
-                           zeroes <- NULL
-                           i <- 0
-                           sigmaFL <- NULL
-                           sigmaPL <- NULL
-                           sigmaRW <- NULL
-                           sigmaK <- NULL
-                           if (input$white) {
-                             i <- i + 1
-                             if (i %in% zeroes) {
-                               sigmaWH <- NA
-                               seParmsWH <- NA
-                             } else {
-                               sigmaWH <- exp(modmle$par[i])/scaling
-                               seParmsWH <- sd_noises[i]*sd(series)
-                             }
-                             trans$noise[1] <- sigmaWH
-                             trans$noise[2] <- seParmsWH
-                             output$est.white <- renderUI({
-                               if (isTruthy(trans$mle)) {
-                                 line1 <- "White noise:"
-                                 line2 <- sprintf("%f",sigmaWH)
-                                 line3 <- sprintf("+/- %f",seParmsWH)
-                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                               } else {
-                                 NULL
-                               }
-                             })
-                           } else {
-                             trans$noise[1] <- NA
-                             trans$noise[2] <- NA
-                           }
-                           if (input$flicker) {
-                             i <- i + 1
-                             if (i %in% zeroes) {
-                               sigmaFL <- NA
-                               seParmsFL <- NA
-                             } else {
-                               sigmaFL <- exp(modmle$par[i])/scaling
-                               seParmsFL <- sd_noises[i]*sd(series)
-                             }
-                             trans$noise[3] <- sigmaFL
-                             trans$noise[4] <- seParmsFL
-                             output$est.flicker <- renderUI({
-                               if (isTruthy(trans$mle)) {
-                                 line1 <- "Flicker noise:"
-                                 line2 <- sprintf("%f",sigmaFL)
-                                 line3 <- sprintf("+/- %f",seParmsFL)
-                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                               } else {
-                                 NULL
-                               }
-                             })
-                           } else {
-                             trans$noise[3] <- NA
-                             trans$noise[4] <- NA
-                           }
-                           if (input$randomw) {
-                             i <- i + 1
-                             if (i %in% zeroes) {
-                               sigmaRW <- NA
-                               seParmsRW <- NA
-                             } else {
-                               sigmaRW <- exp(modmle$par[i])/scaling
-                               seParmsRW <- sd_noises[i]*sd(series)
-                             }
-                             trans$noise[5] <- sigmaRW
-                             trans$noise[6] <- seParmsRW
-                             output$est.randomw <- renderUI({
-                               if (isTruthy(trans$mle)) {
-                                 line1 <- "Random walk:"
-                                 line2 <- sprintf("%f",sigmaRW)
-                                 line3 <- sprintf("+/- %f",seParmsRW)
-                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                               } else {
-                                 NULL
-                               }
-                             })
-                           } else {
-                             trans$noise[5] <- NA
-                             trans$noise[6] <- NA
-                           }
-                           if (input$powerl) {
-                             i <- i + 1
-                             if (i %in% zeroes) {
-                               sigmaPL <- NA
-                               seParmsPL <- NA
-                             } else {
-                               sigmaPL <- exp(modmle$par[i])/scaling
-                               seParmsPL <- sd_noises[i]*sd(series)
-                             }
-                             trans$noise[7] <- sigmaPL
-                             trans$noise[8] <- seParmsPL
-                             output$est.powerl <- renderUI({
-                               if (isTruthy(trans$mle)) {
-                                 line1 <- "Power-law:"
-                                 line2 <- sprintf("%f",sigmaPL)
-                                 line3 <- sprintf("+/- %f",seParmsPL)
-                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                               } else {
-                                 NULL
-                               }
-                             })
-                             i <- i + 1
-                             if (i %in% zeroes) {
-                               sigmaK <- NA
-                               seParmsK <- NA
-                             } else {
-                               sigmaK <- 1 - exp(modmle$par[i])
-                               seParmsK <- sd_noises[i]
-                             }
-                             trans$noise[9] <- sigmaK
-                             trans$noise[10] <- seParmsK
-                             output$est.index <- renderUI({
-                               if (isTruthy(trans$mle)) {
-                                 line1 <- "Spectral index:"
-                                 line2 <- sprintf("%f",sigmaK)
-                                 line3 <- sprintf("+/- %f",seParmsK)
-                                 HTML(paste(line1,'<br/>',line2,'<br/>',line3))
-                               } else {
-                                 NULL
-                               }
-                             })
-                           } else {
-                             trans$noise[7] <- NA
-                             trans$noise[8] <- NA
-                             trans$noise[9] <- NA
-                             trans$noise[10] <- NA
-                           }
-                           if (input$white || input$flicker || input$randomw || input$powerl) {
-                             if (length(modmle$value) > 0) {
-                               trans$noise[11] <- modmle$value
-                             } else {
-                               trans$noise[11] <- NA
-                             }
-                             output$est.mle <- renderUI({
-                               if (isTruthy(trans$mle)) {
-                                 line1 <- sprintf("<br/>log-Likelihood = %.4f",modmle$value)
-                                 HTML(line1)
-                               } else {
-                                 NULL
-                               }
-                             })
-                           }
-                           output$est.unc <- renderUI({
-                             if ("Linear" %in% input$model && input$fitType == 1) {
-                               if (isTruthy(trans$mle)) {
-                                 if (isTruthy(sigmaFL)) {
-                                   noise_amp <- sigmaFL
-                                   index <- -1
-                                 } else if (isTruthy(sigmaRW)) {
-                                   noise_amp <- sigmaRW
-                                   index <- -2
-                                 } else if (isTruthy(sigmaPL)) {
-                                   noise_amp <- sigmaPL
-                                   index <- sigmaK
-                                 } else {
-                                   noise_amp <- 0
-                                   index <- 0
-                                 }
-                                 noise_amp <- noise_amp * scaling
-                                 v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
-                                 beta <- (-1*index)/2 - 2
-                                 if (index < -1.3) {
-                                   gamma <- -3 - index
-                                 } else {
-                                   gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
-                                 }
-                                 unc <- sqrt( noise_amp^2 * v * info$sampling^beta * info$points^gamma ) / scaling
-                                 unc_white <- sqrt( 12 * sd(trans$res)^2 * (info$points - 1) / (info$points * info$rangex^2 * (info$points + 1)) )
-                                 if (isTruthy(trans$unc)) {
-                                   if (isTruthy(unc) && unc > 0) {
-                                     trans$LScoefs[2,2] <- sqrt(unc^2 + trans$unc^2)
-                                     trans$results$coefficients[2,2] <- sqrt(unc^2 + trans$unc^2)
-                                   } else {
-                                     unc <- trans$unc
-                                     trans$LScoefs[2,2] <- trans$unc
-                                   }
-                                   if (isTruthy(sigmaFL) || isTruthy(sigmaRW) || isTruthy(sigmaPL)) {
-                                     line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f",unc/unc_white)
-                                     HTML(line1)
-                                   }
-                                 } else {
-                                   NULL
-                                 }
-                               } else {
-                                 if (isTruthy(trans$unc)) {
-                                   if (isTruthy(trans$LScoefs[2,2])) {
-                                     trans$LScoefs[2,2] <- trans$unc
-                                   }
-                                   if (isTruthy(trans$results$coefficients[2,2])) {
-                                     trans$results$coefficients[2,2] <- trans$unc
-                                   }
-                                 }
-                                 NULL
-                               }
-                             }
-                           })
+        if (info$timeMLE < 15) {
+          message <- ""
+        } else if (info$timeMLE < 60) {
+          message <- paste("This should take less than 1 min")
+        } else {
+          message <- paste("This may take about", ceiling(info$timeMLE/60), "min")
+        }
+        withProgress(message = 'Fitting the noise model',
+                     detail = message, value = 0, {
+                       # build known covariance matrices
+                       if (input$white) {
+                         component <- component + 1
+                         info$white <- T
+                         Cwh <- diag(n)
+                       } else {
+                         info$white <- F
+                       }
+                       if (input$flicker) {
+                         component <- component + 1
+                         info$flicker <- T
+                         Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
+                       } else {
+                         info$flicker <- F
+                       }
+                       if (input$randomw) {
+                         component <- component + 1
+                         info$randomw <- T
+                         Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
+                       } else {
+                         info$randomw <- F
+                       }
+                       if (input$powerl) {
+                         component <- component + 2
+                         info$powerl <- T
+                         Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
+                       } else {
+                         info$powerl <- F
+                       }
+                       
+                       # Noise optimization
+                       CPL <- NULL # this and next two are updated inside loglik_global and used inside grad_global
+                       Qinv <- NULL
+                       QinvR <- NULL
+                       fitmle <- NULL
+                       apriori <- NULL
+                       cl <- NULL
+                       significant <- signifdecimal(vari) + 1
+                       scaling <- 10^signifdecimal(sd(res))
+                       resS <- res*scaling
+                       if (isTruthy(input$noise_unc)) {
+                         hessian <- T
+                       } else {
+                         hessian <- F
+                       }
+                       
+                       loglik_global <- function(x) {
+                         h <- 0
+                         k <- 0
+                         CPL <<- NULL
+                         Qinv <<- NULL
+                         QinvR <<- NULL
+                         if (white) {
+                           h <- 1
+                           wh <- exp(x[h])
+                           Q <- wh * Cwh
                          } else {
-                           trans$mle <- NULL
-                           showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+                           Q <- matrix(0, ncol = n, nrow = n)
                          }
-                         if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
-                       })
+                         if (flicker) {
+                           h <- h + 1
+                           k <- -1
+                           fl <- exp(x[h])
+                           Q <- Q + fl * Cfl
+                         }
+                         if (randomw) {
+                           h <- h + 1
+                           k <- -2
+                           rw <- exp(x[h])
+                           Q <- Q + rw * Crw
+                         }
+                         if (powerl) {
+                           h <- h + 1
+                           pl <- exp(x[h])
+                           h <- h + 1
+                           k <- x[h] + 3
+                           x <- head(x, -1)
+                           CPL <<- cov_powerlaw(k,n_all,T,gaps,sampling)
+                           Cpl <- CPL[[1]]
+                           k_deriv <- CPL[[2]]
+                           Q <- Q + pl * Cpl
+                         }
+                         ll_out <- loglikelihood(resS,Q,0)
+                         ll <- ll_out[[1]]
+                         Qinv <<- ll_out[[2]]
+                         QinvR <<- ll_out[[3]]
+                         if (method == "NLM") {
+                           attr(ll, "gradient") <- grad_global(x)  
+                         }
+                         if (messages > 2) cat(file = stderr(), "Std Dev noises = ", sqrt(exp(x))/scaling, " Index = ", k, " loglik = ", sprintf("%f",ll), "\n")
+                         ll/-1
+                       }
+                       grad_global <- function(x) {
+                         grad <- NULL
+                         h <- 0
+                         trQinv <- t(resS) %*% Qinv
+                         if (white) {
+                           h <- h + 1
+                           wh <- exp(x[h])
+                           grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
+                         }
+                         if (flicker) {
+                           h <- h + 1
+                           fl <- exp(x[h])
+                           grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
+                         }
+                         if (randomw) {
+                           h <- h + 1
+                           rw <- exp(x[h])
+                           grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
+                         }
+                         if (powerl) {
+                           h <- h + 1
+                           pl <- exp(x[h])
+                           h <- h + 1
+                           k <- x[h] + 3
+                           x <- head(x, -1)
+                           Cpl <- CPL[[1]]
+                           k_deriv <- pl * CPL[[2]]
+                           grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
+                           grad <- c(grad, 0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
+                         }
+                         grad/-1
+                       }
+                       
+                       #* one noise variance with fixed spectral index, easy peasy ####
+                       if (component == 1) {
+                         if (isTruthy(info$white)) {
+                           variance <- var(resS)
+                           VtPV <- variance*n
+                           fitmle$value <- 0.5*(n*log(2*pi*variance) + n)
+                         } else {
+                           if (isTruthy(info$flicker)) {
+                             C <- Cfl
+                           }
+                           if (isTruthy(info$randomw)) {
+                             C <- Crw
+                           }
+                           setProgress(0.25)
+                           VtPV <- crossprod(resS, solve(C, resS))
+                           setProgress(0.75)
+                           variance <- VtPV/n
+                           fitmle$value <- 0.5*(n*log(2*pi*variance) + determinant(C)$modulus[[1]] + n)
+                         }
+                         fitmle$par <- log(variance)
+                         fitmle$hessian <- (-n/(2*variance^2) + VtPV/variance^3) * variance
+                         convergence <- 0
+                       }
+                       #* more than one noise variance ####
+                       else if (component > 1) {
+                         # computing a priori noise variances. RW is minimized to avoid having to much contribution in the final result (gradient of RW is usually very flat)
+                         if (info$white) {
+                           wh <- var(res)/sqrt(component)
+                           apriori <- wh
+                           typsize <- 1 # typical WH variance in mm
+                           if (isTruthy(info$flicker)) {
+                             fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
+                             apriori <- c(apriori, fl)
+                             typsize <- c(typsize, 4) # typical FL variance in mm
+                             if (isTruthy(info$randomw)) {
+                               rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e6
+                               apriori <- c(apriori, rw)
+                               typsize <- c(typsize, 0.25) # typical RW variance in mm
+                             }
+                           } else if (isTruthy(info$randomw)) {
+                             rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e6
+                             apriori <- c(apriori, rw)
+                             typsize <- c(typsize, 0.25) # typical RW variance in mm
+                           } else if (isTruthy(info$powerl)) {
+                             pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
+                             apriori <- c(apriori, pl)
+                             typsize <- c(typsize, 4) # typical PL variance in mm
+                           }
+                         } else if (info$flicker) {
+                           fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
+                           apriori <- c(apriori, fl)
+                           typsize <- 4 # typical FL variance in mm
+                           rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e6
+                           apriori <- c(apriori, rw)
+                           typsize <- c(typsize, 0.25) # typical RW variance in mm
+                         } else if (isTruthy(info$powerl)) {
+                           pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
+                           apriori <- c(apriori, pl)
+                           typsize <- 4 # typical PL variance in mm
+                         }
+                         setProgress(0.25)
+                         apriori <- log(apriori*scaling^2)
+                         upper <- apriori + log(4) # max expected variances for constrained method
+                         lower <- rep(-9,length(apriori)) # min expected variances for constrained method
+                         if (isTruthy(info$powerl)) {
+                           apriori <- c(apriori, -4) # a priori spectral index (k - 3)
+                           typsize <- c(typsize, 1) # typical spectral index (k - 3)
+                           upper <- c(upper, -3) # max expected spectral index (k - 3)
+                           lower <- c(lower, -6) # min expected spectral index (k - 3)
+                         }
+                         # creating non reactive variables for running on a cluster
+                         white <- info$white
+                         flicker <- info$flicker
+                         randomw <- info$randomw
+                         powerl <- info$powerl
+                         gaps <- trans$gaps
+                         sampling <- info$sampling
+                         # setting cluster if run is local and long
+                         # if (local && info$timeMLE > 60) {
+                         #   cl <- makeCluster(detectCores() - 1, type = "FORK")
+                         #   setDefaultCluster(cl = cl)
+                         # }
+                         if (isTruthy(cl)) {
+                           # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
+                           method = "L-BFGS-B"
+                           fitmle <- optimParallel(par = apriori,
+                                                   fn = loglik_global,
+                                                   gr = grad_global,
+                                                   lower = lower,
+                                                   upper = upper,
+                                                   method = "L-BFGS-B",
+                                                   hessian = hessian,
+                                                   control = list(fnscale = 1, pgtol = 1e1, factr = 1e11)
+                           )
+                           setDefaultCluster(cl = NULL)
+                           stopCluster(cl)
+                         } else { # standard 1 proc run
+                           # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
+                           # method = "L-BFGS-B"
+                           # fitmle <- optim(par = apriori,
+                           #                 fn = loglik_global,
+                           #                 gr = grad_global,
+                           #                 lower = lower,
+                           #                 upper = upper,
+                           #                 method = "L-BFGS-B",
+                           #                 hessian = hessian,
+                           #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
+                           # )
+                           
+                           # Nelder and Mead (1965) method: provides better likelihoods, but is slow as duck! (around 5 times)
+                           # method = "Nelder & Mead"
+                           # fitmle <- optim(par = apriori,
+                           #                 fn = loglik_global,
+                           #                 hessian = hessian,
+                           #                 control = list(fnscale = 1, pgtol = 2e1, reltol = 1e-4)
+                           # )
+                           
+                           # Quasi-Newton method as in optim, but seems to run faster
+                           method = "NLM"
+                           fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
+                                         fscale = 1, print.level = 2, ndigit = 1, gradtol = 1e-2,
+                                         stepmax = 1e1, steptol = 1e-2, iterlim = 100, check.analyticals = F
+                           )
+                           setProgress(0.75)
+                           if (fitmle$code < 4) { # transforming nlm results into optim format
+                             fitmle$convergence <- 0
+                             fitmle$value <- fitmle$minimum
+                             fitmle$par <- fitmle$estimate
+                             convergence <- 0
+                           }
+                           
+                         }
+                       }
+                       Sys.sleep(1)
+                       setProgress(1)
                      })
+      })
+      
+      #* convergence ####
+      if (!is.na(convergence)) {
+        if (convergence == 0) {
+          end.time <- Sys.time()
+          if (messages > 2) print(paste0("Fin optimizacion ", end.time))
+          time.taken <- end.time - start.time
+          if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
+          trans$mle <- 1
+          sd_noises <- NA
+          line3 <- NULL
+          if (input$noise_unc) {
+            sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
+          }
+          i <- 0
+          sigmaFL <- NULL
+          sigmaPL <- NULL
+          sigmaRW <- NULL
+          sigmaK <- NULL
+          if (isTruthy(info$white)) {
+            i <- i + 1
+            sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
+            trans$noise[1] <- sigmaWH
+            if (input$noise_unc) {
+              seParmsWH <- sd_noises[i]/scaling
+              trans$noise[2] <- seParmsWH
+              if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
+                updateTextInput(session, inputId = "verif_white", value = sigmaWH)
+              } else {
+                updateTextInput(session, inputId = "verif_white", value = "0")
+              }
+            } else {
+              updateTextInput(session, inputId = "verif_white", value = sigmaWH)
+            }
+            output$est.white <- renderUI({
+              line1 <- "White noise:"
+              line2 <- sprintf("%f",sigmaWH)
+              if (input$noise_unc) {
+                line3 <- sprintf("+/- %f",seParmsWH)
+              }
+              HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+            })
+          } else {
+            updateTextInput(session, inputId = "verif_white", value = "0")
+            trans$noise[1] <- NA
+            trans$noise[2] <- NA
+          }
+          if (isTruthy(info$flicker)) {
+            i <- i + 1
+            sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
+            trans$noise[3] <- sigmaFL
+            if (input$noise_unc) {
+              seParmsFL <- sd_noises[i]/scaling
+              trans$noise[4] <- seParmsFL
+              if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
+                updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+              } else {
+                updateTextInput(session, inputId = "verif_fl", value = "0")
+              }
+            } else {
+              updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+            }
+            output$est.flicker <- renderUI({
+              line1 <- "Flicker noise:"
+              line2 <- sprintf("%f",sigmaFL)
+              if (input$noise_unc) {
+                line3 <- sprintf("+/- %f",seParmsFL)
+              }
+              HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+            })
+            updateRadioButtons(session, inputId = "typeColor", selected = 1)
+          } else {
+            updateTextInput(session, inputId = "verif_fl", value = "0")
+            trans$noise[3] <- NA
+            trans$noise[4] <- NA
+          }
+          if (isTruthy(info$randomw)) {
+            i <- i + 1
+            sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
+            trans$noise[5] <- sigmaRW
+            if (input$noise_unc) {
+              seParmsRW <- sd_noises[i]/scaling
+              trans$noise[6] <- seParmsRW
+              if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
+                updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
+              } else {
+                updateTextInput(session, inputId = "verif_rw", value = "0")
+              }
+            } else {
+              updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
+            }
+            output$est.randomw <- renderUI({
+              line1 <- "Random walk:"
+              line2 <- sprintf("%f",sigmaRW)
+              if (input$noise_unc) {
+                line3 <- sprintf("+/- %f",seParmsRW)
+              }
+              HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+            })
+            updateRadioButtons(session, inputId = "typeColor", selected = 1)
+          } else {
+            updateTextInput(session, inputId = "verif_rw", value = "0")
+            trans$noise[5] <- NA
+            trans$noise[6] <- NA
+          }
+          if (isTruthy(info$powerl)) {
+            i <- i + 1
+            sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
+            trans$noise[7] <- sigmaPL
+            if (input$noise_unc) {
+              seParmsPL <- sd_noises[i]/scaling
+              trans$noise[8] <- seParmsPL
+              if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
+                updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
+              } else {
+                updateTextInput(session, inputId = "verif_pl", value = "0")
+              }
+            } else {
+              updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
+            }
+            output$est.powerl <- renderUI({
+              line1 <- "Power-law:"
+              line2 <- sprintf("%f",sigmaPL)
+              if (input$noise_unc) {
+                line3 <- sprintf("+/- %f",seParmsPL)
+              }
+              HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+            })
+            updateRadioButtons(session, inputId = "typeColor", selected = 2)
+            i <- i + 1
+            sigmaK <- fitmle$par[i] + 3
+            trans$noise[9] <- sigmaK
+            if (input$noise_unc) {
+              seParmsK <- sd_noises[i]
+              trans$noise[10] <- seParmsK
+              if (isTruthy(sigmaK) && isTruthy(seParmsK) && abs(sigmaK) > seParmsK * 3) {
+                updateTextInput(session, inputId = "verif_k", value = sigmaK)
+              } else {
+                updateTextInput(session, inputId = "verif_k", value = "0")
+              }
+            } else {
+              updateTextInput(session, inputId = "verif_k", value = sigmaK)
+            }
+            output$est.index <- renderUI({
+              line1 <- "Spectral index:"
+              line2 <- sprintf("%f",sigmaK)
+              if (input$noise_unc) {
+                line3 <- sprintf("+/- %f",seParmsK)
+              }
+              HTML(paste(line1,'<br/>',line2,'<br/>',line3))
+            })
+          } else {
+            updateTextInput(session, inputId = "verif_pl", value = "0")
+            updateTextInput(session, inputId = "verif_k", value = "0")
+            trans$noise[7] <- NA
+            trans$noise[8] <- NA
+            trans$noise[9] <- NA
+            trans$noise[10] <- NA
+          }
+          if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
+            if (length(fitmle$value) > 0) {
+              trans$noise[11] <- fitmle$value
+            } else {
+              trans$noise[11] <- NA
+            }
+            output$est.mle <- renderUI({
+              if (isTruthy(trans$mle)) {
+                line1 <- sprintf("<br/>log-Likelihood = %.4f",fitmle$value/-1)
+                HTML(line1)
+              } else {
+                NULL
+              }
+            })
+          }
+          output$est.unc <- renderUI({
+            if ("Linear" %in% input$model && input$fitType == 1) {
+              if (isTruthy(trans$mle)) {
+                unc_pl <- 0
+                if (isTruthy(sigmaFL)) {
+                  unc <- pl_trend_unc(sigmaFL,-1)
+                  unc_pl <- sqrt(unc_pl^2 + unc^2)
+                }
+                if (isTruthy(sigmaRW)) {
+                  unc <- pl_trend_unc(sigmaRW,-2)
+                  unc_pl <- sqrt(unc_pl^2 + unc^2)
+                }
+                if (isTruthy(sigmaPL)) {
+                  unc <- pl_trend_unc(sigmaPL,sigmaK)
+                  unc_pl <- sqrt(unc_pl^2 + unc^2)
+                }
+                unc_white <- sqrt( 12 * sd(trans$res)^2 * (info$points - 1) / (info$points * info$rangex^2 * (info$points + 1)) )
+                if (isTruthy(trans$unc)) {
+                  if (isTruthy(unc_pl) && unc_pl > 0) {
+                    trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                    trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f", unc_pl/unc_white)
+                    HTML(line1)
+                  } else {
+                    NULL
+                  }
+                } else {
+                  NULL
+                }
+              } else {
+                if (isTruthy(trans$unc)) {
+                  if (isTruthy(trans$LScoefs[2,2])) {
+                    trans$LScoefs[2,2] <- trans$unc
+                  }
+                  if (isTruthy(trans$results$coefficients[2,2])) {
+                    trans$results$coefficients[2,2] <- trans$unc
+                  }
+                }
+                NULL
+              }
+            }
+          })
+        } else {
+          trans$mle <- NULL
+          showNotification("MLE optimization did not converge. The model parameters are probably out of bounds.", action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+        }
       }
+      if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
     }
   })
-
   # Search offsets ####
   observeEvent(input$search, {
     req(file$primary)
@@ -4922,6 +4992,7 @@ server <- function(input,output,session) {
       disable("randomw")
       disable("runVerif")
       disable("runmle")
+      disable("noise_unc")
       disable("series2")
       disable("separator")
       disable("separator2")
@@ -5096,13 +5167,6 @@ server <- function(input,output,session) {
               if (length(trans$offsetEpochs) > 0) {
                 enable("verif_offsets")
                 if (isTRUE(input$verif_offsets)) {
-                  if (isTruthy(trans$mle)) {
-                    if ((isTruthy(info$flicker) || isTruthy(info$randomw)) && input$typeColor == 2) {
-                      updateRadioButtons(session, inputId = "typeColor", selected = 1)
-                    } else if (isTruthy(info$powerl) && input$typeColor == 1) {
-                      updateRadioButtons(session, inputId = "typeColor", selected = 2)
-                    }
-                  }
                   if ( (nchar(inputs$verif_white) > 0 && !is.na(as.numeric(inputs$verif_white)) && as.numeric(inputs$verif_white) > 0) || 
                        (nchar(input$verif_pl) > 0 && nchar(input$verif_k) > 0 && !is.na(as.numeric(inputs$verif_pl)) && !is.na(as.numeric(inputs$verif_k)) && as.numeric(inputs$verif_pl) > 0 && as.numeric(inputs$verif_k) <= 0) ||
                        (nchar(input$verif_fl) > 0 && !is.na(as.numeric(inputs$verif_fl)) && as.numeric(inputs$verif_fl) > 0) ||
@@ -5163,6 +5227,7 @@ server <- function(input,output,session) {
               enable("randomw")
               enable("powerl")
               disable("runmle")
+              disable("noise_unc")
               enable("est.mle")
               if (input$flicker || input$randomw || input$white || input$powerl) {
                 enable("runmle")
@@ -5182,12 +5247,21 @@ server <- function(input,output,session) {
               } else {
                 enable("powerl")
               }
+              if ((input$white && !input$flicker && !input$randomw && !input$powerl) ||
+                  (!input$white && input$flicker && !input$randomw && !input$powerl) ||
+                  (!input$white && !input$flicker && input$randomw && !input$powerl)) {
+                disable("noise_unc")
+                updateCheckboxInput(session, inputId = "noise_unc", value = T)
+              } else {
+                enable("noise_unc")
+              }
             } else {
               disable("white")
               disable("flicker")
               disable("randomw")
               disable("powerl")
               disable("runmle")
+              disable("noise_unc")
               disable("est.mle")
               trans$mle <- F
               updateTextInput(session, "max_white", value = "")
@@ -5332,6 +5406,7 @@ server <- function(input,output,session) {
         disable("randomw")
         disable("runVerif")
         disable("runmle")
+        disable("noise_unc")
         disable("series2")
         disable("separator")
         disable("separator2")
@@ -6726,7 +6801,7 @@ server <- function(input,output,session) {
     trans$equation <- NULL
     trans$ordinate <- NULL
     trans$offsetEpochs <- NULL
-    trans$tol <- NULL
+    info$tol <- NULL
     trans$midas_vel <- NULL
     trans$midas_all <- NULL
     trans$mle <- F
@@ -6808,10 +6883,98 @@ server <- function(input,output,session) {
   
   # Observe type of noise color ####
   observeEvent(input$typeColor, {
-    updateTextInput(session, inputId = "verif_fl", value = "")
-    updateTextInput(session, inputId = "verif_rw", value = "")
-    updateTextInput(session, inputId = "verif_pl", value = "")
-    updateTextInput(session, inputId = "verif_k", value = "")
+    if (input$typeColor == 1) {
+      updateTextInput(session, inputId = "verif_pl", value = "")
+      updateTextInput(session, inputId = "verif_k", value = "")  
+    } else if (input$typeColor == 2) {
+      updateTextInput(session, inputId = "verif_fl", value = "")
+      updateTextInput(session, inputId = "verif_rw", value = "")  
+    }
+  })
+
+  # Observe noise model ####
+  observeEvent(c(input$white, input$flicker, input$randomw, input$powerl, input$noise_unc), {
+    removeNotification("no_mle")
+    removeNotification("too_long")
+    trans$noise <- NULL
+    trans$mle <- 0
+    output$est.white <- renderUI({ NULL })
+    output$est.flicker <- renderUI({ NULL })
+    output$est.randomw <- renderUI({ NULL })
+    output$est.powerl <- renderUI({ NULL })
+    output$est.index <- renderUI({ NULL })
+    output$est.mle <- renderUI({ NULL })
+    output$est.unc <- renderUI({ NULL })
+    # updating LS trend error
+    if (isTruthy(trans$unc)) {
+      if (isTruthy(trans$LScoefs[2,2])) {
+        trans$LScoefs[2,2] <- trans$unc
+      }
+      if (isTruthy(trans$results$coefficients[2,2])) {
+        trans$results$coefficients[2,2] <- trans$unc
+      }
+    }
+    # estimating MLE duration
+    info$timeMLE <- 0
+    if (input$white) {
+      if (input$flicker) {
+        if (input$randomw) { # WH + FN + RW
+          if (isTruthy(input$noise_unc)) {
+            info$timeMLE <- ceiling(3e-08*info$points^2.9261)
+          } else {
+            info$timeMLE <- ceiling(7e-08*info$points^2.7735)
+          }
+        } else {  # WH + FN
+          if (isTruthy(input$noise_unc)) {
+            info$timeMLE <- ceiling(7e-08*info$points^2.7297)
+          } else {
+            info$timeMLE <- ceiling(6e-08*info$points^2.6829)
+          }
+        }
+      } else if (input$randomw) { # WH + RW
+        if (isTruthy(input$noise_unc)) {
+          info$timeMLE <- ceiling(6e-10*info$points^3.3903)
+        } else {
+          info$timeMLE <- ceiling(2e-09*info$points^3.2207)
+        }
+      } else if (input$powerl) { # WH + PL
+        if (isTruthy(input$noise_unc)) {
+          info$timeMLE <- ceiling(5e-08*info$points^2.9773)
+        } else {
+          info$timeMLE <- ceiling(4e-08*info$points^2.9191)
+        }
+      } else { # WH
+        info$timeMLE <- 2
+      }
+    } else if (input$flicker) {
+      if (input$randomw) { # FN + RW
+        if (isTruthy(input$noise_unc)) {
+          info$timeMLE <- ceiling(3e-08*info$points^2.8560)
+        } else {
+          info$timeMLE <- ceiling(2e-08*info$points^2.8413)
+        }
+      } else { # FN
+        info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
+      }
+    } else if (input$randomw) { # RW
+      info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
+    } else if (input$powerl) { # PL
+      if (isTruthy(input$noise_unc)) {
+        info$timeMLE <- ceiling(5e-08*info$points^2.9304)
+      } else {
+        info$timeMLE <- ceiling(1e-08*info$points^3.0321)
+      }
+    }
+    if (info$timeMLE > 0) {
+      if (info$timeMLE < 60) {
+        showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE), " sec"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
+      } else {
+        showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE/60), " min"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
+      }
+      if (info$timeMLE > 14*60 && !isTruthy(local)) {
+        showNotification("The noise model analysis will likely not finish before the server closes the session for lack of user activity. Consider averaging the series for a faster analysis.", action = NULL, duration = 10, closeButton = T, id = "too_long", type = "error", session = getDefaultReactiveDomain())
+      }
+    }
   })
 
   # Observe ??? ####
@@ -9051,9 +9214,9 @@ server <- function(input,output,session) {
       ##time update
 
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
-      ## This implies the series must be sampled regularly with data gaps
+      ## This is approximate for series that are irregularly sampled (excluding gaps)
       gapFactor <- 1
-      if (i > 1 && info$regular == T) {
+      if (i > 1) {
         gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
       }
       #compute sigma points
@@ -9237,7 +9400,7 @@ server <- function(input,output,session) {
       Dv.inv[abs(Dv.inv) == Inf] <- 0
       sqrtVinv <- Dv.inv * svdV$vt
       gapFactor <- 1
-      if (i > 1 && info$regular == T) {
+      if (i > 1) {
         gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
       }
       svdW <- La.svd(mod$W * gapFactor, nu = 0)
@@ -9275,7 +9438,7 @@ server <- function(input,output,session) {
           Rt <- tcrossprod(rep(D.R[i, ], each = p) * U.R[[i]])
           # Qt <- mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
           Qt <- mod$V[i] + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]])
-          ll <- ll + ym*log(2*pi) + sum(log(eigen(Qt)$values)) + t(e) %*% solve(Qt) %*% e
+          ll <- ll + ym*log(2*pi) + sum(log(eigen(Qt)$values)) + crossprod(e, solve(Qt)) %*% e
         }
       }
       else {
@@ -9316,9 +9479,8 @@ server <- function(input,output,session) {
           if (logLik) {
             e <- as.matrix(y[i, good] - f[i, good])
             Rt <- tcrossprod(rep(D.R[i, ], each = p) * U.R[[i]])
-            # Qt <- (mod$V + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
             Qt <- (mod$V[i] + dFF.dx[[i]] %*% Rt %*% t(dFF.dx[[i]]))[good, good]
-            ll <- ll + sum(good)*log(2*pi) + sum(log(eigen(Qt)$values)) + t(e) %*% solve(Qt) %*% e
+            ll <- ll + sum(good)*log(2*pi) + sum(log(eigen(Qt)$values)) + crossprod(e, solve(Qt)) %*% e
           }
         }
       }
@@ -9365,7 +9527,7 @@ server <- function(input,output,session) {
       for (i in n:1) {
 
         gapFactor <- 1
-        if (i > 1 && info$regular == T) {
+        if (i > 1) {
           gapFactor <- round((trans$x[i] - trans$x[i - 1]) / info$sampling, digits = 1)
         }
         svdW <- La.svd(mod$W * gapFactor, nu = 0)
@@ -9418,7 +9580,7 @@ server <- function(input,output,session) {
     index_f <- which.min(abs(trans$x - (trans$x[m] + t)))
     index_b <- which.min(abs(trans$x - (trans$x[m] - t)))
     # checking forward pair
-    if (abs(trans$x[index_f] - trans$x[m] - t) < trans$tol) {
+    if (abs(trans$x[index_f] - trans$x[m] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
           if (!any(trans$x[m] < as.numeric(trans$offsetEpochs) & trans$x[index_f] > as.numeric(trans$offsetEpochs))) {
@@ -9430,7 +9592,7 @@ server <- function(input,output,session) {
       }
     }
     # checking backward pair
-    if (abs(trans$x[m] - trans$x[index_b] - t) < trans$tol) {
+    if (abs(trans$x[m] - trans$x[index_b] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
           if (!any(trans$x[index_b] < as.numeric(trans$offsetEpochs) & trans$x[m] > as.numeric(trans$offsetEpochs))) {
@@ -9449,6 +9611,19 @@ server <- function(input,output,session) {
       max(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))))
     } else {
       return(0)
+    }
+  }
+  signifdecimal <- function(x) {
+    if (abs(x) >= 1) {
+      return(0)
+    } else {
+      # return(nchar(signif(x,1)) - 2)
+      decimal <- nchar(format(signif(x,1), scientific = F)) - 3
+      if (round(x, decimal) > 0) {
+        return(decimal)
+      } else {
+        return(decimal + 1)
+      }
     }
   }
   trim <- function(x) gsub("^\\s+|\\s+$", "", x)
@@ -9594,7 +9769,7 @@ server <- function(input,output,session) {
         name <- paste0(toupper(station),".enu")
       } else if (tolower(product) == "uga_pos") {
         format <- 2
-        name <- paste0("UGA_",toupper(station),".pos")
+        name <- paste0(toupper(substr(station, 1, 4)),".pos")
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9692,16 +9867,57 @@ server <- function(input,output,session) {
     e <- N * dlon * cos(lat)
     return(n,e)
   }
-  cov_powerlaw <- function(k,n) {
-    Delta <- 1
+  cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
+    Delta <- 1 # Delta[1]
+    a <- 0 # a[1]
     for (i in 2:n) {
-      Delta[i] <- Delta[i - 1] * (-k/2 + i - 1 - 1)/(i - 1)
+      a[i] <- (-k/2 + i - 1 - 1)/(i - 1)
+      Delta[i] <- Delta[i - 1] * a[i]
     }
     # Z <- toeplitz(Delta[trans$gaps])
-    Z <- toeplitz(Delta)
+    Z <- toeplitz(Delta[gaps])
     Z[upper.tri(Z)] <- 0
-    Z <- Z * info$sampling^(-k/4) # Variance scaling from Williams 2003
-    return(tcrossprod(Z))
+    # Z <- Z * info$sampling^(-k/4) # Variance scaling from Williams 2003, Gobron 2020 uses info$sampling^(-k/2)
+    Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003, Gobron 2020 uses info$sampling^(-k/2)
+    if (deriv) {
+      u <- 0 # u[1]
+      for (i in 2:n) {
+        u[i] <- -1/(2*(i - 1))*Delta[i - 1] + a[i]*u[i - 1]
+        # u[i] <- -1/(2*i)*Delta[i - 1] + a[i]*u[i - 1]
+      }
+      # U <- toeplitz(u[trans$gaps])
+      U <- toeplitz(u[gaps])
+      U[upper.tri(U)] <- 0
+      # derivZ <- info$sampling^(-k/2)*(-0.5*log(info$sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
+      derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
+      # derivZ <- derivZ * info$sampling^(-k/4) # Variance scaling from Williams 2003
+      derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
+      return(list(tcrossprod(Z), derivZ))
+    } else {
+      return(list(tcrossprod(Z)))
+    }
+  }
+  loglikelihood <- function(series,M,r) {
+    if (r > 0) {
+      return(-0.5*(length(series)*log(2*pi*r) + determinant(M)$modulus[[1]] + length(series)))
+    } else {
+      Qinv <- pd.solve(M, log.det = T)
+      logDet <- attr(Qinv, "log.det")
+      QinvR <- Qinv %*% series
+      # return((-0.5*(length(series)*log(2*pi) + determinant(M)$modulus[[1]] + crossprod(series, solve(M, series))))[1])
+      ll <- (-0.5*(length(series)*log(2*pi) + logDet + crossprod(series, QinvR)))[1]
+      return(list(ll,Qinv,QinvR))
+    }
+  }
+  pl_trend_unc <- function(amp,index) {
+    v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
+    beta <- (-1*index)/2 - 2
+    if (index < -1.3) {
+      gamma <- -3 - index
+    } else {
+      gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
+    }
+    return(sqrt(amp^2 * v * info$sampling^beta * info$points^gamma))
   }
 }
 
