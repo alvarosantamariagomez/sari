@@ -1,6 +1,6 @@
 ![twitter](https://img.shields.io/twitter/follow/timeserious?style=social)
 ![license](https://img.shields.io/github/license/alvarosantamariagomez/sari)
-![version](https://img.shields.io/badge/version-junio%202023-blue)
+![version](https://img.shields.io/badge/version-julio%202023-blue)
 ![github](https://img.shields.io/github/languages/code-size/alvarosantamariagomez/sari?color=g)
 ![docker](https://img.shields.io/docker/image-size/alvarosg/sari?color=g)
 

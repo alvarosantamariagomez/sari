@@ -1,5 +1,28 @@
 # **SARI changelog**
 
+# julio 2023 [2023.07]
+
+### Fixed
+- Time units of the harmonics of the sinusoidal periods
+- Fixing unknown previous points in the series when removing new
+
+### Changed
+- Fully rewritten noise analysis section
+- Noise analysis with MLE changed from the constrained L-BFGS-B method to an unconstrained quasi-Newton method
+- Improved handling of data gaps for the noise analysis and Kalman filter
+- Checking extracted series before removing the plate motion
+- Removing access to SIRGAS server: URL not found
+- New dependency: package mnormt for pd.solve function
+- sari.sh: logging session by default and saving log only if option -v
+
+### Added
+- New option to download and plot a GNSS series from a remote server
+- New option to use different plate motion models
+- Access to the series from the SONEL server
+- New noise model option: FN+RW, also for the offset verification
+- New option to skip the estimation of the formal uncertainty of the noise parameters
+- The expected MLE processing time is shown on screen
+
 # junio 2023 [2023.06]
 
 ### Fixed
