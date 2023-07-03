@@ -48,7 +48,7 @@ data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, n
 
 4.2) On the R/RStudio console, the following command will install the packages at once:  
 `
-install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach"))
+install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt))
 `
 
 4.3) The above two methods will either install package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
