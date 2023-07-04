@@ -2598,7 +2598,7 @@ server <- function(input,output,session) {
       if (isTruthy(input$sameScale)) {
         half <- abs(ranges$y1[1] - mean(ranges$y1))
         if (isTruthy(ranges$y12)[1]) {
-          middle <- median(trans$y2[trans$y2 >= ranges$y12[1] & trans$y2 <= ranges$y12[2]], na.rm = T)
+          middle <- mean(ranges$y12)
         } else {
           middle <- median(trans$y2, na.rm = T)
         }
@@ -2606,7 +2606,8 @@ server <- function(input,output,session) {
       } else if (isTruthy(input$same_axis)) {
         ranges$y12 <- ranges$y1
       } else {
-        ranges$y12 <- NULL
+        ids <- trans$x0[!is.na(trans$y2)] >= ranges$x1[1] & trans$x0[!is.na(trans$y2)] <= ranges$x1[2]
+        ranges$y12 <- range(trans$y2[ids], na.rm = T)
       }
       plot(trans$x2, trans$y2, type = symbol, pch = 20, col = "#59b300", axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
       if (isTruthy(sigmas)) {
