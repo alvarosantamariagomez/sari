@@ -41,7 +41,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -1717,7 +1717,7 @@ server <- function(input,output,session) {
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
-                         decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
+                         decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
@@ -2350,6 +2350,9 @@ server <- function(input,output,session) {
     }
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
+    if (!isTruthy(info$step)) {
+      info$sampling0 <- info$sampling
+    }
     info$sampling_regular <- median(diff(trans$x))
     info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
     info$rangex <- trans$x[length(trans$x)] - trans$x[1]
@@ -7047,7 +7050,7 @@ server <- function(input,output,session) {
           info$step <- NULL
           showNotification("The resampling period is not numeric. Check input value.", action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
         } else if (isTruthy(inputs$step)) {
-          if (inputs$step >= 2*min(diff(table$x,1)) && inputs$step <= (max(table$x) - min(table$x))/2) {
+          if (inputs$step > info$sampling0 && inputs$step <= (max(table$x) - min(table$x))/2) {
             tolerance <- min(diff(table$x,1))/3
             if (!isTruthy(info$step)) {
               values$previous1 <- values$series1
@@ -7205,6 +7208,12 @@ server <- function(input,output,session) {
                   if (length(delta) == 1 && delta != 0) {
                     table2$x <- table2$x + delta
                     showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                  } else {
+                    if (info$sampling < info$sampling_regular) {
+                      showNotification("The sampling of the primary series is not regular. Consier using the \"Reduce sampling\" option to average the series to a constant sampling.", action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                    } else {
+                      showNotification("The sampling of the secondary series is not regular. It is not possible to correct the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                    }
                   }
                 }
                 if (info$format == 4) {
