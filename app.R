@@ -3268,7 +3268,8 @@ server <- function(input,output,session) {
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
             if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
               title <- "Instantaneous linear rate"
-              plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,title,input$symbol)
+              plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol)
+              title(title, line = 3)
             }
           }, width = reactive(info$width), type = "cairo-png")
         }
