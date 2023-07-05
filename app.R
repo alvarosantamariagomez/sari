@@ -5485,7 +5485,7 @@ server <- function(input,output,session) {
               } else {
                 file$primary$file <- file$primary$name
               }
-              down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+              down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
                 if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
                   down <- 1
@@ -5524,7 +5524,7 @@ server <- function(input,output,session) {
                     } else {
                       file$secondary$file <- file$secondary$name
                     }
-                    down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+                    down <- download(url$server2, url$file2, file$secondary$file)
                     if (file.exists(file$secondary$file)) {
                       if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
                         down <- 1
@@ -5637,7 +5637,7 @@ server <- function(input,output,session) {
         } else {
           file$primary$file <- file$primary$name
         }
-        down <- suppressWarnings(try(download.file(url$file, destfile = file$primary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+        down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
           if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
             down <- 1
@@ -5682,7 +5682,7 @@ server <- function(input,output,session) {
         } else {
           file$secondary$file <- file$secondary$name
         }
-        down <- suppressWarnings(try(download.file(url$file2, destfile = file$secondary$file, method = "libcurl", quiet = F, mode = "w", cacheOK = T), silent = T))
+        down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
           if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
             down <- 1
@@ -9799,7 +9799,7 @@ server <- function(input,output,session) {
         name <- paste0("SPOTGINS_",toupper(station),".enu")
       } else if (tolower(product) == "uga_pos") {
         format <- 2
-        name <- paste0(toupper(substr(station, 1, 4)),".pos")
+        name <- paste0("UGA_",toupper(station),".pos")
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9961,6 +9961,29 @@ server <- function(input,output,session) {
     f_hz <- trans$fs/f_scale
     Dk <- 2*(2*pi)^k * f_scale^(k/2)
     return(std^2 * Dk / (fs_hz^(1 + (k/2)))) #from Williams 2003 (Eq. 10)
+  }
+  download <- function(server,remote,local) {
+    removeNotification("no_cmd")
+    # download series using curl or wget
+    if (isTruthy(Sys.which("curl"))) {
+      if (server == "formater") {
+        extras <- "-u SARI:bwPgzhe4Zu"
+      } else {
+        extras <- ""
+      }
+      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = F, mode = "w", cacheOK = T), silent = T))
+    } else if (isTruthy(Sys.which("wget"))) {
+      if (server == "formater") {
+        extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
+      } else {
+        extras <- ""
+      }
+      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "wget", extra = extras, quiet = F, mode = "w", cacheOK = T), silent = T))
+    } else {
+      showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
+      down <- 1
+    }
+    return(down)
   }
 }
 
