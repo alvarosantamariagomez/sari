@@ -1895,7 +1895,7 @@ server <- function(input,output,session) {
   # Series summary ####
   output$information <- renderUI({
     line1 <- sprintf("Number of points = %d",info$points)
-    line2 <- sprintf("Series length = %.1f time units",info$rangex)
+    line2 <- paste("Series length =", info$rangex, "time units")
     line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx,trans$x[1],info$decimalsx,trans$x[length(trans$x)])
     line4 <- sprintf("Series sampling = %.*f time units",info$decimalsx,info$sampling)
     line5 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
@@ -3135,7 +3135,7 @@ server <- function(input,output,session) {
             }
             output$noise <- renderUI({
               line1 <- "Estimated meas. noise (95% CI):"
-              line2 <- paste0("[",paste(sprintf("%.4f",rangoR), collapse = " "),"]")
+              line2 <- paste0("[",paste(rangoR, collapse = " "),"]")
               HTML(paste(line1, line2, sep = '<br/>'))
             })
           } else {
@@ -4666,7 +4666,7 @@ server <- function(input,output,session) {
                   if (isTruthy(unc_pl) && unc_pl > 0) {
                     trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
                     trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.4f", unc_pl/unc_white)
+                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
                     HTML(line1)
                   } else {
                     NULL
@@ -7693,7 +7693,7 @@ server <- function(input,output,session) {
             req(info$stop)
           }
         }
-        text_rate <- sprintf("%f",as.numeric(reft))
+        text_rate <- reft
         if (input$fitType == 2) {
           if (nchar(input$TrendDev) > 0) {
             if (!is.na(suppressWarnings(as.numeric(input$TrendDev)))) {
@@ -7895,14 +7895,14 @@ server <- function(input,output,session) {
                 showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
-              label_sin <- paste("S",i,sep = "")
-              label_cos <- paste("C",i,sep = "")
-              text_sin <- sprintf("I(sin(2*pi*(x-%f)*%f))",as.numeric(refs),f)
-              text_cos <- sprintf("I(cos(2*pi*(x-%f)*%f))",as.numeric(refs),f)
-              text_sin_kf <- sprintf("sin(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
-              text_cos_kf <- sprintf("cos(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
-              text_sin_lm <- sprintf("sin(2*pi*x*%f)",f)
-              text_cos_lm <- sprintf("cos(2*pi*x*%f)",f)
+              label_sin <- paste0("S",i)
+              label_cos <- paste0("C",i)
+              text_sin <- paste0("I(sin(2*pi*(x-", refs, ")*", f, "))")
+              text_cos <- paste0("I(cos(2*pi*(x-", refs, ")*", f, "))")
+              text_sin_kf <- paste0("sin(2*pi*(x[k]-", refs, ")*", f, ")")
+              text_cos_kf <- paste0("cos(2*pi*(x[k]-", refs, ")*", f, ")")
+              text_sin_lm <- paste0("sin(2*pi*x*", f, ")")
+              text_cos_lm <- paste0("cos(2*pi*x*", f, ")")
               model <- paste(model, paste(label_sin,text_sin,sep = "*"), sep = " + ")
               model_lm <- paste(model_lm, text_sin_lm, text_cos_lm, sep = " + ")
               model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
@@ -8024,14 +8024,14 @@ server <- function(input,output,session) {
                 showNotification(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,"). Fitting results may be unreliable."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
-              label_sin <- paste("S",i,sep = "")
-              label_cos <- paste("C",i,sep = "")
-              text_sin <- sprintf("I(sin(2*pi*(x-%f)*%f))",as.numeric(refs),f)
-              text_cos <- sprintf("I(cos(2*pi*(x-%f)*%f))",as.numeric(refs),f)
-              text_sin_kf <- sprintf("sin(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
-              text_cos_kf <- sprintf("cos(2*pi*(x[k]-%f)*%f)",as.numeric(refs),f)
-              text_sin_lm <- sprintf("sin(2*pi*x*%f)",f)
-              text_cos_lm <- sprintf("cos(2*pi*x*%f)",f)
+              label_sin <- paste0("S", i)
+              label_cos <- paste0("C", i)
+              text_sin <- paste0("I(sin(2*pi*(x-", refs, ")*", f, "))")
+              text_cos <- paste0("I(cos(2*pi*(x-", refs, ")*", f, "))")
+              text_sin_kf <- paste0("sin(2*pi*(x[k]-", refs, ")*", f, ")")
+              text_cos_kf <- paste0("cos(2*pi*(x[k]-", refs, ")*", f, ")")
+              text_sin_lm <- paste0("sin(2*pi*x*", f, ")")
+              text_cos_lm <- paste0("cos(2*pi*x*", f, ")")
               model <- paste(model, paste(label_sin,text_sin,sep = "*"), sep = " + ")
               model_lm <- paste(model_lm, text_sin_lm, text_cos_lm, sep = " + ")
               model_kf_inst <- paste(model_kf_inst, paste(paste0("e[k,",j,"]"),text_sin_kf,sep = "*"), sep = " + ")
@@ -8094,8 +8094,8 @@ server <- function(input,output,session) {
               showNotification(paste("The period for sinusoid ",i," is way out of the data bounds and has been neglected."), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
             }
           }
-          line_S0 <- paste(sprintf("%.7f",as.numeric(S0)), collapse = ", ")
-          line_eS0 <- paste(sprintf("%.7f",as.numeric(eS0)), collapse = ", ")
+          line_S0 <- paste(S0, collapse = ", ")
+          line_eS0 <- paste(eS0, collapse = ", ")
           updateTextInput(session, "S0", value = line_S0)
           updateTextInput(session, "eS0", value = line_eS0)
         }
@@ -8148,8 +8148,8 @@ server <- function(input,output,session) {
                       O0[i] <- trans$LScoefs[match(paste0("O",i), trans$names)]
                       eO0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("O",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
                     }
-                    line_O0 <- paste(sprintf("%.7f",as.numeric(O0)), collapse = ", ")
-                    line_eO0 <- paste(sprintf("%.7f",as.numeric(eO0)), collapse = ", ")
+                    line_O0 <- paste(O0, collapse = ", ")
+                    line_eO0 <- paste(eO0, collapse = ", ")
                     updateTextInput(session, "O0", value = line_O0)
                     updateTextInput(session, "eO0", value = line_eO0)
                   }
@@ -8285,15 +8285,15 @@ server <- function(input,output,session) {
             }
           }
           if (update > 0) {
-            line_E0 <- paste(sprintf("%.7f",as.numeric(E0)), collapse = ", ")
-            line_TE0 <- paste(sprintf("%.7f",as.numeric(TE0)), collapse = ", ")
+            line_E0 <- paste(E0, collapse = ", ")
+            line_TE0 <- paste(TE0, collapse = ", ")
             updateTextInput(session, "E0", value = line_E0)
             updateTextInput(session, "TE0", value = line_TE0)
             if (input$fitType == 1) {
               req(info$stop)
             } else if (input$fitType == 2) {
-              line_eE0 <- paste(sprintf("%.7f",as.numeric(eE0)), collapse = ", ")
-              line_eTE0 <- paste(sprintf("%.7f",as.numeric(eTE0)), collapse = ", ")
+              line_eE0 <- paste(eE0, collapse = ", ")
+              line_eTE0 <- paste(eTE0, collapse = ", ")
               updateTextInput(session, "eE0", value = line_eE0)
               updateTextInput(session, "eTE0", value = line_eTE0)
             }
@@ -8303,7 +8303,7 @@ server <- function(input,output,session) {
               info$run <- T
               label1 <- paste0("E",i)
               label2 <- paste0("TauE",i)
-              text_exp <- sprintf("%f",as.numeric(expos[i]))
+              text_exp <- expos[i]
               model <- paste(model, paste(label1,"*I(x>",text_exp,")*(exp((",text_exp,"-x)/",label2,"))"), sep = " + ")
               model_kf_inst <- paste(model_kf_inst, paste("e[k,",j,"]","*I(x[k]>",text_exp,")*(exp((",text_exp,"-x[k])/e[k,",j + 1,"]))"), sep = " + ")
               model_kf_mean <- paste(model_kf_mean, paste("e[k,",j,"]","*I(x[k]>",text_exp,")*(exp((",text_exp,"-x[k])/e[k,",j + 1,"]))"), sep = " + ")
@@ -8445,15 +8445,15 @@ server <- function(input,output,session) {
             }
           }
           if (update > 0) {
-            line_L0 <- paste(sprintf("%.7f",as.numeric(L0)), collapse = ", ")
-            line_TL0 <- paste(sprintf("%.7f",as.numeric(TL0)), collapse = ", ")
+            line_L0 <- paste(L0, collapse = ", ")
+            line_TL0 <- paste(TL0, collapse = ", ")
             updateTextInput(session, "L0", value = line_L0)
             updateTextInput(session, "TL0", value = line_TL0)
             if (input$fitType == 1) {
               req(info$stop)
             } else if (input$fitType == 2) {
-              line_eL0 <- paste(sprintf("%.7f",as.numeric(eL0)), collapse = ", ")
-              line_eTL0 <- paste(sprintf("%.7f",as.numeric(eTL0)), collapse = ", ")
+              line_eL0 <- paste(eL0, collapse = ", ")
+              line_eTL0 <- paste(eTL0, collapse = ", ")
               updateTextInput(session, "eL0", value = line_eL0)
               updateTextInput(session, "eTL0", value = line_eTL0)
             }
@@ -8463,7 +8463,7 @@ server <- function(input,output,session) {
               info$run <- T
               label1 <- paste0("L",i)
               label2 <- paste0("TauL",i)
-              text_log <- sprintf("%f",as.numeric(logas[i]))
+              text_log <- logas[i]
               model <- paste(model, paste(label1,"*log1p(I(x>",text_log,")*(x-",text_log,")/",label2,")"), sep = " + ")
               model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*log1p(I(x[k] > ",text_log,")*(x[k]-",text_log,")/e[k,",j + 1,"])"), sep = " + ")
               model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*log1p(I(x[k] > ",text_log,")*(x[k]-",text_log,")/e[k,",j + 1,"])"), sep = " + ")
@@ -8512,7 +8512,7 @@ server <- function(input,output,session) {
                 req(info$stop)
               }
             }
-            text_rate <- sprintf("%f",as.numeric(refp))
+            text_rate <- refp
             i <- 0
             for (degree in 2:inputs$PolyCoef) {
               i <- i + 1
@@ -8525,8 +8525,8 @@ server <- function(input,output,session) {
                   } else {
                     eP0[i] <- 1
                   }
-                  line_P0 <- paste(sprintf("%f",as.numeric(P0)), collapse = ", ")
-                  line_eP0 <- paste(sprintf("%f",as.numeric(eP0)), collapse = ", ")
+                  line_P0 <- paste(P0, collapse = ", ")
+                  line_eP0 <- paste(eP0, collapse = ", ")
                   updateTextInput(session, "P0", value = line_P0)
                   updateTextInput(session, "eP0", value = line_eP0)
                 }
@@ -8990,7 +8990,7 @@ server <- function(input,output,session) {
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
-        cat(sprintf('# Parameter: %s = %f +/- %f',dimnames(trans$LScoefs)[[1]][i],trans$LScoefs[i,1],trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', trans$LScoefs[i,1], '+/-', trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
@@ -9003,24 +9003,24 @@ server <- function(input,output,session) {
       } else if (input$kf == 2) {
         cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       }
-      cat(sprintf('# Parameter: %s = %f +/- %f', colnames(trans$kalman), colMeans(trans$kalman), colMeans(trans$kalman_unc)), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# A priori: %s = %f +/- %f', trans$kalman_info$nouns, trans$kalman_info$apriori, trans$kalman_info$error), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# Process noise: %s = %f', trans$kalman_info$nouns, as.list(sqrt(trans$kalman_info$processNoise))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(sprintf('# Measurement noise: %f', inputs$ObsError), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Parameter:', colnames(trans$kalman), '=', colMeans(trans$kalman), '+/-', colMeans(trans$kalman_unc)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# A priori:', trans$kalman_info$nouns, '=', trans$kalman_info$apriori, '+/-', trans$kalman_info$error), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(sqrt(trans$kalman_info$processNoise))), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Measurement noise:', inputs$ObsError), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (length(trans$offsetEpochs) > 0) {
       cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
       if (isTruthy(trans$midas_vel2)) {
-        cat(sprintf('# MIDAS: %f +/- %f #discontinuities included',trans$midas_vel,trans$midas_sig), file = file_out, sep = "\n", fill = F, append = T)
-        cat(sprintf('# MIDAS: %f +/- %f #discontinuities skipped',trans$midas_vel2,trans$midas_sig2), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', trans$midas_vel2, '+/-', trans$midas_sig2, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
       } else {
-        cat(sprintf('# MIDAS: %f +/- %f #discontinuities included',trans$midas_vel,trans$midas_sig), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (input$waveform && inputs$waveformPeriod > 0) {
-      cat(sprintf('# Waveform: %f',as.numeric(inputs$waveformPeriod)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod)), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(input$filter)) {
       if (isTruthy(trans$vondrak) && (isTruthy(inputs$low) || isTruthy(inputs$high))) {
@@ -9030,36 +9030,36 @@ server <- function(input,output,session) {
           origen <- " from residual series"
         }
         if (isTruthy(trans$vondrak[1]) && isTruthy(trans$vondrak[2])) {
-          cat(paste0(sprintf('# Vondrak: %f (low) %f (high)',as.numeric(trans$vondrak[1]),as.numeric(trans$vondrak[2])), origen), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Vondrak:', trans$vondrak[1], '(low)', trans$vondrak[2], '(high)', origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[1])) {
-          cat(paste0(sprintf('# Vondrak: %f (low)',as.numeric(trans$vondrak[1])), origen), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Vondrak:', trans$vondrak[1], '(low)', origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[2])) {
-          cat(sprintf('# Vondrak: %f (high)',as.numeric(trans$vondrak[2])), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Vondrak:', trans$vondrak[2], '(high)'), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
     }
     if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
       if (isTruthy(trans$noise[1])) {
-        cat(sprintf('# Noise: WH %f +/- %f ',as.numeric(trans$noise[1]),as.numeric(trans$noise[2])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: WH', trans$noise[1], '+/-', trans$noise[2]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[3])) {
-        cat(sprintf('# Noise: FL %f +/- %f ',as.numeric(trans$noise[3]),as.numeric(trans$noise[4])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: FL', trans$noise[3], '+/-', trans$noise[4]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[5])) {
-        cat(sprintf('# Noise: RW %f +/- %f ',as.numeric(trans$noise[5]),as.numeric(trans$noise[6])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: RW', trans$noise[5], '+/-', trans$noise[6]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[7])) {
-        cat(sprintf('# Noise: PL %f +/- %f ',as.numeric(trans$noise[7]),as.numeric(trans$noise[8])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: PL', trans$noise[7], '+/-', trans$noise[8]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[9])) {
-        cat(sprintf('# Noise: K  %f +/- %f ',as.numeric(trans$noise[9]),as.numeric(trans$noise[10])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: K',  trans$noise[9], '+/-', trans$noise[10]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[11])) {
         cat(sprintf('# Noise: MLE %f ',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (isTruthy(inputs$step) && inputs$step > 0) {
-      cat(sprintf('# Resampling: %f ',inputs$step), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Resampling:', inputs$step), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
       cat(sprintf('# Corrected with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
