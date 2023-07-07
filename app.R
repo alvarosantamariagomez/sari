@@ -7206,7 +7206,7 @@ server <- function(input,output,session) {
               } else if (input$optionSecondary == 2) {
                 if (input$tunits == 1) {
                   delta <- as.numeric(names(sort(table(table$x - floor(table$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
-                  if (length(delta) == 1 && delta != 0) {
+                  if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
                     table2$x <- table2$x + delta
                     showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
                   } else {
