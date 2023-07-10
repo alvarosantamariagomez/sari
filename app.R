@@ -9777,7 +9777,7 @@ server <- function(input,output,session) {
       if (tolower(product) == "spotgins_pos") {
         format <- 1
         updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
-        name <- paste0(toupper(station),".enu")
+        name <- paste0("SPOTGINS_",toupper(station),".enu")
       } else if (tolower(product) == "uga_pos") {
         format <- 2
         name <- paste0(toupper(substr(station, 1, 4)),".pos")
