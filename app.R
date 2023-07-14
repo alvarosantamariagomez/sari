@@ -6921,53 +6921,55 @@ server <- function(input,output,session) {
     }
     # estimating MLE duration
     info$timeMLE <- 0
-    if (input$white) {
-      if (input$flicker) {
-        if (input$randomw) { # WH + FN + RW
-          if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(3e-08*info$points^2.9261)
-          } else {
-            info$timeMLE <- ceiling(7e-08*info$points^2.7735)
+    if (isTruthy(info$points) && info$points > 0) {
+      if (input$white) {
+        if (input$flicker) {
+          if (input$randomw) { # WH + FN + RW
+            if (isTruthy(input$noise_unc)) {
+              info$timeMLE <- ceiling(3e-08*info$points^2.9261)
+            } else {
+              info$timeMLE <- ceiling(7e-08*info$points^2.7735)
+            }
+          } else {  # WH + FN
+            if (isTruthy(input$noise_unc)) {
+              info$timeMLE <- ceiling(7e-08*info$points^2.7297)
+            } else {
+              info$timeMLE <- ceiling(6e-08*info$points^2.6829)
+            }
           }
-        } else {  # WH + FN
+        } else if (input$randomw) { # WH + RW
           if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(7e-08*info$points^2.7297)
+            info$timeMLE <- ceiling(6e-10*info$points^3.3903)
           } else {
-            info$timeMLE <- ceiling(6e-08*info$points^2.6829)
+            info$timeMLE <- ceiling(2e-09*info$points^3.2207)
           }
+        } else if (input$powerl) { # WH + PL
+          if (isTruthy(input$noise_unc)) {
+            info$timeMLE <- ceiling(5e-08*info$points^2.9773)
+          } else {
+            info$timeMLE <- ceiling(4e-08*info$points^2.9191)
+          }
+        } else { # WH
+          info$timeMLE <- 2
         }
-      } else if (input$randomw) { # WH + RW
-        if (isTruthy(input$noise_unc)) {
-          info$timeMLE <- ceiling(6e-10*info$points^3.3903)
-        } else {
-          info$timeMLE <- ceiling(2e-09*info$points^3.2207)
+      } else if (input$flicker) {
+        if (input$randomw) { # FN + RW
+          if (isTruthy(input$noise_unc)) {
+            info$timeMLE <- ceiling(3e-08*info$points^2.8560)
+          } else {
+            info$timeMLE <- ceiling(2e-08*info$points^2.8413)
+          }
+        } else { # FN
+          info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
         }
-      } else if (input$powerl) { # WH + PL
-        if (isTruthy(input$noise_unc)) {
-          info$timeMLE <- ceiling(5e-08*info$points^2.9773)
-        } else {
-          info$timeMLE <- ceiling(4e-08*info$points^2.9191)
-        }
-      } else { # WH
-        info$timeMLE <- 2
-      }
-    } else if (input$flicker) {
-      if (input$randomw) { # FN + RW
-        if (isTruthy(input$noise_unc)) {
-          info$timeMLE <- ceiling(3e-08*info$points^2.8560)
-        } else {
-          info$timeMLE <- ceiling(2e-08*info$points^2.8413)
-        }
-      } else { # FN
+      } else if (input$randomw) { # RW
         info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
-      }
-    } else if (input$randomw) { # RW
-      info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
-    } else if (input$powerl) { # PL
-      if (isTruthy(input$noise_unc)) {
-        info$timeMLE <- ceiling(5e-08*info$points^2.9304)
-      } else {
-        info$timeMLE <- ceiling(1e-08*info$points^3.0321)
+      } else if (input$powerl) { # PL
+        if (isTruthy(input$noise_unc)) {
+          info$timeMLE <- ceiling(5e-08*info$points^2.9304)
+        } else {
+          info$timeMLE <- ceiling(1e-08*info$points^3.0321)
+        }
       }
     }
     if (info$timeMLE > 0) {
