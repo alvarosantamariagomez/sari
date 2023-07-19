@@ -7669,6 +7669,7 @@ server <- function(input,output,session) {
     removeNotification("missing_sinusoidal_noise")
     removeNotification("repeated_offset_epoch")
     removeNotification("useless_offset_epoch")
+    removeNotification("outside_offset_epoch")
     removeNotification("bad_offset_epoch")
     removeNotification("no_exponential")
     removeNotification("no_logarithmic")
@@ -8115,14 +8116,23 @@ server <- function(input,output,session) {
           req(info$stop)
         }
         # check for soln without observations
-        invalidSegment <- sapply(seq(length(offsetEpochs) - 1), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x] & trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x + 1]]) ) == 0
-        for (soln in which(invalidSegment)) {
-          uselessOffset_id1 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln]))
-          uselessOffset_id2 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln + 1]))
-          showNotification(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,". Check the input values."), action = NULL, duration = 10, closeButton = T, id = "useless_offset_epoch", type = "error", session = getDefaultReactiveDomain())
-          info$run <- F
-          req(info$stop) # will stop at the first useless offset, but that's ok
+        if (length(offsetEpochs) > 1) {
+          invalidSegment <- sapply(seq(length(offsetEpochs) - 1), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x] & trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x + 1]]) ) == 0
+          for (soln in which(invalidSegment)) {
+            uselessOffset_id1 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln]))
+            uselessOffset_id2 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln + 1]))
+            showNotification(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,". One of them needs to be removed."), action = NULL, duration = 10, closeButton = T, id = "useless_offset_epoch", type = "error", session = getDefaultReactiveDomain())
+            info$run <- F
+            req(info$stop) # will stop at the first useless offset, but that's ok
+          }
         }
+        # check for offsets outside data limits
+        out1 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
+        out2 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
+        out <- out1 + out2 > 0
+        uselessOffset_ids <- sapply(seq(length(which(out))), function(x) which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[x])))
+        showNotification(paste("There are no observations before or after offsets:", paste0("#",uselessOffset_ids, collapse = " "),". These offsets where not used."), action = NULL, duration = 10, closeButton = T, id = "outside_offset_epoch", type = "warning", session = getDefaultReactiveDomain())
+        
         O0 <- unlist(strsplit(input$O0, split = ","))
         eO0 <- unlist(strsplit(input$eO0, split = ","))
         trans$offsetEpochs <- NULL
