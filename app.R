@@ -4841,7 +4841,7 @@ server <- function(input,output,session) {
   observeEvent(input$plot_2click, {
     req(file$primary)
     brush <- input$plot_brush
-    if (!is.null(brush)) {
+    if (!is.null(brush) && length(trans$x[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) > 0) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
       ranges$y1 <- c(brush$ymin, brush$ymax)
       if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
@@ -4875,11 +4875,11 @@ server <- function(input,output,session) {
     } else if (isTruthy(input$vondrak_brush)) {
       brush <- input$vondrak_brush
     }
-    if (!is.null(brush)) {
+    if (!is.null(brush) && length(trans$x[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) > 0) {
       ranges$x2 <- c(brush$xmin, brush$xmax)
       ranges$y2 <- c(brush$ymin, brush$ymax)
       ranges$x1 <- ranges$x4 <- ranges$x2
-      ids <- trans$x > ranges$x1[1] & trans$x < ranges$x1[2]
+      ids <- trans$x0 > ranges$x1[1] & trans$x0 < ranges$x1[2]
       ranges$y1 <- range(trans$y[ids])
       if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
@@ -4905,7 +4905,7 @@ server <- function(input,output,session) {
   observeEvent(input$lomb_2click, {
     req(file$primary)
     brush <- input$lomb_brush
-    if (!is.null(brush)) {
+    if (!is.null(brush) && length(1/trans$fs[1/trans$fs >= brush$xmin & 1/trans$fs <= brush$xmax]) > 0) {
       ranges$x3 <- c(brush$xmin, brush$xmax)
       ranges$y3 <- c(brush$ymin, brush$ymax)
     } else {
