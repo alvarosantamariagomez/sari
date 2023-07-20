@@ -1608,7 +1608,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           conditionalPanel(
                                                                             condition = "input.mle == true",
                                                                             htmlOutput("est.mle"),
-                                                                            htmlOutput("est.unc")
+                                                                            htmlOutput("est.unc"),
+                                                                            htmlOutput("crossover")
                                                                           )
                                                                       ),
                                                                       style = "primary")
@@ -3817,60 +3818,49 @@ server <- function(input,output,session) {
           fs_hz <- 1/(info$sampling*f_scale)
           f_hz <- trans$fs/f_scale
           if (isTruthy(info$white)) {
-            k <- 0
-            b0 <- trans$noise[1]
+            wn <- noise_var(trans$noise[1],0)
           } else {
-            b0 <- 0
-            k <- 0
+            wn <- 0
           }
-          Dk <- 2*(2*pi)^k * f_scale^(k/2)
-          wn <- b0^2 * Dk / (fs_hz^(1 + (k/2))) #from Williams 2003 (Eq. 10)
-          pwn <- wn * f_hz^k
-          if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
-            bk <- trans$noise[3]
-            k <- -1
-          } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
-            bk <- trans$noise[5]
-            k <- -2
-          } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
-            bk <- trans$noise[7]
-            k <- trans$noise[9]
-          } else {
-            bk <- 0
-            k <- 0
-          }
-          Dk <- 2*(2*pi)^k * (24*60*60*365.25)^(k/2)
-          pl <- bk^2 * Dk / (fs_hz^(1 + k/2))
-          pln <- pl * f_hz^k
-          ps <- pmax(pwn, pln)
-          ps <- ps*trans$var/sum(ps)
-          ps_long <- head(ps, n = 1)
-          ps_short <- tail(ps, n = 1)
+          pwn <- wn * f_hz^0
+          psd <- pwn
           crossover <- 0
-          if (isTruthy(b0) && isTruthy(bk)) {
-            if (b0 > 0 && bk > 0) {
-              crossover <- f_scale * ( (b0^2/bk^2) * 2*pi*sqrt(f_scale)/sqrt(fs_hz) )^(-1) #following Williams 2003
-            } else if (b0 > 0) {
-              crossover <- 1/(inputs$long_period + 1)
-            } else if (bk > 0) {
-              crossover <- 2/inputs$short_period
+          if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
+            fl <- noise_var(trans$noise[3],-1)
+            pfl <- fl * f_hz^-1
+            psd <- sqrt(psd^2 + pfl^2)
+            crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
+            type_crossover <- "Flicker / White"
+            if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
+              rw <- noise_var(trans$noise[5],-2)
+              prw <- rw * f_hz^-2
+              psd <- sqrt(psd^2 + prw^2)
+              crossover <- c(crossover, suppressWarnings(min(1/trans$fs[prw > pfl])))
+              type_crossover <- c(type_crossover, "Random walk / Flicker")
             }
-          } else {
-            showNotification("Unable to plot the noise power spectrum on top of the periodogram. Check the noise analysis results.", action = NULL, duration = 10, closeButton = T, id = "no_noise_psd", type = "error", session = getDefaultReactiveDomain())
+          } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
+            rw <- noise_var(trans$noise[5],-2)
+            prw <- rw * f_hz^-2
+            psd <- sqrt(psd^2 + prw^2)
+            crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
+            type_crossover <- "Random walk / White"
+          } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
+            pl <- noise_var(trans$noise[7],trans$noise[9])
+            ppl <- pl * f_hz^trans$noise[9]
+            psd <- sqrt(psd^2 + ppl^2)
+            crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
+            type_crossover <- "Power-law / White"
           }
-          if (crossover > 0) {
-            if (1/crossover <= inputs$short_period) {
-              lombx <- c(inputs$long_period,inputs$short_period)
-              lomby <- c(ps_long,ps_long*(lombx[2]/inputs$long_period)^(-k))
-            } else if (1/crossover >= inputs$long_period) {
-              lombx <- c(inputs$long_period,inputs$short_period)
-              lomby <- c(ps_short,ps_short)
+          psd <- psd*trans$var/sum(psd)
+          lines(1/trans$fs,psd, col = "red", lty = 2, lwd = 2)
+          output$crossover <- renderUI({
+            if (length(crossover) > 0) {
+              line <- sprintf("<br/>Crossover period %s = %.2f %s\n", type_crossover, crossover, period)
+              HTML(line)
             } else {
-              lombx <- c(inputs$long_period,1/crossover,1/crossover,inputs$short_period)
-              lomby <- c(ps_long,ps_short,ps_short,ps_short)
+              NULL
             }
-            lines(lombx,lomby, col = "red", lty = 2, lwd = 2)
-          }
+          })
         } else {
           c <- max(which(trans$spectra_old))
           p <- trans$psd[,c]
@@ -4455,7 +4445,7 @@ server <- function(input,output,session) {
                            # Quasi-Newton method as in optim, but seems to run faster
                            method = "NLM"
                            fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                         fscale = 1, print.level = 2, ndigit = 1, gradtol = 1e-2,
+                                         fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
                                          stepmax = 1e1, steptol = 1e-2, iterlim = 100, check.analyticals = F
                            )
                            setProgress(0.75)
@@ -9958,6 +9948,19 @@ server <- function(input,output,session) {
       gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
     }
     return(sqrt(amp^2 * v * info$sampling^beta * info$points^gamma))
+  }
+  noise_var <- function(std,k) {
+    if (input$tunits == 1) { #days
+      f_scale <- 24*60*60
+    } else if (input$tunits == 2) { #weeks
+      f_scale <- 7*24*60*60
+    } else if (input$tunits == 3) { #years
+      f_scale <- 365.25*24*60*60
+    }
+    fs_hz <- 1/(info$sampling*f_scale)
+    f_hz <- trans$fs/f_scale
+    Dk <- 2*(2*pi)^k * f_scale^(k/2)
+    return(std^2 * Dk / (fs_hz^(1 + (k/2)))) #from Williams 2003 (Eq. 10)
   }
 }
 
