@@ -6827,6 +6827,7 @@ server <- function(input,output,session) {
     output$offsetFound <- renderUI({
       NULL
     })
+    enable("neuenu")
   })
 
   # Observe hide buttons ####
@@ -7383,6 +7384,7 @@ server <- function(input,output,session) {
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
         updateRadioButtons(session, inputId = "neuenu", selected = 2)
+        disable("neuenu")
       }
       # estracting coordinates from SONEL series
       if (server == "sonel") {
@@ -7392,6 +7394,7 @@ server <- function(input,output,session) {
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
         updateRadioButtons(session, inputId = "neuenu", selected = 1)
+        disable("neuenu")
       }
       # extracting series from SIRGAS NEU format
       # } else if (server == "sirgas") {
