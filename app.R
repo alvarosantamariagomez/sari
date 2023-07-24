@@ -148,11 +148,11 @@ load_data <- function(seconds) {
 
 tabContents <- function(tabNum) {
   if (tabNum == 1) {
-    tabName <- uiOutput("tabName")
+    tabName <- uiOutput("tabName1")
   } else if (tabNum == 2) {
-    tabName <- "2nd component"
+    tabName <- uiOutput("tabName2")
   } else if (tabNum == 3) {
-    tabName <- "3rd component"
+    tabName <- uiOutput("tabName3")
   }
   tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
            tags$style(type = "text/css", "body {padding-top: 60px;}"),
@@ -1766,6 +1766,9 @@ server <- function(input,output,session) {
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   debug <- F # saving the environment
   messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
+  output$tabName1 <- renderText({ "1st component" })
+  output$tabName2 <- renderText({ "2nd component" })
+  output$tabName3 <- renderText({ "3rd component" })
 
   # Welcome ####
   observe({
@@ -6317,14 +6320,13 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 5)
 
-  # Observe hide buttons ####
+  # Observe hide tabs ####
   observeEvent(input$format, {
-    if (input$format == 4) {
-      output$tabName = renderText({ "1D series" })
+    if (input$format == 4) { #1D
+      output$tabName1 <- renderText({ "1D series" })
       hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
     } else {
-      output$tabName = renderText({ "1st component" })
       showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
     }
@@ -6828,6 +6830,9 @@ server <- function(input,output,session) {
       NULL
     })
     enable("neuenu")
+    output$tabName1 <- renderText({ "1st component" })
+    output$tabName2 <- renderText({ "2nd component" })
+    output$tabName3 <- renderText({ "3rd component" })
   })
 
   # Observe hide buttons ####
@@ -7349,6 +7354,38 @@ server <- function(input,output,session) {
               info$minx <- min(table$x, na.rm = T)
               info$maxx <- max(table$x, na.rm = T)
               ranges$x1 <- c(info$minx, info$maxx)
+              # Setting new tab names if necessary
+              if (info$format == 1) { #NEU/ENU
+                if (isTruthy(url$server)) {
+                  if (url$server == "formater") {
+                    output$tabName1 <- renderText({ "East component" })
+                    output$tabName2 <- renderText({ "North component" })
+                    output$tabName3 <- renderText({ "Up component" })
+                  } else if (url$server == "sonel" || url$server == "igs" || url$server == "jpl") {
+                    output$tabName1 <- renderText({ "North component" })
+                    output$tabName2 <- renderText({ "East component" })
+                    output$tabName3 <- renderText({ "Up component" })
+                  }
+                }
+                showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+                showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+              } else if (info$format == 2) { #PBO
+                output$tabName1 <- renderText({ "North component" })
+                output$tabName2 <- renderText({ "East component" })
+                output$tabName3 <- renderText({ "Up component" })
+                showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+                showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+              } else if (info$format == 3) { #NGL
+                output$tabName1 <- renderText({ "East component" })
+                output$tabName2 <- renderText({ "North component" })
+                output$tabName3 <- renderText({ "Up component" })
+                showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+                showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+              } else if (info$format == 4) { #1D
+                output$tabName1 <- renderText({ "1D series" })
+                hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+                hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+              }
               table
             }
           }
