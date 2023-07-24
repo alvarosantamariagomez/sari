@@ -7455,6 +7455,12 @@ server <- function(input,output,session) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
                   extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7)
                 }
+              } else if (server == "formater") { # SPOTGINS series
+                if (input$tunits == 2) {
+                  extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                } else if (input$tunits == 3) {
+                  extracted$x <- tableAll[,9]
+                }
               }
             } else {
               extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
