@@ -7049,9 +7049,11 @@ server <- function(input,output,session) {
     table <- NULL
     table2 <- NULL
     if (isTruthy(url$file)) {
-      table <- extract_table(file$primary$file,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server)
+      filein <- file$primary$file
+      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server)
     } else {
-      table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
+      filein <- input$series$datapath
+      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
     }
     if (!is.null(table)) {
       # Extracting coordinates if known and not already set
@@ -7059,26 +7061,26 @@ server <- function(input,output,session) {
         if (info$format == 1) {
           if (isTruthy(url$server)) {
             if (url$server == "formater") {
-              coordinates <- unlist(strsplit(grep("_pos ", readLines(file$primary$file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
+              coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
             } else if (url$server == "sonel") {
-              coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(file$primary$file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
+              coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
             } else if (url$server == "igs") {
-              tableAll <- try(read.table(text = trimws(readLines(file$primary$file)[1]), comment.char = "#"), silent = T)
+              tableAll <- try(read.table(text = trimws(readLines(filein)[1]), comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
               updateTextInput(inputId = "station_lat", value = tableAll[1,5])
               updateTextInput(inputId = "station_lon", value = tableAll[1,6])
             }
           }
         } else if (info$format == 2) {
-          ref_pos <- grep("^XYZ Reference position",readLines(file$primary$file, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+          ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
           if (length(ref_pos) > 0) {
             updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
             updateTextInput(inputId = "station_x", value = unlist(strsplit(ref_pos, split = " +"))[5])
@@ -7086,8 +7088,8 @@ server <- function(input,output,session) {
             updateTextInput(inputId = "station_z", value = unlist(strsplit(ref_pos, split = " +"))[7])
           }
         } else if (info$format == 3) {
-          skip <- which(grepl("site YYMMMDD", readLines(file$primary$file, warn = F)))
-          tableAll <- try(read.table(file$primary$file, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
+          skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
+          tableAll <- try(read.table(filein, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
           updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
           updateTextInput(inputId = "station_lat", value = tableAll[1,21])
           updateTextInput(inputId = "station_lon", value = tableAll[1,22] + 360)
