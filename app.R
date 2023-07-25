@@ -5589,36 +5589,36 @@ server <- function(input,output,session) {
       } else if (inputs$server1 == "formater") {
         updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
       } else if (inputs$server1 == "igs") {
-        updateSelectInput(session, inputId = "product1", choices = list("NEU"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "")
       } else if (inputs$server1 == "euref") {
-        updateSelectInput(session, inputId = "product1", choices = list("PBO"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("IGb14"), selected = "")
       } else if (inputs$server1 == "ngl") {
         updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
       } else if (inputs$server1 == "jpl") {
-        updateSelectInput(session, inputId = "product1", choices = list("ENU"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "")
       } else if (inputs$server1 == "eostls") {
         updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
       } else if (inputs$server1 == "sonel") {
-        updateSelectInput(session, inputId = "product1", choices = list("NEU"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "")
       }
     }
     if (isTruthy(inputs$station2)) {
       if (inputs$server2 == "renag") {
-        updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
+        updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "")
       } else if (inputs$server2 == "formater") {
-        updateSelectInput(session, inputId = "product2", choices = list("", "SPOTGINS_POS", "UGA_POS"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
       } else if (inputs$server2 == "igs") {
-        updateSelectInput(session, inputId = "product2", choices = list("NEU"), selected = "NEU")
+        updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "")
       } else if (inputs$server2 == "euref") {
-        updateSelectInput(session, inputId = "product2", choices = list("PBO"), selected = "PBO")
+        updateSelectInput(session, inputId = "product2", choices = list("IGb14"), selected = "")
       } else if (inputs$server2 == "ngl") {
-        updateSelectInput(session, inputId = "product2", choices = list("", "FINAL", "RAPID"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
       } else if (inputs$server2 == "jpl") {
-        updateSelectInput(session, inputId = "product2", choices = list("ENU"), selected = "ENU")
+        updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "")
       } else if (inputs$server2 == "eostls") {
-        updateSelectInput(session, inputId = "product2", choices = list("", "ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
       } else if (inputs$server2 == "sonel") {
-        updateSelectInput(session, inputId = "product2", choices = list("NEU"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "")
       }
     }
   })
@@ -9790,7 +9790,7 @@ server <- function(input,output,session) {
     #JPL
     } else if (tolower(server) == "jpl") {
       format <- 1
-      if (tolower(product) == "point") {
+      if (tolower(product) == "repro2018aA") {
         name <- paste0(toupper(station),".series")
         file <- paste0("https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/",name)
       } else {
@@ -9800,7 +9800,7 @@ server <- function(input,output,session) {
     #IGS
     } else if (tolower(server) == "igs") {
       format <- 1
-      if (tolower(product) == "neu") {
+      if (tolower(product) == "igs20") {
         name <- paste0(toupper(station),"_igs.plh")
         file <- paste0("ftp://igs-rf.ign.fr/pub/crd/",name)
       } else {
@@ -9810,7 +9810,7 @@ server <- function(input,output,session) {
     #SONEL
     } else if (tolower(server) == "sonel") {
       format <- 1
-      if (tolower(product) == "neu") {
+      if (tolower(product) == "ulr7a") {
         name <- paste0(toupper(station))
         file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
       } else {
@@ -9836,7 +9836,7 @@ server <- function(input,output,session) {
     # EUREF
     } else if (tolower(server) == "euref") {
       format <- 2
-      if (tolower(product) == "pbo") {
+      if (tolower(product) == "igb14") {
         name <- paste0(toupper(station),".pos")
         file <- paste0("https://epncb.eu/ftp/product/cumulative/C2235/pbo/",name)
       } else {
