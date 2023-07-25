@@ -5492,7 +5492,7 @@ server <- function(input,output,session) {
               if (file.exists(file$primary$file)) {
                 downloaded <- readLines(file$primary$file)
                 if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                    length(downloaded < 2)) {
+                    length(downloaded) < 2) {
                   down <- 1
                 }
               }
@@ -5533,7 +5533,7 @@ server <- function(input,output,session) {
                     if (file.exists(file$secondary$file)) {
                       downloaded <- readLines(file$secondary$file)
                       if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                          length(downloaded < 2)) {
+                          length(downloaded) < 2) {
                         down <- 1
                       }
                     }
@@ -5648,7 +5648,7 @@ server <- function(input,output,session) {
         if (file.exists(file$primary$file)) {
           downloaded <- readLines(file$primary$file)
           if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-              length(downloaded < 2)) {
+              length(downloaded) < 2) {
             down <- 1
           }
         }
@@ -5695,7 +5695,7 @@ server <- function(input,output,session) {
         if (file.exists(file$secondary$file)) {
           downloaded <- readLines(file$secondary$file)
           if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-              length(downloaded < 2)) {
+              length(downloaded) < 2) {
             down <- 1
           }
         }
@@ -7054,6 +7054,45 @@ server <- function(input,output,session) {
       table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
     }
     if (!is.null(table)) {
+      # Extracting coordinates if known and not already set
+      if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
+        if (info$format == 1) {
+          if (isTruthy(url$server)) {
+            if (url$server == "formater") {
+              coordinates <- unlist(strsplit(grep("_pos ", readLines(file$primary$file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
+              updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
+              updateTextInput(session, inputId = "station_x", value = coordinates[1])
+              updateTextInput(session, inputId = "station_y", value = coordinates[2])
+              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+            } else if (url$server == "sonel") {
+              coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(file$primary$file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
+              updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
+              updateTextInput(session, inputId = "station_x", value = coordinates[1])
+              updateTextInput(session, inputId = "station_y", value = coordinates[2])
+              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+            } else if (url$server == "igs") {
+              tableAll <- try(read.table(text = trimws(readLines(file$primary$file)[1]), comment.char = "#"), silent = T)
+              updateRadioButtons(inputId = "coordenadas_estacion", selected = 2)
+              updateTextInput(inputId = "station_lat", value = tableAll[1,5])
+              updateTextInput(inputId = "station_lon", value = tableAll[1,6])
+            }
+          }
+        } else if (info$format == 2) {
+          ref_pos <- grep("^XYZ Reference position",readLines(file$primary$file, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+          if (length(ref_pos) > 0) {
+            updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
+            updateTextInput(inputId = "station_x", value = unlist(strsplit(ref_pos, split = " +"))[5])
+            updateTextInput(inputId = "station_y", value = unlist(strsplit(ref_pos, split = " +"))[6])
+            updateTextInput(inputId = "station_z", value = unlist(strsplit(ref_pos, split = " +"))[7])
+          }
+        } else if (info$format == 3) {
+          skip <- which(grepl("site YYMMMDD", readLines(file$primary$file, warn = F)))
+          tableAll <- try(read.table(file$primary$file, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
+          updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+          updateTextInput(inputId = "station_lat", value = tableAll[1,21])
+          updateTextInput(inputId = "station_lon", value = tableAll[1,22] + 360)
+        }
+      }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
         if (url$server == "formater" || url$server == "jpl") {
@@ -7433,22 +7472,6 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
-      # estracting coordinates from SPOTGINS series
-      if (server == "formater") {
-        coordinates <- unlist(strsplit(grep("_pos ", readLines(file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-        updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
-        updateTextInput(session, inputId = "station_x", value = coordinates[1])
-        updateTextInput(session, inputId = "station_y", value = coordinates[2])
-        updateTextInput(session, inputId = "station_z", value = coordinates[3])
-      }
-      # estracting coordinates from SONEL series
-      if (server == "sonel") {
-        coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
-        updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
-        updateTextInput(session, inputId = "station_x", value = coordinates[1])
-        updateTextInput(session, inputId = "station_y", value = coordinates[2])
-        updateTextInput(session, inputId = "station_z", value = coordinates[3])
-      }
       # extracting series from SIRGAS NEU format
       # } else if (server == "sirgas") {
       #   sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
@@ -7458,9 +7481,6 @@ server <- function(input,output,session) {
       # }
       # transforming series from IGS lat lon into NEU format
       if (server == "igs") {
-        updateRadioButtons(inputId = "coordenadas_estacion", selected = 2)
-        updateTextInput(inputId = "station_lat", value = tableAll[1,5])
-        updateTextInput(inputId = "station_lon", value = tableAll[1,6])
         a <- 6378137
         b <- 6356752.314140347
         e2 <- (a^2 - b^2) / a^2
@@ -7543,14 +7563,6 @@ server <- function(input,output,session) {
         } else if (input$tunits == 3) {
           extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
         }
-        if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
-          ref_pos <- grep("^XYZ Reference position",readLines(file, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
-          if (length(ref_pos) > 0) {
-            updateTextInput(inputId = "station_x", value = unlist(strsplit(ref_pos, split = " +"))[5])
-            updateTextInput(inputId = "station_y", value = unlist(strsplit(ref_pos, split = " +"))[6])
-            updateTextInput(inputId = "station_z", value = unlist(strsplit(ref_pos, split = " +"))[7])
-          }
-        }
       }
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
@@ -7576,11 +7588,6 @@ server <- function(input,output,session) {
         }
         extracted$y3 <- tableAll[,12] - tableAll[1,12] + tableAll[,13] #Up
         extracted$sy3 <- tableAll[,17]
-        if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
-          updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
-          updateTextInput(inputId = "station_lat", value = tableAll[1,21])
-          updateTextInput(inputId = "station_lon", value = tableAll[1,22] + 360)
-        }
       }
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
