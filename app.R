@@ -840,12 +840,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  div("Station coordinates", helpPopup("Cartesian coordinates in the same units as the series. Geographic coordinates in decimal degrees"))
                                                                           ),
                                                                           column(6, align = "right",
-                                                                                 radioButtons(inputId = "coordenadas_estacion", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                 radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
                                                                           )
                                                                         ),
                                                                         fluidRow(
                                                                           conditionalPanel(
-                                                                            condition = "input.coordenadas_estacion == 1",
+                                                                            condition = "input.station_coordinates == 1",
                                                                             column(4,
                                                                                    textInput(inputId = "station_x", label = "Station X", value = "")
                                                                             ),
@@ -857,7 +857,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                           ),
                                                                           conditionalPanel(
-                                                                            condition = "input.coordenadas_estacion == 2",
+                                                                            condition = "input.station_coordinates == 2",
                                                                             column(4,
                                                                                    textInput(inputId = "station_lat", label = "Station latitude", value = "")
                                                                             ),
@@ -5811,7 +5811,7 @@ server <- function(input,output,session) {
         elements <- unlist(strsplit(record[[l]], "\\s+", fixed = F, perl = T, useBytes = F))
         if (length(elements) == 7) { # Cartesian
           stationCartesian <- c(elements[2],elements[3],elements[4])
-          updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
+          updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
           updateTextInput(session, inputId = "station_x", value = stationCartesian[1])
           updateTextInput(session, inputId = "station_y", value = stationCartesian[2])
           updateTextInput(session, inputId = "station_z", value = stationCartesian[3])
@@ -5830,7 +5830,7 @@ server <- function(input,output,session) {
           }
         } else if (length(elements) == 6) { #Geographic
           stationGeo <- c(elements[2],elements[3])
-          updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+          updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
           updateTextInput(session, inputId = "station_lat", value = stationGeo[1])
           updateTextInput(session, inputId = "station_lon", value = stationGeo[2])
           if (sqrt(as.numeric(elements[4])^2 + as.numeric(elements[5])^2 + as.numeric(elements[6])^2) > 2) { #Geographic
@@ -7060,19 +7060,19 @@ server <- function(input,output,session) {
           if (isTruthy(url$server)) {
             if (url$server == "formater") {
               coordinates <- unlist(strsplit(grep("_pos ", readLines(file$primary$file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-              updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
+              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
             } else if (url$server == "sonel") {
               coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(file$primary$file, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
-              updateRadioButtons(session, inputId = "coordenadas_estacion", selected = 1)
+              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
             } else if (url$server == "igs") {
               tableAll <- try(read.table(text = trimws(readLines(file$primary$file)[1]), comment.char = "#"), silent = T)
-              updateRadioButtons(inputId = "coordenadas_estacion", selected = 2)
+              updateRadioButtons(inputId = "station_coordinates", selected = 2)
               updateTextInput(inputId = "station_lat", value = tableAll[1,5])
               updateTextInput(inputId = "station_lon", value = tableAll[1,6])
             }
@@ -7080,7 +7080,7 @@ server <- function(input,output,session) {
         } else if (info$format == 2) {
           ref_pos <- grep("^XYZ Reference position",readLines(file$primary$file, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
           if (length(ref_pos) > 0) {
-            updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
+            updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
             updateTextInput(inputId = "station_x", value = unlist(strsplit(ref_pos, split = " +"))[5])
             updateTextInput(inputId = "station_y", value = unlist(strsplit(ref_pos, split = " +"))[6])
             updateTextInput(inputId = "station_z", value = unlist(strsplit(ref_pos, split = " +"))[7])
@@ -7088,7 +7088,7 @@ server <- function(input,output,session) {
         } else if (info$format == 3) {
           skip <- which(grepl("site YYMMMDD", readLines(file$primary$file, warn = F)))
           tableAll <- try(read.table(file$primary$file, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
-          updateRadioButtons(session, inputId = "coordenadas_estacion", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+          updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
           updateTextInput(inputId = "station_lat", value = tableAll[1,21])
           updateTextInput(inputId = "station_lon", value = tableAll[1,22] + 360)
         }
@@ -7636,10 +7636,10 @@ server <- function(input,output,session) {
       } else {
         scaling <- 1
       }
-      if (input$coordenadas_estacion == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+      if (input$station_coordinates == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
         stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
         stationGeo <- do.call(xyz2llh,as.list(stationCartesian))
-      } else if (input$coordenadas_estacion == 2 && isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+      } else if (input$station_coordinates == 2 && isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
         stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
         stationCartesian <- do.call(latlon2xyz,as.list(c(stationGeo,scaling)))
       }
