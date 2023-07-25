@@ -5490,7 +5490,9 @@ server <- function(input,output,session) {
               }
               down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
-                if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
+                downloaded <- readLines(file$primary$file)
+                if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                    length(downloaded < 2)) {
                   down <- 1
                 }
               }
@@ -5529,7 +5531,9 @@ server <- function(input,output,session) {
                     }
                     down <- download(url$server2, url$file2, file$secondary$file)
                     if (file.exists(file$secondary$file)) {
-                      if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
+                      downloaded <- readLines(file$secondary$file)
+                      if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                          length(downloaded < 2)) {
                         down <- 1
                       }
                     }
@@ -5642,7 +5646,9 @@ server <- function(input,output,session) {
         }
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
-          if (grepl("DOCTYPE", readLines(file$primary$file, 1), ignore.case = F)) {
+          downloaded <- readLines(file$primary$file)
+          if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+              length(downloaded < 2)) {
             down <- 1
           }
         }
@@ -5687,7 +5693,9 @@ server <- function(input,output,session) {
         }
         down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
-          if (grepl("DOCTYPE", readLines(file$secondary$file, 1), ignore.case = F)) {
+          downloaded <- readLines(file$secondary$file)
+          if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+              length(downloaded < 2)) {
             down <- 1
           }
         }
