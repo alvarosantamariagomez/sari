@@ -5715,6 +5715,8 @@ server <- function(input,output,session) {
         } else {
           removeNotification("parsing_url2")
           showNotification(paste0("File ",file$secondary$name," not found in ",toupper(inputs$server2),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+          updateSelectInput(session, inputId = "product2", selected = "")
+          file$secondary <- NULL
         }
       } else {
         showNotification(paste0("Product ", inputs$product2, "for station ", inputs$station2," not found in ",toupper(inputs$server2)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
