@@ -1722,7 +1722,7 @@ server <- function(input,output,session) {
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
-                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL)
+                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL)
 
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1766,9 +1766,10 @@ server <- function(input,output,session) {
   local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   debug <- F # saving the environment
   messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
-  output$tabName1 <- renderText({ "1st component" })
-  output$tabName2 <- renderText({ "2nd component" })
-  output$tabName3 <- renderText({ "3rd component" })
+  info$components <- c("1st component", "2nd component", "3rd component")
+  output$tabName1 <- renderText({ info$components[1] })
+  output$tabName2 <- renderText({ info$components[2] })
+  output$tabName3 <- renderText({ info$components[3] })
 
   # Welcome ####
   observe({
@@ -6840,9 +6841,10 @@ server <- function(input,output,session) {
       NULL
     })
     enable("neuenu")
-    output$tabName1 <- renderText({ "1st component" })
-    output$tabName2 <- renderText({ "2nd component" })
-    output$tabName3 <- renderText({ "3rd component" })
+    info$components <- c("1st component", "2nd component", "3rd component")
+    output$tabName1 <<- renderText({ info$components[1] })
+    output$tabName2 <<- renderText({ info$components[2] })
+    output$tabName3 <<- renderText({ info$components[3] })
   })
 
   # Observe hide buttons ####
@@ -7419,27 +7421,31 @@ server <- function(input,output,session) {
               if (info$format == 1) { #NEU/ENU
                 if (isTruthy(url$server)) {
                   if (url$server == "formater") {
-                    output$tabName1 <- renderText({ "East component" })
-                    output$tabName2 <- renderText({ "North component" })
-                    output$tabName3 <- renderText({ "Up component" })
+                    info$components <- c("East component", "North component", "Up component")
+                    output$tabName1 <<- renderText({ info$components[1] })
+                    output$tabName2 <<- renderText({ info$components[2] })
+                    output$tabName3 <<- renderText({ info$components[3] })
                   } else if (url$server == "sonel" || url$server == "igs" || url$server == "jpl") {
-                    output$tabName1 <- renderText({ "North component" })
-                    output$tabName2 <- renderText({ "East component" })
-                    output$tabName3 <- renderText({ "Up component" })
+                    info$components <- c("North component", "East component", "Up component")
+                    output$tabName1 <<- renderText({ info$components[1] })
+                    output$tabName2 <<- renderText({ info$components[2] })
+                    output$tabName3 <<- renderText({ info$components[3] })
                   }
                 }
                 showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
                 showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
               } else if (info$format == 2) { #PBO
-                output$tabName1 <- renderText({ "North component" })
-                output$tabName2 <- renderText({ "East component" })
-                output$tabName3 <- renderText({ "Up component" })
+                info$components <- c("North component", "East component", "Up component")
+                output$tabName1 <<- renderText({ info$components[1] })
+                output$tabName2 <<- renderText({ info$components[2] })
+                output$tabName3 <<- renderText({ info$components[3] })
                 showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
                 showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
               } else if (info$format == 3) { #NGL
-                output$tabName1 <- renderText({ "East component" })
-                output$tabName2 <- renderText({ "North component" })
-                output$tabName3 <- renderText({ "Up component" })
+                info$components <- c("East component", "North component", "Up component")
+                output$tabName1 <<- renderText({ info$components[1] })
+                output$tabName2 <<- renderText({ info$components[2] })
+                output$tabName3 <<- renderText({ info$components[3] })
                 showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
                 showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
               } else if (info$format == 4) { #1D
@@ -9067,7 +9073,7 @@ server <- function(input,output,session) {
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
     cat(paste0("# Original series: ",file$primary$name), file = file_out, sep = "\n", fill = F, append = T)
     if (input$format != 4) {
-      cat(paste0("# Coordinate component: ",input$tab), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste0("# Coordinate component: ", info$components[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
     } else {
       if (isTruthy(input$sigmas)) {
         cat(paste0("# Column numbers for data and errorbars: ",inputs$variable," ",inputs$errorBar), file = file_out, sep = "\n", fill = F, append = T)
@@ -9235,7 +9241,7 @@ server <- function(input,output,session) {
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
     cat(paste0("# Original series: ",file$primary$name), file = file_out, sep = "\n", fill = F, append = T)
     if (input$format != 4) {
-      cat(paste0("# Coordinate component: ",input$tab), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste0("# Coordinate component: ", info$components[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
     } else {
       if (isTruthy(input$sigmas)) {
         cat(paste0("# Column numbers for data and errorbars: ",inputs$variable," ",inputs$errorBar), file = file_out, sep = "\n", fill = F, append = T)
