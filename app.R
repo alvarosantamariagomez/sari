@@ -7044,6 +7044,16 @@ server <- function(input,output,session) {
       table <- extract_table(input$series$datapath,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
     }
     if (!is.null(table)) {
+      # Fixing NEU/ENU if known
+      if (isTruthy(url$server)) {
+        if (url$server == "formater" || url$server == "jpl") {
+          updateRadioButtons(session, inputId = "neuenu", selected = 2)
+          disable("neuenu")
+        } else if (url$server == "sonel" || url$server == "igs" ) {
+          updateRadioButtons(session, inputId = "neuenu", selected = 1)
+          disable("neuenu")
+        }
+      }
       # Resampling the primary series
       if (isTruthy(input$average)) {
         if (nchar(input$step) > 0 && is.na(inputs$step)) {
@@ -7420,8 +7430,6 @@ server <- function(input,output,session) {
         updateTextInput(session, inputId = "station_x", value = coordinates[1])
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
-        updateRadioButtons(session, inputId = "neuenu", selected = 2)
-        disable("neuenu")
       }
       # estracting coordinates from SONEL series
       if (server == "sonel") {
@@ -7430,8 +7438,6 @@ server <- function(input,output,session) {
         updateTextInput(session, inputId = "station_x", value = coordinates[1])
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
-        updateRadioButtons(session, inputId = "neuenu", selected = 1)
-        disable("neuenu")
       }
       # extracting series from SIRGAS NEU format
       # } else if (server == "sirgas") {
