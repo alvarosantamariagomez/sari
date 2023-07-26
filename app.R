@@ -7441,6 +7441,19 @@ server <- function(input,output,session) {
                     output$tabName2 <<- renderText({ info$components[2] })
                     output$tabName3 <<- renderText({ info$components[3] })
                   }
+                } else {
+                  extension <- tolower(strsplit(file$primary$name, ".", fixed = T)[[1]][-1])
+                  if (isTruthy(extension) && extension == "neu") {
+                    info$components <- c("North component", "East component", "Up component")
+                    output$tabName1 <<- renderText({ info$components[1] })
+                    output$tabName2 <<- renderText({ info$components[2] })
+                    output$tabName3 <<- renderText({ info$components[3] })
+                  } else if (isTruthy(extension) && extension == "enu") {
+                    info$components <- c("East component", "North component", "Up component")
+                    output$tabName1 <<- renderText({ info$components[1] })
+                    output$tabName2 <<- renderText({ info$components[2] })
+                    output$tabName3 <<- renderText({ info$components[3] })
+                  }
                 }
                 showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
                 showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
