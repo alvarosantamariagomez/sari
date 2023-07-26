@@ -1722,7 +1722,7 @@ server <- function(input,output,session) {
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
-                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL)
+                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F)
 
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1763,7 +1763,6 @@ server <- function(input,output,session) {
   options(shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
-  local = Sys.getenv('SHINY_PORT') == "" # detect local connection
   debug <- F # saving the environment
   messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
   info$components <- c("1st component", "2nd component", "3rd component")
@@ -1774,6 +1773,7 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     req(input$size, info$intro)
+    info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), "Mobile connection ", "\n")
       cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
@@ -1796,7 +1796,7 @@ server <- function(input,output,session) {
       ))
       load_data(2)
     } else {
-      if (local) {
+      if (info$local) {
         load_data(0)
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
@@ -4407,7 +4407,7 @@ server <- function(input,output,session) {
                          gaps <- trans$gaps
                          sampling <- info$sampling
                          # setting cluster if run is local and long
-                         # if (local && info$timeMLE > 60) {
+                         # if (info$local && info$timeMLE > 60) {
                          #   cl <- makeCluster(detectCores() - 1, type = "FORK")
                          #   setDefaultCluster(cl = cl)
                          # }
@@ -4808,7 +4808,7 @@ server <- function(input,output,session) {
       } else {
         header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y))[1:input$lines,]
       }
-      # if (isTruthy(local)) {
+      # if (isTruthy(info$local)) {
         tmpfile <- tempfile()
       # } else {
         # tmpfile <- "tmp"
@@ -5458,7 +5458,7 @@ server <- function(input,output,session) {
         if (messages > 0) cat(file = stderr(), "Analyzing URL", "\n")
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
-          if (!isTruthy(local) && tolower(query[['server']]) == "local") {
+          if (!isTruthy(info$local) && tolower(query[['server']]) == "local") {
             showNotification(paste0("Local server is not available on remote connections."), action = NULL, duration = 10, closeButton = T, id = "no_local", type = "warning", session = getDefaultReactiveDomain())
             url$station <- NULL
             url$file <- NULL
@@ -5483,7 +5483,7 @@ server <- function(input,output,session) {
               file$primary$file <- url$file
             } else {
               showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              # if (isTruthy(local)) {
+              # if (isTruthy(info$local)) {
                 file$primary$file <- tempfile()
               # } else {
                 # file$primary$file <- file$primary$name
@@ -5527,7 +5527,7 @@ server <- function(input,output,session) {
                     file$secondary$file <- url$file2
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    # if (isTruthy(local)) {
+                    # if (isTruthy(info$local)) {
                       file$secondary$file <- tempfile()
                     # } else {
                       # file$secondary$file <- file$secondary$name
@@ -5644,7 +5644,7 @@ server <- function(input,output,session) {
         file$primary$name <- url_info[3]
         info$format <- url_info[4]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(inputs$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-        # if (isTruthy(local)) {
+        # if (isTruthy(info$local)) {
           file$primary$file <- tempfile()
         # } else {
           # file$primary$file <- file$primary$name
@@ -5691,7 +5691,7 @@ server <- function(input,output,session) {
         file$secondary$name <- url_info[3]
         info$format2 <- url_info[4]
         showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(inputs$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-        # if (isTruthy(local)) {
+        # if (isTruthy(info$local)) {
           file$secondary$file <- tempfile()
         # } else {
           # file$secondary$file <- file$secondary$name
@@ -6990,7 +6990,7 @@ server <- function(input,output,session) {
       } else {
         showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE/60), " min"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
       }
-      if (info$timeMLE > 14*60 && !isTruthy(local)) {
+      if (info$timeMLE > 14*60 && !isTruthy(info$local)) {
         showNotification("The noise model analysis will likely not finish before the server closes the session for lack of user activity. Consider averaging the series for a faster analysis.", action = NULL, duration = 10, closeButton = T, id = "too_long", type = "error", session = getDefaultReactiveDomain())
       }
     }
