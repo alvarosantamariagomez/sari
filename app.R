@@ -7083,6 +7083,12 @@ server <- function(input,output,session) {
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
               updateTextInput(inputId = "station_lat", value = tableAll[1,5])
               updateTextInput(inputId = "station_lon", value = tableAll[1,6])
+            } else if (url$server == "jpl") {
+              coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
+              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
+              updateTextInput(session, inputId = "station_x", value = coordinates[1])
+              updateTextInput(session, inputId = "station_y", value = coordinates[2])
+              updateTextInput(session, inputId = "station_z", value = coordinates[3])
             }
           }
         } else if (info$format == 2) {
@@ -7424,12 +7430,12 @@ server <- function(input,output,session) {
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
                 if (isTruthy(url$server)) {
-                  if (url$server == "formater") {
+                  if (url$server == "formater" || url$server == "jpl") {
                     info$components <- c("East component", "North component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
                     output$tabName3 <<- renderText({ info$components[3] })
-                  } else if (url$server == "sonel" || url$server == "igs" || url$server == "jpl") {
+                  } else if (url$server == "sonel" || url$server == "igs") {
                     info$components <- c("North component", "East component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
