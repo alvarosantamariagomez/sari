@@ -5471,7 +5471,6 @@ server <- function(input,output,session) {
             url$server <- query[['server']]
             file$primary$name <- url_info[3]
             info$format <- url_info[4]
-            updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
             if (tolower(query[['server']]) == "local") {
               if (!isTruthy(file.exists(url$file))) {
                 showNotification(paste0("Local file ",url$file," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5500,6 +5499,9 @@ server <- function(input,output,session) {
             }
             if (isTruthy(down) && down == 0) {
               if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
+              # update format for primary series
+              updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
+              # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
                 url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]))
                 if (isTruthy(url_info)) {
@@ -9872,7 +9874,6 @@ server <- function(input,output,session) {
     } else if (tolower(server) == "formater") {
       if (tolower(product) == "spotgins_pos") {
         format <- 1
-        updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
         name <- paste0("SPOTGINS_",toupper(station),".enu")
       } else if (tolower(product) == "uga_pos") {
         format <- 2
