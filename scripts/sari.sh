@@ -61,10 +61,11 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
         | LOCAL    | ENU, NEU, PBO, NGL                   | path    |                                                |
         | RENAG    | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
         | FORMATER | SPOTGINS_POS, UGA                    | 9 char  | https://en.poleterresolide.fr/                 |
-	| IGS      | NEU                                  | 4 char  | https://igs.org/products/                      |
-        | EUREF    | PBO                                  | 9 char  | https://epncb.eu/_organisation/about.php       |
+	| SONEL    | ULR7A                                | 4 char  | https://www.sonel.org/                         |
+	| IGS      | IGS20                                | 4 char  | https://igs.org/products/                      |
+        | EUREF    | IGb14                                | 9 char  | https://epncb.eu/_organisation/about.php       |
         | NGL      | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                        |
-        | JPL      | POINT                                | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
+        | JPL      | REPRO2018A                           | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
         | EOSTLS   | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                   |
         |          | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                |
         |          | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
@@ -78,8 +79,8 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 
 	-l 			: starts a local SARI session (no series uploaded)
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
-	-w server1+server2	: uploads primary (+secondary) file from server (see available servers below)
-	-p product1+product2 	: uploads primary (+secondary) file from product (see available products below)
+	-w server1+server2	: uploads primary (+secondary) file from server (add option -h to see the available servers)
+	-p product1+product2 	: uploads primary (+secondary) file from product (add option -h to see the available products)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA) 
 				  or 14 characters (e.g., PIMI_10025M001) depending on the server used
 	-v 			: keeps the log of the current SARI session in $saridir
