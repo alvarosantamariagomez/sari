@@ -4808,11 +4808,11 @@ server <- function(input,output,session) {
       } else {
         header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y))[1:input$lines,]
       }
-      if (isTruthy(local)) {
+      # if (isTruthy(local)) {
         tmpfile <- tempfile()
-      } else {
-        tmpfile <- "tmp"
-      }
+      # } else {
+        # tmpfile <- "tmp"
+      # }
       write.table(header, file = tmpfile, append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
       noquote(paste(readLines(con = tmpfile, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
@@ -5483,11 +5483,11 @@ server <- function(input,output,session) {
               file$primary$file <- url$file
             } else {
               showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              if (isTruthy(local)) {
+              # if (isTruthy(local)) {
                 file$primary$file <- tempfile()
-              } else {
-                file$primary$file <- file$primary$name
-              }
+              # } else {
+                # file$primary$file <- file$primary$name
+              # }
               down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
                 downloaded <- readLines(file$primary$file)
@@ -5527,11 +5527,11 @@ server <- function(input,output,session) {
                     file$secondary$file <- url$file2
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    if (isTruthy(local)) {
+                    # if (isTruthy(local)) {
                       file$secondary$file <- tempfile()
-                    } else {
-                      file$secondary$file <- file$secondary$name
-                    }
+                    # } else {
+                      # file$secondary$file <- file$secondary$name
+                    # }
                     down <- download(url$server2, url$file2, file$secondary$file)
                     if (file.exists(file$secondary$file)) {
                       downloaded <- readLines(file$secondary$file)
@@ -5644,11 +5644,11 @@ server <- function(input,output,session) {
         file$primary$name <- url_info[3]
         info$format <- url_info[4]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(inputs$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-        if (isTruthy(local)) {
+        # if (isTruthy(local)) {
           file$primary$file <- tempfile()
-        } else {
-          file$primary$file <- file$primary$name
-        }
+        # } else {
+          # file$primary$file <- file$primary$name
+        # }
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
           downloaded <- readLines(file$primary$file)
@@ -5691,11 +5691,11 @@ server <- function(input,output,session) {
         file$secondary$name <- url_info[3]
         info$format2 <- url_info[4]
         showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(inputs$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-        if (isTruthy(local)) {
+        # if (isTruthy(local)) {
           file$secondary$file <- tempfile()
-        } else {
-          file$secondary$file <- file$secondary$name
-        }
+        # } else {
+          # file$secondary$file <- file$secondary$name
+        # }
         down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
           downloaded <- readLines(file$secondary$file)
