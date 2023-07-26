@@ -9819,7 +9819,7 @@ server <- function(input,output,session) {
     #JPL
     } else if (tolower(server) == "jpl") {
       format <- 1
-      if (tolower(product) == "repro2018aA") {
+      if (tolower(product) == "repro2018a") {
         name <- paste0(toupper(station),".series")
         file <- paste0("https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/",name)
       } else {
