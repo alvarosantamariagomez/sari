@@ -5589,7 +5589,7 @@ server <- function(input,output,session) {
   })
   
   # Observe remote series ####
-  observeEvent(c(inputs$server1, inputs$server2), {
+  observeEvent(inputs$server1, {
     if (isTruthy(inputs$station1)) {
       if (inputs$server1 == "renag") {
         updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "")
@@ -5609,6 +5609,8 @@ server <- function(input,output,session) {
         updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "")
       }
     }
+  })
+  observeEvent(inputs$server2, {
     if (isTruthy(inputs$station2)) {
       if (inputs$server2 == "renag") {
         updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "")
