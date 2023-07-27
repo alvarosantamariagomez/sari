@@ -206,11 +206,6 @@ if [[ ! -z $local ]]; then
 		echo Unable to find the SARI app.R script in $saridir
 		exit 1
 	fi
-
-	# Removing calls to png-cairo and deactivating devmode (problem with local session reload)
-	if [[ ! -f $saridir/app_$now.R ]]; then
-		sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
-	fi
 fi
 
 # Setting output log file for local sessions
@@ -218,6 +213,13 @@ if [[ ! -z $local || ! -z $docker ]]; then
 	now=$(date '+%Y%m%d_%H%M%S')
 	out="$saridir/SARI_$now.log"
 	echo "Logging the SARI session in $out"
+fi
+
+# Removing calls to png-cairo and deactivating devmode (problem with local session reload)
+if [[ ! -z $local ]]; then
+	if [[ ! -f $saridir/app_$now.R ]]; then
+		sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
+	fi
 fi
 
 # Setting the listening port for local sessions
