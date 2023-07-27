@@ -5611,6 +5611,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(inputs$server2, {
+    req(obs())
     if (isTruthy(inputs$station2)) {
       if (inputs$server2 == "renag") {
         updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "")
@@ -5680,6 +5681,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(inputs$product2, inputs$station2), {
+    req(obs())
     if (isTruthy(inputs$station2) && isTruthy(inputs$server2) && isTruthy(inputs$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
@@ -5725,8 +5727,9 @@ server <- function(input,output,session) {
         }
       } else {
         showNotification(paste0("Product ", inputs$product2, "for station ", inputs$station2," not found in ",toupper(inputs$server2)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
+        updateSelectInput(session, inputId = "product2", selected = "")
       }
-    } else {
+    } else if (isTruthy(inputs$server2) && isTruthy(inputs$product2)) {
       url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$file <- NULL
       updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 0)
     }
@@ -10070,14 +10073,14 @@ server <- function(input,output,session) {
       } else {
         extras <- ""
       }
-      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = F, mode = "w", cacheOK = T), silent = T))
+      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     } else if (isTruthy(Sys.which("wget"))) {
       if (server == "formater") {
         extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
       } else {
         extras <- ""
       }
-      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "wget", extra = extras, quiet = F, mode = "w", cacheOK = T), silent = T))
+      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "wget", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     } else {
       showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
       down <- 1
