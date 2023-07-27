@@ -5718,6 +5718,7 @@ server <- function(input,output,session) {
               updateCheckboxInput(session, inputId = "ne", value = T)
             }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
+            updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
           }
         } else {
           removeNotification("parsing_url2")
