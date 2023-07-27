@@ -21,31 +21,36 @@
 usage () { echo "
 `basename $0` opens a SARI session on the web browser from the command line.
 
-This script only runs on desktop environnements of Unix-like systems.
+This script only runs on desktop environnements of Unix-like systems including Windows/WSL.
 The SARI session can be either local (running on your machine) or remote (running on the Shinyapps server).
-To open a local session, all the R packages required to run SARI must be installed beforehand (see the INSTALL file).
-Time series can be uploaded using local or remote files from specific servers and products indicaded below.
+There are two options to open a local session:
+1) having the Docker Deamon/Desktop up and running with the SARI image downloaded beforehand (see the README file).
+2) having all the R packages required to run SARI installed beforehand (see the INSTALL file).
+Time series can be uploaded from the command line using local or remote files from specific servers and products
+indicaded below.
 
-Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
+Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
 
-	-l 			: starts a local SARI session (no series uploaded)
+	-l 			: starts a local SARI session using the SARI source code
+	-d			: starts a local SARI session using a Docker image
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
 	-w server1+server2	: uploads primary (+secondary) file from server (see available servers below)
 	-p product1+product2 	: uploads primary (+secondary) file from product (see available products below)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
 				  or more 14 (e.g., PIMI_10025M001) depending on the server used
-	-v 			: keeps the log of the current SARI session in $saridir
+	-v 			: keeps the log of the current local SARI session in $saridir
 	-h			: shows this help
 
-	Five different sessions can be started:
+	Six different sessions can be started:
 
-	Empty local session 			$(basename $0) -l
+	Empty local session from source code	$(basename $0) -l
+	Empty local session from Docker image	$(basename $0) -d
 	Empty remote session 			$(basename $0) -r
 	Local session with local series		$(basename $0) -l -w local -p product -s path/to/my/series
 	Local session with remote series	$(basename $0) -l -w server -p product -s ID
 	Remote session with remote series	$(basename $0) -r -w server -p product -s ID
 
-	server1+server2, product1+product2 and station1+station2 are used to load one or two series (primary+secondary) 
+	server1+server2, product1+product2 and station1+station2 are used to load one or two series (primary+secondary)
 	at the same time from the same or different servers/products.
 
 	The remote series will be downloaded to the local server (your machine) or the remote server (Shinyapps).
@@ -75,20 +80,22 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 " 1>&2; exit 1; }
 
 usage_short () { echo "
-Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
+Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
 
-	-l 			: starts a local SARI session (no series uploaded)
+	-l 			: starts a local SARI session using the SARI source code
+	-d			: starts a local SARI session using a Docker image
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
-	-w server1+server2	: uploads primary (+secondary) file from server (add option -h to see the available servers)
-	-p product1+product2 	: uploads primary (+secondary) file from product (add option -h to see the available products)
-	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA) 
-				  or 14 characters (e.g., PIMI_10025M001) depending on the server used
+	-w server1+server2	: uploads primary (+secondary) file from server (see available servers with option -h)
+	-p product1+product2 	: uploads primary (+secondary) file from product (see available products with option -h)
+	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
+				  or more 14 (e.g., PIMI_10025M001) depending on the server used
 	-v 			: keeps the log of the current SARI session in $saridir
-	-h			: shows the full help
+	-h			: shows this help
 
-	Empty local session 			$(basename $0) -l
+	Empty local session from source code	$(basename $0) -l
+	Empty local session from Docker image	$(basename $0) -d
 	Empty remote session 			$(basename $0) -r
-	Local session with local series 	$(basename $0) -l -w local -p product -s path/to/my/series
+	Local session with local series		$(basename $0) -l -w local -p product -s path/to/my/series
 	Local session with remote series	$(basename $0) -l -w server -p product -s ID
 	Remote session with remote series	$(basename $0) -r -w server -p product -s ID
 
@@ -97,30 +104,45 @@ Syntax: $(basename $0) -l|r [-w server1+server2 -p product1+product2 -s series1+
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag formater igs euref ngl jpl eostls "
-products=" enu neu pbo ngl uga spotgins_pos final rapid atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+servers=" local renag formater sonel igs euref ngl jpl eostls "
+products=" enu neu pbo ngl uga spotgins_pos ulr7a igs20 igb14 final rapid repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit
 cleaning () {
-	rm -f $saridir/app_$now.R
+	if [[ ! -z $local ]]; then
+		rm -f $saridir/app_$now.R
+		if [[ ! -z $pid ]]; then
+			netstat -anp 2> /dev/null | grep :$port | grep LISTEN | grep -E "$pid/R\s+$" | sed 's$/R$$' | awk 'system("kill "$NF"")'
+		fi
+	elif [[ ! -z $docker ]]; then
+		if [[ ! -z $pid ]]; then
+			docker stop sari 1> /dev/null
+		fi
+	fi
 	if [[ ! $logging ]]; then
 		rm -f $out
-	fi
-	if [[ ! -z $pid ]]; then
-		netstat -anp 2> /dev/null | grep :$port | grep LISTEN | grep -E "$pid/R\s+$" | sed 's$/R$$' | awk 'system("kill "$NF"")'
 	fi
 }
 trap cleaning EXIT
 
+# Getting input command-line options
+while getopts :ldrw:p:s:vh option; do
+	case $option in
+		w  )	server=$OPTARG;;
+		p  )	product=$OPTARG;;
+		s  )	station=$OPTARG;;
+		l  )	local=true;;
+		d  )	docker=true;;
+		r  )	remote=true;;
+		v  )	logging=true;;
+		h  )    usage;;
+	        \? )	echo "Unknown option: -$OPTARG" >&2; usage_short;;
+	        :  )	echo "Missing option argument for -$OPTARG" >&2; usage_short;;
+	        *  )	echo "Unimplemented option: -$OPTARG" >&2; usage_short;;
+	esac
+done
+
 # Checking dependencies
-netstat -h > /dev/null 2>&1
-if [[ $? != 0 ]]; then
-	echo WARNING: netstat is not available. Local sessions may not work as expected
-fi
-Rscript --help > /dev/null 2>&1
-if [[ $? != 0 ]]; then
-	echo WARNING: Rscript is not available. Impossible to open local sessions.
-fi
 uname --help > /dev/null 2>&1
 if [[ $? != 0 ]]; then
 	echo FATAL: uname is not available.
@@ -146,34 +168,57 @@ else
 	browser=xdg-open
 fi
 
-# Setting directory paths and checking the SARI app file
-currentdir="$(pwd)"
-saridir="$(dirname $(dirname $(realpath $0)))"
-if [[ ! -f $saridir/app.R ]]; then
-	echo Unable to find the SARI app.R script in $saridir
-	exit 1
+if [[ ! -z $local ]]; then
+	netstat -h > /dev/null 2>&1
+	if [[ $? != 0 ]]; then
+		echo FATAL: netstat is not available.
+		exit 1
+	fi
+	Rscript --help > /dev/null 2>&1
+	if [[ $? != 0 ]]; then
+		echo WARNING: Rscript is not available.
+		exit 1
+	fi
 fi
 
-# Getting input command-line options
-while getopts :lrw:p:s:vh option; do
-	case $option in
-		w  )	server=$OPTARG;;
-		p  )	product=$OPTARG;;
-		s  )	station=$OPTARG;;
-		l  )	local=true;;
-		r  )	remote=true;;
-		v  )	logging=true;;
-		h  )    usage;;
-	        \? )	echo "Unknown option: -$OPTARG" >&2; usage_short;;
-	        :  )	echo "Missing option argument for -$OPTARG" >&2; usage_short;;
-	        *  )	echo "Unimplemented option: -$OPTARG" >&2; usage_short;;
-	esac
-done
+if [[ ! -z $docker ]]; then
+	docker > /dev/null 2>&1
+	if [[ $? != 0 ]]; then
+		echo FATAL: docker is not available.
+		exit 1
+	fi
+	docker ps > /dev/null 2>&1
+	if [[ $? != 0 ]]; then
+		echo FATAL: docker deamon/desktop is not running.
+		exit 1
+	fi
+	if [[ "$(docker images -q alvarosg/sari:latest 2> /dev/null)" == "" ]]; then
+		echo FATAL: SARI docker image not found.
+		exit 1
+	fi
+fi
 
-# Setting output log file
-now=$(date '+%Y%m%d_%H%M%S')
-out="$saridir/SARI_$now.log"
-echo "Logging the SARI session in $out"
+# Setting directory paths and checking the SARI app file for local sessions
+currentdir="$(pwd)"
+saridir="$(dirname $(dirname $(realpath $0)))"
+if [[ ! -z $local ]]; then
+	if [[ ! -f $saridir/app.R ]]; then
+		echo Unable to find the SARI app.R script in $saridir
+		exit 1
+	fi
+
+	# Removing calls to png-cairo and deactivating devmode (problem with local session reload)
+	if [[ ! -f $saridir/app_$now.R ]]; then
+		sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
+	fi
+fi
+
+# Setting output log file for local sessions
+if [[ ! -z $local || ! -z $docker ]]; then
+	now=$(date '+%Y%m%d_%H%M%S')
+	out="$saridir/SARI_$now.log"
+	echo "Logging the SARI session in $out"
+fi
 
 # Setting the listening port for local sessions
 if [[ ! -z $local ]]; then
@@ -188,11 +233,6 @@ if [[ ! -z $local ]]; then
 		netstat -an | grep :$port | grep LISTEN > /dev/null 2>&1
 		running=$?
 	done
-fi
-
-# Removing calls to png-cairo and deactivating devmode (problem with local session reload)
-if [[ ! -f $saridir/app_$now.R ]]; then
-	sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
 fi
 
 # Splitting parameters of the primary and secondary series
@@ -230,18 +270,28 @@ checkR() {
 
 # Blocking the foreground of the terminal
 waiting() {
-	if ! ps -p $pid > /dev/null; then
-		echo Problem running Rscript to start SARI
-	else	
-		echo SARI session available at http://127.0.0.1:$port
-		echo Press Ctrl+C to stop the SARI session
-		wait $pid
+	if [[ ! -z $local ]]; then
+		if ! ps -p $pid > /dev/null; then
+			echo Problem running Rscript to start SARI
+		else	
+			echo SARI session available at http://127.0.0.1:$port
+			echo Press Ctrl+C to stop the SARI session
+			wait $pid
+		fi
+	elif [[ ! -z $docker ]]; then
+		if ! ps -p $pid > /dev/null; then
+			echo Problem running the docker container to start SARI
+		else	
+			echo SARI session available at http://localhost:3838
+			echo Press Ctrl+C to stop the SARI container
+			wait $pid
+		fi
 	fi
 }
 
 # Setting the type of session from the input command-line options
 # Remote session
-if [[ -z $local && ! -z $remote ]]; then
+if [[ -z $local && -z $docker && ! -z $remote ]]; then
 
 	# Empty remote session
 	if [[ -z $server1 && -z $product1 && -z $station1 ]]; then
@@ -281,7 +331,7 @@ if [[ -z $local && ! -z $remote ]]; then
 	fi
 
 # Local session
-elif [[ ! -z $local && -z $remote ]]; then
+elif [[ ! -z $local && -z $docker && -z $remote ]]; then
 	if [[ -f $saridir/app_$now.R ]]; then
 
 		Rscript --vanilla --silent -e "library(shiny)" -e "runApp('$saridir/app_$now.R', port = $port, launch.browser = F, display.mode = 'normal')" &> $out & 
@@ -357,6 +407,65 @@ elif [[ ! -z $local && -z $remote ]]; then
 	else
 		echo Problem with the SARI app script
 		exit 1
+	fi
+
+# Docker session
+elif [[ -z $local && ! -z $docker && -z $remote ]]; then
+
+	echo Starting the SARI container
+	container=$(docker ps -a | grep sari:latest > /dev/null 2>&1)
+	if [[ $container == 0 ]]; then
+		docker run -ai --name sari -p 3838:3838 -v /home/SARI alvarosg/sari:latest > $out 2>&1 &
+		pid=$!
+	else
+		docker start -ai sari > $out 2>&1 &
+		pid=$!
+	fi
+
+	# Local session with local or remote file
+	if [[ ! -z $server1 && ! -z $product1 && ! -z $station1 ]]; then
+
+		# local file
+		if [[ $server1 == local ]]; then
+			if [[ ${station1:0:1} != "/" ]]; then
+				station1="$currentdir/$station1"
+			fi
+			if [[ ! -f $station1 ]]; then
+				echo File not found: $station1
+				exit 1
+			fi
+		fi
+		if [[ $server2 == local ]]; then
+			if [[ ${station2:0:1} != "/" ]]; then
+				station2="$currentdir/$station2"
+			fi
+			if [[ ! -f $station2 ]]; then
+				echo File not found: $station2
+				station2=""
+				server2=""
+				product2=""
+			fi
+		fi
+
+		# Primary and secondary series
+		if [[ ! -z $server2 && ! -z $product2 && ! -z $station2 ]]; then
+			echo Opening new SARI session on the browser
+			$browser "http://127.0.0.1:3838/?server=$server1&product=$product1&station=$station1&server2=$server2&product2=$product2&station2=$station2"
+		# Primary series only
+		else
+			echo Opening new SARI session on the browser
+			$browser "http://127.0.0.1:3838/?server=$server1&product=$product1&station=$station1"
+		fi
+		waiting
+
+	# Empty local session
+	elif [[ -z $server1 && -z $product1 && -z $station1 ]]; then
+		echo Opening new SARI session on the browser
+		$browser "http://127.0.0.1:3838"
+		waiting
+	else
+		echo Missing some or too many input options
+		usage_short
 	fi
 
 # no more types of sessions
