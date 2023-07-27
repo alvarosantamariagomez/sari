@@ -3381,7 +3381,7 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
       adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
       kpss <- suppressWarnings(kpss.test(values, null = "Level"))
-      stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = F, interp = T, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
+      stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = T, interp = F, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
       output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
         if (!inherits(adf,"try-error") && !is.null(adf) && isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
           cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
