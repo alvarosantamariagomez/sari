@@ -5024,6 +5024,7 @@ server <- function(input,output,session) {
         disable("station1")
         disable("product1")
         enable("station2")
+        enable("reset")
         if (isTruthy(inputs$station2)) {
           enable("server2")
           enable("product2")
