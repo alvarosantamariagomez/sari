@@ -5592,21 +5592,21 @@ server <- function(input,output,session) {
   observeEvent(inputs$server1, {
     if (isTruthy(inputs$station1)) {
       if (inputs$server1 == "renag") {
-        updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
       } else if (inputs$server1 == "formater") {
         updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
       } else if (inputs$server1 == "igs") {
-        updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
       } else if (inputs$server1 == "euref") {
-        updateSelectInput(session, inputId = "product1", choices = list("IGb14"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("IGb14"), selected = "IGb14")
       } else if (inputs$server1 == "ngl") {
         updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
       } else if (inputs$server1 == "jpl") {
-        updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
       } else if (inputs$server1 == "eostls") {
         updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
       } else if (inputs$server1 == "sonel") {
-        updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "")
+        updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
       }
     }
   })
@@ -5614,21 +5614,21 @@ server <- function(input,output,session) {
     req(obs())
     if (isTruthy(inputs$station2)) {
       if (inputs$server2 == "renag") {
-        updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
       } else if (inputs$server2 == "formater") {
         updateSelectInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
       } else if (inputs$server2 == "igs") {
-        updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
       } else if (inputs$server2 == "euref") {
-        updateSelectInput(session, inputId = "product2", choices = list("IGb14"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("IGb14"), selected = "IGb14")
       } else if (inputs$server2 == "ngl") {
         updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
       } else if (inputs$server2 == "jpl") {
-        updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
       } else if (inputs$server2 == "eostls") {
         updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
       } else if (inputs$server2 == "sonel") {
-        updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "")
+        updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
       }
     }
   })
