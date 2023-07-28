@@ -7094,6 +7094,15 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
             }
+          } else {
+            spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1), ignore.case = F, fixed = F, perl = T)
+            if (isTruthy(spotgins)) {
+              coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
+              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
+              updateTextInput(session, inputId = "station_x", value = coordinates[1])
+              updateTextInput(session, inputId = "station_y", value = coordinates[2])
+              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+            }
           }
         } else if (info$format == 2) {
           ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
@@ -7507,6 +7516,7 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
+      spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1), ignore.case = F, fixed = F, perl = T)
       # extracting series from SIRGAS NEU format
       # } else if (server == "sirgas") {
       #   sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
@@ -7566,7 +7576,7 @@ server <- function(input,output,session) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
                   extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7)
                 }
-              } else if (server == "formater") { # SPOTGINS series
+              } else if (server == "formater" || isTruthy(spotgins)) { # SPOTGINS series
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
