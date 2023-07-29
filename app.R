@@ -29,6 +29,9 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
   library(psych, verbose = F, quietly = T) #v2.1.6
   library(RColorBrewer, verbose = F, quietly = T) #v1.1-2
+  library(RCurl)
+  library(XML)
+  library(jsonlite)
   library(shinyBS, verbose = F, quietly = T) #v0.61
   library(shinycssloaders, verbose = F, quietly = T) #v1.0.0
   library(shinyjs, verbose = F, quietly = T) #v2.0
@@ -395,16 +398,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               textInput(inputId = "station1",
-                                                                                         div("Station", helpPopup("ID of the GNSS station to be searched for in the selected server")),
-                                                                                         value = "")
-                                                                               ),
-                                                                        column(4,
                                                                                selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
                                                                         ),
+                                                                        column(4,
+                                                                               withBusyIndicatorUI(
+                                                                                 uiOutput("station1")
+                                                                               )
+                                                                        )
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
@@ -703,16 +706,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   textInput(inputId = "station2",
-                                                                                             div("Station", helpPopup("ID of the GNSS station to be searched for in the selected server")),
-                                                                                             value = "")
-                                                                            ),
-                                                                            column(4,
                                                                                    selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
                                                                             ),
+                                                                            column(4,
+                                                                                   withBusyIndicatorUI(
+                                                                                     uiOutput("station2")
+                                                                                   )
+                                                                            )
                                                                           ),
                                                                           conditionalPanel(
                                                                             condition = "output.series2",
@@ -1824,6 +1827,12 @@ server <- function(input,output,session) {
         }
         load_data(2)
       }
+      output$station1 <- renderUI({
+        textInput(inputId = "station1", label = "Station", value = "")
+      })
+      output$station2 <- renderUI({
+        textInput(inputId = "station2", label = "Station", value = "")
+      })
     }
     info$intro <- F
   }, priority = 2000)
@@ -5012,10 +5021,8 @@ server <- function(input,output,session) {
       disable("units")
       disable("verif_offsets")
       disable("euler")
-      disable("server1")
       disable("station1")
       disable("product1")
-      disable("server2")
       disable("station2")
       disable("product2")
     } else {
@@ -5023,13 +5030,14 @@ server <- function(input,output,session) {
         disable("server1")
         disable("station1")
         disable("product1")
-        enable("station2")
         enable("reset")
-        if (isTruthy(inputs$station2)) {
-          enable("server2")
+        disable("station2")
+        enable("server2")
+        if (isTruthy(inputs$server2)) {
+          enable("station2")
           enable("product2")
         } else {
-          disable("server2")
+          disable("station2")
           disable("product2")
         }
         enable("ids")
@@ -5426,12 +5434,11 @@ server <- function(input,output,session) {
         disable("thresholdResN")
         disable("units")
         disable("verif_offsets")
-        enable("station1")
-        if (isTruthy(inputs$station1)) {
-          enable("server1")
+        if (isTruthy(inputs$server1)) {
+          enable("station1")
           enable("product1")
         } else {
-          disable("server1")
+          disable("station1")
           disable("product1")
         }
         disable("station2")
@@ -5465,7 +5472,7 @@ server <- function(input,output,session) {
             url$file <- NULL
             req(info$stop)
           }
-          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']]))
+          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']]),NULL)
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
@@ -5504,7 +5511,7 @@ server <- function(input,output,session) {
               updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
               # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
-                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]))
+                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]),NULL)
                 if (isTruthy(url_info)) {
                   url$station2 <- url_info[1]
                   url$file2 <- url_info[2]
@@ -5591,54 +5598,58 @@ server <- function(input,output,session) {
   
   # Observe remote series ####
   observeEvent(inputs$server1, {
-    if (isTruthy(inputs$station1)) {
-      if (inputs$server1 == "renag") {
-        updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
-      } else if (inputs$server1 == "formater") {
-        updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
-      } else if (inputs$server1 == "igs") {
-        updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
-      } else if (inputs$server1 == "euref") {
-        updateSelectInput(session, inputId = "product1", choices = list("IGb14"), selected = "IGb14")
-      } else if (inputs$server1 == "ngl") {
-        updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
-      } else if (inputs$server1 == "jpl") {
-        updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
-      } else if (inputs$server1 == "eostls") {
-        updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
-      } else if (inputs$server1 == "sonel") {
-        updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
-      }
+    if (inputs$server1 == "renag") {
+      updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
+    } else if (inputs$server1 == "formater") {
+      updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+    } else if (inputs$server1 == "igs") {
+      updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
+    } else if (inputs$server1 == "euref") {
+      updateSelectInput(session, inputId = "product1", choices = list("IGb14"), selected = "IGb14")
+    } else if (inputs$server1 == "ngl") {
+      updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
+    } else if (inputs$server1 == "jpl") {
+      updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
+    } else if (inputs$server1 == "eostls") {
+      updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+    } else if (inputs$server1 == "sonel") {
+      updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     }
   })
   observeEvent(inputs$server2, {
     req(obs())
-    if (isTruthy(inputs$station2)) {
-      if (inputs$server2 == "renag") {
-        updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
-      } else if (inputs$server2 == "formater") {
-        updateSelectInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
-      } else if (inputs$server2 == "igs") {
-        updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
-      } else if (inputs$server2 == "euref") {
-        updateSelectInput(session, inputId = "product2", choices = list("IGb14"), selected = "IGb14")
-      } else if (inputs$server2 == "ngl") {
-        updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
-      } else if (inputs$server2 == "jpl") {
-        updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
-      } else if (inputs$server2 == "eostls") {
-        updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
-      } else if (inputs$server2 == "sonel") {
-        updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
-      }
+    if (inputs$server2 == "renag") {
+      updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
+    } else if (inputs$server2 == "formater") {
+      updateSelectInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+    } else if (inputs$server2 == "igs") {
+      updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
+    } else if (inputs$server2 == "euref") {
+      updateSelectInput(session, inputId = "product2", choices = list("IGb14"), selected = "IGb14")
+    } else if (inputs$server2 == "ngl") {
+      updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
+    } else if (inputs$server2 == "jpl") {
+      updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
+    } else if (inputs$server2 == "eostls") {
+      updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+    } else if (inputs$server2 == "sonel") {
+      updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     }
   })
   observeEvent(c(inputs$product1), {
+    req(inputs$server1,inputs$product1)
+    removeNotification("bad_remote")
+    removeNotification("bad_url")
+    removeNotification("parsing_url1")
+    removeNotification("no_answer")
+    get_URL_info(inputs$server1,NULL,inputs$product1,1)
+  })
+  observeEvent(c(inputs$station1), {
     if (isTruthy(inputs$station1) && isTruthy(inputs$server1) && isTruthy(inputs$product1)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
       removeNotification("parsing_url1")
-      url_info <- unlist(get_URL_info(inputs$server1,inputs$station1,inputs$product1))
+      url_info <- unlist(get_URL_info(inputs$server1,inputs$station1,inputs$product1,NULL))
       if (isTruthy(url_info)) {
         url$station <- url_info[1]
         url$file <- url_info[2]
@@ -5646,11 +5657,7 @@ server <- function(input,output,session) {
         file$primary$name <- url_info[3]
         info$format <- url_info[4]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(inputs$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-        # if (isTruthy(info$local)) {
-          file$primary$file <- tempfile()
-        # } else {
-          # file$primary$file <- file$primary$name
-        # }
+        file$primary$file <- tempfile()
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
           downloaded <- readLines(file$primary$file)
@@ -5681,12 +5688,19 @@ server <- function(input,output,session) {
       }
     }
   })
-  observeEvent(c(inputs$product2, inputs$station2), {
+  observeEvent(c(inputs$product2), {
+    req(inputs$server2,inputs$product2)
+    removeNotification("bad_remote")
+    removeNotification("bad_url")
+    removeNotification("no_answer")
+    get_URL_info(inputs$server2,NULL,inputs$product2,2)
+  })
+  observeEvent(c(inputs$station2), {
     req(obs())
     if (isTruthy(inputs$station2) && isTruthy(inputs$server2) && isTruthy(inputs$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
-      url_info <- unlist(get_URL_info(inputs$server2,inputs$station2,inputs$product2))
+      url_info <- unlist(get_URL_info(inputs$server2,inputs$station2,inputs$product2,NULL))
       if (isTruthy(url_info)) {
         url$station2 <- url_info[1]
         url$file2 <- url_info[2]
@@ -5694,11 +5708,7 @@ server <- function(input,output,session) {
         file$secondary$name <- url_info[3]
         info$format2 <- url_info[4]
         showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(inputs$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-        # if (isTruthy(info$local)) {
-          file$secondary$file <- tempfile()
-        # } else {
-          # file$secondary$file <- file$secondary$name
-        # }
+        file$secondary$file <- tempfile()
         down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
           downloaded <- readLines(file$secondary$file)
@@ -7146,7 +7156,7 @@ server <- function(input,output,session) {
               values$previous_all <- values$series_all
             }
             info$step <- inputs$step
-            withProgress(message = 'Averaging the series',
+            withProgress(message = 'Averaging the series.',
                          detail = 'This may take a while ...', value = 0, {
                            if (info$format == 4) {
                              w <- as.integer((max(table$x) - min(table$x))/inputs$step)
@@ -7579,7 +7589,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "formater" || isTruthy(spotgins)) { # SPOTGINS series
                 if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                  extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(44244, format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
                   extracted$x <- tableAll[,9]
                 }
@@ -7587,6 +7597,13 @@ server <- function(input,output,session) {
             } else {
               extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
               info$errorbars <- F
+              if (server == "eostls") {
+                if (input$tunits == 2) {
+                  extracted$x <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
+                } else if (input$tunits == 3) {
+                  extracted$x <- decimal_date(as.Date(tableAll[,1], origin = "1858-11-17"))
+                }
+              }
             }
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
           }
@@ -9826,16 +9843,53 @@ server <- function(input,output,session) {
     setProgress(round(p/w, digits = 1))
     return(out)
   }
-  get_URL_info <- function(server,station,product) {
+  get_URL_info <- function(server,station,product,series) {
+    if (isTruthy(series)) {
+      if (series == 1) {
+        variable <- "station1"
+      } else if (series == 2) {
+        variable <- "station2"
+      }
+    }
     #NGL
     if (tolower(server) == "ngl") {
       format <- 3
       if (tolower(product) == "final") {
-        name <- paste0(toupper(station),".tenv3")
-        file <- paste0("http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/",name)
+        url <- "http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/"
       } else if (tolower(product) == "rapid") {
-        name <- paste0(toupper(station),".tenv3")
-        file <- paste0("http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/",name)
+        url <- "http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/"
+      }
+      if (tolower(product) == "final" || tolower(product) == "rapid") {
+        pattern <- ".tenv3"
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(toupper(station),pattern)
+          file <- paste0(url,name)
+        } else {
+          withBusyIndicatorServer(variable, {
+            if (file.exists("www/NGL_database.txt")) {
+              stations_available <- readLines("www/NGL_database.txt")
+            } else {
+              dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+              if (isTruthy(dir_contents)) {
+                stations_available <- sub(pattern, "", grep(pattern, readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, fixed = T, value = T))
+                writeLines(stations_available, "www/NGL_database.txt", sep = "\n")
+              } else {
+                showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                return(NULL)
+              }
+            }
+            if (series == 1) {
+              output$station1 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })  
+            } else if (series == 2) {
+              output$station2 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9844,8 +9898,31 @@ server <- function(input,output,session) {
     } else if (tolower(server) == "renag") {
       format <- 2
       if (tolower(product) == "uga") {
-        name <- paste0(toupper(station),"_raw.pos_UGA_ITRF14.pos")
-        file <- paste0("ftp://webrenag.unice.fr/products/position-timeseries/",name)
+        url <- "ftp://webrenag.unice.fr/products/position-timeseries/"
+        pattern <- "_raw.pos_UGA_ITRF14.pos"
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(toupper(station),pattern)
+          file <- paste0(url,name)
+        } else {
+          withBusyIndicatorServer(variable, {
+            dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+            if (isTruthy(dir_contents)) {
+              stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
+              if (series == 1) {
+                output$station1 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })  
+              } else if (series == 2) {
+                output$station2 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })
+              }
+            } else {
+              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9854,8 +9931,31 @@ server <- function(input,output,session) {
     } else if (tolower(server) == "jpl") {
       format <- 1
       if (tolower(product) == "repro2018a") {
-        name <- paste0(toupper(station),".series")
-        file <- paste0("https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/",name)
+        url <- "https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/"
+        pattern <- ".series"
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(toupper(station),pattern)
+          file <- paste0(url,name)
+        } else {
+          withBusyIndicatorServer(variable, {
+            dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+            if (isTruthy(dir_contents)) {
+              stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
+              if (series == 1) {
+                output$station1 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })  
+              } else if (series == 2) {
+                output$station2 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })
+              }
+            } else {
+              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9864,8 +9964,31 @@ server <- function(input,output,session) {
     } else if (tolower(server) == "igs") {
       format <- 1
       if (tolower(product) == "igs20") {
-        name <- paste0(toupper(station),"_igs.plh")
-        file <- paste0("ftp://igs-rf.ign.fr/pub/crd/",name)
+        url <- "ftp://igs-rf.ign.fr/pub/crd/"
+        pattern <- "_igs.plh"
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(toupper(station),pattern)
+          file <- paste0(url,name)
+        } else {
+          withBusyIndicatorServer(variable, {
+            dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+            if (isTruthy(dir_contents)) {
+              stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
+              if (series == 1) {
+                output$station1 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })  
+              } else if (series == 2) {
+                output$station2 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })
+              }
+            } else {
+              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9874,8 +9997,33 @@ server <- function(input,output,session) {
     } else if (tolower(server) == "sonel") {
       format <- 1
       if (tolower(product) == "ulr7a") {
-        name <- paste0(toupper(station))
-        file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(toupper(station))
+          file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
+        } else {
+          url <- "https://api.sonel.org/v1/products/vlm/gnss/meta?mode=solution"
+          withBusyIndicatorServer(variable, {
+            dir_contents <- try(fromJSON(txt = url), silent = T)
+            if (isTruthy(dir_contents)) {
+              code <- which(dir_contents$code == toupper(product))
+              if (code > 0) {
+                stations_available <- dir_contents$stations[[code]]
+                if (series == 1) {
+                  output$station1 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })  
+                } else if (series == 2) {
+                  output$station2 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })
+                }
+              }
+            } else {
+              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
@@ -9900,73 +10048,147 @@ server <- function(input,output,session) {
     } else if (tolower(server) == "euref") {
       format <- 2
       if (tolower(product) == "igb14") {
-        name <- paste0(toupper(station),".pos")
-        file <- paste0("https://epncb.eu/ftp/product/cumulative/C2235/pbo/",name)
+        url <- "https://epncb.eu/ftp/product/cumulative/C2235/pbo/"
+        pattern <- ".pos"
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(toupper(station),pattern)
+          file <- paste0(url,name)  
+        } else {
+          withBusyIndicatorServer(variable, {
+            dir_contents <- try(readHTMLTable(getURL(url, crlf = TRUE), skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+            if (isTruthy(dir_contents)) {
+              stations_available <- sub(pattern, "", grep(pattern, dir_contents, ignore.case = F, value = T))
+              if (series == 1) {
+                output$station1 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })  
+              } else if (series == 2) {
+                output$station2 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })
+              }
+            } else {
+              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
     # FORMATER
     } else if (tolower(server) == "formater") {
+      url <- "https://gnss-terresolide.ipgp.fr/api/1.0/products/?output=csv"
+      dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
       if (tolower(product) == "spotgins_pos") {
         format <- 1
-        name <- paste0("SPOTGINS_",toupper(station),".enu")
+        pattern1 <- "SPOTGINS_"
+        pattern2 <- ".enu"
+        name <- paste0(pattern1,toupper(station),pattern2)
       } else if (tolower(product) == "uga_pos") {
         format <- 2
-        name <- paste0("UGA_",toupper(station),".pos")
+        pattern1 <- "UGA_"
+        pattern2 <- ".pos"
+        name <- paste0(pattern1,toupper(station),pattern2)
+      }
+      if (tolower(product) == "spotgins_pos" || tolower(product) == "uga_pos") {
+        if (isTruthy(station) && !isTruthy(series)) {
+          file <- paste0("https://gnss-terresolide.ipgp.fr/data/",toupper(station),"/",name)
+        } else {
+          withBusyIndicatorServer(variable, {
+            if (isTruthy(dir_contents)) {
+              stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
+              if (series == 1) {
+                output$station1 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })  
+              } else if (series == 2) {
+                output$station2 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })
+              }
+            } else {
+              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      file <- paste0("https://gnss-terresolide.ipgp.fr/data/",toupper(station),"/",name)
     # EOST Loading Service
     } else if (tolower(server) == "eostls") {
       format <- 1
-      name <- paste0(toupper(station),"_NEU.",tolower(product))
+      pattern <- "_NEU."
+      name <- paste0(toupper(station),pattern,tolower(product))
       if (tolower(product) == "atmib") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ATMIB/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMIB/"
       } else if (tolower(product) == "atmmo") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ATMMO/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMMO/"
       } else if (tolower(product) == "erain") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERAin/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAin/"
       } else if (tolower(product) == "erahyd") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERAhyd/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAhyd/"
       } else if (tolower(product) == "era5ib") {
         name <- paste0(toupper(station),"_NEU.era5")
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERA5_IB/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_IB/"
       } else if (tolower(product) == "era5hyd") {
         name <- paste0(toupper(station),"_NEU.era5")
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERA5_hydro/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_hydro/"
       } else if (tolower(product) == "era5tugo") {
         name <- paste0(toupper(station),"_NEU.era5")
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ERA5_TUGO/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_TUGO/"
       } else if (tolower(product) == "gldas") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLDAS/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS/"
       } else if (tolower(product) == "gldas2") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLDAS2/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS2/"
       } else if (tolower(product) == "merra") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA/"
       } else if (tolower(product) == "merra2atm") {
         name <- paste0(toupper(station),"_NEU_ib.merra2")
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/"
       } else if (tolower(product) == "merra2hyd") {
         name <- paste0(toupper(station),"_NEU.merra2")
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/"
       } else if (tolower(product) == "grace") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GRACE/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/GRACE/"
       } else if (tolower(product) == "ecco") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ECCO/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO/"
       } else if (tolower(product) == "ecco2") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/ECCO2/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO2/"
       } else if (tolower(product) == "glorys") {
-        file <- paste0("http://loading.u-strasbg.fr/ITRF/CF/GLORYS/",name)
+        url <- "http://loading.u-strasbg.fr/ITRF/CF/GLORYS/"
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
-      updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-      updateTextInput(session, inputId = "step2", value = "1")
+      file <- paste0(url,name)
+      if (isTruthy(station) && !isTruthy(series)) {
+        updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
+        updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+        updateTextInput(session, inputId = "step2", value = "1") 
+      } else {
+        withBusyIndicatorServer(variable, {
+          dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+          if (isTruthy(dir_contents)) {
+            stations_available <- sub(paste0(pattern,".*"), "", grep(pattern, dir_contents, fixed = T, value = T), perl = T)
+            if (series == 1) {
+              output$station1 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })  
+            } else if (series == 2) {
+              output$station2 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })
+            }
+          } else {
+            showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+          }
+          return(NULL)
+        })
+      }
     # SIRGAS
     # } else if (tolower(server) == "sirgas") {
     #   format <- 1
