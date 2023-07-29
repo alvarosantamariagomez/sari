@@ -5037,8 +5037,10 @@ server <- function(input,output,session) {
       disable("units")
       disable("verif_offsets")
       disable("euler")
+      enable("server1")
       disable("station1")
       disable("product1")
+      disable("server2")
       disable("station2")
       disable("product2")
     } else {
@@ -6876,6 +6878,7 @@ server <- function(input,output,session) {
       NULL
     })
     enable("neuenu")
+    enable("server1")
     info$components <- c("1st component", "2nd component", "3rd component")
     output$tabName1 <<- renderText({ info$components[1] })
     output$tabName2 <<- renderText({ info$components[2] })
