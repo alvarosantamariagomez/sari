@@ -7608,7 +7608,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "formater" || isTruthy(spotgins)) { # SPOTGINS series
                 if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(44244, format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                  extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
                   extracted$x <- tableAll[,9]
                 }
