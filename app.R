@@ -478,7 +478,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(6,
                                                                                checkboxInput(inputId = "average",
                                                                                              div("Reduce sampling",
-                                                                                                 helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
+                                                                                                 helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
                                                                                              value = F)
                                                                         ),
                                                                         column(6,
@@ -733,7 +733,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        column(6,
                                                                                               textInput(inputId = "step2",
                                                                                                         div("Averaging",
-                                                                                                            helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series.")),
+                                                                                                            helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
                                                                                                         value = "")
                                                                                        )
                                                                                      )
@@ -2022,11 +2022,27 @@ server <- function(input,output,session) {
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$step <- suppressWarnings(as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]")))
+    if (grepl("^=", trimws(input$step), perl = T)) {
+      step <- try(eval(parse(text = sub("=","",trimws(input$step)))), silent = T)
+      if (isTruthy(step)) {
+        updateTextInput(session, inputId = "step", value = step)
+      }
+      req(info$stop)
+    } else {
+      inputs$step <- suppressWarnings(as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]")))
+    }
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
-    inputs$step2 <- suppressWarnings(as.numeric(trimws(input$step2, which = "both", whitespace = "[ \t\r\n]")))
+    if (grepl("^=", trimws(input$step2), perl = T)) {
+      step <- try(eval(parse(text = sub("=","",trimws(input$step2)))), silent = T)
+      if (isTruthy(step)) {
+        updateTextInput(session, inputId = "step2", value = step)
+      }
+      req(info$stop)
+    } else {
+      inputs$step2 <- suppressWarnings(as.numeric(trimws(input$step2, which = "both", whitespace = "[ \t\r\n]")))
+    }
   }) %>% debounce(2000, priority = 1001)
 
   reactive({
