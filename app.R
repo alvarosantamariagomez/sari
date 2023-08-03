@@ -29,9 +29,9 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(pracma, verbose = F, quietly = T) #v2.3.8
   library(psych, verbose = F, quietly = T) #v2.1.6
   library(RColorBrewer, verbose = F, quietly = T) #v1.1-2
-  library(RCurl)
-  library(XML)
-  library(jsonlite)
+  library(RCurl, verbose = F, quietly = T) #v1.98-1.12
+  library(XML, verbose = F, quietly = T) #v3.99-0.14
+  library(jsonlite, verbose = F, quietly = T) #v1.8.0
   library(shinyBS, verbose = F, quietly = T) #v0.61
   library(shinycssloaders, verbose = F, quietly = T) #v1.0.0
   library(shinyjs, verbose = F, quietly = T) #v2.0
@@ -5633,6 +5633,9 @@ server <- function(input,output,session) {
     } else if (inputs$server1 == "sonel") {
       updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     }
+    output$station1 <- renderUI({
+      textInput(inputId = "station1", label = "Station", value = "")
+    })
   })
   observeEvent(inputs$server2, {
     req(obs())
@@ -5653,6 +5656,9 @@ server <- function(input,output,session) {
     } else if (inputs$server2 == "sonel") {
       updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     }
+    output$station2 <- renderUI({
+      textInput(inputId = "station2", label = "Station", value = "")
+    })
   })
   observeEvent(c(inputs$product1), {
     req(inputs$server1,inputs$product1)
@@ -9890,7 +9896,7 @@ server <- function(input,output,session) {
             } else {
               dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
               if (isTruthy(dir_contents)) {
-                stations_available <- sub(pattern, "", grep(pattern, readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, fixed = T, value = T))
+                stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
                 writeLines(stations_available, "www/NGL_database.txt", sep = "\n")
               } else {
                 showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
