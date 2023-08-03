@@ -1,7 +1,7 @@
 Instructions to run SARI locally using R/RStudio on Windows, Linux or MacOS
 ----------------------------------------------------------------------------
 
-Note on the Windows Subsystem for Linux: if using scripts/sari.sh to launch SARI from a WSL terminal, R and all the package dependencies must be installed on WSL as well. The Windows install will only be accessible from Windows itself, for instance with RStudio. The windows install is not necessary if running SARI from WSL.
+Note on the Windows Subsystem for Linux: if using scripts/sari.sh to launch SARI from a WSL terminal, R and all the package dependencies must be installed on WSL as well. The Windows install will only be accessible from Windows itself, for instance with RStudio. The windows install is not necessary if running SARI only from WSL.
 
 
 
@@ -39,16 +39,16 @@ sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontc
 
 
 
-4) Install all the packages indicated below and their dependencies from CRAN. There are several ways of installing the required packages:  
+4) Install all the R packages indicated below and their dependencies from CRAN. There are several ways of installing the required packages:  
 
 4.1) On Rstudio, go to Tools -> Install Packages  
 Then copy&paste the following list of packages separated by spaces or commas:
 
-data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach
+data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach
 
 4.2) On the R/RStudio console, the following command will install the packages at once:  
 `
-install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt))
+install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt))
 `
 
 4.3) The above two methods will either install package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
@@ -67,15 +67,17 @@ To install this package there are two options:
 install.packages("/path/to/the/mvcwt/tar.gz/file")
 `
 
-The list below shows the package versions used with R 4.2.3 when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce different results. 
+The list below shows the package versions used when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce different results. 
 
          Package    Version
          askpass        1.1
        base64enc      0.1-3
+          bitops      1.0-7
             brew      1.0-8
             brio      1.1.3
-           bslib      0.4.2
-          cachem      1.0.7
+           bslib      0.5.0
+          cachem      1.0.8
+           Cairo      1.6-0
            callr      3.7.3
              cli      3.6.1
            clipr      0.8.0
@@ -89,7 +91,7 @@ The list below shows the package versions used with R 4.2.3 when accessing SARI 
             desc      1.4.2
         devtools      2.4.5
          diffobj      0.3.5
-          digest     0.6.31
+          digest     0.6.33
              dlm      1.1-6
        dotCall64      1.0-2
          downlit      0.4.2
@@ -99,31 +101,31 @@ The list below shows the package versions used with R 4.2.3 when accessing SARI 
           farver      2.1.1
          fastmap      1.1.1
           fields       14.1
-     fontawesome      0.5.0
+     fontawesome      0.5.1
          foreach      1.5.2
-              fs      1.6.1
+              fs      1.6.3
         generics      0.1.3
             gert      1.9.2
-         ggplot2      3.4.2
+         ggplot2      3.4.1
               gh      1.4.0
         gitcreds      0.1.2
             glue      1.6.2
        gridExtra        2.3
-          gtable      0.3.3
+          gtable      0.3.1
            highr       0.10
        htmltools      0.5.5
-     htmlwidgets      1.6.2
-          httpuv      1.6.9
+     htmlwidgets      1.6.1
+          httpuv     1.6.11
             httr      1.4.5
            httr2      0.2.2
              ini      0.3.1
          isoband      0.2.7
        iterators     1.0.14
        jquerylib      0.1.4
-        jsonlite      1.8.4
+        jsonlite      1.8.7
            knitr       1.42
         labeling      0.4.2
-           later      1.3.0
+           later      1.3.1
        lifecycle      1.0.3
        lubridate      1.9.2
         magrittr      2.0.3
@@ -137,9 +139,10 @@ The list below shows the package versions used with R 4.2.3 when accessing SARI 
          munsell      0.5.0
            mvcwt      1.3.1
         numDeriv 2016.8-1.1
-         openssl      2.0.6
+         openssl      2.0.5
+   optimParallel      1.0-2
          pbapply      1.7-0
-          pillar      1.9.0
+          pillar      1.8.1
         pkgbuild      1.4.0
        pkgconfig      2.0.3
          pkgdown      2.0.7
@@ -151,34 +154,35 @@ The list below shows the package versions used with R 4.2.3 when accessing SARI 
         processx      3.8.0
          profvis      0.3.7
         promises    1.2.0.1
-              ps      1.7.4
-           psych      2.3.3
+              ps      1.7.2
+           psych      2.2.9
            purrr      1.0.1
         quadprog      1.5-8
-        quantmod     0.4.21
+        quantmod     0.4.20
               R6      2.5.1
             ragg      1.2.5
         rappdirs      0.3.3
      rasterImage      0.4.0
        rcmdcheck      1.4.0
     RColorBrewer      1.1-3
-            Rcpp     1.0.10
+            Rcpp     1.0.11
+           RCurl  1.98-1.12
         rematch2      2.1.2
          remotes      2.4.2
      RhpcBLASctl    0.23-42
-           rlang      1.1.0
-       rmarkdown       2.21
+           rlang      1.1.1
+       rmarkdown       2.20
         roxygen2      7.2.3
        rprojroot      2.0.3
       rstudioapi       0.14
        rversions      2.1.2
         sandwich      3.0-2
-            sass      0.4.5
+            sass      0.4.7
           scales      1.2.1
      sessioninfo      1.2.2
-           shiny      1.7.4
+           shiny    1.7.4.1
          shinyBS     0.61.1
- shinycssloaders 1.0.0.9004
+ shinycssloaders 1.0.0.9011
          shinyjs      2.1.0
      shinythemes      1.2.0
      sourcetools    0.1.7-1
@@ -189,9 +193,9 @@ The list below shows the package versions used with R 4.2.3 when accessing SARI 
      strucchange      1.5-3
              sys      3.4.1
      systemfonts      1.0.4
-        testthat      3.1.7
+        testthat      3.1.6
      textshaping      0.3.6
-          tibble      3.2.1
+          tibble      3.1.8
       timechange      0.2.0
          tinytex       0.44
          tseries    0.10-53
@@ -199,13 +203,14 @@ The list below shows the package versions used with R 4.2.3 when accessing SARI 
       urlchecker      1.0.1
          usethis      2.1.6
             utf8      1.2.3
-           vctrs      0.6.1
+           vctrs      0.5.2
          viridis      0.6.2
      viridisLite      0.4.1
            waldo      0.4.0
          whisker      0.4.1
            withr      2.5.0
-            xfun       0.38
+            xfun       0.37
+             XML   3.99-0.3
             xml2      1.3.3
            xopen      1.0.0
           xtable      1.8-4
@@ -257,12 +262,15 @@ After cloning/downloading the SARI repo:
 runApp("/path/to/the/downloaded/SARI/app.R/file")
 `
 
-6.3) On a Unix-like terminal using the sari.sh shell script from the SARI repo.  
-This shell script can also be used to launch a SARI session on Shinyapps.io without installing SARI.
+6.3) On a Unix-like terminal using the sari.sh shell script located in the /scripts folder of the SARI repo.  
+This shell script can also be used to launch a local SARI session with Docker or a remote SARI session on Shinyapps.io without installing SARI.
 
 
 
-For any comment or question, send an email to:  
+For any comment or question, open a GitHub issue at
+https://github.com/alvarosantamariagomez/sari
+
+
 
 Alvaro Santamaria
 alvaro.santamaria at get.omp.eu
