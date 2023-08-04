@@ -8256,94 +8256,100 @@ server <- function(input,output,session) {
       }
       # * Offset model ####
       if ("Offset" %in% input$model) {
-        offsetEpochs <- unlist(strsplit(inputs$offsetEpoch, split = ","))
-        # check for duplicated offset epochs
-        if (anyDuplicated(offsetEpochs) > 0) {
-          showNotification(paste0("The epoch given for offset #",anyDuplicated(offsetEpochs)," is duplicated. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "repeated_offset_epoch", type = "error", session = getDefaultReactiveDomain())
-          info$run <- F
-          req(info$stop)
-        }
-        # check for soln without observations
-        if (length(offsetEpochs) > 1) {
-          invalidSegment <- sapply(seq(length(offsetEpochs) - 1), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x] & trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x + 1]]) ) == 0
-          for (soln in which(invalidSegment)) {
-            uselessOffset_id1 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln]))
-            uselessOffset_id2 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln + 1]))
-            showNotification(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,". One of them needs to be removed."), action = NULL, duration = 10, closeButton = T, id = "useless_offset_epoch", type = "error", session = getDefaultReactiveDomain())
+        if (isTruthy(inputs$offsetEpoch)) {
+          offsetEpochs <- unlist(strsplit(inputs$offsetEpoch, split = ","))
+          # check for duplicated offset epochs
+          if (anyDuplicated(offsetEpochs) > 0) {
+            showNotification(paste0("The epoch given for offset #",anyDuplicated(offsetEpochs)," is duplicated. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "repeated_offset_epoch", type = "error", session = getDefaultReactiveDomain())
             info$run <- F
-            req(info$stop) # will stop at the first useless offset, but that's ok
+            req(info$stop)
           }
-        }
-        # check for offsets outside data limits
-        out1 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
-        out2 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
-        out <- out1 + out2 > 0
-        uselessOffset_ids <- sapply(seq(length(which(out))), function(x) which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[x])))
-        showNotification(paste("There are no observations before or after offsets:", paste0("#",uselessOffset_ids, collapse = " "),". These offsets where not used."), action = NULL, duration = 10, closeButton = T, id = "outside_offset_epoch", type = "warning", session = getDefaultReactiveDomain())
-        
-        O0 <- unlist(strsplit(input$O0, split = ","))
-        eO0 <- unlist(strsplit(input$eO0, split = ","))
-        trans$offsetEpochs <- NULL
-        i <- 0
-        if (length(offsetEpochs) > 0) {
-          for (p in offsetEpochs) {
-            p <- as.numeric(trimmer(p))
-            if (nchar(p) > 0 && !is.na(p)) {
-              if (trans$x[1] < p && p < trans$x[length(trans$x)]) {
-                trans$offsetEpochs <- c(trans$offsetEpochs, p)
-                info$run <- T
-                i <- i + 1
-                label <- paste0("O",i)
-                text <- sprintf("I(x>%s)",p)
-                model <- paste(model, paste(label,text,sep = "*"), sep = " + ")
-                model_lm <- paste(model_lm, text, sep = " + ")
-                model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*I(x[k]>",p,")"), sep = " + ")
-                model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*I(x[k]>",p,")"), sep = " + ")
-                j <- j + 1
-                if (identical(O0,character(0)) || is.na(O0[i]) || O0[i] == "" || O0[i] == " ") {
-                  if (length(y_detrend) > 0) {
-                    y_now <- y_detrend
-                  } else {
-                    y_now <- y
-                  }
-                  O0[i] <- y_now[which.max(x >= p)] - y_now[which.max(x >= p) - 1]
-                  if (!isTruthy(O0[i])) {
-                    O0[i] <- 0
-                  }
-                  if (input$tunits == 1) {
-                    sample <- 1/12 * 365
-                  } else if (input$tunits == 2) {
-                    sample <- 1/12 * 365/7
-                  } else if (input$tunits == 3) {
-                    sample <- 1/12
-                  }
-                  eO0[i] <- ( sd(y_now[which.max(trans$x > p) - sample & which.min(trans$x < p)]) + sd(y_now[which.max(trans$x > p) & which.min(trans$x < p) + sample]) ) / 2
-                  if (!isTruthy(eO0[i])) {
-                    eO0[i] <- 1
-                  }
-                  if (input$fitType == 2) {
-                    if (isTruthy(match(paste0("O",i), trans$names))) {
-                      O0[i] <- trans$LScoefs[match(paste0("O",i), trans$names)]
-                      eO0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("O",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
-                    }
-                    line_O0 <- paste(O0, collapse = ", ")
-                    line_eO0 <- paste(eO0, collapse = ", ")
-                    updateTextInput(session, "O0", value = line_O0)
-                    updateTextInput(session, "eO0", value = line_eO0)
-                  }
-                }
-                apriori[[label]] <- as.numeric(O0[i])
-                error[[label]] <- as.numeric(eO0[i])
-                nouns <- c(nouns, label)
-                if (input$fitType == 2) {
-                  processNoise <- c(processNoise, 0)
-                }
-              }
-            } else {
-              showNotification(paste0("The epoch given for offset #",i + 1," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "error", session = getDefaultReactiveDomain())
+          # check for soln without observations
+          if (length(offsetEpochs) > 1) {
+            invalidSegment <- sapply(seq(length(offsetEpochs) - 1), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x] & trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x + 1]]) ) == 0
+            for (soln in which(invalidSegment)) {
+              uselessOffset_id1 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln]))
+              uselessOffset_id2 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln + 1]))
+              showNotification(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,". One of them needs to be removed."), action = NULL, duration = 10, closeButton = T, id = "useless_offset_epoch", type = "error", session = getDefaultReactiveDomain())
               info$run <- F
-              req(info$stop)
+              req(info$stop) # will stop at the first useless offset, but that's ok
             }
+          }
+          # check for offsets outside data limits
+          out1 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
+          out2 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
+          out <- out1 + out2 > 0
+          if (sum(out) > 0) {
+            uselessOffset_ids <- sapply(seq(length(which(out))), function(x) which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[x])))
+            showNotification(paste("There are no observations before or after offsets:", paste0("#",uselessOffset_ids, collapse = " "),". These offsets where not used."), action = NULL, duration = 10, closeButton = T, id = "outside_offset_epoch", type = "warning", session = getDefaultReactiveDomain())
+          }
+          
+          O0 <- unlist(strsplit(input$O0, split = ","))
+          eO0 <- unlist(strsplit(input$eO0, split = ","))
+          trans$offsetEpochs <- NULL
+          i <- 0
+          if (length(offsetEpochs) > 0) {
+            for (p in offsetEpochs) {
+              p <- as.numeric(trimmer(p))
+              if (nchar(p) > 0 && !is.na(p)) {
+                if (trans$x[1] < p && p < trans$x[length(trans$x)]) {
+                  trans$offsetEpochs <- c(trans$offsetEpochs, p)
+                  info$run <- T
+                  i <- i + 1
+                  label <- paste0("O",i)
+                  text <- sprintf("I(x>%s)",p)
+                  model <- paste(model, paste(label,text,sep = "*"), sep = " + ")
+                  model_lm <- paste(model_lm, text, sep = " + ")
+                  model_kf_inst <- paste(model_kf_inst, paste0("e[k,",j,"]*I(x[k]>",p,")"), sep = " + ")
+                  model_kf_mean <- paste(model_kf_mean, paste0("e[k,",j,"]*I(x[k]>",p,")"), sep = " + ")
+                  j <- j + 1
+                  if (identical(O0,character(0)) || is.na(O0[i]) || O0[i] == "" || O0[i] == " ") {
+                    if (length(y_detrend) > 0) {
+                      y_now <- y_detrend
+                    } else {
+                      y_now <- y
+                    }
+                    O0[i] <- y_now[which.max(x >= p)] - y_now[which.max(x >= p) - 1]
+                    if (!isTruthy(O0[i])) {
+                      O0[i] <- 0
+                    }
+                    if (input$tunits == 1) {
+                      sample <- 1/12 * 365
+                    } else if (input$tunits == 2) {
+                      sample <- 1/12 * 365/7
+                    } else if (input$tunits == 3) {
+                      sample <- 1/12
+                    }
+                    eO0[i] <- ( sd(y_now[which.max(trans$x > p) - sample & which.min(trans$x < p)]) + sd(y_now[which.max(trans$x > p) & which.min(trans$x < p) + sample]) ) / 2
+                    if (!isTruthy(eO0[i])) {
+                      eO0[i] <- 1
+                    }
+                    if (input$fitType == 2) {
+                      if (isTruthy(match(paste0("O",i), trans$names))) {
+                        O0[i] <- trans$LScoefs[match(paste0("O",i), trans$names)]
+                        eO0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("O",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
+                      }
+                      line_O0 <- paste(O0, collapse = ", ")
+                      line_eO0 <- paste(eO0, collapse = ", ")
+                      updateTextInput(session, "O0", value = line_O0)
+                      updateTextInput(session, "eO0", value = line_eO0)
+                    }
+                  }
+                  apriori[[label]] <- as.numeric(O0[i])
+                  error[[label]] <- as.numeric(eO0[i])
+                  nouns <- c(nouns, label)
+                  if (input$fitType == 2) {
+                    processNoise <- c(processNoise, 0)
+                  }
+                }
+              } else {
+                showNotification(paste0("The epoch given for offset #",i + 1," is not valid. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "error", session = getDefaultReactiveDomain())
+                info$run <- F
+                req(info$stop)
+              }
+            }
+          } else {
+            trans$offsetEpochs <- NULL
           }
         } else {
           trans$offsetEpochs <- NULL
