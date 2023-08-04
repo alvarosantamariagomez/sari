@@ -2778,7 +2778,7 @@ server <- function(input,output,session) {
       n <- length(trans$res)
       n_all <- length(trans$gaps)
       C <- matrix(0,n,n)
-      scaling <- 10^signifdecimal(sd(trans$res))
+      scaling <- 10^signifdecimal(sd(trans$res), T)
       if (isTruthy(inputs$verif_fl) || isTruthy(inputs$verif_rw) || isTruthy(inputs$verif_pl)) {
         estimatedTime <- as.integer(ceiling(1.3547*exp(0.0007*n)/60))
       } else {
@@ -4253,8 +4253,8 @@ server <- function(input,output,session) {
                        fitmle <- NULL
                        apriori <- NULL
                        cl <- NULL
-                       significant <- signifdecimal(vari) + 1
-                       scaling <- 10^signifdecimal(sd(res))
+                       significant <- signifdecimal(vari, T) + 1
+                       scaling <- 10^signifdecimal(sd(res), T)
                        resS <- res*scaling
                        if (isTruthy(input$noise_unc)) {
                          hessian <- T
@@ -9184,7 +9184,8 @@ server <- function(input,output,session) {
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
-        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', trans$LScoefs[i,1], '+/-', trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
+        max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
+        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', format(trans$LScoefs[i,1], nsmall = max_decimals, digits = max_decimals), '+/-', format(trans$LScoefs[i,2], nsmall = max_decimals, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
@@ -9808,16 +9809,19 @@ server <- function(input,output,session) {
       return(0)
     }
   }
-  signifdecimal <- function(x) {
+  signifdecimal <- function(x, rounded) {
     if (abs(x) >= 1) {
       return(0)
     } else {
-      # return(nchar(signif(x,1)) - 2)
       decimal <- nchar(format(signif(x,1), scientific = F)) - 3
-      if (round(x, decimal) > 0) {
-        return(decimal)
+      if (rounded) {
+        if (round(x, decimal) > 0) {
+          return(decimal)
+        } else {
+          return(decimal + 1)
+        }
       } else {
-        return(decimal + 1)
+        return(decimal)
       }
     }
   }
