@@ -291,9 +291,10 @@ tabContents <- function(tabNum) {
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
-                div(
+                div( style = "text-align: center;",
                   id = "loading_page",
-                  h1(style = "color: #333333; font-weight: bold; text-align: center;", HTML("SARI session established.<br><br><br>Loading user interface ..."))
+                  h1(style = "color: #333333; font-weight: bold", HTML("<br><br><br> SARI session established. <br><br><br> Loading user interface ... <br><br><br><br>")),
+                  img(src = "SARI_logo_animated.gif", width = "15%")
                 ),
                 
                 # HTTP meta and style header tags
