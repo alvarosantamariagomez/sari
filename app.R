@@ -2365,20 +2365,6 @@ server <- function(input,output,session) {
         ranges$y12 <- range(trans$y2, na.rm = T)
       }
     }
-    info$decimalsx <- max(decimalplaces(trans$x))
-    if (!isTruthy(info$decimalsx)) {
-      info$decimalsx <- 4
-    }
-    if (info$decimalsx > 10) {
-      info$decimalsx <- 10
-    }
-    info$decimalsy <- max(decimalplaces(trans$y))
-    if (!isTruthy(info$decimalsy)) {
-      info$decimalsy <- 4
-    }
-    if (info$decimalsy > 10) {
-      info$decimalsy <- 10
-    }
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
     if (!isTruthy(info$step)) {
@@ -7103,6 +7089,21 @@ server <- function(input,output,session) {
       table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
     }
     if (!is.null(table)) {
+      # Getting significant decimals from input series
+      info$decimalsx <- max(decimalplaces(table$x))
+      if (!isTruthy(info$decimalsx)) {
+        info$decimalsx <- 4
+      }
+      if (info$decimalsx > 10) {
+        info$decimalsx <- 10
+      }
+      info$decimalsy <- max(decimalplaces(table$y1))
+      if (!isTruthy(info$decimalsy)) {
+        info$decimalsy <- 4
+      }
+      if (info$decimalsy > 10) {
+        info$decimalsy <- 10
+      }
       # Extracting coordinates if known and not already set
       if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
         if (info$format == 1) {
@@ -9168,6 +9169,15 @@ server <- function(input,output,session) {
         cat(paste0("# Column number for data: ",inputs$variable), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
+    if (isTruthy(inputs$step) && inputs$step > 0) {
+      cat(paste('# Resampling:', inputs$step), file = file_out, sep = "\n", fill = F, append = T)
+    }
+    if (input$optionSecondary == 2) {
+      cat(sprintf('# Corrected with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
+    }
+    if (input$optionSecondary == 3) {
+      cat(sprintf('# Averaged with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
+    }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
       cat(sprintf('# Plate model rate removed: %f',trans$plate[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
     }
@@ -9242,15 +9252,6 @@ server <- function(input,output,session) {
         cat(sprintf('# Noise: MLE %f ',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
-    if (isTruthy(inputs$step) && inputs$step > 0) {
-      cat(paste('# Resampling:', inputs$step), file = file_out, sep = "\n", fill = F, append = T)
-    }
-    if (input$optionSecondary == 2) {
-      cat(sprintf('# Corrected with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
-    }
-    if (input$optionSecondary == 3) {
-      cat(sprintf('# Averaged with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
-    }
     if (isTruthy(input$sigmas)) {
       OutPut$df <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)
       names(OutPut$df) <- c("# Epoch", "Data", "Sigma")
@@ -9262,7 +9263,7 @@ server <- function(input,output,session) {
     OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"],nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)
     OutPut$df[,"Data"] <- format(OutPut$df[,"Data"],nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F)
     if (isTruthy(input$sigmas)) {
-      OutPut$df[,"Sigma"] <- format(OutPut$df[,"Sigma"],nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F)
+      OutPut$df[,"Sigma"] <- format(OutPut$df[,"Sigma"],nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
     }
     if ((input$fitType == 1 || input$fitType == 2) && length(input$model) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
