@@ -1739,8 +1739,8 @@ server <- function(input,output,session) {
   # 5. user input
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL,
                            periodRef = NULL, offsetEpoch = NULL, ExponenRef = NULL, E0 = NULL, TE0 = NULL,
-                           LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = NULL,
-                           long_period = NULL, short_period = NULL, low = NULL, high = NULL, scaleFactor = 1,
+                           LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = "",
+                           long_period = "", short_period = "", low = NULL, high = NULL, scaleFactor = 1,
                            step = NULL, step2 = NULL)
   obs <- reactiveVal()
 
@@ -1925,318 +1925,328 @@ server <- function(input,output,session) {
     HTML(paste(line1, line2, line3, line4, line5, sep = "<br/>"))
   })
 
-  # Debouncers for reactive inputs ####
+  # Debouncers & checks for reactive typed inputs ####
   reactive({
     inputs$ObsError <- suppressWarnings(as.numeric(trimws(input$ObsError, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
   reactive({
     inputs$thresholdRes <- suppressWarnings(as.numeric(trimws(input$thresholdRes, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
   reactive({
     inputs$thresholdResN <- suppressWarnings(as.numeric(trimws(input$thresholdResN, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$trendRef <- suppressWarnings(as.numeric(trimws(input$trendRef, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  trendRef_d <- reactive(input$trendRef) %>% debounce(1000, priority = 1000)
+  observeEvent(trendRef_d(), {
+    if (is.na(inputs$trendRef) || is.null(inputs$trendRef) || trendRef_d() != inputs$trendRef) {
+      inputs$trendRef <- suppressWarnings(as.numeric(trimws(trendRef_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
+  }, priority = 1000)
 
-  reactive({
-    inputs$period <- trimws(input$period, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  period_d <- reactive(input$period) %>% debounce(1000, priority = 1000)
+  observeEvent(period_d(), {
+    inputs$period <- trimws(period_d(), which = "both", whitespace = "[ \t\r\n]")
+  }, priority = 1000)
 
-  reactive({
-    inputs$periodRef <- suppressWarnings(as.numeric(trimws(input$periodRef, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  periodRef_d <- reactive(input$periodRef) %>% debounce(1000, priority = 1000)
+  observeEvent(periodRef_d(), {
+    if (is.na(inputs$periodRef) || is.null(inputs$periodRef) || periodRef_d() != inputs$periodRef) {
+      inputs$periodRef <- suppressWarnings(as.numeric(trimws(periodRef_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
+  }, priority = 1000)
 
-  reactive({
-    inputs$offsetEpoch <- trimws(input$offsetEpoch, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  offsetEpoch_d <- reactive(input$offsetEpoch) %>% debounce(1000, priority = 1000)
+  observeEvent(offsetEpoch_d(), {
+    inputs$offsetEpoch <- trimws(offsetEpoch_d(), which = "both", whitespace = "[ \t\r\n]")
+  }, priority = 1000)
 
-  reactive({
-    inputs$ExponenRef <- trimws(input$ExponenRef, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  ExponenRef_d <- reactive(input$ExponenRef) %>% debounce(1000, priority = 1000)
+  observeEvent(ExponenRef_d(), {
+    inputs$ExponenRef <- trimws(ExponenRef_d(), which = "both", whitespace = "[ \t\r\n]")
+  }, priority = 1000)
 
-  reactive({
-    inputs$E0 <- trimws(input$E0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  E0_d <- reactive(input$E0) %>% debounce(1000, priority = 1000)
+  observeEvent(E0_d(), {
+    if (!isTruthy(inputs$E0) || E0_d() != inputs$E0) {
+      inputs$E0 <- trimws(E0_d(), which = "both", whitespace = "[ \t\r\n]")
+    }
+  }, priority = 1000)
 
   reactive({
     inputs$eE0 <- trimws(input$eE0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$TE0 <- trimws(input$TE0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  TE0_d <- reactive(input$TE0) %>% debounce(1000, priority = 1000)
+  observeEvent(TE0_d(), {
+    if (!isTruthy(inputs$TE0) || TE0_d() != inputs$TE0) {
+      inputs$TE0 <- trimws(TE0_d(), which = "both", whitespace = "[ \t\r\n]")
+    }
+  }, priority = 1000)
 
   reactive({
     inputs$eTE0 <- trimws(input$eTE0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$LogariRef <- trimws(input$LogariRef, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  LogariRef_d <- reactive(input$LogariRef) %>% debounce(1000, priority = 1000)
+  observeEvent(LogariRef_d(), {
+    inputs$LogariRef <- trimws(LogariRef_d(), which = "both", whitespace = "[ \t\r\n]")
+  }, priority = 1000)
 
-  reactive({
-    inputs$L0 <- trimws(input$L0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  L0_d <- reactive(input$L0) %>% debounce(1000, priority = 1000)
+  observeEvent(L0_d(), {
+    if (!isTruthy(inputs$L0) || L0_d() != inputs$L0) {
+      inputs$L0 <- trimws(L0_d(), which = "both", whitespace = "[ \t\r\n]")
+    }
+  }, priority = 1000)
 
   reactive({
     inputs$eL0 <- trimws(input$eL0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$TL0 <- trimws(input$TL0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  TL0_d <- reactive(input$TL0) %>% debounce(1000, priority = 1000)
+  observeEvent(TL0_d(), {
+    if (!isTruthy(inputs$TL0) || TL0_d() != inputs$TL0) {
+      inputs$TL0 <- trimws(TL0_d(), which = "both", whitespace = "[ \t\r\n]")
+    }
+  }, priority = 1000)
 
   reactive({
     inputs$eTL0 <- trimws(input$eTL0, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$PolyRef <- suppressWarnings(as.numeric(trimws(input$PolyRef, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  PolyRef_d <- reactive(input$PolyRef) %>% debounce(1000, priority = 1000)
+  observeEvent(PolyRef_d(), {
+    if (is.na(inputs$PolyRef) || is.null(inputs$PolyRef) || PolyRef_d() != inputs$PolyRef) {
+      inputs$PolyRef <- suppressWarnings(as.numeric(trimws(PolyRef_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
+  }, priority = 1000)
 
-  reactive({
-    inputs$PolyCoef <- suppressWarnings(as.numeric((trimws(input$PolyCoef, which = "both", whitespace = "[ \t\r\n]"))))
-  }) %>% debounce(2000, priority = 1001)
+  PolyCoef_d <- reactive(input$PolyCoef) %>% debounce(1000, priority = 1000)
+  observeEvent(PolyCoef_d(), {
+    inputs$PolyCoef <- suppressWarnings(as.numeric((trimws(PolyCoef_d(), which = "both", whitespace = "[ \t\r\n]"))))
+  }, priority = 1000)
 
-  reactive({
-    inputs$ofac <- suppressWarnings(as.numeric(trimws(input$ofac, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  ofac_d <- reactive(input$ofac) %>% debounce(1000, priority = 1000)
+  observeEvent(ofac_d(), {
+    if (is.na(inputs$ofac) || ofac_d() != inputs$ofac) {
+      inputs$ofac <- suppressWarnings(as.numeric(trimws(ofac_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
+  }, priority = 1000)
 
-  reactive({
-    inputs$long_period <- suppressWarnings(as.numeric(trimws(input$long_period, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  long_period_d <- reactive(input$long_period) %>% debounce(1000, priority = 1000)
+  observeEvent(long_period_d(), {
+    if (is.na(inputs$long_period) || long_period_d() != inputs$long_period) {
+      inputs$long_period <- suppressWarnings(as.numeric(trimws(long_period_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
+  }, priority = 1000)
 
-  reactive({
-    inputs$short_period <- suppressWarnings(as.numeric(trimws(input$short_period, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  short_period_d <- reactive(input$short_period) %>% debounce(1000, priority = 100)
+  observeEvent(short_period_d(), {
+    if (is.na(inputs$short_period) || short_period_d() != inputs$short_period) {
+      inputs$short_period <- suppressWarnings(as.numeric(trimws(short_period_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
+  }, priority = 100)
 
-  reactive({
-    inputs$low <- suppressWarnings(as.numeric(trimws(input$low, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  low_d <- reactive(input$low) %>% debounce(1000, priority = 1000)
+  observeEvent(low_d(), {
+    inputs$low <- suppressWarnings(as.numeric(trimws(low_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$high <- suppressWarnings(as.numeric(trimws(input$high, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  high_d <- reactive(input$high) %>% debounce(1000, priority = 1000)
+  observeEvent(high_d(), {
+    inputs$high <- suppressWarnings(as.numeric(trimws(high_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    if (grepl("^=", trimws(input$step), perl = T)) {
-      step <- try(eval(parse(text = sub("=","",trimws(input$step)))), silent = T)
+  step_d <- reactive(input$step) %>% debounce(1000, priority = 1000)
+  observeEvent(c(step_d()), {
+    if (grepl("^=", trimws(step_d()), perl = T)) {
+      step <- try(eval(parse(text = sub("=", "", trimws(step_d())))), silent = T)
       if (isTruthy(step)) {
         updateTextInput(session, inputId = "step", value = step)
       }
       req(info$stop)
     } else {
-      inputs$step <- suppressWarnings(as.numeric(trimws(input$step, which = "both", whitespace = "[ \t\r\n]")))
+      inputs$step <- suppressWarnings(as.numeric(trimws(step_d(), which = "both", whitespace = "[ \t\r\n]")))
     }
-  }) %>% debounce(2000, priority = 1001)
+  }, priority = 1000)
 
-  reactive({
-    if (grepl("^=", trimws(input$step2), perl = T)) {
-      step <- try(eval(parse(text = sub("=","",trimws(input$step2)))), silent = T)
+  step2_d <- reactive(input$step2) %>% debounce(1000, priority = 1000)
+  observeEvent(c(step2_d()), {
+    if (grepl("^=", trimws(step2_d()), perl = T)) {
+      step <- try(eval(parse(text = sub("=","",trimws(step2_d())))), silent = T)
       if (isTruthy(step)) {
         updateTextInput(session, inputId = "step2", value = step)
       }
       req(info$stop)
     } else {
-      inputs$step2 <- suppressWarnings(as.numeric(trimws(input$step2, which = "both", whitespace = "[ \t\r\n]")))
+      inputs$step2 <- suppressWarnings(as.numeric(trimws(step2_d(), which = "both", whitespace = "[ \t\r\n]")))
     }
-  }) %>% debounce(2000, priority = 1001)
+  }, priority = 1000)
 
-  reactive({
-    inputs$min_wavelet <- suppressWarnings(as.numeric(trimws(input$min_wavelet, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  min_wavelet_d <- reactive(input$min_wavelet) %>% debounce(1000, priority = 1000)
+  observeEvent(c(min_wavelet_d()), {
+    inputs$min_wavelet <- suppressWarnings(as.numeric(trimws(min_wavelet_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$max_wavelet <- suppressWarnings(as.numeric(trimws(input$max_wavelet, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  max_wavelet_d <- reactive(input$max_wavelet) %>% debounce(1000, priority = 1000)
+  observeEvent(max_wavelet_d(), {
+    inputs$max_wavelet <- suppressWarnings(as.numeric(trimws(max_wavelet_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$res_wavelet <- suppressWarnings(as.numeric(trimws(input$res_wavelet, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  res_wavelet_d <- reactive(input$res_wavelet) %>% debounce(1000, priority = 1000)
+  observeEvent(res_wavelet_d(), {
+    inputs$res_wavelet <- suppressWarnings(as.numeric(trimws(res_wavelet_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$loc_wavelet <- suppressWarnings(as.numeric(trimws(input$loc_wavelet, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  loc_wavelet_d <- reactive(input$loc_wavelet) %>% debounce(1000, priority = 1000)
+  observeEvent(loc_wavelet_d(), {
+    inputs$loc_wavelet <- suppressWarnings(as.numeric(trimws(loc_wavelet_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
   reactive({
     inputs$verif_white <- suppressWarnings(as.numeric(trimws(input$verif_white, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
   reactive({
     inputs$verif_pl <- suppressWarnings(as.numeric(trimws(input$verif_pl, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
   reactive({
     inputs$verif_k <- suppressWarnings(as.numeric(trimws(input$verif_k, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
   
   reactive({
     inputs$verif_fl <- suppressWarnings(as.numeric(trimws(input$verif_fl, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
   
   reactive({
     inputs$verif_rw <- suppressWarnings(as.numeric(trimws(input$verif_rw, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$max_white <- suppressWarnings(as.numeric(trimws(input$max_white, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$min_white <- suppressWarnings(as.numeric(trimws(input$min_white, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$min_fl <- suppressWarnings(as.numeric(trimws(input$min_fl, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$min_pl <- suppressWarnings(as.numeric(trimws(input$min_pl, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$max_fl <- suppressWarnings(as.numeric(trimws(input$max_fl, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$max_pl <- suppressWarnings(as.numeric(trimws(input$max_pl, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$min_rw <-  suppressWarnings(as.numeric(trimws(input$min_rw, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$min_k <-  suppressWarnings(as.numeric(trimws(input$min_k, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$max_rw <-  suppressWarnings(as.numeric(trimws(input$max_rw, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$max_k <-  suppressWarnings(as.numeric(trimws(input$max_k, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
-
-  reactive({
-    inputs$waveformPeriod <-  suppressWarnings(as.numeric(trimws(input$waveformPeriod, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  waveformPeriod_d <- reactive(input$waveformPeriod) %>% debounce(1000, priority = 1000)
+  observeEvent(waveformPeriod_d(), {
+    inputs$waveformPeriod <-  suppressWarnings(as.numeric(trimws(waveformPeriod_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
   reactive({
     inputs$min_optirange <-  suppressWarnings(as.numeric(trimws(input$min_optirange, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
   reactive({
     inputs$max_optirange <-  suppressWarnings(as.numeric(trimws(input$max_optirange, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  }) %>% debounce(0, priority = 1000)
 
-  reactive({
-    inputs$epoch <-  suppressWarnings(as.numeric(trimws(input$epoch, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  epoch_d <- reactive(input$epoch) %>% debounce(1000, priority = 1000)
+  observeEvent(epoch_d(), {
+    inputs$epoch <-  suppressWarnings(as.numeric(trimws(epoch_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$variable <-  suppressWarnings(as.numeric(trimws(input$variable, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  variable_d <- reactive(input$variable) %>% debounce(1000, priority = 1000)
+  observeEvent(variable_d(), {
+    inputs$variable <-  suppressWarnings(as.numeric(trimws(variable_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$errorBar <-  suppressWarnings(as.numeric(trimws(input$errorBar, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  errorBar_d <- reactive(input$errorBar) %>% debounce(1000, priority = 1000)
+  observeEvent(errorBar_d(), {
+    inputs$errorBar <-  suppressWarnings(as.numeric(trimws(errorBar_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$ids <-  trimws(input$ids, which = "both", whitespace = "[ \t\r\n]")
-  }) %>% debounce(2000, priority = 1001)
+  ids_d <- reactive(input$ids) %>% debounce(1000, priority = 1000)
+  observeEvent(ids_d(), {
+    inputs$ids <-  trimws(ids_d(), which = "both", whitespace = "[ \t\r\n]")
+  }, priority = 1000)
 
-  reactive({
-    inputs$epoch2 <-  suppressWarnings(as.numeric(trimws(input$epoch2, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  epoch2_d <- reactive(input$epoch2) %>% debounce(1000, priority = 1000)
+  observeEvent(epoch2_d(), {
+    inputs$epoch2 <-  suppressWarnings(as.numeric(trimws(epoch2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$variable2 <-  suppressWarnings(as.numeric(trimws(input$variable2, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  variable2_d <- reactive(input$variable2) %>% debounce(1000, priority = 1000)
+  observeEvent(variable2_d(), {
+    inputs$variable2 <-  suppressWarnings(as.numeric(trimws(variable2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$errorBar2 <-  suppressWarnings(as.numeric(trimws(input$errorBar2, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  errorBar2_d <- reactive(input$errorBar2) %>% debounce(1000, priority = 1000)
+  observeEvent(errorBar2_d(), {
+    inputs$errorBar2 <-  suppressWarnings(as.numeric(trimws(errorBar2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$station_x <- suppressWarnings(as.numeric(trimws(input$station_x, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  station_x_d <- reactive(input$station_x) %>% debounce(1000, priority = 1000)
+  observeEvent(station_x_d(), {
+    inputs$station_x <- suppressWarnings(as.numeric(trimws(station_x_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$station_y <- suppressWarnings(as.numeric(trimws(input$station_y, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  station_y_d <- reactive(input$station_y) %>% debounce(1000, priority = 1000)
+  observeEvent(station_y_d(), {
+    inputs$station_y <- suppressWarnings(as.numeric(trimws(station_y_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$station_z <- suppressWarnings(as.numeric(trimws(input$station_z, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  station_z_d <- reactive(input$station_z) %>% debounce(1000, priority = 1000)
+  observeEvent(station_z_d(), {
+    inputs$station_z <- suppressWarnings(as.numeric(trimws(station_z_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$station_lat <- suppressWarnings(as.numeric(trimws(input$station_lat, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  station_lat_d <- reactive(input$station_lat) %>% debounce(1000, priority = 1000)
+  observeEvent(station_lat_d(), {
+    inputs$station_lat <- suppressWarnings(as.numeric(trimws(station_lat_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$station_lon <- suppressWarnings(as.numeric(trimws(input$station_lon, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  station_lon_d <- reactive(input$station_lon) %>% debounce(1000, priority = 1000)
+  observeEvent(station_lon_d(), {
+    inputs$station_lon <- suppressWarnings(as.numeric(trimws(station_lon_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$pole_x <- suppressWarnings(as.numeric(trimws(input$pole_x, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  pole_x_d <- reactive(input$pole_x) %>% debounce(1000, priority = 1000)
+  observeEvent(pole_x_d(), {
+    inputs$pole_x <- suppressWarnings(as.numeric(trimws(pole_x_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$pole_y <- suppressWarnings(as.numeric(trimws(input$pole_y, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  pole_y_d <- reactive(input$pole_y) %>% debounce(1000, priority = 1000)
+  observeEvent(pole_y_d(), {
+    inputs$pole_y <- suppressWarnings(as.numeric(trimws(pole_y_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$pole_z <- suppressWarnings(as.numeric(trimws(input$pole_z, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  pole_z_d <- reactive(input$pole_z) %>% debounce(1000, priority = 1000)
+  observeEvent(pole_z_d(), {
+    inputs$pole_z <- suppressWarnings(as.numeric(trimws(pole_z_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$pole_lat <- suppressWarnings(as.numeric(trimws(input$pole_lat, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  pole_lat_d <- reactive(input$pole_lat) %>% debounce(1000, priority = 1000)
+  observeEvent(pole_lat_d(), {
+    inputs$pole_lat <- suppressWarnings(as.numeric(trimws(pole_lat_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$pole_lon <- suppressWarnings(as.numeric(trimws(input$pole_lon, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  pole_lon_d <- reactive(input$pole_lon) %>% debounce(1000, priority = 1000)
+  observeEvent(pole_lon_d(), {
+    inputs$pole_lon <- suppressWarnings(as.numeric(trimws(pole_lon_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$pole_rot <- suppressWarnings(as.numeric(trimws(input$pole_rot, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  pole_rot_d <- reactive(input$pole_rot) %>% debounce(1000, priority = 1000)
+  observeEvent(pole_rot_d(), {
+    inputs$pole_rot <- suppressWarnings(as.numeric(trimws(pole_rot_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
-  reactive({
-    inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(input$scaleFactor, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(2000, priority = 1001)
+  scaleFactor_d <- reactive(input$scaleFactor) %>% debounce(1000, priority = 1000)
+  observeEvent(scaleFactor_d(), {
+    inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(scaleFactor_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
   
-  reactive({
-    inputs$plate <- suppressWarnings(trimws(input$plate, which = "both", whitespace = "[ \t\r\n]"))
-  }) %>% debounce(2000, priority = 1001)
+  plate_d <- reactive(input$plate) %>% debounce(1000, priority = 1000)
+  observeEvent(plate_d(), {
+    inputs$plate <- suppressWarnings(trimws(plate_d(), which = "both", whitespace = "[ \t\r\n]"))
+  }, priority = 1000)
   
-  reactive({
-    inputs$server1 <- suppressWarnings(tolower(trimws(input$server1, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(4000, priority = 1001)
+  station1_d <- reactive(input$station1) %>% debounce(1000, priority = 1000)
+  observeEvent(station1_d(), {
+    inputs$station1 <- suppressWarnings(trimws(station1_d(), which = "both", whitespace = "[ \t\r\n]"))
+  }, priority = 1000)
   
-  reactive({
-    inputs$server2 <- suppressWarnings(tolower(trimws(input$server2, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(4000, priority = 1001)
-  
-  reactive({
-    inputs$station1 <- suppressWarnings(trimws(input$station1, which = "both", whitespace = "[ \t\r\n]"))
-  }) %>% debounce(4000, priority = 1001)
-  
-  reactive({
-    inputs$station2 <- suppressWarnings(trimws(input$station2, which = "both", whitespace = "[ \t\r\n]"))
-  }) %>% debounce(4000, priority = 1001)
-  
-  reactive({
-    inputs$product1 <- suppressWarnings(tolower(trimws(input$product1, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(4000, priority = 1001)
-  
-  reactive({
-    inputs$product2 <- suppressWarnings(tolower(trimws(input$product2, which = "both", whitespace = "[ \t\r\n]")))
-  }) %>% debounce(4000, priority = 1001)
+  station2_d <- reactive(input$station2) %>% debounce(1000, priority = 1000)
+  observeEvent(station2_d(), {
+    inputs$station2 <- suppressWarnings(trimws(station2_d(), which = "both", whitespace = "[ \t\r\n]"))
+  }, priority = 1000)
 
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
@@ -2866,6 +2876,7 @@ server <- function(input,output,session) {
     })
     if (length(input$model) > 0) {
       if (input$fitType == 1) {
+        if (messages > 0) cat(file = stderr(), "LS fit", "\n")
         if (isTruthy(trans$model_old)) {
           if (length(trans$model_old) < length(input$model)) {
             changes <- setdiff(input$model,trans$model_old)
@@ -2900,7 +2911,6 @@ server <- function(input,output,session) {
           info$run <- F
           trans$mle <- F
           trans$verif <- NULL
-          if (messages > 0) cat(file = stderr(), "LS fit", "\n")
           model <- m$model
           model_lm <- m$model_lm
           apriori <- m$apriori
@@ -3574,7 +3584,9 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$long_period)) {
       if (inputs$long_period > max_period) {
         showNotification("The input longest period is out of bounds. Using the longest valid value instead.", action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "warning", session = getDefaultReactiveDomain())
-        updateTextInput(session, "long_period", value = max_period - 1/10^(info$decimalsx + 1))
+        long_period <- max_period - 1/10^(info$decimalsx + 1)
+        inputs$long_period <- long_period
+        updateTextInput(session, "long_period", value = long_period)
         trans$fs <- NULL
         req(info$stop)
       } else {
@@ -3583,6 +3595,8 @@ server <- function(input,output,session) {
     } else {
       long_period <- max_period - 1/10^(info$decimalsx + 1)
       short_period <- min_period
+      inputs$long_period <- long_period
+      inputs$short_period <- short_period
       updateTextInput(session, "short_period", value = short_period)
       updateTextInput(session, "long_period", value = long_period)
       ranges$x3 <- NULL
@@ -3598,6 +3612,8 @@ server <- function(input,output,session) {
     } else {
       long_period <- max_period - 1/10^(info$decimalsx + 1)
       short_period <- min_period
+      inputs$long_period <- long_period
+      inputs$short_period <- short_period
       updateTextInput(session, "short_period", value = short_period)
       updateTextInput(session, "long_period", value = long_period)
       ranges$x3 <- NULL
@@ -3616,6 +3632,8 @@ server <- function(input,output,session) {
         if (isTruthy(ranges$x3) && (ranges$x3[1] != short_period || ranges$x3[2] != long_period)) {
           short_period <- ranges$x3[1]
           long_period <- ranges$x3[2]
+          inputs$long_period <- long_period
+          inputs$short_period <- short_period
           ranges$x3 <- NULL
           ranges$y3 <- NULL
           trans$fs <- NULL
@@ -3626,7 +3644,9 @@ server <- function(input,output,session) {
       }
     } else {
       trans$fs <- NULL
-      updateTextInput(session, "ofac", value = 1)
+      ofac <- 1
+      inputs$ofac <- ofac
+      updateTextInput(session, "ofac", value = ofac)
       req(info$stop)
     }
     # Computing periodogram if all necessary values are good
@@ -3646,7 +3666,9 @@ server <- function(input,output,session) {
       trans$amp <- matrix(NA, nrow = length(f), ncol = 5)
       trans$psd <- matrix(NA, nrow = length(f), ncol = 5)
       trans$col <- c(1,2,3,4,5)
-      periodogram("all")
+      if (any(c(input$spectrumOriginal, input$spectrumModel, input$periodogram_residuals, input$spectrumFilter, input$spectrumFilterRes))) {
+        periodogram("all")
+      }
     } else {
       showNotification("Negative, null or invalid period bounds for the periodogram. Check the inputs.", action = NULL, duration = 10, closeButton = T, id = "bad_periods", type = "error", session = getDefaultReactiveDomain())
       trans$fs <- NULL
@@ -3660,7 +3682,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumOriginal), {
-    req(obs(), input$spectrum)
+    req(obs())
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
     shinyjs::hide(id = "downloadlink3", anim = F)
@@ -3670,6 +3692,7 @@ server <- function(input,output,session) {
       trans$spectra_old[1] <- F
       trans$title[2] <- NA
     } else {
+      req(input$spectrum, input$spectrumOriginal)
       periodogram("original")
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
@@ -3681,7 +3704,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumModel), {
-    req(obs(), input$spectrum)
+    req(obs())
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
     shinyjs::hide(id = "downloadlink3", anim = F)
@@ -3691,6 +3714,7 @@ server <- function(input,output,session) {
       trans$spectra_old[2] <- F
       trans$title[3] <- NA
     } else {
+      req(input$spectrum, input$spectrumModel)
       periodogram("model")
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
@@ -3702,7 +3726,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$periodogram_residuals), {
-    req(obs(), input$spectrum)
+    req(obs())
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
     shinyjs::hide(id = "downloadlink3", anim = F)
@@ -3712,6 +3736,7 @@ server <- function(input,output,session) {
       trans$spectra_old[3] <- F
       trans$title[4] <- NA
     } else {
+      req(input$spectrum, input$periodogram_residuals)
       periodogram("residuals")
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
@@ -3723,7 +3748,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumFilter), {
-    req(obs(), input$spectrum)
+    req(obs())
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
     shinyjs::hide(id = "downloadlink3", anim = F)
@@ -3733,6 +3758,7 @@ server <- function(input,output,session) {
       trans$spectra_old[4] <- F
       trans$title[5] <- NA
     } else {
+      req(input$spectrum, input$spectrumFilter)
       periodogram("filter")
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
@@ -3744,7 +3770,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumFilterRes), {
-    req(obs(), input$spectrum)
+    req(obs())
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
     shinyjs::hide(id = "downloadlink3", anim = F)
@@ -3754,6 +3780,7 @@ server <- function(input,output,session) {
       trans$spectra_old[5] <- F
       trans$title[6] <- NA
     } else {
+      req(input$spectrum, input$spectrumFilterRes)
       periodogram("filterRes")
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
@@ -5038,7 +5065,7 @@ server <- function(input,output,session) {
         enable("reset")
         disable("station2")
         enable("server2")
-        if (isTruthy(inputs$server2)) {
+        if (isTruthy(input$server2)) {
           enable("station2")
           enable("product2")
         } else {
@@ -5277,12 +5304,6 @@ server <- function(input,output,session) {
               disable("noise_unc")
               disable("est.mle")
               trans$mle <- F
-              updateTextInput(session, "max_white", value = "")
-              updateTextInput(session, "min_white", value = "")
-              updateTextInput(session, "max_flpl", value = "")
-              updateTextInput(session, "min_flpl", value = "")
-              updateTextInput(session, "max_rwk", value = "")
-              updateTextInput(session, "min_rwk", value = "")
               updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
               updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
               updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
@@ -5439,7 +5460,7 @@ server <- function(input,output,session) {
         disable("thresholdResN")
         disable("units")
         disable("verif_offsets")
-        if (isTruthy(inputs$server1)) {
+        if (isTruthy(input$server1)) {
           enable("station1")
           enable("product1")
         } else {
@@ -5481,7 +5502,7 @@ server <- function(input,output,session) {
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
-            url$server <- query[['server']]
+            url$server <- toupper(query[['server']])
             file$primary$name <- url_info[3]
             info$format <- url_info[4]
             if (tolower(query[['server']]) == "local") {
@@ -5496,11 +5517,7 @@ server <- function(input,output,session) {
               file$primary$file <- url$file
             } else {
               showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              # if (isTruthy(info$local)) {
-                file$primary$file <- tempfile()
-              # } else {
-                # file$primary$file <- file$primary$name
-              # }
+              file$primary$file <- tempfile()
               down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
                 downloaded <- readLines(file$primary$file)
@@ -5520,7 +5537,7 @@ server <- function(input,output,session) {
                 if (isTruthy(url_info)) {
                   url$station2 <- url_info[1]
                   url$file2 <- url_info[2]
-                  url$server2 <- query[['server2']]
+                  url$server2 <- toupper(query[['server2']])
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
                   if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
@@ -5540,11 +5557,7 @@ server <- function(input,output,session) {
                     file$secondary$file <- url$file2
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    # if (isTruthy(info$local)) {
-                      file$secondary$file <- tempfile()
-                    # } else {
-                      # file$secondary$file <- file$secondary$name
-                    # }
+                    file$secondary$file <- tempfile()
                     down <- download(url$server2, url$file2, file$secondary$file)
                     if (file.exists(file$secondary$file)) {
                       downloaded <- readLines(file$secondary$file)
@@ -5559,7 +5572,7 @@ server <- function(input,output,session) {
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F))
-                    if (url$server2 == "local") {
+                    if (url$server2 == "LOCAL") {
                       filename2 <- basename(url$file2)
                     } else {
                       filename2 <- file$secondary$name
@@ -5575,7 +5588,7 @@ server <- function(input,output,session) {
               if (!is.null(data)) {
                 obs(data)
                 values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-                if (url$server == "local") {
+                if (url$server == "LOCAL") {
                   filename <- basename(url$file)
                 } else {
                   filename <- file$primary$name
@@ -5602,72 +5615,72 @@ server <- function(input,output,session) {
   })
   
   # Observe remote series ####
-  observeEvent(inputs$server1, {
-    if (inputs$server1 == "renag") {
+  observeEvent(input$server1, {
+    if (input$server1 == "RENAG") {
       updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
-    } else if (inputs$server1 == "formater") {
+    } else if (input$server1 == "FORMATER") {
       updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
-    } else if (inputs$server1 == "igs") {
+    } else if (input$server1 == "IGS") {
       updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
-    } else if (inputs$server1 == "euref") {
-      updateSelectInput(session, inputId = "product1", choices = list("IGb14"), selected = "IGb14")
-    } else if (inputs$server1 == "ngl") {
+    } else if (input$server1 == "EUREF") {
+      updateSelectInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
+    } else if (input$server1 == "NGL") {
       updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
-    } else if (inputs$server1 == "jpl") {
+    } else if (input$server1 == "JPL") {
       updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
-    } else if (inputs$server1 == "eostls") {
+    } else if (input$server1 == "EOSTLS") {
       updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
-    } else if (inputs$server1 == "sonel") {
+    } else if (input$server1 == "SONEL") {
       updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     }
     output$station1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
     })
   })
-  observeEvent(inputs$server2, {
+  observeEvent(input$server2, {
     req(obs())
-    if (inputs$server2 == "renag") {
+    if (input$server2 == "RENAG") {
       updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
-    } else if (inputs$server2 == "formater") {
+    } else if (input$server2 == "FORMATER") {
       updateSelectInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
-    } else if (inputs$server2 == "igs") {
+    } else if (input$server2 == "IGS") {
       updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
-    } else if (inputs$server2 == "euref") {
-      updateSelectInput(session, inputId = "product2", choices = list("IGb14"), selected = "IGb14")
-    } else if (inputs$server2 == "ngl") {
+    } else if (input$server2 == "EUREF") {
+      updateSelectInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
+    } else if (input$server2 == "NGL") {
       updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
-    } else if (inputs$server2 == "jpl") {
+    } else if (input$server2 == "JPL") {
       updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
-    } else if (inputs$server2 == "eostls") {
+    } else if (input$server2 == "EOSTLS") {
       updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
-    } else if (inputs$server2 == "sonel") {
+    } else if (input$server2 == "SONEL") {
       updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     }
     output$station2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
     })
   })
-  observeEvent(c(inputs$product1), {
-    req(inputs$server1,inputs$product1)
+  observeEvent(c(input$product1), {
+    req(input$server1,input$product1)
     removeNotification("bad_remote")
     removeNotification("bad_url")
     removeNotification("parsing_url1")
     removeNotification("no_answer")
-    get_URL_info(inputs$server1,NULL,inputs$product1,1)
+    get_URL_info(input$server1,NULL,input$product1,1)
   })
   observeEvent(c(inputs$station1), {
-    if (isTruthy(inputs$station1) && isTruthy(inputs$server1) && isTruthy(inputs$product1)) {
+    if (isTruthy(inputs$station1) && isTruthy(input$server1) && isTruthy(input$product1)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
       removeNotification("parsing_url1")
-      url_info <- unlist(get_URL_info(inputs$server1,inputs$station1,inputs$product1,NULL))
+      url_info <- unlist(get_URL_info(input$server1,inputs$station1,input$product1,NULL))
       if (isTruthy(url_info)) {
         url$station <- url_info[1]
         url$file <- url_info[2]
-        url$server <- inputs$server1
+        url$server <- input$server1
         file$primary$name <- url_info[3]
         info$format <- url_info[4]
-        showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(inputs$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
         file$primary$file <- tempfile()
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
@@ -5689,36 +5702,36 @@ server <- function(input,output,session) {
           }
         } else {
           removeNotification("parsing_url1")
-          showNotification(paste0("File ",file$primary$name," not found in ",toupper(inputs$server1),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+          showNotification(paste0("File ",file$primary$name," not found in ",toupper(input$server1),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           updateSelectInput(session, inputId = "product1", selected = "")
           file$primary <- NULL
         }
       } else {
-        showNotification(paste0("Product ", inputs$product1, "for station ", inputs$station1," not found in ",toupper(inputs$server1)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
+        showNotification(paste0("Product ", input$product1, "for station ", inputs$station1," not found in ",toupper(input$server1)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
         updateSelectInput(session, inputId = "product1", selected = "")
       }
     }
   })
-  observeEvent(c(inputs$product2), {
-    req(inputs$server2,inputs$product2)
+  observeEvent(c(input$product2), {
+    req(input$server2,input$product2)
     removeNotification("bad_remote")
     removeNotification("bad_url")
     removeNotification("no_answer")
-    get_URL_info(inputs$server2,NULL,inputs$product2,2)
+    get_URL_info(input$server2,NULL,input$product2,2)
   })
   observeEvent(c(inputs$station2), {
     req(obs())
-    if (isTruthy(inputs$station2) && isTruthy(inputs$server2) && isTruthy(inputs$product2)) {
+    if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
-      url_info <- unlist(get_URL_info(inputs$server2,inputs$station2,inputs$product2,NULL))
+      url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,NULL))
       if (isTruthy(url_info)) {
         url$station2 <- url_info[1]
         url$file2 <- url_info[2]
-        url$server2 <- inputs$server2
+        url$server2 <- input$server2
         file$secondary$name <- url_info[3]
         info$format2 <- url_info[4]
-        showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(inputs$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
         file$secondary$file <- tempfile()
         down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
@@ -5735,8 +5748,8 @@ server <- function(input,output,session) {
             obs(data)
             filename2 <- file$secondary$name
             session$sendCustomMessage("filename2", filename2)
-            if ((inputs$server1 == "ngl" || inputs$server1 == "jpl" || inputs$product1 == "spotgins_pos") && (inputs$server2 != "ngl" && inputs$server2 != "jpl" && inputs$product2 != "spotgins_pos") ||
-                (inputs$server2 == "ngl" || inputs$server2 == "jpl" || inputs$product2 == "spotgins_pos") && (inputs$server1 != "ngl" && inputs$server1 != "jpl" && inputs$product1 != "spotgins_pos")) {
+            if ((input$server1 == "NGL" || input$server1 == "JPL" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL" && input$product2 != "SPOTGINS_POS") ||
+                (input$server2 == "NGL" || input$server2 == "JPL" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$product1 != "SPOTGINS_POS")) {
               updateCheckboxInput(session, inputId = "ne", value = T)
             }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
@@ -5744,15 +5757,15 @@ server <- function(input,output,session) {
           }
         } else {
           removeNotification("parsing_url2")
-          showNotification(paste0("File ",file$secondary$name," not found in ",toupper(inputs$server2),". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+          showNotification(paste0("File ",file$secondary$name," not found in ",input$server2,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           updateSelectInput(session, inputId = "product2", selected = "")
           file$secondary <- NULL
         }
       } else {
-        showNotification(paste0("Product ", inputs$product2, "for station ", inputs$station2," not found in ",toupper(inputs$server2)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
+        showNotification(paste("Product", input$product2, "for station", inputs$station2, "not found in", input$server2, "server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
         updateSelectInput(session, inputId = "product2", selected = "")
       }
-    } else if (isTruthy(inputs$server2) && isTruthy(inputs$product2)) {
+    } else if (isTruthy(input$server2) && isTruthy(input$product2)) {
       url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$file <- NULL
       updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 0)
     }
@@ -6006,7 +6019,7 @@ server <- function(input,output,session) {
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
-                            "   Scale: ", input$scaleFactor, "   Average: ", input$step2, "\n")
+                            "   Scale: ", input$scaleFactor, "   Average: ", inputs$step2, "\n")
     }
   }, priority = 7)
 
@@ -6239,7 +6252,7 @@ server <- function(input,output,session) {
     file$id1 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1]))
     if (!isTruthy(file$id1)) {
       if (isTruthy(url$station)) {
-        if (url$server == "local") {
+        if (url$server == "LOCAL") {
           file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
         } else {
           file$id1 <- toupper(url$station)
@@ -6253,7 +6266,7 @@ server <- function(input,output,session) {
       file$id2 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2]))
       if (!isTruthy(file$id2)) {
         if (isTruthy(url$station2)) {
-          if (url$server2 == "local") {
+          if (url$server2 == "LOCAL") {
             toupper(file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
           } else {
             file$id2 <- toupper(url$station2)
@@ -7108,24 +7121,24 @@ server <- function(input,output,session) {
       if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
         if (info$format == 1) {
           if (isTruthy(url$server)) {
-            if (url$server == "formater") {
+            if (url$server == "FORMATER") {
               coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
-            } else if (url$server == "sonel") {
+            } else if (url$server == "SONEL") {
               coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
-            } else if (url$server == "igs") {
+            } else if (url$server == "IGS") {
               tableAll <- try(read.table(text = trimws(readLines(filein)[1]), comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
               updateTextInput(inputId = "station_lat", value = tableAll[1,5])
               updateTextInput(inputId = "station_lon", value = tableAll[1,6])
-            } else if (url$server == "jpl") {
+            } else if (url$server == "JPL") {
               coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
@@ -7160,10 +7173,10 @@ server <- function(input,output,session) {
       }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
-        if (url$server == "formater" || url$server == "jpl") {
+        if (url$server =="FORMATER" || url$server == "JPL") {
           updateRadioButtons(session, inputId = "neuenu", selected = 2)
           disable("neuenu")
-        } else if (url$server == "sonel" || url$server == "igs" ) {
+        } else if (url$server == "SONEL" || url$server == "IGS" ) {
           updateRadioButtons(session, inputId = "neuenu", selected = 1)
           disable("neuenu")
         }
@@ -7418,7 +7431,7 @@ server <- function(input,output,session) {
       # Setting station IDs
       if (!isTruthy(inputs$ids)) {
         if (isTruthy(url$station)) {
-          if (url$server == "local") {
+          if (url$server == "LOCAL") {
             file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
           } else {
             file$id1 <- toupper(url$station)
@@ -7428,7 +7441,7 @@ server <- function(input,output,session) {
         }
         if (length(file$secondary) > 0) {
           if (isTruthy(url$station2)) {
-            if (url$server2 == "local") {
+            if (url$server2 == "LOCAL") {
               file$id2 <- toupper(strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
             } else {
               file$id2 <- toupper(url$station2)
@@ -7481,12 +7494,12 @@ server <- function(input,output,session) {
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
                 if (isTruthy(url$server)) {
-                  if (url$server == "formater" || url$server == "jpl") {
+                  if (url$server == "FORMATER" || url$server == "JPL") {
                     info$components <- c("East component", "North component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
                     output$tabName3 <<- renderText({ info$components[3] })
-                  } else if (url$server == "sonel" || url$server == "igs") {
+                  } else if (url$server == "SONEL" || url$server == "IGS") {
                     info$components <- c("North component", "East component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
@@ -7556,14 +7569,14 @@ server <- function(input,output,session) {
       skip <- 0
       spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1), ignore.case = F, fixed = F, perl = T)
       # extracting series from SIRGAS NEU format
-      # } else if (server == "sirgas") {
+      # } else if (server == "SIRGAS") {
       #   sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
       #   tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
       # } else {
         tableAll <- try(read.table(text = trimws(readLines(file)), comment.char = "#", sep = sep, skip = skip), silent = T)
       # }
       # transforming series from IGS lat lon into NEU format
-      if (server == "igs") {
+      if (server == "IGS") {
         a <- 6378137
         b <- 6356752.314140347
         e2 <- (a^2 - b^2) / a^2
@@ -7595,26 +7608,26 @@ server <- function(input,output,session) {
                 extracted$sy3 <- tableAll[,7]
               }
               # get other time units for different series
-              if (server == "jpl" && columns > 16) {
+              if (server == "JPL" && columns > 16) {
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 }
-              # } else if (server == "sirgas") {
+              # } else if (server == "SIRGAS") {
               #   if (input$tunits == 1) {
               #     extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
               #   } else if (input$tunits == 3) {
               #     extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
               #   }
-              } else if (server == "igs") {
+              } else if (server == "IGS") {
                 if (input$tunits == 2) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
                 } else if (input$tunits == 3) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
                   extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7)
                 }
-              } else if (server == "formater" || isTruthy(spotgins)) { # SPOTGINS series
+              } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
@@ -7624,7 +7637,7 @@ server <- function(input,output,session) {
             } else {
               extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
               info$errorbars <- F
-              if (server == "eostls") {
+              if (server == "EOSTLS") {
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
                 } else if (input$tunits == 3) {
@@ -7843,6 +7856,7 @@ server <- function(input,output,session) {
           } else if (input$fitType == 2) {
             reft <- x[1]
           }
+          inputs$trendRef <- reft
           updateTextInput(session, "trendRef", value = reft)
           if (input$fitType == 1) {
             req(info$stop)
@@ -7975,6 +7989,7 @@ server <- function(input,output,session) {
           } else if (input$fitType == 2) {
             refs <- x[1]
           }
+          inputs$periodRef <- refs
           updateTextInput(session, "periodRef", value = refs)
           if (input$fitType == 1) {
             req(info$stop)
@@ -8472,6 +8487,8 @@ server <- function(input,output,session) {
           if (update > 0) {
             line_E0 <- paste(E0, collapse = ", ")
             line_TE0 <- paste(TE0, collapse = ", ")
+            inputs$E0 <- line_E0
+            inputs$TE0 <- line_TE0
             updateTextInput(session, "E0", value = line_E0)
             updateTextInput(session, "TE0", value = line_TE0)
             if (input$fitType == 1) {
@@ -8506,6 +8523,8 @@ server <- function(input,output,session) {
             }
           }
         } else {
+          inputs$E0 <- ""
+          inputs$TE0 <- ""
           updateTextInput(session, "E0", value = "")
           updateTextInput(session, "TE0", value = "")
           if (input$fitType == 2) {
@@ -8632,6 +8651,8 @@ server <- function(input,output,session) {
           if (update > 0) {
             line_L0 <- paste(L0, collapse = ", ")
             line_TL0 <- paste(TL0, collapse = ", ")
+            inputs$L0 <- line_L0
+            inputs$TL0 <- line_TL0
             updateTextInput(session, "L0", value = line_L0)
             updateTextInput(session, "TL0", value = line_TL0)
             if (input$fitType == 1) {
@@ -8666,6 +8687,8 @@ server <- function(input,output,session) {
             }
           }
         } else {
+          inputs$L0 <- ""
+          inputs$TL0 <- ""
           updateTextInput(session, "L0", value = "")
           updateTextInput(session, "TL0", value = "")
           if (input$fitType == 2) {
@@ -8691,6 +8714,7 @@ server <- function(input,output,session) {
                 } else if (input$fitType == 2) {
                   refp <- x[1]
                 }
+                inputs$PolyRef <- refp
               }
               updateTextInput(session, "PolyRef", value = refp)
               if (input$fitType == 1) {
@@ -9889,14 +9913,14 @@ server <- function(input,output,session) {
       }
     }
     #NGL
-    if (tolower(server) == "ngl") {
+    if (server == "NGL") {
       format <- 3
-      if (tolower(product) == "final") {
+      if (product == "FINAL") {
         url <- "http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/"
-      } else if (tolower(product) == "rapid") {
+      } else if (product == "RAPID") {
         url <- "http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/"
       }
-      if (tolower(product) == "final" || tolower(product) == "rapid") {
+      if (product == "FINAL" || product == "RAPID") {
         pattern <- ".tenv3"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
@@ -9911,7 +9935,7 @@ server <- function(input,output,session) {
                 stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
                 writeLines(stations_available, "www/NGL_database.txt", sep = "\n")
               } else {
-                showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
                 return(NULL)
               }
             }
@@ -9932,9 +9956,9 @@ server <- function(input,output,session) {
         return(NULL)
       }
     # RENAG
-    } else if (tolower(server) == "renag") {
+    } else if (server == "RENAG") {
       format <- 2
-      if (tolower(product) == "uga") {
+      if (product == "UGA") {
         url <- "ftp://webrenag.unice.fr/products/position-timeseries/"
         pattern <- "_raw.pos_UGA_ITRF14.pos"
         if (isTruthy(station) && !isTruthy(series)) {
@@ -9955,7 +9979,7 @@ server <- function(input,output,session) {
                 })
               }
             } else {
-              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
@@ -9965,9 +9989,9 @@ server <- function(input,output,session) {
         return(NULL)
       }
     #JPL
-    } else if (tolower(server) == "jpl") {
+    } else if (server == "JPL") {
       format <- 1
-      if (tolower(product) == "repro2018a") {
+      if (product == "REPRO2018A") {
         url <- "https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/"
         pattern <- ".series"
         if (isTruthy(station) && !isTruthy(series)) {
@@ -9988,7 +10012,7 @@ server <- function(input,output,session) {
                 })
               }
             } else {
-              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
@@ -9998,9 +10022,9 @@ server <- function(input,output,session) {
         return(NULL)
       }
     #IGS
-    } else if (tolower(server) == "igs") {
+    } else if (server == "IGS") {
       format <- 1
-      if (tolower(product) == "igs20") {
+      if (product == "IGS20") {
         url <- "ftp://igs-rf.ign.fr/pub/crd/"
         pattern <- "_igs.plh"
         if (isTruthy(station) && !isTruthy(series)) {
@@ -10021,7 +10045,7 @@ server <- function(input,output,session) {
                 })
               }
             } else {
-              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
@@ -10031,9 +10055,9 @@ server <- function(input,output,session) {
         return(NULL)
       }
     #SONEL
-    } else if (tolower(server) == "sonel") {
+    } else if (server == "SONEL") {
       format <- 1
-      if (tolower(product) == "ulr7a") {
+      if (product == "ULR7A") {
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station))
           file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
@@ -10042,7 +10066,7 @@ server <- function(input,output,session) {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(fromJSON(txt = url), silent = T)
             if (isTruthy(dir_contents)) {
-              code <- which(dir_contents$code == toupper(product))
+              code <- which(dir_contents$code == product)
               if (code > 0) {
                 stations_available <- dir_contents$stations[[code]]
                 if (series == 1) {
@@ -10056,7 +10080,7 @@ server <- function(input,output,session) {
                 }
               }
             } else {
-              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
@@ -10082,9 +10106,9 @@ server <- function(input,output,session) {
     #     return(NULL)
     #   }
     # EUREF
-    } else if (tolower(server) == "euref") {
+    } else if (server == "EUREF") {
       format <- 2
-      if (tolower(product) == "igb14") {
+      if (product == "IGB14") {
         url <- "https://epncb.eu/ftp/product/cumulative/C2235/pbo/"
         pattern <- ".pos"
         if (isTruthy(station) && !isTruthy(series)) {
@@ -10105,7 +10129,7 @@ server <- function(input,output,session) {
                 })
               }
             } else {
-              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
@@ -10115,25 +10139,25 @@ server <- function(input,output,session) {
         return(NULL)
       }
     # FORMATER
-    } else if (tolower(server) == "formater") {
-      url <- "https://gnss-terresolide.ipgp.fr/api/1.0/products/?output=csv"
-      dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
-      if (tolower(product) == "spotgins_pos") {
+    } else if (server == "FORMATER") {
+      if (product == "SPOTGINS_POS") {
         format <- 1
         pattern1 <- "SPOTGINS_"
         pattern2 <- ".enu"
         name <- paste0(pattern1,toupper(station),pattern2)
-      } else if (tolower(product) == "uga_pos") {
+      } else if (product == "UGA_POS") {
         format <- 2
         pattern1 <- "UGA_"
         pattern2 <- ".pos"
         name <- paste0(pattern1,toupper(station),pattern2)
       }
-      if (tolower(product) == "spotgins_pos" || tolower(product) == "uga_pos") {
+      if (product == "SPOTGINS_POS" || product == "UGA_POS") {
         if (isTruthy(station) && !isTruthy(series)) {
           file <- paste0("https://gnss-terresolide.ipgp.fr/data/",toupper(station),"/",name)
         } else {
           withBusyIndicatorServer(variable, {
+            url <- "https://gnss-terresolide.ipgp.fr/api/1.0/products/?output=csv"
+            dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
             if (isTruthy(dir_contents)) {
               stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
               if (series == 1) {
@@ -10146,7 +10170,7 @@ server <- function(input,output,session) {
                 })
               }
             } else {
-              showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
@@ -10156,7 +10180,7 @@ server <- function(input,output,session) {
         return(NULL)
       }
     # EOST Loading Service
-    } else if (tolower(server) == "eostls") {
+    } else if (server == "EOSTLS") {
       format <- 1
       pattern <- "_NEU."
       name <- paste0(toupper(station),pattern,tolower(product))
@@ -10221,7 +10245,7 @@ server <- function(input,output,session) {
               })
             }
           } else {
-            showNotification(paste0("Server ", server, " seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
           }
           return(NULL)
         })
@@ -10237,14 +10261,14 @@ server <- function(input,output,session) {
     #     return(NULL)
     #   }
     # LOCAL
-    } else if (tolower(server) == "local") {
-      if (tolower(product) == "neu" || tolower(product) == "enu") {
+    } else if (server == "LOCAL") {
+      if (product == "NEU" || product == "ENU") {
         format <- 1
-      } else if (tolower(product) == "pbo") {
+      } else if (product == "PBO") {
         format <- 2
-      } else if (tolower(product) == "ngl") {
+      } else if (product == "NGL") {
         format <- 3
-      } else if (tolower(product) == "1d") {
+      } else if (product == "1D") {
         format <- 4
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -10339,14 +10363,14 @@ server <- function(input,output,session) {
     removeNotification("no_cmd")
     # download series using curl or wget
     if (isTruthy(Sys.which("curl"))) {
-      if (server == "formater") {
+      if (server == "FORMATER") {
         extras <- "-u SARI:bwPgzhe4Zu"
       } else {
         extras <- ""
       }
       down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     } else if (isTruthy(Sys.which("wget"))) {
-      if (server == "formater") {
+      if (server == "FORMATER") {
         extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
       } else {
         extras <- ""
