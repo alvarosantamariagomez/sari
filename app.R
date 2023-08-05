@@ -3550,9 +3550,9 @@ server <- function(input,output,session) {
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
     req(obs(), input$spectrum)
-    removeNotification("bad_long")
-    removeNotification("bad_short")
-    removeNotification("bad_oversampling")
+    # removeNotification("bad_long")
+    # removeNotification("bad_short")
+    # removeNotification("bad_oversampling")
     removeNotification("bad_periods")
     if (is.na(inputs$long_period) && input$long_period != "") {
       showNotification("The longest period is not a numeric value. Check the input value.", action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "error", session = getDefaultReactiveDomain())
@@ -3670,7 +3670,7 @@ server <- function(input,output,session) {
         periodogram("all")
       }
     } else {
-      showNotification("Negative, null or invalid period bounds for the periodogram. Check the inputs.", action = NULL, duration = 10, closeButton = T, id = "bad_periods", type = "error", session = getDefaultReactiveDomain())
+      showNotification("Negative, null or invalid period bounds for the periodogram. Check the input values.", action = NULL, duration = 10, closeButton = T, id = "bad_periods", type = "error", session = getDefaultReactiveDomain())
       trans$fs <- NULL
       if ((input$tab == 1) || (input$format == 4)) {
         shinyjs::hide(id = "res1_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
