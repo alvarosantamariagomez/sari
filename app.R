@@ -291,10 +291,13 @@ tabContents <- function(tabNum) {
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
-                div( style = "text-align: center;",
+                div( style = "text-align: center; display: flex; flex-direction: column; justify-content: space-between; margin: auto",
                   id = "loading_page",
-                  h1(style = "color: #333333; font-weight: bold", HTML("<br><br><br> SARI session established. <br><br><br> Loading user interface ... <br><br><br><br>")),
-                  img(src = "SARI_logo_animated.gif", width = "15%")
+                  h1(style = "text-align: center; color: #333333; font-weight: bold", "SARI session established."),
+                  h1(style = "text-align: center; color: #333333; font-weight: bold", "Loading user interface ..."),
+                  div( style = "width: 40%; margin: 0 auto",
+                       img(src = "SARI_logo_animated.gif", width = "100%")
+                  )
                 ),
                 
                 # HTTP meta and style header tags
@@ -1667,7 +1670,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                         title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
                                         tabPanel(div(style = "display: inline-block; font-size: 40px; color: #333333", "SARI"), value = 0, id = "SARI"),
                                         tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
-                                                 withMathJax(includeMarkdown("www/about.md"))
+                                                 conditionalPanel(
+                                                   condition = "output.mobile == true",
+                                                   withMathJax(includeMarkdown("www/about_mobile.md"))
+                                                 ),
+                                                 conditionalPanel(
+                                                   condition = "output.mobile != true",
+                                                   withMathJax(includeMarkdown("www/about.md"))
+                                                 )
                                         ),
                                         
                                         # * component 1 ####
@@ -1893,6 +1903,11 @@ server <- function(input,output,session) {
     return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
+  
+  output$mobile <- reactive({
+    return(length(input$isMobile) > 0 && input$isMobile)
+  })
+  outputOptions(output, "mobile", suspendWhenHidden = F)
   
   output$pmm <- renderUI({
     if (input$plateModel == 1) {
