@@ -1,5 +1,41 @@
 # **SARI changelog**
 
+# agosto 2023 [2023.08]
+
+### Fixed
+- Correcting bug with all debouncers that made the app to react too quickly to the user typing
+- Correcting the transformation of the time units in GPS weeks for the SPOTGINS series
+- Correcting bug when the median value is interpolated (series statistics & histogram)
+- Improved check of local session in docker
+- Fixed permission problem in docker when writing into a local file
+- Resetting the value of the product variable if the download of the series fails
+- Checking the selected window before zooming in
+- Checking for offset epochs outside the data limits, duplicated offsets or no observations between offsets
+- Checking the number of points before firing the MLE time estimate
+- Fixed bug when the primary and secondary series have exactly the same sampled points
+
+### Changed
+- The app will wait 1 s after the user stops typing values before reacting
+- Enabling the reset button to remove the uploaded series even if they are not plotted yet
+- Selecting the remote product automatically if there is only one available
+- Plotting the secondary series automatically right after being downloaded from the remote server
+- Improving the checks of the downloaded series from the remote server
+- Disabling the option neu/enu when downloading a NEU/ENU series with known format
+- Improving the centering of the secondary series over the primary series
+- Allowing averaging the series to a regular sampling close to the original sampling
+- Limiting the number of decimals of the estimated parameters in the downloaded file
+
+### Added
+- Changing the tab names into coordinate components when this is known from the series format
+- Automatically downloading the list of available stations for the selected remote server & product
+- New package dependencies (RCurl, XML, jsonlite)
+- Using authentication for the Formater server
+- Option to type in expressions to compute the averaging period (for instance =7/365.25)
+- Plotting the SPOTGINS series in different time units
+- Plotting of the FN+RW noise power spectrum including information about the crossover period(s)
+- Starting a local docker session with sari.sh
+- Downloading the station coordinates for the JPL series
+
 # julio 2023 [2023.07]
 
 ### Fixed
