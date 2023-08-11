@@ -71,6 +71,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         | EUREF    | IGb14                                | 9 char  | https://epncb.eu/_organisation/about.php       |
         | NGL      | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                        |
         | JPL      | REPRO2018A                           | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
+        | SIRGAS   | IGb14                                | 4 char  | https://www.sirgas.org/en/                     |
         | EOSTLS   | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                   |
         |          | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                |
         |          | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
@@ -104,7 +105,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag formater sonel igs euref ngl jpl eostls "
+servers=" local renag formater sonel igs euref ngl jpl sirgas eostls "
 products=" enu neu pbo ngl uga spotgins_pos ulr7a igs20 igb14 final rapid repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
 
 # Setting a trap to do a clean exit

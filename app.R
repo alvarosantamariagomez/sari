@@ -44,7 +44,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -402,7 +402,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -710,7 +710,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -5665,6 +5665,8 @@ server <- function(input,output,session) {
       updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
     } else if (input$server1 == "SONEL") {
       updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
+    } else if (input$server1 == "SIRGAS") {
+      updateSelectInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
     }
     output$station1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
@@ -5688,6 +5690,8 @@ server <- function(input,output,session) {
       updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
     } else if (input$server2 == "SONEL") {
       updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
+    } else if (input$server2 == "SIRGAS") {
+      updateSelectInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
     }
     output$station2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
@@ -7177,6 +7181,11 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
+            } else if (url$server == "SIRGAS") {
+              tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein), value = T, fixed = T)[1], comment.char = "#"), silent = T)
+              updateRadioButtons(inputId = "station_coordinates", selected = 2)
+              updateTextInput(inputId = "station_lat", value = tableAll[1,7])
+              updateTextInput(inputId = "station_lon", value = tableAll[1,8])
             }
           } else {
             spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1), ignore.case = F, fixed = F, perl = T)
@@ -7206,10 +7215,10 @@ server <- function(input,output,session) {
       }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
-        if (url$server =="FORMATER" || url$server == "JPL") {
+        if (url$server == "FORMATER" || url$server == "JPL") {
           updateRadioButtons(session, inputId = "neuenu", selected = 2)
           disable("neuenu")
-        } else if (url$server == "SONEL" || url$server == "IGS" ) {
+        } else if (url$server == "SONEL" || url$server == "IGS"  || url$server == "SIRGAS" ) {
           updateRadioButtons(session, inputId = "neuenu", selected = 1)
           disable("neuenu")
         }
@@ -7532,7 +7541,7 @@ server <- function(input,output,session) {
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
                     output$tabName3 <<- renderText({ info$components[3] })
-                  } else if (url$server == "SONEL" || url$server == "IGS") {
+                  } else if (url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS") {
                     info$components <- c("North component", "East component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
@@ -7600,19 +7609,25 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     if (format == 1) { #NEU/ENU
       skip <- 0
+      a <- 6378137
+      b <- 6356752.314140347
+      e2 <- (a^2 - b^2) / a^2
       spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1), ignore.case = F, fixed = F, perl = T)
-      # extracting series from SIRGAS NEU format
-      # } else if (server == "SIRGAS") {
-      #   sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
-      #   tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
-      # } else {
+      # extracting series from SIRGAS format and transforming lat lon into NEU format
+      if (server == "SIRGAS") {
+        sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
+        tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
+        N <- a / sqrt( 1 - e2 * sin(tableAll[,2]*pi/180)^2) + tableAll[,3]
+        dn <- N * (tableAll[,2] - tableAll[1,2]) * pi/180
+        sdn <- N * tableAll[,5] * pi/180
+        de <- N * (tableAll[,3] - tableAll[1,3]) * pi/180 * cos(tableAll[,2]*pi/180)
+        sde <- N * tableAll[,6] * pi/180 * cos(tableAll[,2]*pi/180)
+        tableAll <- cbind(dn, de, sdn, sde, tableAll)[,c(5,1,2,8,3,4,11)]
+      } else {
         tableAll <- try(read.table(text = trimws(readLines(file)), comment.char = "#", sep = sep, skip = skip), silent = T)
-      # }
+      }
       # transforming series from IGS lat lon into NEU format
       if (server == "IGS") {
-        a <- 6378137
-        b <- 6356752.314140347
-        e2 <- (a^2 - b^2) / a^2
         N <- a / sqrt( 1 - e2 * sin(tableAll[,5]*pi/180)^2) + tableAll[,7]
         dn <- N * (tableAll[,5] - tableAll[1,5]) * pi/180
         sdn <- N * tableAll[,8] * pi/180
@@ -7647,12 +7662,12 @@ server <- function(input,output,session) {
                 } else if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 }
-              # } else if (server == "SIRGAS") {
-              #   if (input$tunits == 1) {
-              #     extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              #   } else if (input$tunits == 3) {
-              #     extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
-              #   }
+              } else if (server == "SIRGAS") {
+                if (input$tunits == 1) {
+                  extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                } else if (input$tunits == 3) {
+                  extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
+                }
               } else if (server == "IGS") {
                 if (input$tunits == 2) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
@@ -10288,15 +10303,39 @@ server <- function(input,output,session) {
         })
       }
     # SIRGAS
-    # } else if (tolower(server) == "sirgas") {
-    #   format <- 1
-    #   if (tolower(product) == "neu") {
-    #     name <- paste0(toupper(station),".NEU")
-    #     file <- paste0("https://www.sirgas.org/fileadmin/docs/SIRGAS_TS/",name)
-    #   } else {
-    #     showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-    #     return(NULL)
-    #   }
+    } else if (server == "SIRGAS") {
+      if (product == "IGB14") {
+        format <- 1
+        pattern <- ".PLH"
+        if (isTruthy(station) && !isTruthy(series)) {
+          url <- "https://www.sirgas.org/fileadmin/docs/SIRGAS_CRD/"
+          name <- paste0(toupper(station),".PLH")
+          file <- paste0(url,name)
+        } else {
+          url <- "https://www.sirgas.org/en/stations/station-list/"
+          withBusyIndicatorServer(variable, {
+            dir_contents <- try(httr::GET(url), silent = T)
+            if (isTruthy(dir_contents)) {
+              stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
+              if (series == 1) {
+                output$station1 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })  
+              } else if (series == 2) {
+                output$station2 <- renderUI({
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                })
+              }
+            } else {
+              showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            }
+            return(NULL)
+          })
+        }
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
     # LOCAL
     } else if (server == "LOCAL") {
       if (product == "NEU" || product == "ENU") {

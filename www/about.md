@@ -162,7 +162,7 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;"><sup></sup></td>
    <td style="text-align:left;">9 characters (TLSE00FRA)</td>
    <td style="text-align:left;"> </td>
-   <td style="text-align:left;">IGb14</td>
+   <td style="text-align:left;">IGB14</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="http://geodesy.unr.edu/" target="_blank">NGL</a></td>
@@ -176,7 +176,14 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;"><sup></sup></td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
-   <td style="text-align:left;">repro2018a</td>
+   <td style="text-align:left;">REPRO2018A</td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"><a href="https://www.sirgas.org/en/" target="_blank">SIRGAS</a></td>
+   <td style="text-align:left;"><sup></sup></td>
+   <td style="text-align:left;">4 characters (TLSE)</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">IGB14</td>
   </tr>
   <tr style="vertical-align: top">
    <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a></td>
