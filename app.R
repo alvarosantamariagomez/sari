@@ -7111,10 +7111,10 @@ server <- function(input,output,session) {
     table2 <- NULL
     if (isTruthy(url$file)) {
       filein <- file$primary$file
-      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server)
+      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
     } else {
       filein <- input$series$datapath
-      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"")
+      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"",1)
     }
     if (!is.null(table)) {
       # Getting significant decimals from input series
@@ -7246,7 +7246,7 @@ server <- function(input,output,session) {
         if (isTruthy(dim(files)) && dim(files)[1] > 1) {
           table_stack <- NULL
           for (i in 1:dim(files)[1]) {
-            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,"")
+            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,"",2)
             if (!is.null(table2)) {
               if (!is.null(table_stack)) {
                 table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
@@ -7272,7 +7272,7 @@ server <- function(input,output,session) {
             showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
           }
         } else {
-          table2 <- extract_table(files,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server)
+          table2 <- extract_table(files,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
         }
         if (!is.null(table2)) {
           if (anyNA(table2)) {
@@ -7571,7 +7571,7 @@ server <- function(input,output,session) {
       NULL
     }
   }
-  extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server) {
+  extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
     tableAll <- NULL
     extracted <- NULL
     removeNotification("no_weeks")
@@ -7738,7 +7738,7 @@ server <- function(input,output,session) {
         }
       }
     }
-    if (input$euler && input$eulerType > 0 && length(extracted) > 0) {
+    if (input$euler && input$eulerType > 0 && length(extracted) > 0 && series == 1) {
       stationCartesian <- c()
       stationGeo <- c()
       poleCartesian <- c()
