@@ -144,6 +144,13 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;">SPOTGINS_POS, UGA_POS</td>
   </tr>
   <tr>
+   <td style="text-align:left;"><a href="https://www.epos-eu.org/" target="_blank">EPOS</a></td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">9 characters (TLSE00FRA)</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">INGV, SGO-EPND, UGA-CNRS, ROB-EUREF</td>
+  </tr>
+  <tr>
    <td style="text-align:left;"><a href="https://www.sonel.org/" target="_blank">SONEL</a></td>
    <td style="text-align:left;"><sup></sup></td>
    <td style="text-align:left;">4 characters (TLSE)</td>

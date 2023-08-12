@@ -402,7 +402,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -710,7 +710,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -4886,12 +4886,12 @@ server <- function(input,output,session) {
         # tmpfile <- "tmp"
       # }
       write.table(header, file = tmpfile, append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
-      noquote(paste(readLines(con = tmpfile, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+      noquote(paste(readLines(con = tmpfile, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
       if (isTruthy(url$file)) {
-        noquote(paste(readLines(con = file$primary$name, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+        noquote(paste(readLines(con = file$primary$name, n = input$lines, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
       } else {
-        noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = T, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+        noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
       }
     }
   })
@@ -5553,7 +5553,7 @@ server <- function(input,output,session) {
               file$primary$file <- tempfile()
               down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
-                downloaded <- readLines(file$primary$file)
+                downloaded <- readLines(file$primary$file, warn = F)
                 if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                     length(downloaded) < 2) {
                   down <- 1
@@ -5573,8 +5573,8 @@ server <- function(input,output,session) {
                   url$server2 <- toupper(query[['server2']])
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
-                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
-                      (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
+                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "epos" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "epos" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
+                      (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "epos" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "epos" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
                   updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
@@ -5593,7 +5593,7 @@ server <- function(input,output,session) {
                     file$secondary$file <- tempfile()
                     down <- download(url$server2, url$file2, file$secondary$file)
                     if (file.exists(file$secondary$file)) {
-                      downloaded <- readLines(file$secondary$file)
+                      downloaded <- readLines(file$secondary$file, warn = F)
                       if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                           length(downloaded) < 2) {
                         down <- 1
@@ -5657,6 +5657,8 @@ server <- function(input,output,session) {
       updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
     } else if (input$server1 == "EUREF") {
       updateSelectInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
+    } else if (input$server1 == "EPOS") {
+      updateSelectInput(session, inputId = "product1", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server1 == "NGL") {
       updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
     } else if (input$server1 == "JPL") {
@@ -5682,6 +5684,8 @@ server <- function(input,output,session) {
       updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
     } else if (input$server2 == "EUREF") {
       updateSelectInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
+    } else if (input$server2 == "EPOS") {
+      updateSelectInput(session, inputId = "product2", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server2 == "NGL") {
       updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
     } else if (input$server2 == "JPL") {
@@ -5721,7 +5725,7 @@ server <- function(input,output,session) {
         file$primary$file <- tempfile()
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
-          downloaded <- readLines(file$primary$file)
+          downloaded <- readLines(file$primary$file, n = 2, warn = F)
           if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
               length(downloaded) < 2) {
             down <- 1
@@ -5772,9 +5776,9 @@ server <- function(input,output,session) {
         file$secondary$file <- tempfile()
         down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
-          downloaded <- readLines(file$secondary$file)
+          downloaded <- readLines(file$secondary$file, n = 2, warn = F)
           if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-              length(downloaded) < 2) {
+               length(downloaded) < 2) {
             down <- 1
           }
         }
@@ -5785,8 +5789,8 @@ server <- function(input,output,session) {
             obs(data)
             filename2 <- file$secondary$name
             session$sendCustomMessage("filename2", filename2)
-            if ((input$server1 == "NGL" || input$server1 == "JPL" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL" && input$product2 != "SPOTGINS_POS") ||
-                (input$server2 == "NGL" || input$server2 == "JPL" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$product1 != "SPOTGINS_POS")) {
+            if ((input$server1 == "NGL" || input$server1 == "JPL" || input$server1 == "EPOS" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL"  && input$server2 != "EPOS" && input$product2 != "SPOTGINS_POS") ||
+                (input$server2 == "NGL" || input$server2 == "JPL" || input$server2 == "EPOS" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$server1 != "EPOS" && input$product1 != "SPOTGINS_POS")) {
               updateCheckboxInput(session, inputId = "ne", value = T)
             }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
@@ -7171,7 +7175,7 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
             } else if (url$server == "IGS") {
-              tableAll <- try(read.table(text = trimws(readLines(filein)[1]), comment.char = "#"), silent = T)
+              tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
               updateTextInput(inputId = "station_lat", value = tableAll[1,5])
               updateTextInput(inputId = "station_lon", value = tableAll[1,6])
@@ -7186,9 +7190,15 @@ server <- function(input,output,session) {
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
               updateTextInput(inputId = "station_lat", value = tableAll[1,7])
               updateTextInput(inputId = "station_lon", value = tableAll[1,8])
+            } else if (url$server == "EPOS") {
+              stationsFromEPOS <- try(read.table(file = "www/EPOS_database.txt", header = T), silent = T)
+              tableAll <- stationsFromEPOS[grepl(url$station, stationsFromEPOS$id), c(2,3)]
+              updateRadioButtons(inputId = "station_coordinates", selected = 2)
+              updateTextInput(inputId = "station_lat", value = tableAll[1,1])
+              updateTextInput(inputId = "station_lon", value = tableAll[1,2])
             }
           } else {
-            spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1), ignore.case = F, fixed = F, perl = T)
+            spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
             if (isTruthy(spotgins)) {
               coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
@@ -7215,7 +7225,7 @@ server <- function(input,output,session) {
       }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
-        if (url$server == "FORMATER" || url$server == "JPL") {
+        if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
           updateRadioButtons(session, inputId = "neuenu", selected = 2)
           disable("neuenu")
         } else if (url$server == "SONEL" || url$server == "IGS"  || url$server == "SIRGAS" ) {
@@ -7536,7 +7546,7 @@ server <- function(input,output,session) {
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
                 if (isTruthy(url$server)) {
-                  if (url$server == "FORMATER" || url$server == "JPL") {
+                  if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
                     info$components <- c("East component", "North component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
@@ -7612,7 +7622,7 @@ server <- function(input,output,session) {
       a <- 6378137
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
-      spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1), ignore.case = F, fixed = F, perl = T)
+      spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       # extracting series from SIRGAS format and transforming lat lon into NEU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
@@ -7624,7 +7634,12 @@ server <- function(input,output,session) {
         sde <- N * tableAll[,6] * pi/180 * cos(tableAll[,2]*pi/180)
         tableAll <- cbind(dn, de, sdn, sde, tableAll)[,c(5,1,2,8,3,4,11)]
       } else {
-        tableAll <- try(read.table(text = trimws(readLines(file)), comment.char = "#", sep = sep, skip = skip), silent = T)
+        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
+      }
+      # extracting series from EPOS format
+      if (server == "EPOS") {
+          tableAll$new <- paste(tableAll$V1, tableAll$V2)
+          tableAll <- tableAll[, c("new", "V3", "V4", "V5")]
       }
       # transforming series from IGS lat lon into NEU format
       if (server == "IGS") {
@@ -7691,6 +7706,14 @@ server <- function(input,output,session) {
                 } else if (input$tunits == 3) {
                   extracted$x <- decimal_date(as.Date(tableAll[,1], origin = "1858-11-17"))
                 }
+              } else if (server == "EPOS") {
+                if (input$tunits == 1) {
+                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                } else if (input$tunits == 2) {
+                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                } else if (input$tunits == 3) {
+                  extracted$x <- decimal_date(as.Date(tableAll[,1]))
+                }
               }
             }
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
@@ -7743,7 +7766,7 @@ server <- function(input,output,session) {
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
         skip <- 0
-        tableAll <- try(read.table(text = trimws(readLines(file)), comment.char = "#", sep = sep, skip = skip), silent = T)
+        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
         if (isTruthy(tableAll)) {
           columns <- dim(tableAll)[2]
           if (epoch <= columns && variable <= columns) {
@@ -8920,10 +8943,10 @@ server <- function(input,output,session) {
     req(x,z)
     changes <- c()
     site <- paste0(" ",x," ")
-    extracted <- substring(grep(' P -',grep(site,readLines(z$datapath),value = T), value = T), 17, 28)
+    extracted <- substring(grep(' P -',grep(site,readLines(z$datapath, warn = F),value = T), value = T), 17, 28)
     if (!is.null(y)) {
       site2 <- paste0(" ",y," ")
-      extracted2 <- substring(grep(' P -',grep(site2,readLines(z$datapath),value = T), value = T), 17, 28)
+      extracted2 <- substring(grep(' P -',grep(site2,readLines(z$datapath, warn = F),value = T), value = T), 17, 28)
       extracted <- rbind(extracted,extracted2)
     }
     extracted <- extracted[-which(extracted == "00:000:00000")]
@@ -9964,7 +9987,7 @@ server <- function(input,output,session) {
         variable <- "station2"
       }
     }
-    #NGL
+    # NGL ####
     if (server == "NGL") {
       format <- 3
       if (product == "FINAL") {
@@ -9980,7 +10003,7 @@ server <- function(input,output,session) {
         } else {
           withBusyIndicatorServer(variable, {
             if (file.exists("www/NGL_database.txt")) {
-              stations_available <- readLines("www/NGL_database.txt")
+              stations_available <- readLines("www/NGL_database.txt", warn = F)
             } else {
               dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
               if (isTruthy(dir_contents)) {
@@ -10007,7 +10030,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # RENAG
+    # RENAG ####
     } else if (server == "RENAG") {
       format <- 2
       if (product == "UGA") {
@@ -10040,7 +10063,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    #JPL
+    # JPL ####
     } else if (server == "JPL") {
       format <- 1
       if (product == "REPRO2018A") {
@@ -10073,7 +10096,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    #IGS
+    # IGS ####
     } else if (server == "IGS") {
       format <- 1
       if (product == "IGS20") {
@@ -10106,7 +10129,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    #SONEL
+    # SONEL ####
     } else if (server == "SONEL") {
       format <- 1
       if (product == "ULR7A") {
@@ -10141,7 +10164,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    #UNAVCO
+    # UNAVCO ####
     # } else if (tolower(server) == "unavco") {
     #   format <- 2
     #   if (tolower(product) == "cwu") {
@@ -10157,7 +10180,7 @@ server <- function(input,output,session) {
     #     showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
     #     return(NULL)
     #   }
-    # EUREF
+    # EUREF ####
     } else if (server == "EUREF") {
       format <- 2
       if (product == "IGB14") {
@@ -10190,7 +10213,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # FORMATER
+    # FORMATER ####
     } else if (server == "FORMATER") {
       if (product == "SPOTGINS_POS") {
         format <- 1
@@ -10231,7 +10254,57 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # EOST Loading Service
+    # EPOS ####
+    } else if (server == "EPOS") {
+      format <- 1
+      if (product == "INGV" || product == "SGO-EPND" || product == "UGA-CNRS" || product == "ROB-EUREF") {
+        if (isTruthy(station) && !isTruthy(series)) {
+          name <- paste0(station,"_",product,".enu")
+          station <- toupper(strtrim(station, 4))
+          if (product == "INGV") {
+            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/INGV/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+          } else if (product == "SGO-EPND") {
+            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/SGO-EPND/weekly/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+          } else if (product == "UGA-CNRS") {
+            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/UGA-CNRS/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+          } else if (product == "ROB-EUREF") {
+            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/ROB-EUREF/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+          }
+        } else {
+          withBusyIndicatorServer(variable, {
+            if (file.exists("www/EPOS_database.txt")) {
+              stationsFromEPOS <- read.table(file = "www/EPOS_database.txt", header = T)
+              stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
+            } else {
+              url <- "https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/stations/v2/station/bbox/-25.664/35.60371874069731/27.07/68.0075?with=2"
+              stationsFromEPOS.json <- jsonlite::fromJSON(readLines(url, ok = T, warn = F))
+              if (isTruthy(stationsFromEPOS.json)) {
+                stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$id, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
+                stationsFromEPOS$provider <- gsub(" ", "|", stationsFromEPOS$provider)
+                stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
+                write.table(stationsFromEPOS, file = "stationsFromEPOS.txt", append = F, quote = F, row.names = F)
+              } else {
+                showNotification(paste("Server", server, "seems to not be reachable. Impossible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                return(NULL)
+              }
+            }
+            if (series == 1) {
+              output$station1 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })  
+            } else if (series == 2) {
+              output$station2 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })
+            }
+            return(NULL)
+          })
+        }
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+    # EOSTLS ####
     } else if (server == "EOSTLS") {
       format <- 1
       pattern <- "_NEU."
@@ -10437,24 +10510,33 @@ server <- function(input,output,session) {
   }
   download <- function(server,remote,local) {
     removeNotification("no_cmd")
-    # download series using curl or wget
-    if (isTruthy(Sys.which("curl"))) {
-      if (server == "FORMATER") {
-        extras <- "-u SARI:bwPgzhe4Zu"
-      } else {
-        extras <- ""
+    # stream JSON file
+    if (server == "EPOS") {
+      json <- suppressWarnings(jsonlite::stream_in(url(remote), verbose = F)[,c("epoch","e","n","u")])
+      if (length(json) > 0) {
+        down <- 0
+        write.table(json, file = local, append = F, quote = F, row.names = F, col.names = F)
       }
-      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
-    } else if (isTruthy(Sys.which("wget"))) {
-      if (server == "FORMATER") {
-        extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
-      } else {
-        extras <- ""
-      }
-      down <- suppressWarnings(try(download.file(remote, destfile = local, method = "wget", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     } else {
-      showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
-      down <- 1
+      # download series using curl or wget
+      if (isTruthy(Sys.which("curl"))) {
+        if (server == "FORMATER") {
+          extras <- "-u SARI:bwPgzhe4Zu"
+        } else {
+          extras <- ""
+        }
+        down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
+      } else if (isTruthy(Sys.which("wget"))) {
+        if (server == "FORMATER") {
+          extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
+        } else {
+          extras <- ""
+        }
+        down <- suppressWarnings(try(download.file(remote, destfile = local, method = "wget", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
+      } else {
+        showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
+        down <- 1
+      }
     }
     return(down)
   }
