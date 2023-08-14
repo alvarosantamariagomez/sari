@@ -793,26 +793,40 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       
                                                                       # % Euler ####
-                                                                      checkboxInput(inputId = "euler",
-                                                                                    div(style = "font-weight: bold", "Plate motion model",
-                                                                                        helpPopup("Shows or removes a plate motion model at the series location given the parameters of an Euler pole")),
-                                                                                    value = F),
                                                                       fluidRow(
+                                                                        column(6,
+                                                                               checkboxInput(inputId = "euler",
+                                                                                             div(style = "font-weight: bold", "Plate motion model",
+                                                                                                 helpPopup("Shows or removes a plate motion model at the series location given the parameters of an Euler pole")),
+                                                                                             value = F)
+                                                                               ),
                                                                         column(6,
                                                                                conditionalPanel(
                                                                                  condition = "input.euler == true",
-                                                                                 div(style = "padding: 0px 0px; margin-top:0.75em",
+                                                                                 div(style = "margin-top: 0.75em",
                                                                                      radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
                                                                                  )
                                                                                )
+                                                                        )
+                                                                      ),
+                                                                      fluidRow(
+                                                                        conditionalPanel(
+                                                                          condition = "input.euler == true && input.format == 1",
+                                                                          column(6,
+                                                                                 div("Select NEU or ENU format:")
+                                                                          ),
+                                                                          column(6,
+                                                                                 radioButtons(inputId = "neuenu", label = NULL, choices = list("NEU" = 1, "ENU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
+                                                                          )
                                                                         ),
-                                                                        column(6,
-                                                                               conditionalPanel(
-                                                                                 condition = "input.euler == true && input.format == 1",
-                                                                                 div(style = "padding: 0px 0px; margin-top:0.75em",
-                                                                                     radioButtons(inputId = "neuenu", label = NULL, choices = list("NEU" = 1, "ENU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
-                                                                                 )
-                                                                               )
+                                                                        conditionalPanel(
+                                                                          condition = "input.euler == true && input.format == 4",
+                                                                          column(6,
+                                                                                 div("Select component of 1D series:")
+                                                                          ),
+                                                                          column(6,
+                                                                                 radioButtons(inputId = "neu1D", label = NULL, choices = list("North" = 1, "East" = 2, "Up" = 3), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
+                                                                          )
                                                                         )
                                                                       ),
                                                                       conditionalPanel(
@@ -2668,12 +2682,16 @@ server <- function(input,output,session) {
     if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
       centerx <- which(abs(trans$x - median(trans$x)) == min(abs(trans$x - median(trans$x))))[1]
       centery <- which(abs(trans$y - median(trans$y)) == min(abs(trans$y - median(trans$y))))[1]
-      if (input$tab == 1) {
-        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[1]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[1]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "green", lwd = 3)
-      } else if (input$tab == 2) {
-        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[2]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[2]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "green", lwd = 3)
-      } else if (input$tab == 3) {
-        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[3]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[3]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "green", lwd = 3)
+      if (input$format == 4) {
+        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+      } else {
+        if (input$tab == 1) {
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[1]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[1]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+        } else if (input$tab == 2) {
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[2]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[2]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+        } else if (input$tab == 3) {
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[3]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[3]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+        }
       }
     }
     if (input$traceLog && length(info$log) > 0) {
@@ -5794,7 +5812,7 @@ server <- function(input,output,session) {
     data <- digest()
     obs(data)
   })
-  observeEvent(c(input$plateModel, inputs$plate), {
+  observeEvent(c(input$plateModel, inputs$plate, input$neu1D), {
     req(obs())
     req(input$euler)
     if (input$eulerType > 0) {
@@ -7785,7 +7803,7 @@ server <- function(input,output,session) {
         plateCartesian <- cross(poleCartesian,stationCartesian)
         rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3)
         plate_neu <- c(rotation %*% plateCartesian)
-        if ((format == 1 && input$neuenu == 1) || format == 2) { #NEU & PBO
+        if ((format == 1 && input$neuenu == 1) || format == 2 || format == 4) { #NEU & PBO & 1D
           trans$plate <- plate_neu
         } else if ((format == 1 && input$neuenu == 2) || format == 3) { #ENU & NGL
           trans$plate <- c(plate_neu[2],plate_neu[1],plate_neu[3])
@@ -7796,9 +7814,13 @@ server <- function(input,output,session) {
           trans$plate <- trans$plate*7/daysInYear
         }
         if (input$eulerType == 2) {
-          extracted$y1 <- extracted$y1 - trans$plate[1]*(extracted$x - median(extracted$x)) - median(extracted$y1)
-          extracted$y2 <- extracted$y2 - trans$plate[2]*(extracted$x - median(extracted$x)) - median(extracted$y2)
-          extracted$y3 <- extracted$y3 - trans$plate[3]*(extracted$x - median(extracted$x)) - median(extracted$y3)
+          if (format == 4) {
+            extracted$y1 <- extracted$y1 - trans$plate[as.numeric(input$neu1D)]*(extracted$x - median(extracted$x)) - median(extracted$y1)
+          } else {
+            extracted$y1 <- extracted$y1 - trans$plate[1]*(extracted$x - median(extracted$x)) - median(extracted$y1)
+            extracted$y2 <- extracted$y2 - trans$plate[2]*(extracted$x - median(extracted$x)) - median(extracted$y2)
+            extracted$y3 <- extracted$y3 - trans$plate[3]*(extracted$x - median(extracted$x)) - median(extracted$y3)
+          }
         }
       } else {
         showNotification("Problem reading the station coordinates and/or the Euler pole parameters. Check the input values.", action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
