@@ -7908,6 +7908,7 @@ server <- function(input,output,session) {
     removeNotification("useless_offset_epoch")
     removeNotification("outside_offset_epoch")
     removeNotification("bad_offset_epoch")
+    removeNotification("not_numeric_offset")
     removeNotification("no_exponential")
     removeNotification("no_logarithmic")
     removeNotification("bad_degree")
@@ -8348,38 +8349,50 @@ server <- function(input,output,session) {
       # * Offset model ####
       if ("Offset" %in% input$model) {
         if (isTruthy(inputs$offsetEpoch)) {
-          offsetEpochs <- unlist(strsplit(inputs$offsetEpoch, split = ","))
-          # check for duplicated offset epochs
-          if (anyDuplicated(offsetEpochs) > 0) {
-            showNotification(paste0("The epoch given for offset #",anyDuplicated(offsetEpochs)," is duplicated. Check the input values."), action = NULL, duration = 10, closeButton = T, id = "repeated_offset_epoch", type = "error", session = getDefaultReactiveDomain())
-            info$run <- F
-            req(info$stop)
-          }
-          # check for soln without observations
-          if (length(offsetEpochs) > 1) {
-            invalidSegment <- sapply(seq(length(offsetEpochs) - 1), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x] & trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x + 1]]) ) == 0
-            for (soln in which(invalidSegment)) {
-              uselessOffset_id1 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln]))
-              uselessOffset_id2 <- which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[soln + 1]))
-              showNotification(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,". One of them needs to be removed."), action = NULL, duration = 10, closeButton = T, id = "useless_offset_epoch", type = "error", session = getDefaultReactiveDomain())
-              info$run <- F
-              req(info$stop) # will stop at the first useless offset, but that's ok
-            }
-          }
-          # check for offsets outside data limits
-          out1 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x > sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
-          out2 <- sapply(seq(length(offsetEpochs)), function(x) length(trans$x[trans$x < sort(as.numeric(c(offsetEpochs)), na.last = NA)[x]])) == 0
-          out <- out1 + out2 > 0
-          if (sum(out) > 0) {
-            uselessOffset_ids <- sapply(seq(length(which(out))), function(x) which.min(abs(as.numeric(offsetEpochs) - sort(as.numeric(c(offsetEpochs)), na.last = NA)[x])))
-            showNotification(paste("There are no observations before or after offsets:", paste0("#",uselessOffset_ids, collapse = " "),". These offsets where not used."), action = NULL, duration = 10, closeButton = T, id = "outside_offset_epoch", type = "warning", session = getDefaultReactiveDomain())
-          }
-          
+          offsetEpochs <- trimws(unlist(strsplit(inputs$offsetEpoch, split = ",")))
+          offsetEpochs_all <- offsetEpochs
           O0 <- unlist(strsplit(input$O0, split = ","))
           eO0 <- unlist(strsplit(input$eO0, split = ","))
           trans$offsetEpochs <- NULL
-          i <- 0
+          # check for valid numeric values
+          not_numeric <- suppressWarnings(which(is.na(as.numeric(offsetEpochs))))
+          if (length(not_numeric) > 0) {
+            offsetEpochs <- offsetEpochs[-not_numeric]
+            showNotification(paste("The epoch given for offset(s)", paste0("#",not_numeric, collapse = " "), "is not numeric. These offsets were skipped."), action = NULL, duration = 10, closeButton = T, id = "not_numeric_offset", type = "warning", session = getDefaultReactiveDomain())
+          }
+          offsetEpochs <- as.numeric(offsetEpochs)
           if (length(offsetEpochs) > 0) {
+            # check for duplicated offset epochs
+            while (anyDuplicated(offsetEpochs) > 0) {
+              offset_duplicated <- anyDuplicated(offsetEpochs)
+              uselessOffset_id <- which.min(abs(suppressWarnings(as.numeric(offsetEpochs_all) - offsetEpochs[offset_duplicated])))
+              showNotification(paste0("The epoch given for offset #", uselessOffset_id, " is duplicated. This offset was skipped."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              offsetEpochs <- offsetEpochs[-offset_duplicated]
+            }
+            # check for soln without observations
+            offsetEpochs_sorted <- suppressWarnings(sort(offsetEpochs, na.last = NA))
+            if (length(offsetEpochs_sorted) > 1) {
+              invalidSegment <- sapply(seq(length(offsetEpochs_sorted) - 1), function(x) length(trans$x[trans$x > offsetEpochs_sorted[x] & trans$x < offsetEpochs_sorted[x + 1]]) ) == 0
+              toremove <- c()
+              for (soln in which(invalidSegment)) {
+                uselessOffset_id <- which.min(abs(offsetEpochs - offsetEpochs_sorted[soln]))
+                uselessOffset_id1 <- which.min(abs(suppressWarnings(as.numeric(offsetEpochs_all) - offsetEpochs_sorted[soln])))
+                uselessOffset_id2 <- which.min(abs(suppressWarnings(as.numeric(offsetEpochs_all) - offsetEpochs_sorted[soln + 1])))
+                offsetEpochs <- offsetEpochs[-uselessOffset_id]
+                showNotification(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,". The first offset was skipped"), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              }
+            }
+            # check for offsets outside data limits
+            toremove <- c()
+            for (i in seq_len(length(offsetEpochs))) {
+              if (offsetEpochs[i] > trans$x[length(trans$x)] || offsetEpochs[i] < trans$x[1]) {
+                uselessOffset_id <- which.min(abs(suppressWarnings(as.numeric(offsetEpochs_all) - offsetEpochs[i])))
+                toremove <- c(toremove, i)
+                showNotification(paste0("There are no observations before or after offset #", uselessOffset_id,". This offset was skipped."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              }
+            }
+            offsetEpochs <- offsetEpochs[-toremove]
+            i <- 0
             for (p in offsetEpochs) {
               p <- as.numeric(trimmer(p))
               if (nchar(p) > 0 && !is.na(p)) {
