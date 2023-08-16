@@ -2664,10 +2664,7 @@ server <- function(input,output,session) {
         half <- abs(ranges$y1[1] - mean(ranges$y1))
         middle <- median(pointsY2)
         ranges$y12 <- c(middle - half, middle + half)
-        if (length(pointsX1) == 0) {
-          print("esto no deberia ser posible")
-        } else if (length(pointsX2) == 0) {
-          print("ok solo series1")
+        if (length(pointsX1) == 0 || length(pointsX2) == 0) {
           ranges$y12 <- NULL
         } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
           print("serie 2 a la derecha de serie1")
@@ -4957,14 +4954,21 @@ server <- function(input,output,session) {
     } else if (isTruthy(input$vondrak_brush)) {
       brush <- input$vondrak_brush
     }
-    if (!is.null(brush) && length(trans$x[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) > 0) {
+    if (input$tab == 1) {
+      values_now <- values$series1
+    } else if (input$tab == 2) {
+      values_now <- values$series2
+    } else if (input$tab == 3) {
+      values_now <- values$series3
+    }
+    if (!is.null(brush) && isTruthy(trans$y0[trans$x0 > brush$xmin & trans$x0 < brush$xmax]) && !all(is.na(values_now[trans$x0[!is.na(trans$y0)] > brush$xmin & trans$x0[!is.na(trans$y0)] < brush$xmax]))) {
       ranges$x2 <- c(brush$xmin, brush$xmax)
       ranges$y2 <- c(brush$ymin, brush$ymax)
       ranges$x1 <- ranges$x4 <- ranges$x2
       ids <- trans$x0 > ranges$x1[1] & trans$x0 < ranges$x1[2]
-      ranges$y1 <- range(trans$y[ids])
+      ranges$y1 <- range(trans$y0[ids], na.rm = T)
       if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
+        ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
         if (sum(ids) > 0) {
           ranges$y12 <- range(trans$y2[ids], na.rm = T)
           if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
