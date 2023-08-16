@@ -2662,14 +2662,14 @@ server <- function(input,output,session) {
         pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
         pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
         half <- abs(ranges$y1[1] - mean(ranges$y1))
-        middle <- median(pointsY2)
+        middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
         ranges$y12 <- c(middle - half, middle + half)
         if (length(pointsX1) == 0 || length(pointsX2) == 0) {
-          ranges$y12 <- NULL
+          # NA
         } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
-          print("serie 2 a la derecha de serie1")
+          # NA
         } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
-          print("serie 2 a la izquierda de serie1")
+          # NA
         } else {
           tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
           tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
@@ -2682,7 +2682,11 @@ server <- function(input,output,session) {
         ranges$y12 <- ranges$y1
       } else {
         ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
-        ranges$y12 <- range(trans$y2[ids], na.rm = T)
+        if (sum(ids) > 0) {
+          ranges$y12 <- range(trans$y2[ids], na.rm = T) 
+        } else {
+          ranges$y12 <- range(trans$y2, na.rm = T)
+        }
       }
       plot(trans$x2, trans$y2, type = symbol, pch = 20, col = 3, axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
       if (isTruthy(sigmas)) {
