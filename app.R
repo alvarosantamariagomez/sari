@@ -2684,7 +2684,7 @@ server <- function(input,output,session) {
       } else if (isTruthy(input$same_axis)) {
         ranges$y12 <- ranges$y1
       } else {
-        ids <- trans$x0[!is.na(trans$y2)] >= ranges$x1[1] & trans$x0[!is.na(trans$y2)] <= ranges$x1[2]
+        ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
         ranges$y12 <- range(trans$y2[ids], na.rm = T)
       }
       plot(trans$x2, trans$y2, type = symbol, pch = 20, col = 3, axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
