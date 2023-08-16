@@ -4923,10 +4923,26 @@ server <- function(input,output,session) {
   })
   observeEvent(input$plot_2click, {
     req(file$primary)
+    if (input$tab == 1) {
+      values_now <- values$series1
+    } else if (input$tab == 2) {
+      values_now <- values$series2
+    } else if (input$tab == 3) {
+      values_now <- values$series3
+    }
     brush <- input$plot_brush
-    if (!is.null(brush) && length(trans$x[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) > 0) {
+    if (!is.null(brush) && isTruthy(trans$y0[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) && !all(is.na(values_now[trans$x0[!is.na(trans$y0)] > brush$xmin & trans$x0[!is.na(trans$y0)] < brush$xmax]))) {
+    # if (!is.null(brush) && length(trans$x[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) > 0) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
-      ranges$y1 <- c(brush$ymin, brush$ymax)
+      ids <- trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]
+      if (sum(trans$y[ids & trans$y >= brush$ymin & trans$y <= brush$ymax]) > 0) {
+        ranges$y1 <- c(brush$ymin, brush$ymax) 
+      } else {
+        ranges$y1 <- range(trans$y[ids], na.rm = T)
+        if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
+          ranges$y1 <- range(trans$y, na.rm = T)
+        }
+      }
       if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
         if (sum(ids) > 0) {
@@ -4955,8 +4971,10 @@ server <- function(input,output,session) {
     brush <- NULL
     if (isTruthy(input$res_brush)) {
       brush <- input$res_brush
+      res <- trans$res
     } else if (isTruthy(input$vondrak_brush)) {
       brush <- input$vondrak_brush
+      res <- trans$filterRes
     }
     if (input$tab == 1) {
       values_now <- values$series1
@@ -4967,7 +4985,15 @@ server <- function(input,output,session) {
     }
     if (!is.null(brush) && isTruthy(trans$y0[trans$x0 > brush$xmin & trans$x0 < brush$xmax]) && !all(is.na(values_now[trans$x0[!is.na(trans$y0)] > brush$xmin & trans$x0[!is.na(trans$y0)] < brush$xmax]))) {
       ranges$x2 <- c(brush$xmin, brush$xmax)
-      ranges$y2 <- c(brush$ymin, brush$ymax)
+      ids <- trans$x >= ranges$x2[1] & trans$x <= ranges$x2[2]
+      if (sum(res[ids & res >= brush$ymin & res <= brush$ymax]) > 0) {
+        ranges$y2 <- c(brush$ymin, brush$ymax) 
+      } else {
+        ranges$y2 <- range(res[ids], na.rm = T)
+        if (any(is.na(ranges$y2)) || any(is.infinite(ranges$y2))) {
+          ranges$y2 <- range(res, na.rm = T)
+        }
+      }
       ranges$x1 <- ranges$x4 <- ranges$x2
       ids <- trans$x0 > ranges$x1[1] & trans$x0 < ranges$x1[2]
       ranges$y1 <- range(trans$y0[ids], na.rm = T)
