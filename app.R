@@ -2657,13 +2657,30 @@ server <- function(input,output,session) {
         symbol <- 'o'
       }
       if (isTruthy(input$sameScale)) {
+        pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+        pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+        pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+        pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
         half <- abs(ranges$y1[1] - mean(ranges$y1))
-        if (isTruthy(ranges$y12)[1]) {
-          middle <- mean(ranges$y12)
-        } else {
-          middle <- median(trans$y2, na.rm = T)
-        }
+        middle <- median(pointsY2)
         ranges$y12 <- c(middle - half, middle + half)
+        if (length(pointsX1) == 0) {
+          print("esto no deberia ser posible")
+        } else if (length(pointsX2) == 0) {
+          print("ok solo series1")
+          ranges$y12 <- NULL
+        } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
+          print("serie 2 a la derecha de serie1")
+        } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
+          print("serie 2 a la izquierda de serie1")
+        } else {
+          tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
+          tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
+          tie1 <- tie1[1:min(length(tie1),length(tie2))]
+          tie2 <- tie2[1:min(length(tie1),length(tie2))]
+          pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
+          ranges$y12 <- isolate(ranges$y12 + (ranges$y1[1] - ranges$y12[1]) - pointsBias)
+        }
       } else if (isTruthy(input$same_axis)) {
         ranges$y12 <- ranges$y1
       } else {
@@ -4910,7 +4927,7 @@ server <- function(input,output,session) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
       ranges$y1 <- c(brush$ymin, brush$ymax)
       if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
-        ids <- trans$x0 >= ranges$x1[1] & trans$x0 <= ranges$x1[2]
+        ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
         if (sum(ids) > 0) {
           ranges$y12 <- range(trans$y2[ids], na.rm = T)
           if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
