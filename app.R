@@ -5744,12 +5744,12 @@ server <- function(input,output,session) {
         } else {
           removeNotification("parsing_url1")
           showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(input$server1),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-          updateSelectInput(session, inputId = "product1", selected = "")
+          updateSelectInput(session, inputId = "station1", selected = "")
           file$primary <- NULL
         }
       } else {
         showNotification(paste0("Product ", input$product1, "for station ", inputs$station1," not found in ",toupper(input$server1)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
-        updateSelectInput(session, inputId = "product1", selected = "")
+        updateSelectInput(session, inputId = "station1", selected = "")
       }
     }
   })
@@ -5799,12 +5799,12 @@ server <- function(input,output,session) {
         } else {
           removeNotification("parsing_url2")
           showNotification(HTML(paste0("File ",file$secondary$name," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-          updateSelectInput(session, inputId = "product2", selected = "")
+          updateSelectInput(session, inputId = "station2", selected = "")
           file$secondary <- NULL
         }
       } else {
         showNotification(paste("Product", input$product2, "for station", inputs$station2, "not found in", input$server2, "server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
-        updateSelectInput(session, inputId = "product2", selected = "")
+        updateSelectInput(session, inputId = "station2", selected = "")
       }
     } else if (isTruthy(input$server2) && isTruthy(input$product2)) {
       url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$file <- NULL
