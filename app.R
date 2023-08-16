@@ -5096,15 +5096,6 @@ server <- function(input,output,session) {
         disable("station1")
         disable("product1")
         enable("reset")
-        disable("station2")
-        enable("server2")
-        if (isTruthy(input$server2)) {
-          enable("station2")
-          enable("product2")
-        } else {
-          disable("station2")
-          disable("product2")
-        }
         enable("ids")
         enable("symbol")
         enable("header")
@@ -5133,23 +5124,6 @@ server <- function(input,output,session) {
         enable("printSinfo")
         enable("printSoln")
         enable("printCustom")
-        enable("series2")
-        enable("optionSecondary")
-        if (input$optionSecondary == 1) {
-          if (isTruthy(input$sameScale)) {
-            disable("same_axis")
-          } else {
-            enable("same_axis")
-          }
-          if (isTruthy(input$same_axis)) {
-            disable("sameScale")
-          } else {
-            enable("sameScale")
-          }
-        } else {
-          disable("sameScale")
-          disable("same_axis")
-        }
         if (!isTruthy(input$euler)) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
           updateTextInput(inputId = "plate", value = "")
@@ -5173,13 +5147,70 @@ server <- function(input,output,session) {
         }
         if (input$sigmas == T) {
           enable("errorBar")
-          enable("errorBar2")
         } else {
           disable("errorBar")
-          disable("errorBar2")
         }
         if (!isTruthy(input$average) && length(inputs$step) > 0) {
           updateTextInput(session, inputId = "step", value = "")
+        }
+        enable("series2")
+        if (input$format == 4) {
+          disable("server2")
+        } else {
+          enable("server2") 
+        }
+        if (isTruthy(input$server2)) {
+          enable("product2")
+          if (isTruthy(input$product2)) {
+            enable("station2")
+          } else {
+            disable("station2")
+          }
+        } else {
+          disable("station2")
+          disable("product2")
+        }
+        if (length(file$secondary) > 0) {
+          enable("ne")
+          enable("format2")
+          enable("scaleFactor")
+          enable("step2")
+          enable("optionSecondary")
+          enable("separator2")
+          enable("epoch2")
+          enable("variable2")
+          if (input$sigmas == T) {
+            enable("errorBar2")
+          } else {
+            disable("errorBar2")
+          }
+          if (input$optionSecondary == 1) {
+            if (isTruthy(input$sameScale)) {
+              disable("same_axis")
+            } else {
+              enable("same_axis")
+            }
+            if (isTruthy(input$same_axis)) {
+              disable("sameScale")
+            } else {
+              enable("sameScale")
+            }
+          } else {
+            disable("sameScale")
+            disable("same_axis")
+          }
+        } else {
+          disable("optionSecondary")
+          disable("ne")
+          disable("format2")
+          disable("scaleFactor")
+          disable("step2")
+          disable("sameScale")
+          disable("same_axis")
+          disable("separator2")
+          disable("epoch2")
+          disable("variable2")
+          disable("errorBar2")
         }
         if (isTruthy(obs())) {
           disable("plot")
