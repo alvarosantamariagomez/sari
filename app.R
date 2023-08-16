@@ -7627,8 +7627,12 @@ server <- function(input,output,session) {
               showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
               NULL
             } else {
-              info$minx <- min(table$x, na.rm = T)
-              info$maxx <- max(table$x, na.rm = T)
+              # show all points from primary & secondary series
+              # info$minx <- min(table$x, na.rm = T)
+              # info$maxx <- max(table$x, na.rm = T)
+              # show all points from primary series only
+              info$minx <- min(table$x[!is.na(table$y1)], na.rm = T)
+              info$maxx <- max(table$x[!is.na(table$y1)], na.rm = T)
               ranges$x1 <- c(info$minx, info$maxx)
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
