@@ -2259,7 +2259,11 @@ server <- function(input,output,session) {
 
   scaleFactor_d <- reactive(input$scaleFactor) %>% debounce(1000, priority = 1000)
   observeEvent(scaleFactor_d(), {
-    inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(scaleFactor_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (is.na(as.numeric(input$scaleFactor)) || trimws(input$scaleFactor) == "0") {
+      updateTextInput(session, inputId = "scaleFactor", value = "1")
+    } else {
+      inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(scaleFactor_d(), which = "both", whitespace = "[ \t\r\n]")))
+    }
   }, priority = 1000)
   
   plate_d <- reactive(input$plate) %>% debounce(1000, priority = 1000)
@@ -6091,7 +6095,7 @@ server <- function(input,output,session) {
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
                             file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
-                            "   Scale: ", input$scaleFactor, "   Average: ", inputs$step2, "\n")
+                            "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
     }
   }, priority = 7)
 
