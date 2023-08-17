@@ -8408,7 +8408,6 @@ server <- function(input,output,session) {
             offsetEpochs_sorted <- suppressWarnings(sort(offsetEpochs, na.last = NA))
             if (length(offsetEpochs_sorted) > 1) {
               invalidSegment <- sapply(seq(length(offsetEpochs_sorted) - 1), function(x) length(trans$x[trans$x > offsetEpochs_sorted[x] & trans$x < offsetEpochs_sorted[x + 1]]) ) == 0
-              toremove <- c()
               for (soln in which(invalidSegment)) {
                 uselessOffset_id <- which.min(abs(offsetEpochs - offsetEpochs_sorted[soln]))
                 uselessOffset_id1 <- which.min(abs(suppressWarnings(as.numeric(offsetEpochs_all) - offsetEpochs_sorted[soln])))
@@ -8418,7 +8417,7 @@ server <- function(input,output,session) {
               }
             }
             # check for offsets outside data limits
-            toremove <- c()
+            toremove <- 999999
             for (i in seq_len(length(offsetEpochs))) {
               if (offsetEpochs[i] > trans$x[length(trans$x)] || offsetEpochs[i] < trans$x[1]) {
                 uselessOffset_id <- which.min(abs(suppressWarnings(as.numeric(offsetEpochs_all) - offsetEpochs[i])))
