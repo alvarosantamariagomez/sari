@@ -461,20 +461,26 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:-0em",
                                                                           fluidRow(
-                                                                            column(6,
-                                                                                   checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
-                                                                                   checkboxInput(inputId = "header", label = "Show series header", value = F),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.header == true",
-                                                                                     sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
-                                                                            ),
-                                                                            column(4, offset = 2,
+                                                                            column(4,
                                                                                    div(style = "margin-top:1em",
                                                                                        radioButtons(inputId = "tunits",
                                                                                                     div("Time units",
                                                                                                         helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
                                                                                                     choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
+                                                                                   ),
+                                                                                   div(
+                                                                                     radioButtons(inputId = "sunits",
+                                                                                                  div("Series units",
+                                                                                                      helpPopup("These are the units of the variable in the time series and are used to define the units of all the estimated parameters.")),
+                                                                                                  choices = list("?" = 0, "m" = 1, "mm" = 2), selected = 0, inline = T)
                                                                                    )
+                                                                            ),
+                                                                            column(6, offset = 2,
+                                                                                   checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
+                                                                                   checkboxInput(inputId = "header", label = "Show series header", value = F),
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.header == true",
+                                                                                     sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
                                                                             )
                                                                           )
                                                                       ),
@@ -2825,8 +2831,22 @@ server <- function(input,output,session) {
   output$midas_hist1 <- output$midas_hist2 <- output$midas_hist3 <- renderPlot({
     req(obs(), input$midas, trans$midas_all)
     if (messages > 0) cat(file = stderr(), "MIDAS histogram", "\n")
+    if (input$tunits == 1) {
+      period <- "day"
+    } else if (input$tunits == 2) {
+      period <- "week"
+    } else if (input$tunits == 3) {
+      period <- "year"
+    }
+    if (input$sunits == 1) {
+      units <- paste0("(m/",period,")")
+    } else if (input$sunits == 2) {
+      units <- paste0("(mm/",period,")")
+    } else {
+      units <- ""
+    }
     values <- trans$midas_all
-    hist(values, breaks = "FD", freq = F, xlab = "Selected interannual velocities", ylab = "", main = "MIDAS velocity histogram", col = 4)
+    hist(values, breaks = "FD", freq = F, xlab = paste("Selected interannual velocities", units), ylab = "", main = "MIDAS velocity histogram", col = 4)
     dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
     xfit <- seq(min(values),max(values),length = 40)
     yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
@@ -3351,7 +3371,21 @@ server <- function(input,output,session) {
           # Plot instantaneous rate
           output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
             if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
-              title <- "Instantaneous linear rate"
+              if (input$tunits == 1) {
+                period <- "day"
+              } else if (input$tunits == 2) {
+                period <- "week"
+              } else if (input$tunits == 3) {
+                period <- "year"
+              }
+              if (input$sunits == 1) {
+                units <- "m"
+              } else if (input$sunits == 2) {
+                units <- "mm"
+              } else {
+                units <- "?"
+              }
+              title <- paste0("Instantaneous linear rate (",units,"/",period,")")
               plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol)
               title(title, line = 3)
             }
@@ -3366,10 +3400,17 @@ server <- function(input,output,session) {
   output$res1 <- output$res2 <- output$res3 <- renderPlot({
     req(obs(), trans$res, trans$x, trans$sy, info$run)
     if (messages > 0) cat(file = stderr(), "Plotting residual series", "\n")
-    if (!is.null(trans$filter)) {
-      title <- "Obs-Model residuals & Filter-Model residuals (blue)"
+    if (input$sunits == 1) {
+      units <- "(m)"
+    } else if (input$sunits == 2) {
+      units <- "(mm)"
     } else {
-      title <- "Model residuals"
+      units <- ""
+    }
+    if (!is.null(trans$filter)) {
+      title <- paste("Obs-Model residuals", units, "& Filter-Model residuals (blue)")
+    } else {
+      title <- paste("Model residuals", units)
     }
     if (length(trans$reserror) > 0) {
       ey <- trans$reserror
@@ -3424,8 +3465,15 @@ server <- function(input,output,session) {
   }, width = reactive(info$width), type = "cairo-png")
 
   # Compute stats & histogram ####
-  observeEvent(c(input$histogramType, trans$y, trans$res, trans$filter, ranges$x1, input$tab, inputs$epoch, inputs$variable, inputs$errorBar), {
+  observeEvent(c(input$histogramType, trans$y, trans$res, trans$filter, ranges$x1, input$tab, inputs$epoch, inputs$variable, inputs$errorBar, input$sunits), {
     req(obs(), input$histogram)
+    if (input$sunits == 1) {
+      units <- "(m)"
+    } else if (input$sunits == 2) {
+      units <- "(mm)"
+    } else {
+      units <- ""
+    }
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
       label <- "Original series"
@@ -3450,7 +3498,7 @@ server <- function(input,output,session) {
     if (isTruthy(values) && isTruthy(sd(values)) && length(values) > 1 && sd(values) > 0) {
       if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
       output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
-        hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = 5)
+        hist(values, breaks = "FD", freq = F, xlab = paste(label,units), ylab = "", main = "", col = 5)
         dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
         xfit <- seq(min(values),max(values),length = 40)
         yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
@@ -3494,6 +3542,18 @@ server <- function(input,output,session) {
       if (length(common$x) > 30) {
         cat("Pearson's correlation = ", sprintf("%.3f",cor(common$y.x,common$y.y)), "from ", length(common$x)," points at common epochs\n\n")
       }
+    }
+    if (input$tunits == 1) {
+      period <- "day"
+    } else if (input$tunits == 2) {
+      period <- "week"
+    } else if (input$tunits == 3) {
+      period <- "year"
+    }
+    if (input$sunits == 1) {
+      cat(paste0("Parameter units: m & m/", period, "\n\n"))
+    } else if (input$sunits == 2) {
+      cat(paste0("Parameter units: mm & mm/", period, "\n\n"))
     }
     if (isTruthy(input$midas)) {
       cat("MIDAS rate estimate ")
@@ -3889,10 +3949,17 @@ server <- function(input,output,session) {
       } else if (input$tunits == 3) {
         period <- "years"
       }
+      if (input$sunits == 1) {
+        units <- "(m)"
+      } else if (input$sunits == 2) {
+        units <- "(mm)"
+      } else {
+        units <- ""
+      }
       if (input$spectrumType == 0) {
         spectrum_y <- trans$amp
         trans$spectra <- cbind(1/trans$fs, trans$amp[,!is.na(colSums(trans$amp))])
-        ylab <- "Amplitude"
+        ylab <- paste("Amplitude", units)
       } else if (input$spectrumType == 1) {
         spectrum_y <- trans$psd
         trans$spectra <- cbind(1/trans$fs, trans$psd[,!is.na(colSums(trans$psd))])
@@ -4010,6 +4077,13 @@ server <- function(input,output,session) {
         period <- "years"
         t <- 1
       }
+      if (input$sunits == 1) {
+        units <- "(m)"
+      } else if (input$sunits == 2) {
+        units <- "(mm)"
+      } else {
+        units <- ""
+      }
       if (nchar(inputs$min_wavelet) > 0 && !is.na(inputs$min_wavelet) && nchar(inputs$max_wavelet) > 0 && !is.na(inputs$max_wavelet) && nchar(inputs$res_wavelet) > 0 && !is.na(as.numeric(inputs$res_wavelet)) && nchar(inputs$loc_wavelet) > 0 && !is.na(as.numeric(inputs$loc_wavelet)) && as.numeric(inputs$loc_wavelet) > 0 && as.numeric(inputs$loc_wavelet) <= info$rangex/2 && inputs$max_wavelet > inputs$min_wavelet) {
         min_scale <- inputs$min_wavelet*t
         max_scale <- inputs$max_wavelet*t
@@ -4096,10 +4170,10 @@ server <- function(input,output,session) {
         trans$wavelet$y <- trans$wavelet$y/t
         if (num_scale > 10) {
           image(trans$wavelet$x, trans$wavelet$y, amplitude_approx[,,1], col = pal, xlab = "", ylab = "", log = "y")
-          image.plot(zlim = range(amplitude_approx[,,1]), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
+          image.plot(zlim = range(amplitude_approx[,,1]), legend.only = T, col = pal, legend.args = list(text = paste("Amplitude", units), cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
         } else {
           image(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), col = pal, xlab = "", ylab = "")
-          image.plot(zlim = range(z.fun(trans$wavelet$z[,,1])), legend.only = T, col = pal, legend.args = list(text = "Amplitude", cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
+          image.plot(zlim = range(z.fun(trans$wavelet$z[,,1])), legend.only = T, col = pal, legend.args = list(text = paste("Amplitude", units), cex = 1, side = 2, las = 2, line = 1), legend.shrink = 0.5, legend.width = 0.5, legend.mar = 2, horizontal = T)
         }
         box()
         mtext(paste0("Period (",period,")"), side = 2, line = 3, outer = F)
@@ -5094,6 +5168,7 @@ server <- function(input,output,session) {
       disable("format")
       disable("format2")
       disable("tunits")
+      disable("sunits")
       disable("histogram")
       disable("histogramType")
       disable("log")
@@ -5153,6 +5228,7 @@ server <- function(input,output,session) {
         enable("separator2")
         enable("format")
         enable("tunits")
+        enable("sunits")
         if (input$format == 4) {
           updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
           shinyjs::delay(100, disable("format2"))
@@ -5536,6 +5612,9 @@ server <- function(input,output,session) {
         disable("flicker")
         disable("format")
         disable("format2")
+        disable("tunits")
+        disable("sunits")
+        disable("ids")
         disable("histogram")
         disable("histogramType")
         disable("log")
@@ -7246,6 +7325,7 @@ server <- function(input,output,session) {
         info$decimalsy <- 10
       }
       # Extracting coordinates if known and not already set
+      spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
         if (info$format == 1) {
           if (isTruthy(url$server)) {
@@ -7285,7 +7365,6 @@ server <- function(input,output,session) {
               updateTextInput(inputId = "station_lon", value = tableAll[1,2])
             }
           } else {
-            spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
             if (isTruthy(spotgins)) {
               coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
@@ -7318,6 +7397,20 @@ server <- function(input,output,session) {
         } else if (url$server == "SONEL" || url$server == "IGS"  || url$server == "SIRGAS" ) {
           updateRadioButtons(session, inputId = "neuenu", selected = 1)
           disable("neuenu")
+        }
+      }
+      # Setting series units if known
+      if (isTruthy(url$server)) {
+        if (url$server == "EPOS" || url$server == "EOSTSL") {
+          updateRadioButtons(session, inputId = "sunits", selected = 2)
+        } else {
+          updateRadioButtons(session, inputId = "sunits", selected = 1)
+        }
+      }  else if (info$format == 2 || info$format == 3) {
+        updateRadioButtons(session, inputId = "sunits", selected = 1)
+      } else {
+        if (isTruthy(spotgins)) {
+          updateRadioButtons(session, inputId = "sunits", selected = 1)
         }
       }
       # Resampling the primary series
@@ -9122,19 +9215,26 @@ server <- function(input,output,session) {
     } else if (symbol == 2) {
       s <- 'o'
     }
+    if (input$sunits == 1) {
+      units <- "(m)"
+    } else if (input$sunits == 2) {
+      units <- "(mm)"
+    } else {
+      units <- ""
+    }
     mini <- min(y, na.rm = T)
     maxi <- max(y, na.rm = T)
     if ((abs(mini) > 999 || abs(maxi) > 999) && abs(maxi - mini) < 999) {
       if (mini < 0) {
         const <- maxi
-        ylab <- paste(intToUtf8(8210),abs(mini))
+        ylab <- paste(intToUtf8(8210),abs(mini),units)
       } else {
         const <- mini
-        ylab <- paste("+",abs(mini))
+        ylab <- paste("+",abs(mini),units)
       }
     } else {
       const <- 0
-      ylab <- ""
+      ylab <- units
     }
     plot(x, y, type = s, pch = 20, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
     p <- par("usr")[3:4] # min/max Y-axis values
@@ -10291,7 +10391,7 @@ server <- function(input,output,session) {
         pattern <- ".pos"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
-          file <- paste0(url,name)  
+          file <- paste0(url,name)
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(readHTMLTable(getURL(url, crlf = TRUE), skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
@@ -10457,7 +10557,7 @@ server <- function(input,output,session) {
       if (isTruthy(station) && !isTruthy(series)) {
         updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
         updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-        updateTextInput(session, inputId = "step2", value = "1") 
+        updateTextInput(session, inputId = "step2", value = "1")
       } else {
         withBusyIndicatorServer(variable, {
           dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
