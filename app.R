@@ -3379,13 +3379,13 @@ server <- function(input,output,session) {
                 period <- "year"
               }
               if (input$sunits == 1) {
-                units <- "m"
+                units <- paste0("(m/",period,")")
               } else if (input$sunits == 2) {
-                units <- "mm"
+                units <- paste0("(mm/",period,")")
               } else {
-                units <- "?"
+                units <- ""
               }
-              title <- paste0("Instantaneous linear rate (",units,"/",period,")")
+              title <- paste("Instantaneous linear rate", units)
               plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol)
               title(title, line = 3)
             }
@@ -3521,7 +3521,12 @@ server <- function(input,output,session) {
             cat(paste0("The ",label," may be stationary (probability of non stationarity < 90%)."), "\n\n")
           }
         } else {
-          kk <- showNotification(HTML("Unable to assess stationarity.<br>Check the input series."), action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
+          showNotification(HTML("Unable to assess stationarity.<br>Check the input series."), action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
+        }
+        if (input$sunits == 1) {
+          cat("Series units: m ", "\n\n")
+        } else if (input$sunits == 2) {
+          cat("Series units: mm", "\n\n")
         }
         print(stats,digits = 4)
       }, width = 180)
@@ -9471,8 +9476,29 @@ server <- function(input,output,session) {
         cat(paste0("# Column number for data: ",inputs$variable), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
+    if (input$tunits == 1) {
+      period <- "day"
+      periods <- "days"
+    } else if (input$tunits == 2) {
+      period <- "week"
+      periods <- "weeks"
+    } else if (input$tunits == 3) {
+      period <- "year"
+      periods <- "years"
+    }
+    if (input$sunits == 1) {
+      unit <- "(m)"
+      units <- paste0("(m/",period,")")
+    } else if (input$sunits == 2) {
+      unit <- "(mm)"
+      units <- paste0("(mm/",period,")")
+    } else {
+      unit <- ""
+      units <- ""
+    }
+    cat(paste('# Series units:', paste0('(', periods, ')'), unit, units), file = file_out, sep = "\n", fill = F, append = T)
     if (isTruthy(inputs$step) && inputs$step > 0) {
-      cat(paste('# Resampling:', inputs$step), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Resampling:', inputs$step, periods), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
       cat(sprintf('# Corrected with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
@@ -9481,7 +9507,7 @@ server <- function(input,output,session) {
       cat(sprintf('# Averaged with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      cat(sprintf('# Plate model rate removed: %f',trans$plate[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste(sprintf('# Plate model rate removed: %f',trans$plate[as.numeric(input$tab)]), units), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
@@ -9491,7 +9517,7 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
-          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f   Phase %f +/- %f', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
+          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f %s    Phase %f +/- %f (grad)', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], unit, trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
         } 
       }
     } else if (input$fitType == 2 && length(trans$kalman) > 0) {
@@ -9503,21 +9529,21 @@ server <- function(input,output,session) {
       cat(paste('# Parameter:', colnames(trans$kalman), '=', colMeans(trans$kalman), '+/-', colMeans(trans$kalman_unc)), file = file_out, sep = "\n", fill = F, append = T)
       cat(paste('# A priori:', trans$kalman_info$nouns, '=', trans$kalman_info$apriori, '+/-', trans$kalman_info$error), file = file_out, sep = "\n", fill = F, append = T)
       cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(sqrt(trans$kalman_info$processNoise))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# Measurement noise:', inputs$ObsError), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Measurement noise:', inputs$ObsError, unit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (length(trans$offsetEpochs) > 0) {
       cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
       if (isTruthy(trans$midas_vel2)) {
-        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# MIDAS:', trans$midas_vel2, '+/-', trans$midas_sig2, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', trans$midas_vel2, '+/-', trans$midas_sig2, units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
       } else {
-        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (input$waveform && inputs$waveformPeriod > 0) {
-      cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(input$filter)) {
       if (isTruthy(trans$vondrak) && (isTruthy(inputs$low) || isTruthy(inputs$high))) {
@@ -9527,26 +9553,26 @@ server <- function(input,output,session) {
           origen <- " from residual series"
         }
         if (isTruthy(trans$vondrak[1]) && isTruthy(trans$vondrak[2])) {
-          cat(paste('# Vondrak:', trans$vondrak[1], '(low)', trans$vondrak[2], '(high)', origen), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Vondrak:', trans$vondrak[1], periods, '(low)', trans$vondrak[2], periods, '(high)', origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[1])) {
-          cat(paste('# Vondrak:', trans$vondrak[1], '(low)', origen), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Vondrak:', trans$vondrak[1], periods, '(low)', origen), file = file_out, sep = "\n", fill = F, append = T)
         } else if (isTruthy(trans$vondrak[2])) {
-          cat(paste('# Vondrak:', trans$vondrak[2], '(high)'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Vondrak:', trans$vondrak[2], periods, '(high)'), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
     }
     if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
       if (isTruthy(trans$noise[1])) {
-        cat(paste('# Noise: WH', trans$noise[1], '+/-', trans$noise[2]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: WH', trans$noise[1], '+/-', trans$noise[2], unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[3])) {
-        cat(paste('# Noise: FL', trans$noise[3], '+/-', trans$noise[4]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: FL', trans$noise[3], '+/-', trans$noise[4], unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[5])) {
-        cat(paste('# Noise: RW', trans$noise[5], '+/-', trans$noise[6]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: RW', trans$noise[5], '+/-', trans$noise[6], unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[7])) {
-        cat(paste('# Noise: PL', trans$noise[7], '+/-', trans$noise[8]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: PL', trans$noise[7], '+/-', trans$noise[8], unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[9])) {
         cat(paste('# Noise: K',  trans$noise[9], '+/-', trans$noise[10]), file = file_out, sep = "\n", fill = F, append = T)
@@ -9640,14 +9666,28 @@ server <- function(input,output,session) {
         cat(paste0("# Column number for data: ",inputs$variable), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
-    if (input$spectrumType == 0) {
-      cat("# Amplitude spectrum ", file = file_out, sep = "\n", fill = F, append = T)
-    } else if (input$spectrumType == 1) {
-      cat("# Power spectrum ", file = file_out, sep = "\n", fill = F, append = T)
+    if (input$tunits == 1) {
+      period <- "days"
+    } else if (input$tunits == 2) {
+      period <- "weeks"
+    } else if (input$tunits == 3) {
+      period <- "years"
     }
-    cat(paste0("# Longest period  = ",inputs$long_period), file = file_out, sep = "\n", fill = F, append = T)
-    cat(paste0("# Shortest period = ",inputs$short_period), file = file_out, sep = "\n", fill = F, append = T)
-    cat(paste0("# Oversampling = ",inputs$ofac), file = file_out, sep = "\n", fill = F, append = T)
+    if (input$sunits == 1) {
+      units <- "(m)"
+    } else if (input$sunits == 2) {
+      units <- "(mm)"
+    } else {
+      units <- ""
+    }
+    if (input$spectrumType == 0) {
+      cat(paste("# Amplitude spectrum", units), file = file_out, sep = "\n", fill = F, append = T)
+    } else if (input$spectrumType == 1) {
+      cat("# Power spectrum", file = file_out, sep = "\n", fill = F, append = T)
+    }
+    cat(paste("# Longest period  =",inputs$long_period, period), file = file_out, sep = "\n", fill = F, append = T)
+    cat(paste("# Shortest period =",inputs$short_period, period), file = file_out, sep = "\n", fill = F, append = T)
+    cat(paste("# Oversampling =",inputs$ofac), file = file_out, sep = "\n", fill = F, append = T)
     OutPut$df <- as.data.frame(trans$spectra)
     req(OutPut$df)
     names(OutPut$df)[1] <- "# period"
