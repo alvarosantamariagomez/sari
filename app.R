@@ -1782,7 +1782,7 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
-                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
+                          model_old = NULL, plate = NULL, plateName = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL)
 
   # 7. output
@@ -6013,8 +6013,9 @@ server <- function(input,output,session) {
       }
       if (length(record) == 1) {
         if (input$plateModel == 1) {
-          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)]
+          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5,2)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
+          trans$plateName <- elements[4]
           updateTextInput(session, inputId = "pole_x", value = elements[1])
           updateTextInput(session, inputId = "pole_y", value = elements[2])
           updateTextInput(session, inputId = "pole_z", value = elements[3])
@@ -6022,8 +6023,9 @@ server <- function(input,output,session) {
           updateTextInput(session, inputId = "pole_lon", value = "")
           updateTextInput(session, inputId = "pole_rot", value = "")
         } else if (input$plateModel == 2) {
-          elements <- unlist(strsplit(record, "\\t+", fixed = F, perl = T, useBytes = F))[c(4,5,6)]
+          elements <- unlist(strsplit(record, "\\t+", fixed = F, perl = T, useBytes = F))[c(4,5,6,2)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
+          trans$plateName <- elements[4]
           updateTextInput(session, inputId = "pole_lat", value = elements[1])
           updateTextInput(session, inputId = "pole_lon", value = elements[2])
           updateTextInput(session, inputId = "pole_rot", value = elements[3])
@@ -6031,8 +6033,9 @@ server <- function(input,output,session) {
           updateTextInput(session, inputId = "pole_y", value = "")
           updateTextInput(session, inputId = "pole_z", value = "")
         } else if (input$plateModel == 3) {
-          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(6,7,8)]
+          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(6,7,8,1)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
+          trans$plateName <- elements[4]
           updateTextInput(session, inputId = "pole_lat", value = elements[1])
           updateTextInput(session, inputId = "pole_lon", value = elements[2])
           updateTextInput(session, inputId = "pole_rot", value = elements[3])
@@ -9507,7 +9510,14 @@ server <- function(input,output,session) {
       cat(sprintf('# Averaged with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      cat(paste(sprintf('# Plate model rate removed: %f',trans$plate[as.numeric(input$tab)]), units), file = file_out, sep = "\n", fill = F, append = T)
+      if (input$plateModel == 1) {
+        plateModel <- "ITRF2014"
+      } else if (input$plateModel == 2) {
+        plateModel <- "NNR-MORVEL56"
+      } else if (input$plateModel == 3) {
+        plateModel <- "NNR-GSRM v2.1"
+      }
+      cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", plateModel, "and plate", trans$plateName), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
