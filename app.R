@@ -6974,7 +6974,13 @@ server <- function(input,output,session) {
       hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     } else {
       hideTab(inputId = "tab", target = "6", session = getDefaultReactiveDomain())
-      if (length(trans$y) > 0 && (length(trans$filter) > 0 || length(trans$res) > 0 || (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || input$optionSecondary > 1)) {
+      if (length(trans$y) > 0 && 
+          (  length(trans$filter) > 0 || 
+             length(trans$res) > 0 || 
+             (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || 
+             input$optionSecondary > 1 ||
+             (input$eulerType == 2 && length(trans$plate) > 0)  )
+      ) {
         showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
       } else {
         hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
@@ -7899,6 +7905,8 @@ server <- function(input,output,session) {
         showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
         updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
       }
+    } else {
+      trans$plate <- NULL
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
       extracted
