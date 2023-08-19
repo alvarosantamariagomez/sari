@@ -3452,7 +3452,7 @@ server <- function(input,output,session) {
     }
     if ("Offset" %in% isolate(input$model)) {
       for (p in trans$offsetEpochs) {
-        abline(v = p, col = 1)
+        abline(v = p, col = 2, lwd = 2)
       }
     }
     if (!is.null(trans$filter) && input$filter == T) {
@@ -3972,9 +3972,9 @@ server <- function(input,output,session) {
       }
       title <- substring(paste(trans$title[!is.na(trans$title)],collapse = ""), 1, nchar(paste(trans$title[!is.na(trans$title)],collapse = "")) - 2)
       if (is.null(ranges$x3)) {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
+        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 3, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
       } else {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
+        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 3, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
       }
       axis(2,at = marks, labels = marks)
       if (input$spectrumType == 1) {
@@ -4038,7 +4038,7 @@ server <- function(input,output,session) {
           slope <- lm(log10(p) ~ log10(1/trans$fs))
           slope$coef[2] <- -1*slope$coef[2]
           regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
-          lines(1/trans$fs, regression, col = c)
+          # lines(1/trans$fs, regression, col = c, lwd = 3)
           text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = c)
           lombx <- c(inputs$long_period,inputs$short_period)
           start <- median(tail(p, n = as.integer(length(p)/100)))
@@ -4047,7 +4047,7 @@ server <- function(input,output,session) {
           text(inputs$long_period/10,min(p),"Slope = -1",col = 6)
         }
       }
-      grid(nx = NULL, ny = NULL, col = 8, lty = "dashed", lwd = 3, equilogs = T)
+      grid(nx = NULL, ny = NULL, col = 8, lty = "dashed", lwd = 1, equilogs = T)
       output$lomb1_info <- output$lomb2_info <- output$lomb3_info <- renderText({
         if (length(input$lomb_1click$x) > 0) {
           if (inputs$ofac == 1) {
