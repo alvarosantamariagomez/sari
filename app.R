@@ -379,7 +379,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                            width = 4,
                                            style = "position:fixed;width:inherit;",
                                            id = "side-panel",
-                                           bsCollapse(id = "menu", open = c(1,2), multiple = T,
+                                           bsCollapse(id = "menu", open = c(1), multiple = T,
                                                       
                                                       # Expandable/collapsible blocks
                                                       
@@ -390,7 +390,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(4,
                                                                                    br(),
-                                                                                   div(style = "font-weight: bold", "Input series",
+                                                                                   div(style = "font-weight: bold", "Input series file",
                                                                                        helpPopup("Select a column-based text file; comments must start with '#'")
                                                                                    ),
                                                                                    div(style = "margin-right: -1em", tags$a(href = "TLSE.neu", "Show file example", targe = "_blank"))
@@ -402,7 +402,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -413,112 +413,122 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                )
                                                                         )
                                                                       ),
-                                                                      fluidRow(
-                                                                        column(4,
-                                                                               textInput(inputId = "ids", label = "Series ID", value = "")
+                                                                      conditionalPanel(
+                                                                        condition = "output.series1",
+                                                                        div(style = "padding: 0px 0px",
+                                                                            fluidRow(
+                                                                              column(3,
+                                                                                     div(style = "font-weight: bold", "Series ID", helpPopup("GNSS station ID(s) extracted from the file name(s) of the primary and secondary series"))
+                                                                              ),
+                                                                              column(6, 
+                                                                                     textInput(inputId = "ids", label = NULL, value = "")
+                                                                              )
+                                                                            )
                                                                         ),
-                                                                        column(8,
-                                                                               div(style = "margin-top:1.75em",
-                                                                                   fileInput(inputId = "loadSARI", label = NULL, multiple = F, accept = NULL, width = NULL, buttonLabel = "Load SARI model", placeholder = "Empty")
-                                                                               )
-                                                                        )
-                                                                      ),
-                                                                      div(style = "padding: 0px 0px; margin-top:-20em",
+                                                                        div(style = "padding: 0px 0px; margin-top: 1em",
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     div(style = "font-weight: bold", "Series format", helpPopup("Select 1D if the other formats are unknown"))
+                                                                              ),
+                                                                              column(8,
+                                                                                     radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                              )
+                                                                            )
+                                                                        ),
+                                                                        conditionalPanel(
+                                                                          condition = "input.format == 4",
                                                                           fluidRow(
-                                                                            column(4,
-                                                                                   div(style = "font-weight: bold", "Series format", helpPopup("Select 1D if the other formats are unknown"))
+                                                                            column(6,
+                                                                                   selectInput(inputId = "separator", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
                                                                             ),
-                                                                            column(8,
-                                                                                   radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                            column(6,
+                                                                                   div(style = "font-weight: bold", "Column selection",
+                                                                                       helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively.")
+                                                                                   ),
+                                                                                   div(style = "margin-top:-1em",
+                                                                                       fluidRow(
+                                                                                         column(4,
+                                                                                                textInput(inputId = "epoch", label = "", value = "1")
+                                                                                         ),
+                                                                                         column(4, offset = -2,
+                                                                                                textInput(inputId = "variable", label = "", value = "2")
+                                                                                         ),
+                                                                                         column(4, offset = -2,
+                                                                                                textInput(inputId = "errorBar", label = "", value = "3")
+                                                                                         )
+                                                                                       )
+                                                                                   )
                                                                             )
                                                                           )
-                                                                      ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.format == 4",
+                                                                        ),
+                                                                        div(style = "padding: 0px 0px; margin-top:-0em",
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     div(style = "margin-top:1em",
+                                                                                         radioButtons(inputId = "tunits",
+                                                                                                      div("Time units",
+                                                                                                          helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
+                                                                                                      choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
+                                                                                     ),
+                                                                                     div(
+                                                                                       radioButtons(inputId = "sunits",
+                                                                                                    div("Series units",
+                                                                                                        helpPopup("These are the units of the variable in the time series and are used to define the units of all the estimated parameters.")),
+                                                                                                    choices = list("?" = 0, "m" = 1, "mm" = 2), selected = 0, inline = T)
+                                                                                     )
+                                                                              ),
+                                                                              column(6, offset = 2,
+                                                                                     checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
+                                                                                     checkboxInput(inputId = "header", label = "Show series header", value = F),
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.header == true",
+                                                                                       sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
+                                                                              )
+                                                                            )
+                                                                        ),
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 selectInput(inputId = "separator", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
+                                                                                 checkboxInput(inputId = "average",
+                                                                                               div("Reduce sampling",
+                                                                                                   helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
+                                                                                               value = F)
                                                                           ),
                                                                           column(6,
-                                                                                 div(style = "font-weight: bold", "Column selection",
-                                                                                     helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively.")
-                                                                                 ),
-                                                                                 div(style = "margin-top:-1em",
-                                                                                     fluidRow(
-                                                                                       column(4,
-                                                                                              textInput(inputId = "epoch", label = "", value = "1")
-                                                                                       ),
-                                                                                       column(4, offset = -2,
-                                                                                              textInput(inputId = "variable", label = "", value = "2")
-                                                                                       ),
-                                                                                       column(4, offset = -2,
-                                                                                              textInput(inputId = "errorBar", label = "", value = "3")
-                                                                                       )
+                                                                                 div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.average == true",
+                                                                                       textInput(inputId = "step", label = "Averaging time period", value = "")
                                                                                      )
                                                                                  )
                                                                           )
-                                                                        )
-                                                                      ),
-                                                                      div(style = "padding: 0px 0px; margin-top:-0em",
-                                                                          fluidRow(
-                                                                            column(4,
-                                                                                   div(style = "margin-top:1em",
-                                                                                       radioButtons(inputId = "tunits",
-                                                                                                    div("Time units",
-                                                                                                        helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
-                                                                                                    choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
-                                                                                   ),
-                                                                                   div(
-                                                                                     radioButtons(inputId = "sunits",
-                                                                                                  div("Series units",
-                                                                                                      helpPopup("These are the units of the variable in the time series and are used to define the units of all the estimated parameters.")),
-                                                                                                  choices = list("?" = 0, "m" = 1, "mm" = 2), selected = 0, inline = T)
-                                                                                   )
-                                                                            ),
-                                                                            column(6, offset = 2,
-                                                                                   checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
-                                                                                   checkboxInput(inputId = "header", label = "Show series header", value = F),
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.header == true",
-                                                                                     sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
-                                                                            )
-                                                                          )
-                                                                      ),
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               checkboxInput(inputId = "average",
-                                                                                             div("Reduce sampling",
-                                                                                                 helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
-                                                                                             value = F)
                                                                         ),
-                                                                        column(6,
-                                                                               div(style = "padding: 0px 0px; margin-top:1em",
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.average == true",
-                                                                                     textInput(inputId = "step", label = "Averaging time period", value = "")
-                                                                                   )
-                                                                               )
+                                                                        div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
+                                                                        ),
+                                                                        div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                            conditionalPanel(
+                                                                              condition = "output.data",
+                                                                              htmlOutput("information")
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "output.dataNone",
+                                                                              htmlOutput("informationNone")
+                                                                            )
                                                                         )
-                                                                      ),
-                                                                      div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                          tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
-                                                                      ),
-                                                                      div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                          conditionalPanel(
-                                                                            condition = "output.data",
-                                                                            htmlOutput("information")
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "output.dataNone",
-                                                                            htmlOutput("informationNone")
-                                                                          )
                                                                       ),
                                                                       style = "primary"),
                                                       
                                                       # * Plot controls ####
                                                       bsCollapsePanel(value = 2,
                                                                       tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
-                                                                      radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T),
+                                                                      fluidRow(
+                                                                        column(3,
+                                                                               div(style = "font-weight: bold", "Plot type")
+                                                                        ),
+                                                                        column(8, 
+                                                                               radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T)
+                                                                        )
+                                                                      ),
                                                                       fluidRow(
                                                                         column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
                                                                                actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
@@ -552,6 +562,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                           )
                                                                       ),
+                                                                      div(style = "font-weight: bold", "Plot options"),
                                                                       fluidRow(
                                                                         column(3,
                                                                                checkboxInput(inputId = "remove3D",
@@ -583,6 +594,22 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       # * Ancillary information ####
                                                       bsCollapsePanel(value = 3,
                                                                       tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      
+                                                                      # % SARI model ####
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div(style = "font-weight: bold", "Load SARI model",
+                                                                                       helpPopup("Load a file with the results of a previous analysis with SARI")
+                                                                                   )
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            column(8,
+                                                                                   fileInput(inputId = "loadSARI", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            )
+                                                                          )
+                                                                      ),
                                                                       
                                                                       # % sitelog ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
@@ -701,7 +728,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(8,
                                                                                    fileInput(inputId = "series2",
-                                                                                             div("Secondary series",
+                                                                                             div("Secondary series file",
                                                                                                  helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
                                                                                              multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                             ),
@@ -715,13 +742,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                           ),
                                                                           fluidRow(
-                                                                            column(4,
-                                                                                   selectInput(inputId = "server2", label = "Server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                            column(5,
+                                                                                   selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
                                                                             ),
-                                                                            column(4,
+                                                                            column(3,
                                                                                    withBusyIndicatorUI(
                                                                                      uiOutput("station2")
                                                                                    )
@@ -934,7 +961,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 4,
                                                                       tags$h4(style = "color:white", icon("wand-magic-sparkles", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
-                                                                          radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T),
+                                                                          fluidRow(
+                                                                            column(3,
+                                                                                   div(style = "font-weight: bold", "Fit type")
+                                                                            ),
+                                                                            column(8, 
+                                                                                   radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T)
+                                                                            )
+                                                                          ),
                                                                           conditionalPanel(
                                                                             condition = "input.fitType == 2",
                                                                             fluidRow(
@@ -1353,16 +1387,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 5,
                                                                       tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                       
+                                                                      # % MIDAS ####
+                                                                      checkboxInput(inputId = "midas",
+                                                                                    div("MIDAS",
+                                                                                        helpPopup("Median Interannual Difference Adjusted for Skewness")),
+                                                                                    value = F),
+                                                                      
                                                                       # % Histogram ####
                                                                       fluidRow(
                                                                         column(6,
                                                                                checkboxInput(inputId = "histogram", label = "Histogram", value = F)
-                                                                        ),
-                                                                        column(6,
-                                                                               checkboxInput(inputId = "midas",
-                                                                                             div("MIDAS",
-                                                                                                 helpPopup("Median Interannual Difference Adjusted for Skewness")),
-                                                                                             value = F)
                                                                         )
                                                                       ),
                                                                       conditionalPanel(
@@ -1889,7 +1923,12 @@ server <- function(input,output,session) {
     return(!is.null(input$custom))
   })
   outputOptions(output, "custom", suspendWhenHidden = F)
-
+  
+  output$series1 <- reactive({
+    return(!is.null(file$primary))
+  })
+  outputOptions(output, "series1", suspendWhenHidden = F)
+  
   output$series2 <- reactive({
     return(!is.null(file$secondary))
   })
@@ -5222,6 +5261,8 @@ server <- function(input,output,session) {
       disable("product2")
     } else {
       if (length(file$primary) > 0) {
+        info$menu <- unique(c(info$menu, 2))
+        updateCollapse(session, id = "menu", open = info$menu)
         disable("server1")
         disable("station1")
         disable("product1")
