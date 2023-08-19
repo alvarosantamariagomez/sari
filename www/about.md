@@ -1,6 +1,6 @@
 ---
 output: pdf_document
-urlcolor: blue
+urlcolor: #2297E6
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
@@ -98,7 +98,7 @@ If the format of the input file is not known (content of columns, separation, et
 2) The user can automatically download GNSS series available at specific <ins>**web servers**</ins>. This is done via the three options: `server`, `product` and `station`. To download a series, the user must first select the `server` from those available in the dropdown menu, and then select the `product` (if only one `product` is available for the selected `server`, it will be selected automatically). With the `server` and `product` selected, SARI will download the list of available stations. Depending on the lenght of the list of stations, the download may take up to a few seconds. Type in the first characters of the `station` name to filter the list of stations available. When a `station` is selected, the series will be downloaded and plotted automatically, i.e. there is no need to set the format and time units as these are already known. Similar options are available for downloading a secondary series (see an example below and the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block for further details).
 
 3) The values for the `server`, `product` and `station` parameters can also be provided in any order as a <ins>**query string**</ins> after the base SARI URL on the address bar of the browser. These three parameters can be defined for both the primary and secondary series at the same time. For example, adding this query string  
-<span style="color: red;">?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI</span>  
+<span style="color: #DF536B;">?product=UGA&station=PIMI&server=RENAG&server2=NGL&product2=FINAL&station2=PIMI</span>  
 at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *UGA* GNSS position series of the station *PIMI* from the *RENAG* server, and also the *NGL* *FINAL* series of the same station as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 This feature allows webmasters of any GNSS series database to include a link on their webpages so that users can open a specific GNSS series directly with SARI on a new browser tab.
 
@@ -206,7 +206,7 @@ At this moment, the following servers and products are available:
 Notes:  
 <sup>1</sup> The *LOCAL* server is used only to upload series from local files on a local SARI session (more details in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh)).  
 <sup>2</sup> The NGL series correspond to the *IGS14* solution.  
-<sup>3</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: red;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected.  
+<sup>3</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected.  
 
 Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
@@ -312,7 +312,7 @@ The fitted discontinuities will be represented by vertical red lines in the resi
   
 Some of these components require additional parameters to be included in the model (e.g., reference epochs, periods, a priori values, etc.). Additionally, if using a KF fit, the a priori state and the standard deviation of the process noise can be set for the trend and sinusoidal components only (see the [<a href="#notes-on-the-kalman-filter" target="_self">notes</a>](#notes-on-the-kalman-filter) below).
 
-**Automatic discontinuity detection:** the `search discontinuities` button provides an automatic guesstimate of the location of probable discontinuities in the time series. The detector is based on the assessment of deviations from stability in different segments of the series using a classical linear regression model and a [Bayesian Information Criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion) (BIC). The algorithm is described by <a href="#references" target="_self">Zeileis et al. (2003)</a>. <b><span style="color: red;">WARNING:</span></b> this option is very time-consuming (see the [<a href="#notes-on-the-discontinuity-detection" target="_self">notes</a>](#notes-on-the-discontinuity-detection) below).
+**Automatic discontinuity detection:** the `search discontinuities` button provides an automatic guesstimate of the location of probable discontinuities in the time series. The detector is based on the assessment of deviations from stability in different segments of the series using a classical linear regression model and a [Bayesian Information Criterion](https://en.wikipedia.org/wiki/Bayesian_information_criterion) (BIC). The algorithm is described by <a href="#references" target="_self">Zeileis et al. (2003)</a>. <b><span style="color: #DF536B;">WARNING:</span></b> this option is very time-consuming (see the [<a href="#notes-on-the-discontinuity-detection" target="_self">notes</a>](#notes-on-the-discontinuity-detection) below).
 
 <h5 id="notes-on-the-kalman-filter"></h5>
 
@@ -380,9 +380,9 @@ This block allows for additional time series fitting, including:
 * The histogram of the residuals with its expected normal distribution (red curve) and a stationarity assessment using the [Augmented Dickey-Fuller](https://en.wikipedia.org/wiki/Augmented_Dickey%E2%80%93Fuller_test) and the [Kwiatkowski-Phillips-Schmidt-Shin](https://en.wikipedia.org/wiki/KPSS_test) tests.  
 * A non-parametric [waveform](https://en.wikipedia.org/wiki/Waveform) for studying periodic patterns in the residual series not having a sinusoidal shape. The waveform is plotted in red as if it were part of the fitted model (see the [<a href="#notes-on-the-waveform" target="_self">notes</a>](#notes-on-the-waveform) below).  
 * The amplitude and power spectrum from the weighted [Lomb-Scargle](https://en.wikipedia.org/wiki/Least-squares_spectral_analysis) periodogram of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.  These five spectra can be plotted and compared against each other (see the [<a href="#notes-on-the-periodogram" target="_self">notes</a>](#notes-on-the-periodogram) below).  
-* A pseudo discrete [wavelet transform](https://en.wikipedia.org/wiki/Wavelet_transform) analysis for irregularly sampled time series described in <a href="#references" target="_self">Keitt (2008)</a> and available for the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals. <b><span style="color: red;">WARNING:</span></b> this option is very time-consuming (see the [<a href="#notes-on-the-wavelet-transform" target="_self">notes</a>](#notes-on-the-wavelet-transform) below).  
+* A pseudo discrete [wavelet transform](https://en.wikipedia.org/wiki/Wavelet_transform) analysis for irregularly sampled time series described in <a href="#references" target="_self">Keitt (2008)</a> and available for the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals. <b><span style="color: #DF536B;">WARNING:</span></b> this option is very time-consuming (see the [<a href="#notes-on-the-wavelet-transform" target="_self">notes</a>](#notes-on-the-wavelet-transform) below).  
 * The <a href="#references" target="_self">Vondr&#225;k (1977)</a> band-pass smoother to reduce the variability around chosen periods from uneven, unfilled, uninterpolated, and uncertain sampled observations or evenly sampled observations with gaps and varying error bars. The smoother can be applied either to the original series or to the residual series from the model fit. It is plotted in blue in both the series and residual plots (see the [<a href="#notes-on-the-vondrak-smoother" target="_self">notes</a>](#notes-on-the-vondrak-smoother) below).  
-* A noise analysis to estimate the full variance-covariance matrix that best describes the residuals as a Gaussian process by means of an [MLE](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) of the parameters of a chosen covariance model. <b><span style="color: red;">WARNING:</span></b> this option can be very time-consuming (see the [<a href="#notes-on-the-noise-analysis" target="_self">notes</a>](#notes-on-the-noise-analysis) below).  
+* A noise analysis to estimate the full variance-covariance matrix that best describes the residuals as a Gaussian process by means of an [MLE](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) of the parameters of a chosen covariance model. <b><span style="color: #DF536B;">WARNING:</span></b> this option can be very time-consuming (see the [<a href="#notes-on-the-noise-analysis" target="_self">notes</a>](#notes-on-the-noise-analysis) below).  
 
 <h5 id="notes-on-the-midas-trend-estimates"></h5>
 

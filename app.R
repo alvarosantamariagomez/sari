@@ -104,11 +104,11 @@ withBusyIndicatorCSS <- "
     font-size: 1.2em;
   }
   .btn-done-indicator {
-    color: green;
+    color: #61D04F;
   }
   .btn-err {
     margin-top: 10px;
-    color: red;
+    color: #DF536B;
   }"
 
 # Mobile detector (from https://g3rv4.com/2017/08/shiny-detect-mobile-browsers)
@@ -127,7 +127,7 @@ css <- '
 background: default !important;
 cursor: not-allowed !important;
 pointer-events: none;
-color: gray !important;
+color: gray62 !important;
 }'
 
 # Update fileInput file names from URL (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
@@ -160,7 +160,7 @@ tabContents <- function(tabNum) {
   tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
            tags$style(type = "text/css", "body {padding-top: 60px;}"),
            withSpinner(
-             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = 'red', stroke = '#333333', opacity = '0.5', clip = T)),
+             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
              color = getOption("spinner.color", default = "#0080ff"),
              size = getOption("spinner.size", default = 2),
@@ -170,7 +170,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "output.run",
              withSpinner(
-               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
+               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -182,7 +182,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "output.rate",
              withSpinner(
-               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
+               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -193,7 +193,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
              withSpinner(
-               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
+               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -204,7 +204,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "input.filter == true && input.low !== input.high && output.residuals == true && input.series2filter == 2",
              withSpinner(
-               plotOutput(paste0("Vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
+               plotOutput(paste0("Vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -215,7 +215,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "input.waveform == true && input.waveformPeriod.length > 0",
              withSpinner(
-               plotOutput(paste0("waveform",tabNum), click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
+               plotOutput(paste0("waveform",tabNum), click = "plot_1click", dblclick = "waveform_2click", brush = brushOpts(id = "waveform_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -259,7 +259,7 @@ tabContents <- function(tabNum) {
                conditionalPanel(
                  condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
-                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = 'blue', stroke = '#333333', opacity = '0.5', clip = T)),
+                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                    type = getOption("spinner.type", default = 1),
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
@@ -325,7 +325,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .tabbable > .nav > li[class=active] > a { background-color: #333333; color:white; }
                       .shiny-notification { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; }
                       .shiny-notification-warning { color: #ffffff; }
-                      .shiny-notification-error { color: #fbc317; }
+                      .shiny-notification-error { color: #F5C710; }
                       .shiny-notification-message { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; position:fixed; top: 0; left: calc(28%); width: 71%}
                       .shiny-notification-close:hover { color: #ffffff; }
                       .fa-caret-down { float: right; }
@@ -518,7 +518,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
                                                                         column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
-                                                                               actionButton(inputId = "reset", label = "Reset", icon = icon("eye-slash", class = NULL, lib = "font-awesome"), style = "font-size: small; color: #FF6700")
+                                                                               actionButton(inputId = "reset", label = "Reset", icon = icon("trash", class = NULL, lib = "font-awesome"), style = "font-size: small; color: #F5C710; font-weight: bold")
                                                                         ),
                                                                         column(4, style = 'padding:0px 0px 0px 0px;', align = "right",
                                                                                actionButton(inputId = "remove", label = "Toggle points", icon =  icon("ban", class = NULL, lib = "font-awesome"), style = "font-size: small")
@@ -542,7 +542,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              value = NULL)
                                                                             ),
                                                                             column(4, style = "padding:0px 10px 0px 0px; margin-top:1.75em", align = "right",
-                                                                                   actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")#width = NULL)
+                                                                                   actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                             )
                                                                           )
                                                                       ),
@@ -845,12 +845,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ),
                                                                         fluidRow(
                                                                           div(style = "margin-top: 2em",
-                                                                              column(6,
+                                                                              column(8,
                                                                                      div(style = "font-weight: bold", "Upload a custom plate model",
                                                                                          helpPopup("File with a list of station coordinates and their associated Euler poles")
                                                                                      )
                                                                               ),
-                                                                              column(6, align = "right",
+                                                                              column(4, align = "right",
                                                                                      tags$a(href = "euler.txt", "Show file example", target = "_blank")
                                                                               )
                                                                           )
@@ -1789,6 +1789,7 @@ server <- function(input,output,session) {
   # Constants ####
   # Some initial values and constants
   options(shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
+  palette(value = "R4") # 1: "black" 2: "#DF536B" 3: "#61D04F" 4: "#2297E6" 5: "#28E2E5" 6: "#CD0BBC" 7: "#F5C710" 8: "gray62" 
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   debug <- F # saving the environment
@@ -2669,9 +2670,9 @@ server <- function(input,output,session) {
         ids <- trans$x0[!is.na(trans$y2)] >= ranges$x1[1] & trans$x0[!is.na(trans$y2)] <= ranges$x1[2]
         ranges$y12 <- range(trans$y2[ids], na.rm = T)
       }
-      plot(trans$x2, trans$y2, type = symbol, pch = 20, col = "#59b300", axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+      plot(trans$x2, trans$y2, type = symbol, pch = 20, col = 3, axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
       if (isTruthy(sigmas)) {
-        color <- "#59b300"
+        color <- 3
         alfa <- 0.2
         shade <- adjustcolor(color, alpha.f = alfa)
         ba <- trans$y2 + trans$sy2
@@ -2682,53 +2683,53 @@ server <- function(input,output,session) {
       par(new = T)
     }
     plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol)
-    points(trans$xe, trans$ye, type = "p", col = 'red', bg = 'red', pch = 21)
+    points(trans$xe, trans$ye, type = "p", col = 2, bg = 2, pch = 21)
     if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
       centerx <- which(abs(trans$x - median(trans$x)) == min(abs(trans$x - median(trans$x))))[1]
       centery <- which(abs(trans$y - median(trans$y)) == min(abs(trans$y - median(trans$y))))[1]
       if (input$format == 4) {
-        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[length(trans$x)] - trans$x[centerx])), col = 4, lwd = 3)
       } else {
         if (input$tab == 1) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[1]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[1]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[1]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[1]*(trans$x[length(trans$x)] - trans$x[centerx])), col = 4, lwd = 3)
         } else if (input$tab == 2) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[2]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[2]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[2]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[2]*(trans$x[length(trans$x)] - trans$x[centerx])), col = 4, lwd = 3)
         } else if (input$tab == 3) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[3]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[3]*(trans$x[length(trans$x)] - trans$x[centerx])), col = "violet", lwd = 3)
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[3]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[3]*(trans$x[length(trans$x)] - trans$x[centerx])), col = 4, lwd = 3)
         }
       }
     }
     if (input$traceLog && length(info$log) > 0) {
       for (r in info$log[[2]]) {
-        abline(v = r, col = "blue", lty = 2)
+        abline(v = r, col = 4, lty = 2)
       }
       for (a in info$log[[1]]) {
-        abline(v = a, col = "blue")
+        abline(v = a, col = 4)
       }
     }
     if (input$traceSinfo && length(info$sinfo) > 0) {
       for (r in info$sinfo[[2]]) {
-        abline(v = r, col = "blue", lty = 2)
+        abline(v = r, col = 6, lty = 2)
       }
       for (a in info$sinfo[[1]]) {
-        abline(v = a, col = "blue")
+        abline(v = a, col = 6)
       }
     }
     if (input$traceSoln && length(info$soln) > 0) {
       for (a in info$soln) {
-        abline(v = a, col = "orange")
+        abline(v = a, col = 8)
       }
     }
     if (input$traceCustom && length(info$custom) > 0) {
       for (a in info$custom) {
-        abline(v = a, col = "green")
+        abline(v = a, col = 5)
       }
     }
     if (length(trans$mod) > 0 && isTruthy(info$run)) {
-      lines(trans$x,trans$mod,col = "red", lwd = 3)
+      lines(trans$x,trans$mod, col = 2, lwd = 3)
     }
     if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
-      lines(trans$x,trans$filter,col = "blue", lwd = 2)
+      lines(trans$x,trans$filter, col = 7, lwd = 3)
     }
     output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
       if (length(input$plot_1click$x) > 0) {
@@ -2807,11 +2808,11 @@ server <- function(input,output,session) {
     req(obs(), input$midas, trans$midas_all)
     if (messages > 0) cat(file = stderr(), "MIDAS histogram", "\n")
     values <- trans$midas_all
-    hist(values, breaks = "FD", freq = F, xlab = "Selected interannual velocities", ylab = "", main = "MIDAS velocity histogram", col = "lightpink")
+    hist(values, breaks = "FD", freq = F, xlab = "Selected interannual velocities", ylab = "", main = "MIDAS velocity histogram", col = 4)
     dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
     xfit <- seq(min(values),max(values),length = 40)
     yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
-    lines(xfit, yfit, col = "red", lwd = 2)
+    lines(xfit, yfit, col = 2, lwd = 3)
   }, width = reactive(info$width), type = "cairo-png")
 
   # Offset verification ####
@@ -3363,43 +3364,43 @@ server <- function(input,output,session) {
     }
     plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol)
     title(title, line = 3)
-    abline(h = 0, col = "red", lwd = 2)
+    abline(h = 0, col = 2, lwd = 3)
     if (input$traceLog && length(info$log) > 0) {
       for (r in info$log[[2]]) {
-        abline(v = r, col = "blue", lty = 2)
+        abline(v = r, col = 4, lty = 2)
       }
       for (a in info$log[[1]]) {
-        abline(v = a, col = "blue")
+        abline(v = a, col = 4)
       }
     }
     if (input$traceSinfo && length(info$sinfo) > 0) {
       for (r in info$sinfo[[2]]) {
-        abline(v = r, col = "blue", lty = 2)
+        abline(v = r, col = 6, lty = 2)
       }
       for (a in info$sinfo[[1]]) {
-        abline(v = a, col = "blue")
+        abline(v = a, col = 6)
       }
     }
     if (input$traceSoln && length(info$soln) > 0) {
       for (a in info$soln[[1]]) {
-        abline(v = a, col = "orange")
+        abline(v = a, col = 8)
       }
     }
     if (input$traceCustom && length(info$custom) > 0) {
       for (a in info$custom) {
-        abline(v = a, col = "green")
+        abline(v = a, col = 5)
       }
     }
     if ("Offset" %in% isolate(input$model)) {
       for (p in trans$offsetEpochs) {
-        abline(v = p, col = "red")
+        abline(v = p, col = 1)
       }
     }
     if (!is.null(trans$filter) && input$filter == T) {
       if (input$series2filter == 1) {
-        lines(trans$x,trans$filter - trans$mod, col = "blue", lwd = 3)
+        lines(trans$x,trans$filter - trans$mod, col = 7, lwd = 3)
       } else if (input$series2filter == 2) {
-        lines(trans$x,trans$filter, col = "blue", lwd = 3)
+        lines(trans$x,trans$filter, col = 7, lwd = 3)
       }
     }
   }, width = reactive(info$width), type = "cairo-png")
@@ -3431,11 +3432,11 @@ server <- function(input,output,session) {
     if (isTruthy(values) && isTruthy(sd(values)) && length(values) > 1 && sd(values) > 0) {
       if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
       output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
-        hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = "lightblue")
+        hist(values, breaks = "FD", freq = F, xlab = label, ylab = "", main = "", col = 5)
         dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
         xfit <- seq(min(values),max(values),length = 40)
         yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
-        lines(xfit, yfit, col = "red", lwd = 2)
+        lines(xfit, yfit, col = 2, lwd = 3)
       }, width = reactive(info$width), type = "cairo-png")
       if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
       adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
@@ -3932,7 +3933,7 @@ server <- function(input,output,session) {
             type_crossover <- "Power-law / White"
           }
           psd <- psd*trans$var/sum(psd)
-          lines(1/trans$fs,psd, col = "red", lty = 2, lwd = 2)
+          lines(1/trans$fs,psd, col = 6, lty = 2, lwd = 3)
           output$crossover <- renderUI({
             if (length(crossover) > 0) {
               line <- sprintf("<br/>Crossover period %s = %.2f %s\n", type_crossover, crossover, period)
@@ -3952,11 +3953,11 @@ server <- function(input,output,session) {
           lombx <- c(inputs$long_period,inputs$short_period)
           start <- median(tail(p, n = as.integer(length(p)/100)))
           lomby_flicker <- c(start*(inputs$long_period/inputs$short_period),start)
-          lines(lombx,lomby_flicker, col = "hotpink", lty = 2, lwd = 2)
-          text(inputs$long_period/10,min(p),"Slope = -1",col = "hotpink")
+          lines(lombx,lomby_flicker, col = 6, lty = 2, lwd = 3)
+          text(inputs$long_period/10,min(p),"Slope = -1",col = 6)
         }
       }
-      grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dashed", lwd = 1, equilogs = T)
+      grid(nx = NULL, ny = NULL, col = 8, lty = "dashed", lwd = 3, equilogs = T)
       output$lomb1_info <- output$lomb2_info <- output$lomb3_info <- renderText({
         if (length(input$lomb_1click$x) > 0) {
           if (inputs$ofac == 1) {
@@ -4067,9 +4068,7 @@ server <- function(input,output,session) {
         levels <- suppressWarnings(signif(sd(trans$wavelet$z), 4))
         z.fun <- match.fun("Mod")
         attr(trans$wavelet, 'class') <- 'list'
-        # par(mfrow = c(1, 1), mar = c(0, 0, 3, 5), oma = rep(5, 4))
-        pal = colorRampPalette(rev(brewer.pal(11, 'Spectral')))(1024)
-        # par(mar = rep(1, 1))
+        pal = colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(1024)
         magin_in <- par("mar")
         magin_out <- par("oma")
         par(mar = magin_in + c(0, 3, 0, 3), oma = magin_out + c(1, 0, 0, 0))
@@ -4089,9 +4088,9 @@ server <- function(input,output,session) {
         contour(trans$wavelet$x, trans$wavelet$y, z.fun(trans$wavelet$z[,,1]), levels = c(levels, levels*2, levels*3), add = T, labcex = 1.1, drawlabels = F)
         title(main = title)
         coord <- unlist(as.list(which(amplitude_approx == max(amplitude_approx), arr.ind = T)))
-        points(trans$wavelet$x[coord[1]], trans$wavelet$y[coord[2]], pch = "*", cex = 3, col = "#333333")
-        lines(min(trans$wavelet$x) + trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
-        lines(max(trans$wavelet$x) - trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 2, col = "darkgrey")
+        points(trans$wavelet$x[coord[1]], trans$wavelet$y[coord[2]], pch = "*", cex = 3, col = 1)
+        lines(min(trans$wavelet$x) + trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 3, col = 1)
+        lines(max(trans$wavelet$x) - trans$wavelet$y, trans$wavelet$y, lty = 2, lwd = 3, col = 1)
       })
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('wl1').offsetTop);")
@@ -4884,11 +4883,7 @@ server <- function(input,output,session) {
       } else {
         header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y))[1:input$lines,]
       }
-      # if (isTruthy(info$local)) {
-        tmpfile <- tempfile()
-      # } else {
-        # tmpfile <- "tmp"
-      # }
+      tmpfile <- tempfile()
       write.table(header, file = tmpfile, append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
       noquote(paste(readLines(con = tmpfile, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
@@ -7905,8 +7900,6 @@ server <- function(input,output,session) {
         showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
         updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
       }
-    } else {
-      trans$plate <- NULL
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
       extracted
