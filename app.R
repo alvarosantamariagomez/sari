@@ -257,7 +257,7 @@ tabContents <- function(tabNum) {
            ),
            div(id = paste0("lomb",tabNum),
                conditionalPanel(
-                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.periodogram_residuals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
+                 condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.spectrumResiduals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
                    plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                    type = getOption("spinner.type", default = 1),
@@ -1435,7 +1435,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  checkboxInput(inputId = "spectrumModel", label = "Model", value = F)
                                                                           ),
                                                                           column(3,
-                                                                                 checkboxInput(inputId = "periodogram_residuals", label = "Model res.", value = F)
+                                                                                 checkboxInput(inputId = "spectrumResiduals", label = "Model res.", value = F)
                                                                           ),
                                                                           column(2,
                                                                                  checkboxInput(inputId = "spectrumFilter", label = "Filter", value = F)
@@ -3787,7 +3787,7 @@ server <- function(input,output,session) {
       trans$amp <- matrix(NA, nrow = length(f), ncol = 5)
       trans$psd <- matrix(NA, nrow = length(f), ncol = 5)
       trans$col <- c(1,2,3,4,5)
-      if (any(c(input$spectrumOriginal, input$spectrumModel, input$periodogram_residuals, input$spectrumFilter, input$spectrumFilterRes))) {
+      if (any(c(input$spectrumOriginal, input$spectrumModel, input$spectrumResiduals, input$spectrumFilter, input$spectrumFilterRes))) {
         periodogram("all")
       }
     } else {
@@ -3846,7 +3846,7 @@ server <- function(input,output,session) {
       }
     }
   })
-  observeEvent(c(input$periodogram_residuals), {
+  observeEvent(c(input$spectrumResiduals), {
     req(obs())
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
@@ -3857,7 +3857,7 @@ server <- function(input,output,session) {
       trans$spectra_old[3] <- F
       trans$title[4] <- NA
     } else {
-      req(input$spectrum, input$periodogram_residuals)
+      req(input$spectrum, input$spectrumResiduals)
       periodogram("residuals")
       if (input$tab == 1 || input$format == 4) {
         runjs("window.scrollTo(0,document.getElementById('lomb1').offsetTop);")
@@ -3926,7 +3926,7 @@ server <- function(input,output,session) {
     shinyjs::hide(id = "downloadlink1", anim = F)
     shinyjs::hide(id = "downloadlink2", anim = F)
     shinyjs::hide(id = "downloadlink3", anim = F)
-    if (input$spectrumModel || input$periodogram_residuals) {
+    if (input$spectrumModel || input$spectrumResiduals) {
       periodogram(c("model","residuals"))
     }
   })
@@ -3972,13 +3972,13 @@ server <- function(input,output,session) {
       }
       title <- substring(paste(trans$title[!is.na(trans$title)],collapse = ""), 1, nchar(paste(trans$title[!is.na(trans$title)],collapse = "")) - 2)
       if (is.null(ranges$x3)) {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 3, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
+        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
       } else {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 3, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
+        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, main = title, log = "xy", col = trans$col, xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
       }
       axis(2,at = marks, labels = marks)
       if (input$spectrumType == 1) {
-        if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise)) {
+        if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
           if (input$tunits == 1) { #days
             f_scale <- 24*60*60
           } else if (input$tunits == 2) { #weeks
@@ -3995,7 +3995,7 @@ server <- function(input,output,session) {
           }
           pwn <- wn * f_hz^0
           psd <- pwn
-          crossover <- 0
+          crossover <- NULL
           if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
             fl <- noise_var(trans$noise[3],-1)
             pfl <- fl * f_hz^-1
@@ -5161,7 +5161,7 @@ server <- function(input,output,session) {
       disable("spectrumFilterRes")
       disable("spectrumModel")
       disable("spectrumOriginal")
-      disable("periodogram_residuals")
+      disable("spectrumResiduals")
       disable("spectrumType")
       disable("est.mle")
       disable("remove")
@@ -5374,7 +5374,7 @@ server <- function(input,output,session) {
           enable("spectrumOriginal")
           if (!isTruthy(input$spectrum)) {
             updateCheckboxInput(session, inputId = "spectrumOriginal", value = F)
-            updateCheckboxInput(session, inputId = "periodogram_residuals", value = F)
+            updateCheckboxInput(session, inputId = "spectrumResiduals", value = F)
             updateCheckboxInput(session, inputId = "spectrumModel", value = F)
             updateCheckboxInput(session, inputId = "spectrumFilter", value = F)
             updateCheckboxInput(session, inputId = "spectrumFilterRes", value = F)
@@ -5394,7 +5394,7 @@ server <- function(input,output,session) {
           if (input$fitType == 1 || input$fitType == 2) {
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
               enable("spectrumModel")
-              enable("periodogram_residuals")
+              enable("spectrumResiduals")
               shinyjs::show(id = "res", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::show(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::show(id = "res2", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -5429,7 +5429,7 @@ server <- function(input,output,session) {
               shinyjs::hide(id = "res3", anim = T, animType = "fade", time = 0.5, selector = NULL)
               disable("mle")
               disable("spectrumModel")
-              disable("periodogram_residuals")
+              disable("spectrumResiduals")
             }
           } else {
             updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
@@ -5574,7 +5574,7 @@ server <- function(input,output,session) {
           updateTextInput(session, "largo_wavelet", value = "")
           disable("midas")
           disable("spectrumModel")
-          disable("periodogram_residuals")
+          disable("spectrumResiduals")
           disable("spectrumFilter")
           disable("spectrumFilterRes")
           enable("plot")
@@ -5607,7 +5607,7 @@ server <- function(input,output,session) {
         disable("spectrumFilterRes")
         disable("spectrumModel")
         disable("spectrumOriginal")
-        disable("periodogram_residuals")
+        disable("spectrumResiduals")
         disable("spectrumType")
         disable("est.mle")
         disable("remove")
@@ -7238,6 +7238,9 @@ server <- function(input,output,session) {
           info$timeMLE <- ceiling(1e-08*info$points^3.0321)
         }
       }
+      if (info$timeMLE < 0) {
+        info$timeMLE <- 10
+      }
     }
     if (info$timeMLE > 0) {
       if (info$timeMLE < 60) {
@@ -7254,9 +7257,9 @@ server <- function(input,output,session) {
   # Observe ??? ####
   observe({
     if (length(input$model) == 0) {
-      updateCheckboxInput(session, inputId = "periodogram_residuals", label = NULL, value = F)
+      updateCheckboxInput(session, inputId = "spectrumResiduals", label = NULL, value = F)
       updateCheckboxInput(session, inputId = "spectrumModel", label = NULL, value = F)
-      shinyjs::delay(1000, disable("periodogram_residuals"))
+      shinyjs::delay(1000, disable("spectrumResiduals"))
       shinyjs::delay(1000, disable("spectrumModel"))
     }
     if (length(trans$filter) > 0) {
@@ -9303,7 +9306,7 @@ server <- function(input,output,session) {
                      shinyjs::show(id = "downloadlink2", anim = F)
                      shinyjs::show(id = "downloadlink3", anim = F)
                    }
-                   if (input$periodogram_residuals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
+                   if (input$spectrumResiduals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
                      trans$title[4] <- "model residuals (green), "
                      if (length(trans$reserror) > 0) {
                        sy <- trans$reserror
@@ -9344,7 +9347,7 @@ server <- function(input,output,session) {
                      shinyjs::show(id = "downloadlink2", anim = F)
                      shinyjs::show(id = "downloadlink3", anim = F)
                    }
-                   trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$periodogram_residuals,input$spectrumFilter,input$spectrumFilterRes)
+                   trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$spectrumResiduals,input$spectrumFilter,input$spectrumFilterRes)
                  })
   }
   vondrak <- function(x,y,yp,p) {
@@ -9710,7 +9713,7 @@ server <- function(input,output,session) {
       names(OutPut$df)[column] <- "model"
       column <- column + 1
     }
-    if (input$periodogram_residuals && length(trans$res) > 0) {
+    if (input$spectrumResiduals && length(trans$res) > 0) {
       names(OutPut$df)[column] <- "modelResiduals"
       column <- column + 1
     }
