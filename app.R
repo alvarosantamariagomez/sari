@@ -628,7 +628,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    fileInput(inputId = "log", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                             ),
                                                                             column(4,
-                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                   div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.log",
                                                                                          checkboxInput(inputId = "traceLog", label = "Plot changes", value = F),
@@ -656,7 +656,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    fileInput(inputId = "sinfo", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                             ),
                                                                             column(4,
-                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                   div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.sinfo",
                                                                                          checkboxInput(inputId = "traceSinfo", label = "Plot changes", value = F),
@@ -684,7 +684,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    fileInput(inputId = "soln", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                             ),
                                                                             column(4,
-                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                   div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.soln",
                                                                                          checkboxInput(inputId = "traceSoln", label = "Plot changes", value = F),
@@ -712,7 +712,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    fileInput(inputId = "custom", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                             ),
                                                                             column(4,
-                                                                                   div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                                   div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.custom",
                                                                                          checkboxInput(inputId = "traceCustom", label = "Plot changes", value = F),
