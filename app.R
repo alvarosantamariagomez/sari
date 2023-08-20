@@ -1395,7 +1395,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       
                                                                       # % Histogram ####
                                                                       fluidRow(
-                                                                        column(6,
+                                                                        column(12,
                                                                                checkboxInput(inputId = "histogram", label = "Histogram", value = F)
                                                                         )
                                                                       ),
@@ -3595,16 +3595,22 @@ server <- function(input,output,session) {
       period <- "year"
     }
     if (input$sunits == 1) {
-      cat(paste0("Parameter units: m & m/", period, "\n\n"))
+      unit <- "m"
+      units <- paste0("m/",period)
     } else if (input$sunits == 2) {
-      cat(paste0("Parameter units: mm & mm/", period, "\n\n"))
+      unit <- "mm"
+      units <- paste0("mm/",period)
+    } else {
+      unit <- ""
+      units <- ""
     }
+    cat("Parameter units:", unit, "&", units, "\n\n")
     if (isTruthy(input$midas)) {
       cat("MIDAS rate estimate ")
-      cat(trans$midas_vel," +/- ",trans$midas_sig,"\n\n")
+      cat(trans$midas_vel, "+/-", trans$midas_sig, units, "\n\n")
       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
         cat("MIDAS rate estimate (discontinuities skipped) ")
-        cat(trans$midas_vel2," +/- ",trans$midas_sig2,"\n\n")
+        cat(trans$midas_vel2, "+/-", trans$midas_sig2, units, "\n\n")
       }
     }
     if (isTruthy(info$run) && length(trans$results) > 0) {
