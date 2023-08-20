@@ -7085,6 +7085,7 @@ server <- function(input,output,session) {
     }
     reset("side-panel")
     reset("main-panel")
+    updateCollapse(session, id = "menu", open = 1, close = c(2,3,4,5,6))
     obs(NULL)
     ranges$x1 <- NULL
     ranges$y1 <- NULL
