@@ -6276,6 +6276,13 @@ server <- function(input,output,session) {
   # Observe primary series ####
   observeEvent(c(input$series), {
     file$primary <- isolate(input$series)
+    if (grepl("tenv3", file$primary$name)) {
+      updateRadioButtons(inputId = "format", selected = 3)
+    } else if (grepl("pbo", file$primary$name)) {
+      updateRadioButtons(inputId = "format", selected = 2)
+    } else {
+      updateRadioButtons(inputId = "format", selected = 1)
+    }
     info$run <- NULL
     trans$x <- NULL
     trans$y <- NULL
