@@ -503,16 +503,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
-                                                                        ),
-                                                                        div(style = "padding: 0px 0px; margin-top: -1em",
                                                                             conditionalPanel(
                                                                               condition = "output.data",
+                                                                              div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                                  tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
+                                                                              ),
                                                                               htmlOutput("information")
-                                                                            ),
-                                                                            conditionalPanel(
-                                                                              condition = "output.dataNone",
-                                                                              htmlOutput("informationNone")
                                                                             )
                                                                         )
                                                                       ),
@@ -1948,11 +1944,6 @@ server <- function(input,output,session) {
     return(!is.null(info$rangex))
   })
   outputOptions(output, "data", suspendWhenHidden = F)
-
-  output$dataNone <- reactive({
-    return(is.null(info$rangex))
-  })
-  outputOptions(output, "dataNone", suspendWhenHidden = F)
 
   output$residuals <- reactive({
     return(!is.null(trans$res))
