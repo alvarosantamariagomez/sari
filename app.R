@@ -2739,7 +2739,7 @@ server <- function(input,output,session) {
           ranges$y12 <- range(trans$y2, na.rm = T)
         }
       }
-      plot(trans$x2, trans$y2, type = symbol, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+      plot(trans$x2, trans$y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
       if (isTruthy(sigmas)) {
         color <- SARIcolors[3]
         alfa <- 0.2
@@ -9313,7 +9313,7 @@ server <- function(input,output,session) {
       const <- 0
       ylab <- units
     }
-    plot(x, y, type = s, pch = 20, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
+    plot(x, y, type = s, pch = 20, lwd = 2, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
     p <- par("usr")[3:4] # min/max Y-axis values
     pout <- pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
