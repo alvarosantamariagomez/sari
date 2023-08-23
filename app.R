@@ -773,6 +773,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               ),
                                                                               column(4,
                                                                                      div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                         checkboxInput(inputId = "fullSeries",
+                                                                                                       div("Full series",
+                                                                                                           helpPopup("If activated, the total length of the secondary series will be plotted. Otherwise, only the common time period with the primary series will be plotted.")),
+                                                                                                       value = F),
                                                                                          checkboxInput(inputId = "sameScale",
                                                                                                        div("Same scale",
                                                                                                            helpPopup("Force the y-axis of the secondary series on the right to have the same scale as the y-axis of the primary series on the left")),
@@ -1752,6 +1756,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 
 server <- function(input,output,session) {
+  
   toggleClass( # disabling clicking on SARI name (panic button)
     class = "disabled",
     selector = "#tab li a[data-value=0]"
@@ -2322,7 +2327,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
                  input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
-                 values$series1, values$series2, values$series3, values$series_all, obs()), {
+                 values$series1, values$series2, values$series3, values$series_all, input$fullSeries, obs()), {
     req(obs())
     if (input$tab == 4) {
       req(info$stop)
@@ -2385,6 +2390,16 @@ server <- function(input,output,session) {
     trans$x2 <- trans$x0[!is.na(data$z1)]
     trans$y <- trans$y0[!is.na(trans$y0)]
     trans$y <- trans$y[!is.na(series)]
+    if (isTruthy(input$fullSeries)) {
+      # show all points from primary & secondary series
+      info$minx <- min(trans$x0, na.rm = T)
+      info$maxx <- max(trans$x0, na.rm = T)
+    } else {
+      # show all points from primary series only
+      info$minx <- min(trans$x, na.rm = T)
+      info$maxx <- max(trans$x, na.rm = T)
+    }
+    ranges$x1 <- c(info$minx, info$maxx)
     info$miny <- min(trans$y, na.rm = T)
     info$maxy <- max(trans$y, na.rm = T)
     ids <- trans$x0[!is.na(trans$y0)] >= ranges$x1[1] & trans$x0[!is.na(trans$y0)] <= ranges$x1[2]
@@ -7777,12 +7792,15 @@ server <- function(input,output,session) {
               showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
               NULL
             } else {
-              # show all points from primary & secondary series
-              # info$minx <- min(table$x, na.rm = T)
-              # info$maxx <- max(table$x, na.rm = T)
-              # show all points from primary series only
-              info$minx <- min(table$x[!is.na(table$y1)], na.rm = T)
-              info$maxx <- max(table$x[!is.na(table$y1)], na.rm = T)
+              if (isTruthy(input$fullSeries)) {
+                # show all points from primary & secondary series
+                info$minx <- min(table$x, na.rm = T)
+                info$maxx <- max(table$x, na.rm = T)
+              } else {
+                # show all points from primary series only
+                info$minx <- min(table$x[!is.na(table$y1)], na.rm = T)
+                info$maxx <- max(table$x[!is.na(table$y1)], na.rm = T)
+              }
               ranges$x1 <- c(info$minx, info$maxx)
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
