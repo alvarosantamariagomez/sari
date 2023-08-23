@@ -3610,7 +3610,9 @@ server <- function(input,output,session) {
       unit <- ""
       units <- ""
     }
-    cat("Parameter units:", unit, "&", units, "\n\n")
+    if (input$sunits > 0 && isTruthy(info$run) && length(trans$results) > 0) {
+      cat("Parameter units:", unit, "&", units, "\n\n")
+    }
     if (isTruthy(input$midas)) {
       cat("MIDAS rate estimate ")
       cat(trans$midas_vel, "+/-", trans$midas_sig, units, "\n\n")
