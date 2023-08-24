@@ -2396,8 +2396,8 @@ server <- function(input,output,session) {
       info$maxx <- max(trans$x0, na.rm = T)
     } else {
       # show all points from primary series only
-      info$minx <- min(trans$x, na.rm = T)
-      info$maxx <- max(trans$x, na.rm = T)
+      info$minx <- min(c(trans$x, trans$xe), na.rm = T)
+      info$maxx <- max(c(trans$x, trans$xe), na.rm = T)
     }
     ranges$x1 <- c(info$minx, info$maxx)
     info$miny <- min(trans$y, na.rm = T)
