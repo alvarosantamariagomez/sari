@@ -2678,10 +2678,11 @@ server <- function(input,output,session) {
               updateTextInput(session, "TL0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               components <- c(components, "Logarithmic")
             }
-            updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = components, inline = T)
-            updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 1, inline = T, choiceNames = NULL, choiceValues = NULL)
             info$menu <- unique(c(info$menu, 4))
             updateCollapse(session, id = "menu", open = info$menu)
+            shinyjs::delay(1000, updateRadioButtons(session, inputId = "fitType", selected = 1))
+            shinyjs::delay(1100, updateCheckboxGroupInput(session, inputId = "model", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), inline = T, selected = components))
+            
           }
         }
       }
