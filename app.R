@@ -1905,6 +1905,9 @@ server <- function(input,output,session) {
   }, priority = 2000)
 
   # GUI reactive flags ####
+  output$print_out <- reactive({})
+  outputOptions(output, "print_out", suspendWhenHidden = F)
+  
   output$log <- reactive({
     return(!is.null(file$sitelog))
   })
@@ -1924,12 +1927,12 @@ server <- function(input,output,session) {
     return(!is.null(input$custom))
   })
   outputOptions(output, "custom", suspendWhenHidden = F)
-  
+
   output$series1 <- reactive({
     return(!is.null(file$primary))
   })
   outputOptions(output, "series1", suspendWhenHidden = F)
-  
+
   output$series2 <- reactive({
     return(!is.null(file$secondary))
   })
@@ -1959,17 +1962,17 @@ server <- function(input,output,session) {
     return("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0)
   })
   outputOptions(output, "rate", suspendWhenHidden = F)
-  
+
   output$mobile <- reactive({
     return(length(input$isMobile) > 0 && input$isMobile)
   })
   outputOptions(output, "mobile", suspendWhenHidden = F)
-  
+
   output$pmm <- renderUI({
     if (input$plateModel == 1) {
       model <- "ITRF2014_PMM.txt"
     } else if (input$plateModel == 2) {
-      model <- "NNR-MORVEL56.txt" 
+      model <- "NNR-MORVEL56.txt"
     } else if (input$plateModel == 3) {
       model <- "NNR-GSRM_v2.1.txt"
     }
@@ -5019,7 +5022,9 @@ server <- function(input,output,session) {
   )
   #Based on https://stackoverflow.com/questions/40420450/how-to-download-a-pdf-file-in-a-shiny-app
   output$print_out <- downloadHandler(
-    filename = paste0(gsub(" ", "_", version),".pdf"),
+    filename = function() {
+      paste0(gsub(" ", "_", version),".pdf")
+    },
     content = function(file) {
       file.copy("www/about.pdf", file)
     }
