@@ -1724,14 +1724,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                         title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
                                         tabPanel(div(style = "display: inline-block; font-size: 40px; color: #333333", "SARI"), value = 0, id = "SARI"),
                                         tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
-                                                 conditionalPanel(
-                                                   condition = "output.mobile == true",
-                                                   withMathJax(includeMarkdown("www/about_mobile.md"))
-                                                 ),
-                                                 conditionalPanel(
-                                                   condition = "output.mobile != true",
-                                                   withMathJax(includeMarkdown("www/about.md"))
-                                                 )
+                                                 uiOutput("about_file")
                                         ),
                                         
                                         # * component 1 ####
@@ -1905,8 +1898,17 @@ server <- function(input,output,session) {
   }, priority = 2000)
 
   # GUI reactive flags ####
-  output$print_out <- reactive({})
+  output$print_out <- reactive({}) # to avoid hidden() braking the downloadHandler()
   outputOptions(output, "print_out", suspendWhenHidden = F)
+  
+  output$about_file <- renderUI({
+    if (length(input$isMobile) > 0 && input$isMobile) {
+      file <- "www/about_mobile.md"
+    } else {
+      file <- "www/about.md"
+    }
+    withMathJax(includeMarkdown(file))
+  })
   
   output$log <- reactive({
     return(!is.null(file$sitelog))
