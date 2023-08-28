@@ -5593,18 +5593,15 @@ server <- function(input,output,session) {
               disable("delete_excluded")
             }
             enable("thresholdRes")
-            if (length(trans$mod) > 0 && length(trans$res) > 0) {
+            if (length(trans$filter) > 0) {
+              disable("thresholdResN")
+            } else {
               if (input$sigmas == T) {
                 enable("thresholdResN")
               } else {
                 disable("thresholdResN")
               }
-            } else {
-              disable("thresholdResN")
             }
-          } else if (length(trans$filter) > 0) {
-            enable("thresholdRes")
-            disable("thresholdResN")
           } else {
             disable("thresholdRes")
             disable("thresholdResN")
