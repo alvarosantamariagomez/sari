@@ -1985,19 +1985,18 @@ server <- function(input,output,session) {
 
   # Series summary ####
   output$information <- renderUI({
+    if (input$tunits == 1) {
+      units <- "days"
+    } else if (input$tunits == 2) {
+        units <- "weeks"
+    } else if (input$tunits == 3) {
+        units <- "years"
+    }
     line1 <- sprintf("Number of points = %d",info$points)
-    line2 <- paste("Series length =", info$rangex, "time units")
-    line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx,trans$x[1],info$decimalsx,trans$x[length(trans$x)])
-    line4 <- sprintf("Series sampling = %.*f time units",info$decimalsx,info$sampling)
+    line2 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
+    line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, trans$x[1],info$decimalsx,trans$x[length(trans$x)])
+    line4 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
     line5 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    HTML(paste(line1, line2, line3, line4, line5, sep = "<br/>"))
-  })
-  output$informationNone <- renderUI({
-    line1 <- "Number of points = 0"
-    line2 <- "Series length = 0 time units"
-    line3 <- "Series range = ? - ?"
-    line4 <- "Series sampling = 0 time units"
-    line5 <- "Series completeness = 0 %"
     HTML(paste(line1, line2, line3, line4, line5, sep = "<br/>"))
   })
 
@@ -2135,7 +2134,7 @@ server <- function(input,output,session) {
     inputs$high <- suppressWarnings(as.numeric(trimws(high_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
-  step_d <- reactive(input$step) %>% debounce(1000, priority = 1000)
+  step_d <- reactive(input$step) %>% debounce(2000, priority = 1000)
   observeEvent(c(step_d()), {
     if (grepl("^=", trimws(step_d()), perl = T)) {
       step <- try(eval(parse(text = sub("=", "", trimws(step_d())))), silent = T)
