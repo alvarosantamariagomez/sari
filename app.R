@@ -518,14 +518,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 2,
                                                                       tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                       fluidRow(
-                                                                        column(3,
-                                                                               div(style = "font-weight: bold", "Plot type")
-                                                                        ),
-                                                                        column(8, 
-                                                                               radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T)
-                                                                        )
-                                                                      ),
-                                                                      fluidRow(
                                                                         column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
                                                                                actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
@@ -557,6 +549,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                             )
                                                                           )
+                                                                      ),
+                                                                      fluidRow(
+                                                                        column(3,
+                                                                               div(style = "font-weight: bold", "Plot type")
+                                                                        ),
+                                                                        column(8, 
+                                                                               radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T)
+                                                                        )
                                                                       ),
                                                                       div(style = "font-weight: bold", "Plot options"),
                                                                       fluidRow(
