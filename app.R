@@ -40,6 +40,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(spectral, verbose = F, quietly = T) #v2.0
   library(strucchange, verbose = F, quietly = T) #v1.5-2
   library(tseries, verbose = F, quietly = T) #v0.10-48
+  library(leaflet, verbose = F, quietly = T) #v2.1.2
   # library(parallel)
   # library(optimParallel)
 })))
@@ -502,14 +503,26 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  )
                                                                           )
                                                                         ),
-                                                                        div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                            conditionalPanel(
-                                                                              condition = "output.data",
-                                                                              div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                                  tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
+                                                                        conditionalPanel(
+                                                                          condition = "output.data",
+                                                                          div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                              tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "output.location == true",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information1"))
                                                                               ),
-                                                                              htmlOutput("information")
+                                                                              column(6,
+                                                                                     leafletOutput(outputId = "map", width = "100%", height = "18vh")
+                                                                              )
                                                                             )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "output.location == false",
+                                                                            div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information2"))
+                                                                          )
                                                                         )
                                                                       ),
                                                                       style = "primary"),
@@ -1910,6 +1923,11 @@ server <- function(input,output,session) {
     withMathJax(includeMarkdown(file))
   })
   
+  output$location <- reactive({
+    return(isTruthy(input$station_lat) & isTruthy(input$station_lon))
+  })
+  outputOptions(output, "location", suspendWhenHidden = F)
+  
   output$log <- reactive({
     return(!is.null(file$sitelog))
   })
@@ -1984,7 +2002,7 @@ server <- function(input,output,session) {
   outputOptions(output, "pmm", suspendWhenHidden = F)
 
   # Series summary ####
-  output$information <- renderUI({
+  output$information1 <- output$information2 <- renderUI({
     if (input$tunits == 1) {
       units <- "days"
     } else if (input$tunits == 2) {
@@ -1997,7 +2015,7 @@ server <- function(input,output,session) {
     line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, trans$x[1],info$decimalsx,trans$x[length(trans$x)])
     line4 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
     line5 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    HTML(paste(line1, line2, line3, line4, line5, sep = "<br/>"))
+    HTML(paste(line1, line2, line3, line4, line5, sep = "<br/><br/>"))
   })
 
   # Debouncers & checks for reactive typed inputs ####
@@ -7403,6 +7421,7 @@ server <- function(input,output,session) {
         info$decimalsy <- 10
       }
       # Extracting coordinates if known and not already set
+      lat <- lon <- NULL
       spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
         if (info$format == 1) {
@@ -7413,34 +7432,49 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+              lat <- stationGeo[1] * 180/pi
+              lon <- stationGeo[2] * 180/pi
             } else if (url$server == "SONEL") {
               coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+              lat <- stationGeo[1] * 180/pi
+              lon <- stationGeo[2] * 180/pi
             } else if (url$server == "IGS") {
               tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
-              updateTextInput(inputId = "station_lat", value = tableAll[1,5])
-              updateTextInput(inputId = "station_lon", value = tableAll[1,6])
+              lat <- tableAll[1,5]
+              lon <- tableAll[1,6]
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             } else if (url$server == "JPL") {
               coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+              lat <- stationGeo[1] * 180/pi
+              lon <- stationGeo[2] * 180/pi
             } else if (url$server == "SIRGAS") {
               tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein), value = T, fixed = T)[1], comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
-              updateTextInput(inputId = "station_lat", value = tableAll[1,7])
-              updateTextInput(inputId = "station_lon", value = tableAll[1,8])
+              lat <- tableAll[1,7]
+              lon <- tableAll[1,8]
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             } else if (url$server == "EPOS") {
               stationsFromEPOS <- try(read.table(file = "www/EPOS_database.txt", header = T), silent = T)
               tableAll <- stationsFromEPOS[grepl(url$station, stationsFromEPOS$id), c(2,3)]
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
-              updateTextInput(inputId = "station_lat", value = tableAll[1,1])
-              updateTextInput(inputId = "station_lon", value = tableAll[1,2])
+              lat <- tableAll[1,1]
+              lon <- tableAll[1,2]
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             }
           } else {
             if (isTruthy(spotgins)) {
@@ -7449,24 +7483,46 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
               updateTextInput(session, inputId = "station_y", value = coordinates[2])
               updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+              lat <- stationGeo[1] * 180/pi
+              lon <- stationGeo[2] * 180/pi
             }
           }
         } else if (info$format == 2) {
           ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
           if (length(ref_pos) > 0) {
             updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
-            updateTextInput(inputId = "station_x", value = unlist(strsplit(ref_pos, split = " +"))[5])
-            updateTextInput(inputId = "station_y", value = unlist(strsplit(ref_pos, split = " +"))[6])
-            updateTextInput(inputId = "station_z", value = unlist(strsplit(ref_pos, split = " +"))[7])
+            x <- unlist(strsplit(ref_pos, split = " +"))[5]
+            y <- unlist(strsplit(ref_pos, split = " +"))[6]
+            z <- unlist(strsplit(ref_pos, split = " +"))[7]
+            updateTextInput(inputId = "station_x", value = x)
+            updateTextInput(inputId = "station_y", value = y)
+            updateTextInput(inputId = "station_z", value = z)
+            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
+            lat <- stationGeo[1] * 180/pi
+            lon <- stationGeo[2] * 180/pi
           }
         } else if (info$format == 3) {
           skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
           tableAll <- try(read.table(filein, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
           updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
-          updateTextInput(inputId = "station_lat", value = tableAll[1,21])
-          updateTextInput(inputId = "station_lon", value = tableAll[1,22] + 360)
+          lat <- tableAll[1,21]
+          lon <- tableAll[1,22] + 360
+          updateTextInput(inputId = "station_lat", value = lat)
+          updateTextInput(inputId = "station_lon", value = lon)
         }
       }
+      output$map <- renderLeaflet({
+        if (isTruthy(lat) && isTruthy(lon)) {
+          lon <- ifelse(lon > 180, lon - 360, lon)
+          leaflet(options = leafletOptions(dragging = F)) %>%
+            addTiles() %>%  # Add default OpenStreetMap map tiles
+            setView(lng = lon, lat = lat, zoom = 1) %>%
+            addMarkers(lng = lon, lat = lat)
+        } else {
+          NULL
+        }
+      })
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
         if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
@@ -10838,9 +10894,10 @@ server <- function(input,output,session) {
     removeNotification("no_cmd")
     # stream JSON file
     if (server == "EPOS") {
-      json <- suppressWarnings(try(jsonlite::stream_in(url(remote), verbose = F), silent = T)[,c("epoch","e","n","u")])
+      json <- suppressWarnings(try(jsonlite::stream_in(url(remote), verbose = F), silent = T))
       if (length(json) > 0) {
         down <- 0
+        json <- json[,c("epoch","e","n","u")]
         write.table(json, file = local, append = F, quote = F, row.names = F, col.names = F)
       } else {
         down <- 1
