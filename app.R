@@ -4111,11 +4111,13 @@ server <- function(input,output,session) {
         } else {
           c <- max(which(trans$spectra_old))
           p <- trans$psd[,c]
-          slope <- lm(log10(p) ~ log10(1/trans$fs))
-          slope$coef[2] <- -1*slope$coef[2]
-          regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
-          # lines(1/trans$fs, regression, col = SARIcolors[c], lwd = 3)
-          text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[c])
+          # slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
+          # if (isTruthy(slope)) {
+          #   slope$coef[2] <- -1*slope$coef[2]
+          #   regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
+          #   lines(1/trans$fs, regression, col = SARIcolors[c], lwd = 3)
+          #   text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[c])
+          # }
           lombx <- c(inputs$long_period,inputs$short_period)
           start <- median(tail(p, n = as.integer(length(p)/100)))
           lomby_flicker <- c(start*(inputs$long_period/inputs$short_period),start)
