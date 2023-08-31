@@ -515,7 +515,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information1"))
                                                                               ),
                                                                               column(6,
-                                                                                     leafletOutput(outputId = "map", width = "100%", height = "18vh")
+                                                                                     uiOutput("map")
                                                                               )
                                                                             )
                                                                           ),
@@ -1924,7 +1924,7 @@ server <- function(input,output,session) {
   })
   
   output$location <- reactive({
-    return(isTruthy(input$station_lat) & isTruthy(input$station_lon))
+    return(exists("leaflet", mode = "function") && isTruthy(input$station_lat) & isTruthy(input$station_lon))
   })
   outputOptions(output, "location", suspendWhenHidden = F)
   
@@ -2015,7 +2015,7 @@ server <- function(input,output,session) {
     line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, trans$x[1],info$decimalsx,trans$x[length(trans$x)])
     line4 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
     line5 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    HTML(paste(line1, line2, line3, line4, line5, sep = "<br/><br/>"))
+    HTML(paste("", line1, line2, line3, line4, line5, sep = "<br/>"))
   })
 
   # Debouncers & checks for reactive typed inputs ####
@@ -7435,6 +7435,8 @@ server <- function(input,output,session) {
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             } else if (url$server == "SONEL") {
               coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
@@ -7444,6 +7446,8 @@ server <- function(input,output,session) {
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             } else if (url$server == "IGS") {
               tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
@@ -7460,6 +7464,8 @@ server <- function(input,output,session) {
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             } else if (url$server == "SIRGAS") {
               tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein), value = T, fixed = T)[1], comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
@@ -7486,6 +7492,8 @@ server <- function(input,output,session) {
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             }
           }
         } else if (info$format == 2) {
@@ -7501,6 +7509,8 @@ server <- function(input,output,session) {
             stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
             lat <- stationGeo[1] * 180/pi
             lon <- stationGeo[2] * 180/pi
+            updateTextInput(inputId = "station_lat", value = lat)
+            updateTextInput(inputId = "station_lon", value = lon)
           }
         } else if (info$format == 3) {
           skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
@@ -7512,17 +7522,17 @@ server <- function(input,output,session) {
           updateTextInput(inputId = "station_lon", value = lon)
         }
       }
-      output$map <- renderLeaflet({
-        if (isTruthy(lat) && isTruthy(lon)) {
-          lon <- ifelse(lon > 180, lon - 360, lon)
-          leaflet(options = leafletOptions(dragging = F)) %>%
-            addTiles() %>%  # Add default OpenStreetMap map tiles
-            setView(lng = lon, lat = lat, zoom = 1) %>%
-            addMarkers(lng = lon, lat = lat)
-        } else {
-          NULL
-        }
-      })
+      if (exists("leaflet", mode = "function") && isTruthy(lat) && isTruthy(lon)) {
+        lon <- ifelse(lon > 180, lon - 360, lon)
+        map <- leaflet(options = leafletOptions(dragging = T)) %>%
+          addTiles() %>%
+          setView(lng = lon, lat = lat, zoom = 2) %>%
+          addMarkers(lng = lon, lat = lat)
+        output$myMap = renderLeaflet(map)
+        output$map <- renderUI({
+          suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
+        })
+      }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
         if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
