@@ -1,5 +1,40 @@
 # **SARI changelog**
 
+# septiembre 2023 [2023.09]
+
+### Fixed
+- Updated dependencies for the SARI Docker container.
+- Zooming in on the primary, secondary and residual series, with and without the same scale option
+- Loading a SARI file with the new debouncers set in the previous version
+- Reactivity of the histogram after changes in the series or residuals
+- Checking wrong input values of the scale factor option for the secondary series
+- Removing the station1/station2 values and keeping the product1/product2 values when the download of the remote series fails
+- Computing the plate motion using information from the primary series only
+- Internal links of the online help file from desktop sessions
+- Allowing printing the help file into a PDF file after the UI has been temporarily hidden by the splash screen when loading the page
+
+### Changed
+- Using a more colorblind-friendly palette for the plots
+- Wider lines for the series, residual and periodogram plots
+- Rearranging the layout of a few options for a better user experience
+- Automatically changing the series format option by looking at the name of the uploaded file
+- Increasing the shinyapps instance startup timeout to 30 s
+- Improved handling of the input offset epochs, skipping those irrelevant without stopping the analysis
+- Time reference of the exponential function set at the beginning for better fitting co-seismic displacements
+- Showing the PSD of the noise model only when the PSD of the residuals is plotted
+- Showing the series information block only when the series have been read
+- Improving the centering of the secondary series over the primary series with the same scale option
+- Allowing removing a plate motion model from 1D series
+- Allowing downloading the results when only removing a plate motion model
+
+### Added
+- New package dependency: leaflet
+- Showing location map when the station coordinates are known
+- EPOS and SIRGAS servers
+- Showing the units of the series and of the estimated parameters when they are known
+- New option to plot the total length of the secondary series or only the period in common with the primary series
+- Adding the plate model and plate name in the downloaded file
+
 # agosto 2023 [2023.08]
 
 ### Fixed

@@ -19,6 +19,7 @@ https://www.rstudio.com/products/rstudio/download/
 
 3) With R (and RStudio) installed, some extras may be needed before installing the SARI dependencies
 
+
 3.1) If using Windows: install Rtools following these instructions  
 https://cran.r-project.org/bin/windows/Rtools/
 
@@ -38,7 +39,6 @@ sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontc
 `
 
 
-
 4) Install all the R packages indicated below and their dependencies from CRAN. There are several ways of installing the required packages:  
 
 4.1) On Rstudio, go to Tools -> Install Packages  
@@ -46,16 +46,16 @@ Then copy&paste the following list of packages separated by spaces or commas:
 
 data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach
 
-4.2) On the R/RStudio console, the following command will install the packages at once:  
+4.2) On the R/RStudio console, the following command will install all the packages:  
 `
-install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt))
+install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt"))
 `
 
 4.3) The above two methods will either install package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
 
 
 
-5) In addition, the package mvcwt needs to be downloaded from here:  
+5) In addition, the package "mvcwt" needs to be downloaded from here:  
 https://cran.r-project.org/src/contrib/Archive/mvcwt/
 
 To install this package there are two options:
@@ -67,157 +67,234 @@ To install this package there are two options:
 install.packages("/path/to/the/mvcwt/tar.gz/file")
 `
 
+
+6) The package "leaflet" is optional. If installed, this package allows adding an interactive location map when the GNSS station coordinates are known. This package can be installed like the others, but it requires installing the GDAL library first, at least in order to compile the package on a Linux system. For Windows, this can be avoided if installing the package binary file.  
+More information on the GDAL library here:  
+https://gdal.org/download.html
+
+
+
 The list below shows the package versions used when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce different results. 
 
-         Package    Version
-         askpass        1.1
-       base64enc      0.1-3
-          bitops      1.0-7
-            brew      1.0-8
-            brio      1.1.3
-           bslib      0.5.0
-          cachem      1.0.8
-           Cairo      1.6-0
-           callr      3.7.3
-             cli      3.6.1
-           clipr      0.8.0
-      colorspace      2.1-0
-      commonmark      1.9.0
-           cpp11      0.4.3
-          crayon      1.5.2
-     credentials      1.3.2
-            curl      5.0.0
-      data.table     1.14.8
-            desc      1.4.2
-        devtools      2.4.5
-         diffobj      0.3.5
-          digest     0.6.33
-             dlm      1.1-6
-       dotCall64      1.0-2
-         downlit      0.4.2
-        ellipsis      0.3.2
-        evaluate       0.20
-           fansi      1.0.4
-          farver      2.1.1
-         fastmap      1.1.1
-          fields       14.1
-     fontawesome      0.5.1
-         foreach      1.5.2
-              fs      1.6.3
-        generics      0.1.3
-            gert      1.9.2
-         ggplot2      3.4.1
-              gh      1.4.0
-        gitcreds      0.1.2
-            glue      1.6.2
-       gridExtra        2.3
-          gtable      0.3.1
-           highr       0.10
-       htmltools      0.5.5
-     htmlwidgets      1.6.1
-          httpuv     1.6.11
-            httr      1.4.5
-           httr2      0.2.2
-             ini      0.3.1
-         isoband      0.2.7
-       iterators     1.0.14
-       jquerylib      0.1.4
-        jsonlite      1.8.7
-           knitr       1.42
-        labeling      0.4.2
-           later      1.3.1
-       lifecycle      1.0.3
-       lubridate      1.9.2
-        magrittr      2.0.3
-            maps      3.4.1
-        markdown        1.5
-     matrixStats     0.63.0
-         memoise      2.0.1
-            mime       0.12
-          miniUI    0.1.1.1
-          mnormt      2.1.1
-         munsell      0.5.0
-           mvcwt      1.3.1
-        numDeriv 2016.8-1.1
-         openssl      2.0.5
-   optimParallel      1.0-2
-         pbapply      1.7-0
-          pillar      1.8.1
-        pkgbuild      1.4.0
-       pkgconfig      2.0.3
-         pkgdown      2.0.7
-         pkgload      1.3.2
-         plotrix      3.8-2
-          pracma      2.4.2
-          praise      1.0.0
-     prettyunits      1.1.1
-        processx      3.8.0
-         profvis      0.3.7
-        promises    1.2.0.1
-              ps      1.7.2
-           psych      2.2.9
-           purrr      1.0.1
-        quadprog      1.5-8
-        quantmod     0.4.20
-              R6      2.5.1
-            ragg      1.2.5
-        rappdirs      0.3.3
-     rasterImage      0.4.0
-       rcmdcheck      1.4.0
-    RColorBrewer      1.1-3
-            Rcpp     1.0.11
-           RCurl  1.98-1.12
-        rematch2      2.1.2
-         remotes      2.4.2
-     RhpcBLASctl    0.23-42
-           rlang      1.1.1
-       rmarkdown       2.20
-        roxygen2      7.2.3
-       rprojroot      2.0.3
-      rstudioapi       0.14
-       rversions      2.1.2
-        sandwich      3.0-2
-            sass      0.4.7
-          scales      1.2.1
-     sessioninfo      1.2.2
-           shiny    1.7.4.1
-         shinyBS     0.61.1
- shinycssloaders 1.0.0.9011
-         shinyjs      2.1.0
-     shinythemes      1.2.0
-     sourcetools    0.1.7-1
-            spam      2.9-1
-        spectral        2.0
-         stringi     1.7.12
-         stringr      1.5.0
-     strucchange      1.5-3
-             sys      3.4.1
-     systemfonts      1.0.4
-        testthat      3.1.6
-     textshaping      0.3.6
-          tibble      3.1.8
-      timechange      0.2.0
-         tinytex       0.44
-         tseries    0.10-53
-             TTR     0.24.3
-      urlchecker      1.0.1
-         usethis      2.1.6
-            utf8      1.2.3
-           vctrs      0.5.2
-         viridis      0.6.2
-     viridisLite      0.4.1
-           waldo      0.4.0
-         whisker      0.4.1
-           withr      2.5.0
-            xfun       0.37
-             XML   3.99-0.3
-            xml2      1.3.3
-           xopen      1.0.0
-          xtable      1.8-4
-             xts     0.13.0
-            yaml      2.3.7
-             zip      2.2.2
-             zoo     1.8-11
+              Package    Version
+                   BH   1.81.0-1
+                RCurl  1.98-1.12
+                 Rcpp     1.0.11
+          RgoogleMaps    1.4.5.3
+                  XML  3.99-0.14
+              anytime      0.3.9
+            assertive      0.3-6
+       assertive.base      0.0-9
+       assertive.code      0.0-3
+       assertive.data      0.0-3
+    assertive.data.uk      0.0-2
+    assertive.data.us      0.0-2
+  assertive.datetimes      0.0-3
+      assertive.files      0.0-2
+   assertive.matrices      0.0-2
+     assertive.models      0.0-2
+    assertive.numbers      0.0-2
+ assertive.properties      0.0-4
+ assertive.reflection      0.0-5
+       assertive.sets      0.0-3
+    assertive.strings      0.0-3
+      assertive.types      0.0-3
+               bitops      1.0-7
+                bslib      0.4.0
+           cellranger      1.1.0
+                  cli      3.6.1
+           commonmark      1.8.0
+               crayon      1.5.1
+            crosstalk      1.2.0
+               digest     0.6.29
+                dplyr      1.0.8
+          fontawesome      0.4.0
+                   fs      1.5.2
+               gargle      1.2.0
+                ggmap      3.0.2
+                 glue      1.6.2
+          googledrive      2.0.0
+        googlesheets4      1.0.0
+            htmltools      0.5.4
+          htmlwidgets      1.6.1
+               httpuv      1.6.5
+                  ids      1.0.1
+                 jpeg     0.1-10
+             jsonlite      1.8.0
+             lazyeval      0.2.2
+              leaflet      2.1.2
+    leaflet.providers     1.13.0
+            lifecycle      1.0.3
+             magrittr      2.0.3
+                 maps      3.4.1
+              memoise      2.0.1
+                nlmrt   2016.3.2
+              openssl      2.1.0
+        optimParallel      1.0-2
+              packrat      0.7.0
+               pillar      1.9.0
+                 plyr      1.8.8
+                  png      0.1-8
+               pracma      2.3.8
+              profvis      0.3.7
+                purrr      1.0.2
+               raster     3.6-20
+               rdrop2    0.8.2.1
+             reactlog      1.1.0
+              rematch      1.0.1
+                 renv      1.0.2
+                rlang      1.1.1
+            rmarkdown       2.11
+            rsconnect     0.8.29
+                 sass      0.4.2
+                shiny      1.7.3
+         shinyWidgets      0.7.6
+      shinycssloaders 1.0.0.9000
+      shinyscreenshot      0.2.0
+                   sp      2.0-0
+              stringr      1.5.0
+                terra     1.7-23
+               tibble      3.2.1
+                tidyr      1.3.0
+           tidyselect      1.2.0
+                 uuid      1.0-4
+                vctrs      0.6.3
+                withr      2.5.0
+              askpass        1.1
+            base64enc      0.1-3
+                 brew      1.0-6
+                 brio      1.1.2
+                bslib      0.3.1
+               cachem      1.0.6
+                callr      3.7.0
+                  cli      3.1.0
+                clipr      0.7.1
+           colorspace      2.0-2
+           commonmark        1.7
+                cpp11      0.4.1
+               crayon      1.4.2
+          credentials      1.3.1
+                 curl      4.3.2
+           data.table     1.14.2
+                 desc      1.4.0
+             devtools      2.4.2
+              diffobj      0.3.5
+               digest     0.6.28
+                  dlm      1.1-5
+           doParallel     1.0.16
+            dotCall64      1.0-1
+             ellipsis      0.3.2
+             evaluate       0.14
+                fansi      0.5.0
+               farver      2.1.0
+              fastmap      1.1.0
+               fields       13.3
+          fontawesome      0.2.2
+              foreach      1.5.1
+                   fs      1.5.0
+             generics      0.1.1
+                 gert      1.4.3
+              ggplot2      3.3.5
+                   gh      1.3.0
+             gitcreds      0.1.1
+                 glue      1.5.0
+            gridExtra        2.3
+               gtable      0.3.0
+                highr        0.9
+            htmltools      0.5.2
+               httpuv      1.6.3
+                 httr      1.4.2
+                  ini      0.3.1
+              isoband      0.2.5
+            iterators     1.0.13
+            jquerylib      0.1.4
+             jsonlite      1.7.2
+                knitr       1.36
+             labeling      0.4.2
+                later      1.3.0
+            lifecycle      1.0.1
+            lubridate      1.8.0
+             magrittr      2.0.1
+                 maps      3.4.0
+             markdown        1.1
+          matrixStats     0.61.0
+              memoise      2.0.0
+                 mime       0.12
+               mnormt      2.0.2
+              munsell      0.5.0
+                mvcwt      1.3.1
+             numDeriv 2016.8-1.1
+              openssl      1.4.5
+              pbapply      1.5-0
+               pillar      1.6.4
+             pkgbuild      1.2.0
+            pkgconfig      2.0.3
+              pkgload      1.2.3
+              plotrix      3.8-2
+               praise      1.0.0
+          prettyunits      1.1.1
+             processx      3.5.2
+             promises    1.2.0.1
+                   ps      1.6.0
+                psych      2.1.9
+                purrr      0.3.4
+             quadprog      1.5-8
+             quantmod     0.4.18
+                   R6      2.5.1
+             rappdirs      0.3.3
+          rasterImage      0.4.0
+            rcmdcheck      1.4.0
+         RColorBrewer      1.1-2
+                 Rcpp      1.0.7
+             rematch2      2.1.2
+              remotes      2.4.1
+          RhpcBLASctl 0.21-247.1
+                rlang     0.4.12
+            rmarkdown       2.11
+             roxygen2      7.1.2
+            rprojroot      2.0.2
+           rstudioapi       0.13
+            rversions      2.1.1
+             sandwich      3.0-1
+                 sass      0.4.0
+               scales      1.1.1
+            segmented      1.3-4
+          sessioninfo      1.2.1
+                shiny      1.7.1
+              shinyBS       0.61
+      shinycssloaders      1.0.0
+              shinyjs      2.0.0
+          shinythemes      1.2.0
+          sourcetools      0.1.7
+                 spam      2.7-0
+             spectral        2.0
+              stringi      1.7.5
+              stringr      1.4.0
+          strucchange      1.5-2
+                  sys        3.4
+             testthat      3.1.0
+               tibble      3.1.6
+              tinytex       0.35
+              tmvnsim      1.0-2
+         translations      4.1.2
+              tseries    0.10-49
+                  TTR     0.24.2
+              usethis      2.1.3
+                 utf8      1.2.2
+                vctrs      0.3.8
+              viridis      0.6.2
+          viridisLite      0.4.0
+                waldo      0.3.1
+              whisker        0.4
+                withr      2.4.2
+                 xfun       0.28
+                 xml2      1.3.2
+                xopen      1.0.0
+               xtable      1.8-4
+                  xts     0.12.1
+                 yaml      2.2.1
+                  zip      2.2.0
+                  zoo      1.8-9
 
 This list can be extracted with:  
 `
@@ -233,9 +310,9 @@ devtools::install_github("daattali/shinycssloaders")
 
 
 
-6) Once all the packages are installed, there are three ways to run SARI:
+7) Once all the packages are installed, there are three ways to run SARI:
 
-6.1) On RStudio: clone/download the SARI repo, open the app.R script and use one of these:
+7.1) On RStudio: clone/download the SARI repo, open the app.R script and use one of these:
 
 click on RunApp (run external)
 
@@ -247,9 +324,9 @@ or
 
 Ctrl + Shift + S
 
-6.2) On the R/RStudio console type one of these:
+7.2) On the R/RStudio console type one of these:
 
-To run SARI without cloning/downloading the repo:  
+To run SARI without cloning the repo:  
 `
 library(shiny)  
 runGitHub("sari", "alvarosantamariagomez", launch.browser=T)
@@ -262,7 +339,7 @@ After cloning/downloading the SARI repo:
 runApp("/path/to/the/downloaded/SARI/app.R/file")
 `
 
-6.3) On a Unix-like terminal using the sari.sh shell script located in the /scripts folder of the SARI repo.  
+7.3) On a Unix-like terminal using the sari.sh shell script located in the /scripts folder of the SARI repo.  
 This shell script can also be used to launch a local SARI session with Docker or a remote SARI session on Shinyapps.io without installing SARI.
 
 

@@ -4,7 +4,7 @@ urlcolor: #2297E6
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version agosto 2023'
+title: 'SARI documentation - version septiembre 2023'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -65,7 +65,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *agosto 2023*  --  "Gimme all ya got Kit!"
+Current SARI version: *septiembre 2023*  --  "Shall we play a game?"
 
 -----------------
 

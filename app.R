@@ -45,12 +45,12 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-devmode(TRUE)
+# devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI agosto 2023"
+version <- "SARI septiembre 2023"
 
 # Some GUI functions
 
@@ -10399,7 +10399,7 @@ server <- function(input,output,session) {
             if (file.exists("www/NGL_database.txt")) {
               stations_available <- readLines("www/NGL_database.txt", warn = F)
             } else {
-              dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+              dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
               if (isTruthy(dir_contents)) {
                 stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
                 writeLines(stations_available, "www/NGL_database.txt", sep = "\n")
