@@ -45,7 +45,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -6690,6 +6690,7 @@ server <- function(input,output,session) {
                           file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     if (input$tab < 1) {
+      if (messages > 0) cat(file = stderr(), "WARNING: tab number is ", input$tab, "\n")
       showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
