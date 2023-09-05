@@ -5775,7 +5775,7 @@ server <- function(input,output,session) {
             url$file <- NULL
             req(info$stop)
           }
-          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']]),NULL)
+          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']],NULL))
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
@@ -5810,7 +5810,7 @@ server <- function(input,output,session) {
               updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
               # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
-                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']]),NULL)
+                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],NULL))
                 if (isTruthy(url_info)) {
                   url$station2 <- url_info[1]
                   url$file2 <- url_info[2]
@@ -10381,6 +10381,8 @@ server <- function(input,output,session) {
         variable <- "station2"
       }
     }
+    server <- toupper(server)
+    product <- toupper(product)
     # NGL ####
     if (server == "NGL") {
       format <- 3
@@ -10620,12 +10622,13 @@ server <- function(input,output,session) {
         pattern2 <- ".pos"
         name <- paste0(pattern1,toupper(station),pattern2)
       }
+      url <- "https://geodesy-plotter.ipgp.fr/"
       if (product == "SPOTGINS_POS" || product == "UGA_POS") {
         if (isTruthy(station) && !isTruthy(series)) {
-          file <- paste0("https://gnss-terresolide.ipgp.fr/data/",toupper(station),"/",name)
+          file <- paste0(url,"data/",toupper(station),"/",name)
         } else {
           withBusyIndicatorServer(variable, {
-            url <- "https://gnss-terresolide.ipgp.fr/api/1.0/products/?output=csv"
+            url <- paste0(url,"api/1.0/products/?output=csv")
             dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
             if (isTruthy(dir_contents)) {
               stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
