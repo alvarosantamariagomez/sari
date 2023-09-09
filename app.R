@@ -985,46 +985,39 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           conditionalPanel(
                                                                             condition = "input.fitType == 2",
                                                                             fluidRow(
-                                                                              column(6,
+                                                                              column(3,
+                                                                                     div(style = "font-weight: bold", "KF type")
+                                                                                     ),
+                                                                              column(5,
                                                                                      radioButtons(inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T)
                                                                               ),
-                                                                              column(width = 6, offset = 0, style = "margin-top:-2em; padding: 0px 40px 0px 0px", align = "right",
+                                                                              column(width = 4, offset = 0, style = "margin-top:-2em; padding: 0px 40px 0px 0px", align = "right",
                                                                                      withBusyIndicatorUI(
                                                                                        actionButton(inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                                      )
                                                                               )
                                                                             ),
+                                                                            checkboxInput(inputId = "errorm",
+                                                                                          div("Optimize measurement noise",
+                                                                                              helpPopup("Estimating the measurement noise within bounds and with respect to the provided process noise (WARNING: several iterations of the KF fit)")),
+                                                                                          value = F),
                                                                             fluidRow(
-                                                                              column(7,
-                                                                                     checkboxInput(inputId = "errorm",
-                                                                                                   div("Compute measurement noise",
-                                                                                                       helpPopup("To estimate the measurement noise within the provided bounds (WARNING: slower KF fit)")),
-                                                                                                   value = F)
+                                                                              column(4,
+                                                                                     textInput(inputId = "ObsError",
+                                                                                               div("Measurement noise",
+                                                                                                   helpPopup("Measurement standard deviation in the same units as the observations. If empty, an approximate value will be used.")),
+                                                                                               value = "")
                                                                               ),
                                                                               conditionalPanel(
-                                                                                condition = "input.errorm == false",
-                                                                                column(5,
-                                                                                       textInput(inputId = "ObsError",
-                                                                                                 div("Measurement noise",
-                                                                                                     helpPopup("Measurement standard deviation in the same units as the observations. If empty, an approximate value will be used.")),
-                                                                                                 value = "")
-                                                                                )
-                                                                              )
-                                                                            ),
-                                                                            fluidRow(
-                                                                              conditionalPanel(
                                                                                 condition = "input.errorm == true",
-                                                                                column(3, style = "padding: 0px 5px 0px 5px;", align = "left",
+                                                                                column(4, align = "left",
                                                                                        textInput(inputId = "min_optirange",
                                                                                                  div("Min bound",
                                                                                                      helpPopup("Lower & upper bounds of the measurement standard deviation in the same units as the observations")),
                                                                                                  value = "")
                                                                                 ),
-                                                                                column(3,
+                                                                                column(4,
                                                                                        textInput(inputId = "max_optirange", label = "Max bound", value = "")
-                                                                                ),
-                                                                                column(6,
-                                                                                       htmlOutput("noise")
                                                                                 )
                                                                               )
                                                                             )
@@ -3215,27 +3208,6 @@ server <- function(input,output,session) {
         if (messages > 1) cat(file = stderr(), m$model, "\n")
         apriori <- as.numeric(m$apriori)
         unc_ini <- as.numeric(m$error)^2
-        sigmaR <- NULL
-        if (isTruthy(input$ObsError)) {
-          if (isTruthy(as.numeric(input$ObsError)) && as.numeric(input$ObsError) > 0) {
-            if (isTruthy(input$sigmas)) {
-              sigmaR <- as.numeric(input$ObsError) * sy / median(sy)
-            } else {
-              sigmaR <- rep(as.numeric(input$ObsError), length(trans$y))
-            }
-          } else {
-            showNotification("The input measurement error is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_obserror", type = "error", session = getDefaultReactiveDomain())
-          }
-        }
-        if (!isTruthy(sigmaR)) {
-          sigmaR <- info$noise/5
-          updateTextInput(session, "ObsError", value = sigmaR)
-          if (isTruthy(input$sigmas)) {
-            sigmaR <- sigmaR * sy / median(sy)
-          } else {
-            sigmaR <- rep(sigmaR, length(trans$y))
-          }
-        }
         #Measurement function
         FFfunction <- function(x,k) {
           e <- matrix(0, nrow = k, ncol = length(x))
@@ -3276,43 +3248,67 @@ server <- function(input,output,session) {
             W = diag(m$processNoise))
           UKF(y = data, mod = mod, FFfunction = FFfunction, GGfunction = GGfunction, simplify = T, logLik = T)$logLik
         }
+        sigmaR <- NULL
+        if (isTruthy(input$ObsError)) {
+          if (isTruthy(as.numeric(input$ObsError)) && as.numeric(input$ObsError) > 0) {
+            sigmaR <- as.numeric(input$ObsError)
+          } else {
+            showNotification("The input measurement error is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_obserror", type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          sigmaR <- info$noise/5
+          updateTextInput(session, "ObsError", value = sprintf("%.*f", info$decimalsy, sigmaR))
+        }
         if (isTruthy(input$errorm)) {
           if (isTruthy(inputs$min_optirange)) {
             min_optirange <- inputs$min_optirange
           } else {
             min_optirange <- info$noise/10
-            updateTextInput(session, "min_optirange", value = min_optirange)
+            updateTextInput(session, "min_optirange", value = sprintf("%.*f", info$decimalsy, min_optirange))
           }
           if (isTruthy(inputs$max_optirange)) {
             max_optirange <- inputs$max_optirange
           } else {
             max_optirange <- info$noise*10
-            updateTextInput(session, "max_optirange", value = max_optirange)
+            updateTextInput(session, "max_optirange", value = sprintf("%.*f", info$decimalsy, max_optirange))
           }
           if (min_optirange > 0 && max_optirange > 0 && max_optirange > min_optirange) {
             if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
             info$KFiter <- 0
-            mod <- optim(log(median(sigmaR)^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
+            mod <- optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
             removeNotification("KF_iter")
             if (mod$convergence == 0) {
               sigmaR <- sqrt(exp(mod$par))
               seParms <- sqrt(diag(solve(mod$hessian)))
+              updateTextInput(session, "ObsError", value = sprintf("%.*f", info$decimalsy, sigmaR))
               if (isTruthy(seParms)) {
                 rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
-              } else {
-                rangoR <- sqrt(exp(mod$par))
+                updateTextInput(session, "min_optirange", value = sprintf("%.*f", info$decimalsy, rangoR[1]))
+                updateTextInput(session, "max_optirange", value = sprintf("%.*f", info$decimalsy, rangoR[2]))
+                updateCheckboxInput(inputId = "errorm", value = F)
+              # } else {
+              #   rangoR <- sqrt(exp(mod$par))
               }
-            } else {
-              rangoR <- c("?", "?")
+            # } else {
+            #   rangoR <- c("?", "?")
             }
-            output$noise <- renderUI({
-              line1 <- "Estimated meas. noise (95% CI):"
-              line2 <- paste0("[",paste(rangoR, collapse = " "),"]")
-              HTML(paste(line1, line2, sep = '<br/>'))
-            })
+            # output$noise <- renderUI({
+            #   line1 <- "Estimated meas. noise (95% CI):"
+            #   line2 <- paste0("[",paste(rangoR, collapse = " "),"]")
+            #   HTML(paste(line1, line2, sep = '<br/>'))
+            # })
           } else {
             showNotification(HTML("The input measurement error bounds are not valid.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
           }
+        }
+        if (!isTruthy(sigmaR)) {
+          sigmaR <- info$noise/5
+          updateTextInput(session, "ObsError", value = sprintf("%.*f", info$decimalsy, sigmaR))
+        }
+        if (isTruthy(input$sigmas)) {
+          sigmaR <- sigmaR * sy / median(sy)
+        } else {
+          sigmaR <- rep(sigmaR, length(trans$y))
         }
         ex1 <- list(m0 = apriori, C0 = diag(unc_ini), V = sigmaR^2, W = diag(m$processNoise))
         kfs <- NULL
@@ -10079,6 +10075,9 @@ server <- function(input,output,session) {
 
       ## Increase the process noise by a factor depending on the number of missing observations from the last one
       ## This implies the series must be sampled regularly with data gaps
+      if (!isTruthy(mod$V[i])) {
+        mod$V[i] <- mod$V[1] # ugly but necessary for running the measurement noise optimization only
+      }
       svdV <- La.svd(mod$V[i], nu = 0)
       Uv <- t(svdV$vt)
       Dv <- sqrt(svdV$d)
