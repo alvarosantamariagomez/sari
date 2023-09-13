@@ -1814,7 +1814,7 @@ server <- function(input,output,session) {
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
                           midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
-                          noise = NULL, fs = NULL, names = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
+                          noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, plate = NULL, plateName = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL)
@@ -3167,6 +3167,7 @@ server <- function(input,output,session) {
     removeNotification("bad_kf")
     removeNotification("kf_not_valid")
     removeNotification("bad_obserror")
+    removeNotification("bad_sigmaPoints")
     updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
     output$offsetFound <- renderUI({
       NULL
@@ -3200,6 +3201,7 @@ server <- function(input,output,session) {
         trans$results <- NULL
         m <- model(x,y)
         req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
+        trans$KFnames <- unlist(m$nouns)
         if (!isTruthy(m) && length(m$apriori) < 2) {
           showNotification(HTML("Not enough model components to run the KF.<br>Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_model", type = "error", session = getDefaultReactiveDomain())
           info$run <- F
@@ -3257,20 +3259,23 @@ server <- function(input,output,session) {
           }
         } else {
           sigmaR <- info$noise/5
-          updateTextInput(session, "ObsError", value = sprintf("%.*f", info$decimalsy, sigmaR))
+          max_decimals <- signifdecimal(sigmaR, F) + 2
+          updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
         }
         if (isTruthy(input$errorm)) {
           if (isTruthy(inputs$min_optirange)) {
             min_optirange <- inputs$min_optirange
           } else {
             min_optirange <- info$noise/10
-            updateTextInput(session, "min_optirange", value = sprintf("%.*f", info$decimalsy, min_optirange))
+            max_decimals <- signifdecimal(min_optirange, F) + 2
+            updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, min_optirange))
           }
           if (isTruthy(inputs$max_optirange)) {
             max_optirange <- inputs$max_optirange
           } else {
             max_optirange <- info$noise*10
-            updateTextInput(session, "max_optirange", value = sprintf("%.*f", info$decimalsy, max_optirange))
+            max_decimals <- signifdecimal(max_optirange, F) + 2
+            updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, max_optirange))
           }
           if (min_optirange > 0 && max_optirange > 0 && max_optirange > min_optirange) {
             if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
@@ -3280,30 +3285,24 @@ server <- function(input,output,session) {
             if (mod$convergence == 0) {
               sigmaR <- sqrt(exp(mod$par))
               seParms <- sqrt(diag(solve(mod$hessian)))
-              updateTextInput(session, "ObsError", value = sprintf("%.*f", info$decimalsy, sigmaR))
+              max_decimals <- signifdecimal(sigmaR, F) + 2
+              updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
               if (isTruthy(seParms)) {
                 rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
-                updateTextInput(session, "min_optirange", value = sprintf("%.*f", info$decimalsy, rangoR[1]))
-                updateTextInput(session, "max_optirange", value = sprintf("%.*f", info$decimalsy, rangoR[2]))
+                max_decimals <- max(signifdecimal(rangoR, F)) + 2
+                updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, rangoR[1]))
+                updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, rangoR[2]))
                 updateCheckboxInput(inputId = "errorm", value = F)
-              # } else {
-              #   rangoR <- sqrt(exp(mod$par))
               }
-            # } else {
-            #   rangoR <- c("?", "?")
             }
-            # output$noise <- renderUI({
-            #   line1 <- "Estimated meas. noise (95% CI):"
-            #   line2 <- paste0("[",paste(rangoR, collapse = " "),"]")
-            #   HTML(paste(line1, line2, sep = '<br/>'))
-            # })
           } else {
             showNotification(HTML("The input measurement error bounds are not valid.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
           }
         }
         if (!isTruthy(sigmaR)) {
           sigmaR <- info$noise/5
-          updateTextInput(session, "ObsError", value = sprintf("%.*f", info$decimalsy, sigmaR))
+          max_decimals <- signifdecimal(rangoR, F) + 2
+          updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
         }
         if (isTruthy(input$sigmas)) {
           sigmaR <- sigmaR * sy / median(sy)
@@ -3779,7 +3778,7 @@ server <- function(input,output,session) {
         showNotification(HTML("The input longest period is out of bounds.<br>Using the longest valid value instead."), action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "warning", session = getDefaultReactiveDomain())
         long_period <- max_period - 1/10^(info$decimalsx + 1)
         inputs$long_period <- long_period
-        updateTextInput(session, "long_period", value = long_period)
+        updateTextInput(session, "long_period", value = sprintf("%.*f", info$decimalsx, long_period))
         trans$fs <- NULL
         req(info$stop)
       } else {
@@ -3790,8 +3789,8 @@ server <- function(input,output,session) {
       short_period <- min_period
       inputs$long_period <- long_period
       inputs$short_period <- short_period
-      updateTextInput(session, "short_period", value = short_period)
-      updateTextInput(session, "long_period", value = long_period)
+      updateTextInput(session, "short_period", value = sprintf("%.*f", info$decimalsx, short_period))
+      updateTextInput(session, "long_period", value = sprintf("%.*f", info$decimalsx, long_period))
       ranges$x3 <- NULL
       trans$fs <- NULL
       req(info$stop)
@@ -3807,8 +3806,8 @@ server <- function(input,output,session) {
       short_period <- min_period
       inputs$long_period <- long_period
       inputs$short_period <- short_period
-      updateTextInput(session, "short_period", value = short_period)
-      updateTextInput(session, "long_period", value = long_period)
+      updateTextInput(session, "short_period", value = sprintf("%.*f", info$decimalsx, short_period))
+      updateTextInput(session, "long_period", value = sprintf("%.*f", info$decimalsx, long_period))
       ranges$x3 <- NULL
       trans$fs <- NULL
       req(info$stop)
@@ -4183,10 +4182,10 @@ server <- function(input,output,session) {
         if (loc < info$sampling) {
           loc <- info$sampling
         }
-        updateTextInput(session, "min_wavelet", value = min_scale)
-        updateTextInput(session, "max_wavelet", value = max_scale)
+        updateTextInput(session, "min_wavelet", value = sprintf("%.*f", info$decimalsx, min_scale))
+        updateTextInput(session, "max_wavelet", value = sprintf("%.*f", info$decimalsx, max_scale))
         updateTextInput(session, "res_wavelet", value = res)
-        updateTextInput(session, "loc_wavelet", value = loc)
+        updateTextInput(session, "loc_wavelet", value = sprintf("%.*f", info$decimalsx, loc))
         req(info$stop)
       }
       title <- "Wavelet transform:"
@@ -8258,12 +8257,13 @@ server <- function(input,output,session) {
           reft <- inputs$trendRef
         } else {
           if (input$fitType == 1) {
-            reft <- mean(x, na.rm = T)
+            reft <- sprintf("%.*f", info$decimalsx, mean(x, na.rm = T))
+            reft <- as.numeric(reft)
           } else if (input$fitType == 2) {
             reft <- x[1]
           }
           inputs$trendRef <- reft
-          updateTextInput(session, "trendRef", value = reft)
+          updateTextInput(session, "trendRef", value = sprintf("%.*f", info$decimalsx, reft))
           if (input$fitType == 1) {
             req(info$stop)
           }
@@ -8314,8 +8314,10 @@ server <- function(input,output,session) {
             sigma_rate <- ap_rate * 5
           }
           if (input$fitType == 2) {
-            updateTextInput(session, "Trend0", value = ap_rate)
-            updateTextInput(session, "eTrend0", value = sigma_rate)
+            max_decimals <- signifdecimal(ap_rate, F) + 2
+            updateTextInput(session, "Trend0", value = sprintf("%.*f", max_decimals, ap_rate))
+            max_decimals <- signifdecimal(sigma_rate, F) + 2
+            updateTextInput(session, "eTrend0", value = sprintf("%.*f", max_decimals, sigma_rate))
           }
         } else {
           ap_rate <- as.numeric(input$Trend0)
@@ -8336,14 +8338,20 @@ server <- function(input,output,session) {
         } else if (input$fitType == 2) {
           if (identical(input$Intercept0,character(0)) || is.na(input$Intercept0) || input$Intercept0 == "" || input$Intercept0 == " ") {
             if (isTruthy(match("Intercept", trans$names))) {
-              ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
-              sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
+              if (isTruthy(match("Rate", trans$names))) {
+                ap_intercept <- trans$LScoefs[match("Intercept", trans$names),1] + (trans$x[1] - reft) * trans$LScoefs[match("Rate", trans$names),1]
+              } else {
+                ap_intercept <- trans$LScoefs[match("Intercept", trans$names),1] + (trans$x[1] - reft) * ap_rate
+              }
+              sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names),2] * sqrt(length(trans$x))))
             } else {
               ap_intercept <- y[1]
               sigma_intercept <- info$noise
             }
-            updateTextInput(session, "Intercept0", value = ap_intercept)
-            updateTextInput(session, "eIntercept0", value = sigma_intercept)
+            max_decimals <- signifdecimal(ap_intercept, F) + 2
+            updateTextInput(session, "Intercept0", value = sprintf("%.*f", max_decimals, ap_intercept))
+            max_decimals <- signifdecimal(sigma_intercept, F) + 2
+            updateTextInput(session, "eIntercept0", value = sprintf("%.*f", max_decimals, sigma_intercept))
           } else {
             ap_intercept <- as.numeric(input$Intercept0)
             if (input$eIntercept0 == 0) {
@@ -8366,11 +8374,11 @@ server <- function(input,output,session) {
         j <- j + 1
         if (isTruthy(match("Intercept", trans$names))) {
           if (input$fitType == 1) {
-            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)] - trans$ordinate
+            ap_intercept <- trans$LScoefs[match("Intercept", trans$names),1] - trans$ordinate
           } else if (input$fitType == 2) {
-            ap_intercept <- trans$LScoefs[match("Intercept", trans$names)]
+            ap_intercept <- trans$LScoefs[match("Intercept", trans$names),1]
           }
-          sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names)*2]/sqrt(length(trans$x))))
+          sigma_intercept <- abs(as.numeric(trans$LScoefs[match("Intercept", trans$names),2] * sqrt(length(trans$x))))
         } else {
           ap_intercept <- mean(y, na.rm = T)
           sigma_intercept <- sd(y, na.rm = T)
@@ -8391,7 +8399,8 @@ server <- function(input,output,session) {
           refs <- inputs$periodRef
         } else {
           if (input$fitType == 1) {
-            refs <- mean(x, na.rm = T)
+            refs <- sprintf("%.*f", info$decimalsx, mean(x, na.rm = T))
+            refs <- as.numeric(refs)
           } else if (input$fitType == 2) {
             refs <- x[1]
           }
@@ -8495,12 +8504,18 @@ server <- function(input,output,session) {
               }
               if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
                 S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
+                max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
+                S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
                 eS0[i] <- as.numeric(S0[i])/2
+                max_decimals <- signifdecimal(as.numeric(eS0[i]), F) + 2
+                eS0[i] <- sprintf("%.*f", max_decimals, as.numeric(eS0[i]))
                 if (input$fitType == 2) {
                   if (isTruthy(match(paste0("S",i), trans$names))) {
-                    s <- trans$LScoefs[match(paste0("S",i), trans$names)]
-                    c <- trans$LScoefs[match(paste0("C",i), trans$names)]
+                    s <- trans$LScoefs[match(paste0("S",i), trans$names),1]
+                    c <- trans$LScoefs[match(paste0("C",i), trans$names),1]
                     S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
+                    max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
+                    S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
                     eS0[i] <- abs(as.numeric(S0[i]))
                   }
                 }
@@ -8624,12 +8639,18 @@ server <- function(input,output,session) {
               }
               if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
                 S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
+                max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
+                S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
                 eS0[i] <- as.numeric(S0[i])/2
+                max_decimals <- signifdecimal(as.numeric(eS0[i]), F) + 2
+                eS0[i] <- sprintf("%.*f", max_decimals, as.numeric(eS0[i]))
                 if (input$fitType == 2) {
                   if (isTruthy(match(paste0("S",i), trans$names))) {
-                    s <- trans$LScoefs[match(paste0("S",i), trans$names)]
-                    c <- trans$LScoefs[match(paste0("C",i), trans$names)]
+                    s <- trans$LScoefs[match(paste0("S",i), trans$names), 1]
+                    c <- trans$LScoefs[match(paste0("C",i), trans$names), 1]
                     S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
+                    max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
+                    S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
                     eS0[i] <- abs(as.numeric(S0[i]))
                   }
                 }
@@ -8745,6 +8766,9 @@ server <- function(input,output,session) {
                     O0[i] <- y_now[which.max(x >= p)] - y_now[which.max(x >= p) - 1]
                     if (!isTruthy(O0[i])) {
                       O0[i] <- 0
+                    } else {
+                      max_decimals <- signifdecimal(as.numeric(O0[i]), F) + 2
+                      O0[i] <- sprintf("%.*f", max_decimals, as.numeric(O0[i]))
                     }
                     if (input$tunits == 1) {
                       sample <- 1/12 * 365
@@ -8756,11 +8780,18 @@ server <- function(input,output,session) {
                     eO0[i] <- ( sd(y_now[which.max(trans$x > p) - sample & which.min(trans$x < p)]) + sd(y_now[which.max(trans$x > p) & which.min(trans$x < p) + sample]) ) / 2
                     if (!isTruthy(eO0[i])) {
                       eO0[i] <- 1
+                    } else {
+                      max_decimals <- signifdecimal(as.numeric(eO0[i]), F) + 2
+                      eO0[i] <- sprintf("%.*f", max_decimals, as.numeric(eO0[i]))
                     }
                     if (input$fitType == 2) {
                       if (isTruthy(match(paste0("O",i), trans$names))) {
-                        O0[i] <- trans$LScoefs[match(paste0("O",i), trans$names)]
-                        eO0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("O",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
+                        O0[i] <- trans$LScoefs[match(paste0("O",i), trans$names),1]
+                        max_decimals <- signifdecimal(as.numeric(O0[i]), F) + 2
+                        O0[i] <- sprintf("%.*f", max_decimals, as.numeric(O0[i]))
+                        eO0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("O",i), trans$names),2]))
+                        max_decimals <- signifdecimal(as.numeric(eO0[i]), F) + 2
+                        eO0[i] <- sprintf("%.*f", max_decimals, as.numeric(eO0[i]))
                       }
                       line_O0 <- paste(O0, collapse = ", ")
                       line_eO0 <- paste(eO0, collapse = ", ")
@@ -8812,10 +8843,10 @@ server <- function(input,output,session) {
               if (identical(E0,character(0)) || identical(TE0,character(0)) || is.na(E0[i]) || is.na(TE0[i]) || E0[i] == "" || TE0[i] == "" || E0[i] == " " || TE0[i] == " ") {
                 update <- 1
                 if (isTruthy(match(paste0("E",i), trans$names))) {
-                  E0[i] <- trans$LScoefs[match(paste0("E",i), trans$names)]
-                  TE0[i] <- trans$LScoefs[match(paste0("TauE",i), trans$names)]
-                  eE0[i] <- trans$LScoefs[match(paste0("E",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))
-                  eTE0[i] <- trans$LScoefs[match(paste0("TauE",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))
+                  E0[i] <- trans$LScoefs[match(paste0("E",i), trans$names),1]
+                  TE0[i] <- trans$LScoefs[match(paste0("TauE",i), trans$names),1]
+                  eE0[i] <- trans$LScoefs[match(paste0("E",i), trans$names),2]
+                  eTE0[i] <- trans$LScoefs[match(paste0("TauE",i), trans$names),2]
                 } else {
                   if (input$tunits == 1) {
                     span <- 3 * 365
@@ -8867,28 +8898,31 @@ server <- function(input,output,session) {
                     x1 <- apriori_x_after[apriori_x_after >= forward - sample/2 & apriori_x_after < forward + sample/2]
                     y1 <- flat[apriori_x_after >= forward - sample/2 & apriori_x_after < forward + sample/2]
                     E0[i] <- mean(y0) * coeff
-                    if (!isTruthy(E0[i])) {
+                    if (!isTruthy(as.numeric(E0[i]))) {
                       E0[i] <- 0
                     }
                     TE0[i] <- (forward - mean(x0))/(log(mean(y0)) - log(mean(y1)))
-                    if (!isTruthy(TE0[i]) || TE0[i] < 0) {
-                      TE0[i] <- abs(as.numeric(TE0[i]))
+                    if (!isTruthy(as.numeric(TE0[i]))) {
+                      TE0[i] <- forward
                     }
-                    if (input$fitType == 1) {
-                      #NA
-                    } else if (input$fitType == 2) {
-                      if (isTruthy(match(paste0("O",i), trans$names))) {
-                        E0[i] <- trans$LScoefs[match(paste0("O",i), trans$names)]
-                        eO0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("O",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
-                      } else {
-                        eE0[i] <- sd(y0)
-                        eTE0[i] <- sqrt( ( -1*sd(y0)/(mean(y0) * log(mean(y0)/mean(y1))^2) )^2 + ( 1*sd(y1)/(mean(y1) * log(mean(y0)/mean(y1))^2) )^2 )
-                      }
+                    if (input$fitType == 2) {
+                      eE0[i] <- sd(y0)
+                      eTE0[i] <- sqrt( ( -1*sd(y0)/(mean(y0) * log(mean(y0)/mean(y1))^2) )^2 + ( 1*sd(y1)/(mean(y1) * log(mean(y0)/mean(y1))^2) )^2 )
                     }
                   } else {
                     showNotification(HTML("Not enough data to obtain the a priori values of the exponential decay.<br>The a priori values must be provided to continue."), action = NULL, duration = 10, closeButton = T, id = "no_exponential", type = "warning", session = getDefaultReactiveDomain())
                   }
                 }
+              }
+              max_decimals <- signifdecimal(as.numeric(E0[i]), F) + 2
+              E0[i] <- sprintf("%.*f", max_decimals, as.numeric(E0[i]))
+              max_decimals <- signifdecimal(as.numeric(TE0[i]), F) + 2
+              TE0[i] <- sprintf("%.*f", max_decimals, as.numeric(TE0[i]))
+              if (input$fitType == 2) {
+                max_decimals <- signifdecimal(as.numeric(eE0[i]), F) + 2
+                eE0[i] <- sprintf("%.*f", max_decimals, as.numeric(eE0[i]))
+                max_decimals <- signifdecimal(as.numeric(eTE0[i]), F) + 2
+                eTE0[i] <- sprintf("%.*f", max_decimals, as.numeric(eTE0[i]))
               }
             } else {
               if (is.na(E0[i]) || trimmer(E0[i]) == "NA" || trimmer(E0[i]) == "") {
@@ -8972,10 +9006,11 @@ server <- function(input,output,session) {
               if (identical(L0,character(0)) || identical(TL0,character(0)) || is.na(L0[i]) || is.na(TL0[i]) || L0[i] == "" || TL0[i] == "" || L0[i] == " " || TL0[i] == " ") {
                 update <- 1
                 if (isTruthy(match(paste0("L",i), trans$names))) {
-                  L0[i] <- trans$LScoefs[match(paste0("L",i), trans$names)]
-                  TL0[i] <- trans$LScoefs[match(paste0("TauL",i), trans$names)]
-                  eL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("L",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
-                  eTL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("TauL",i), trans$names) + length(trans$names)]/sqrt(length(trans$x))))
+                  L0[i] <- trans$LScoefs[match(paste0("L",i), trans$names),1]
+                  TL0[i] <- trans$LScoefs[match(paste0("TauL",i), trans$names),1]
+                  eL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("L",i), trans$names),2]))
+                  eTL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("TauL",i), trans$names),2]))
+                  TL0[i] <- ifelse(as.numeric(TL0[i]) - 10*as.numeric(eTL0[i]) <= 0, as.numeric(TL0[i])*10, TL0[i])
                 } else {
                   if (input$tunits == 1) {
                     span <- 3 * 365
@@ -9040,19 +9075,27 @@ server <- function(input,output,session) {
                       tl <- 0
                     }
                     TL0[i] <- median(unlist(tl), na.rm = T) * coeff / 50
-                    if (!isTruthy(TL0[i]) || TL0[i] < 0) {
+                    if (!isTruthy(TL0[i]) || as.numeric(TL0[i]) < 0) {
                       TL0[i] <- abs(as.numeric(TL0[i]))
                     }
-                    if (input$fitType == 1) {
-                      #NA
-                    } else if (input$fitType == 2) {
+                    if (input$fitType == 2) {
                       eL0[i] <- sd(y1)
-                      eTL0[i] <- sd(unlist(tl))
+                      eTL0[i] <- sd(unlist(tl), na.rm = T)
                     }
                   } else {
                     showNotification(HTML("Not enough data to guess the a priori values of the logarithmic decay.<br>The a priori values must be provided to continue."), action = NULL, duration = 10, closeButton = T, id = "no_logarithmic", type = "warning", session = getDefaultReactiveDomain())
                   }
                 }
+              }
+              max_decimals <- signifdecimal(as.numeric(L0[i]), F) + 2
+              L0[i] <- sprintf("%.*f", max_decimals, as.numeric(L0[i]))
+              max_decimals <- signifdecimal(as.numeric(TL0[i]), F) + 2
+              TL0[i] <- sprintf("%.*f", max_decimals, as.numeric(TL0[i]))
+              if (input$fitType == 2) {
+                max_decimals <- signifdecimal(as.numeric(eL0[i]), F) + 2
+                eL0[i] <- sprintf("%.*f", max_decimals, as.numeric(eL0[i]))
+                max_decimals <- signifdecimal(as.numeric(eTL0[i]), F) + 2
+                eTL0[i] <- sprintf("%.*f", max_decimals, as.numeric(eTL0[i]))
               }
             } else {
               if (is.na(L0[i]) || trimmer(L0[i]) == "NA" || trimmer(L0[i]) == "") {
@@ -9124,19 +9167,18 @@ server <- function(input,output,session) {
               refp <- inputs$PolyRef
             } else {
               if ("Linear" %in% input$model) {
-                refp <- reft
+                refp <- as.numeric(reft)
               } else {
                 if (input$fitType == 1) {
-                  refp <- mean(x, na.rm = T)
+                  refp <- sprintf("%.*f", info$decimalsx, mean(x, na.rm = T))
+                  refp <- as.numeric(refp)
                 } else if (input$fitType == 2) {
                   refp <- x[1]
                 }
                 inputs$PolyRef <- refp
               }
+              inputs$PolyRef <- refp
               updateTextInput(session, "PolyRef", value = refp)
-              if (input$fitType == 1) {
-                req(info$stop)
-              }
             }
             text_rate <- refp
             i <- 0
@@ -9146,8 +9188,12 @@ server <- function(input,output,session) {
                 P0[i] <- 0
                 if (input$fitType == 2) {
                   if (isTruthy(match(paste0("P",degree), trans$names))) {
-                    P0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names)]
-                    eP0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names) + length(trans$names)]/sqrt(length(trans$x))
+                    P0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names),1]
+                    max_decimals <- signifdecimal(as.numeric(P0[i]), F) + 2
+                    P0[i] <- sprintf("%.*f", max_decimals, as.numeric(P0[i]))
+                    eP0[i] <- trans$LScoefs[match(paste0("P",degree), trans$names),2]
+                    max_decimals <- signifdecimal(as.numeric(eP0[i]), F) + 2
+                    eP0[i] <- sprintf("%.*f", max_decimals, as.numeric(eP0[i]))
                   } else {
                     eP0[i] <- 1
                   }
@@ -9929,6 +9975,10 @@ server <- function(input,output,session) {
         sigmaPlus <- t(sqrt(tmpys$d)*tmpys$vt)
       }
       sigmay <- t(a[i, ] + cbind(0, sigmaPlus, -sigmaPlus))
+      taulog <- which(grepl("TauL", trans$KFnames))
+      if (any(sigmay[,taulog] <= 0)) {
+        showNotification(HTML("Negative values in some sigma points of the logarithmic decay rate.<br>The logarithmic decay must always be positive."), action = NULL, duration = 10, closeButton = T, id = "bad_sigmaPoints", type = "error", session = getDefaultReactiveDomain())
+      }
       #predicted measurement
       tmpy <- matrix(sapply(1:nrow(sigmay), function(x) FFfunction(x = sigmay[x,], k = i)), nrow = ym)
       f[i, ] <- tcrossprod(w, tmpy)
