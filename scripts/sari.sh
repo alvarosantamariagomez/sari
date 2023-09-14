@@ -417,9 +417,10 @@ elif [[ ! -z $local && -z $docker && -z $remote ]]; then
 elif [[ -z $local && ! -z $docker && -z $remote ]]; then
 
 	echo Starting the SARI container
-	container=$(docker ps -a | grep sari:latest > /dev/null 2>&1)
-	if [[ $container == 0 ]]; then
-		docker run -ai --name sari -p 3838:3838 -v /home/SARI alvarosg/sari:latest > $out 2>&1 &
+	docker ps -a | grep sari:latest > /dev/null 2>&1
+	container=$?
+	if [[ $container -gt 0 ]]; then
+		docker run -a stdout -a stderr -i --name sari -p 3838:3838 -v /home/SARI alvarosg/sari:latest > $out 2>&1 &
 		pid=$!
 	else
 		docker start -ai sari > $out 2>&1 &
