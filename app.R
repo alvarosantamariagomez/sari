@@ -1760,6 +1760,8 @@ server <- function(input,output,session) {
     class = "disabled",
     selector = "#tab li a[data-value=0]"
   )
+  reset("side-panel")
+  reset("main-panel")
   cat(file = stderr(), "\n", "\n", "START", "\n")
 
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
@@ -6398,6 +6400,7 @@ server <- function(input,output,session) {
 
   # Observe averaging ####
   observeEvent(c(inputs$step, inputs$step2), {
+    req(obs())
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Averaging series", "\n")
     if (input$fitType == 2) {
@@ -7389,7 +7392,7 @@ server <- function(input,output,session) {
     } else if (input$separator2 == "3") {
       sep2 <- ";"
     }
-    if (info$format == 4) {
+    if (isTruthy(info$format) && info$format == 4) {
       updateTabsetPanel(session, inputId = "tab", selected = "1")
     }
     # Getting primary series from input file
