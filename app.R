@@ -8914,11 +8914,13 @@ server <- function(input,output,session) {
                   }
                 }
               }
-              max_decimals <- signifdecimal(as.numeric(E0[i]), F) + 2
-              E0[i] <- sprintf("%.*f", max_decimals, as.numeric(E0[i]))
-              max_decimals <- signifdecimal(as.numeric(TE0[i]), F) + 2
-              TE0[i] <- sprintf("%.*f", max_decimals, as.numeric(TE0[i]))
-              if (input$fitType == 2) {
+              if (isTruthy(as.numeric(E0[i])) && isTruthy(as.numeric(TE0[i]))) {
+                max_decimals <- signifdecimal(as.numeric(E0[i]), F) + 2
+                E0[i] <- sprintf("%.*f", max_decimals, as.numeric(E0[i]))
+                max_decimals <- signifdecimal(as.numeric(TE0[i]), F) + 2
+                TE0[i] <- sprintf("%.*f", max_decimals, as.numeric(TE0[i]))
+              }
+              if (input$fitType == 2 && isTruthy(as.numeric(eE0[i])) && isTruthy(as.numeric(eTE0[i]))) {
                 max_decimals <- signifdecimal(as.numeric(eE0[i]), F) + 2
                 eE0[i] <- sprintf("%.*f", max_decimals, as.numeric(eE0[i]))
                 max_decimals <- signifdecimal(as.numeric(eTE0[i]), F) + 2
@@ -9087,11 +9089,13 @@ server <- function(input,output,session) {
                   }
                 }
               }
-              max_decimals <- signifdecimal(as.numeric(L0[i]), F) + 2
-              L0[i] <- sprintf("%.*f", max_decimals, as.numeric(L0[i]))
-              max_decimals <- signifdecimal(as.numeric(TL0[i]), F) + 2
-              TL0[i] <- sprintf("%.*f", max_decimals, as.numeric(TL0[i]))
-              if (input$fitType == 2) {
+              if (isTruthy(as.numeric(L0[i])) && isTruthy(as.numeric(TL0[i]))) {
+                max_decimals <- signifdecimal(as.numeric(L0[i]), F) + 2
+                L0[i] <- sprintf("%.*f", max_decimals, as.numeric(L0[i]))
+                max_decimals <- signifdecimal(as.numeric(TL0[i]), F) + 2
+                TL0[i] <- sprintf("%.*f", max_decimals, as.numeric(TL0[i]))
+              }
+              if (input$fitType == 2 && isTruthy(as.numeric(eL0[i])) && isTruthy(as.numeric(eTL0[i]))) {
                 max_decimals <- signifdecimal(as.numeric(eL0[i]), F) + 2
                 eL0[i] <- sprintf("%.*f", max_decimals, as.numeric(eL0[i]))
                 max_decimals <- signifdecimal(as.numeric(eTL0[i]), F) + 2
