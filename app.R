@@ -1991,7 +1991,7 @@ server <- function(input,output,session) {
     } else if (input$plateModel == 3) {
       model <- "NNR-GSRM_v2.1.txt"
     }
-    link <- a("Show the selected plate model", href = model)
+    link <- a("Show the selected plate model", href = model, target = "_blank")
     tagList(link)
   })
   outputOptions(output, "pmm", suspendWhenHidden = F)
