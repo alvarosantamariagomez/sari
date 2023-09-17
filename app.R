@@ -5027,7 +5027,11 @@ server <- function(input,output,session) {
   output$download <- output$downloadAs <- downloadHandler(
     filename = function() {
       if (input$format != 4) {
-        paste0(file$primary$name, "_", input$tab, ".sari")
+        if (any(grepl("East", info$components))) {
+          paste0(file$primary$name, "_", strsplit(info$components[as.numeric(input$tab)], " ")[[1]][1], ".sari")
+        } else {
+          paste0(file$primary$name, "_", input$tab, ".sari") 
+        }
       } else {
         paste0(file$primary$name, ".sari")
       }
