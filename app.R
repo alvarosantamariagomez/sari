@@ -372,7 +372,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$script(HTML(jscode_update_series2)),
                   
                   # confirm click on refresh button
-                  tags$script(HTML(askRefresh))
+                  uiOutput("refresh")
                 ),
                 
                 hidden(
@@ -1882,6 +1882,9 @@ server <- function(input,output,session) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
       } else {
+        output$refresh <- renderUI({
+          tags$script(HTML(askRefresh))    
+        })
         if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
         if (messages > 2) cat(file = stderr(), "Pixel ratio ", info$pixelratio, "\n")
         if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
@@ -1920,7 +1923,7 @@ server <- function(input,output,session) {
   outputOptions(output, "print_out", suspendWhenHidden = F)
   
   output$about_file <- renderUI({
-    if (length(input$isMobile) > 0 && input$isMobile) {
+    if (input$isMobile && length(input$isMobile) > 0) {
       file <- "www/about_mobile.md"
     } else {
       file <- "www/about.md"
