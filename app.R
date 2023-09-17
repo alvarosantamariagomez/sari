@@ -143,6 +143,9 @@ Shiny.addCustomMessageHandler('filename2', function(txt) {
   target.val(txt);
 }); "
 
+# Confirmation when refreshing the page
+askRefresh <- 'window.onbeforeunload = function() { return ""; };'
+
 # Hide loading page from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
   Sys.sleep(seconds)
@@ -366,7 +369,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   
                   # update fileInput file name from URL
                   tags$script(HTML(jscode_update_series)),
-                  tags$script(HTML(jscode_update_series2))
+                  tags$script(HTML(jscode_update_series2)),
+                  
+                  # confirm click on refresh button
+                  tags$script(HTML(askRefresh))
                 ),
                 
                 hidden(
