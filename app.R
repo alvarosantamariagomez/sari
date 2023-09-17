@@ -8169,7 +8169,7 @@ server <- function(input,output,session) {
         poleCartesian <- c(inputs$pole_x,inputs$pole_y,inputs$pole_z)*degMa2radyr
       }
       if (length(stationCartesian[!is.na(stationCartesian)]) == 3 && length(stationGeo[!is.na(stationGeo)]) == 2 && length(poleCartesian[!is.na(poleCartesian)]) == 3) {
-        if (stationGeo[1] < -90 || stationGeo[1] > 90 || stationGeo[2] > 360 || stationGeo[2] < -360) {
+        if (stationGeo[1] < -pi/2 || stationGeo[1] > pi/2 || stationGeo[2] > 2*pi || stationGeo[2] < -2*pi) {
           showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
           req(info$stop)
