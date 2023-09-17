@@ -1828,6 +1828,10 @@ server <- function(input,output,session) {
   # 8. input parameters via URL
   url <- reactiveValues(station = NULL, server = NULL, file = NULL, station2 = NULL, server2 = NULL, file2 = NULL)
 
+  # Resetting all parameters to default values each time the page loads (avoids problems when clicking back on the browser)
+  reset("side-panel")
+  reset("main-panel")
+  
   # Constants ####
   # Some initial values and constants
   options(shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
