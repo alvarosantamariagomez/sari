@@ -2790,7 +2790,7 @@ server <- function(input,output,session) {
       axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
       par(new = T)
     }
-    plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol)
+    plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T)
     points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
     if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
       centerx <- which(abs(trans$x - median(trans$x)) == min(abs(trans$x - median(trans$x))))[1]
@@ -3471,8 +3471,9 @@ server <- function(input,output,session) {
               } else {
                 units <- ""
               }
-              title <- paste("Instantaneous linear rate", units)
-              plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol)
+              title <- "Instantaneous linear rate"
+              plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol,F)
+              title(ylab = units)
               title(title, line = 3)
             }
           }, width = reactive(info$width), type = "cairo-png")
@@ -3507,7 +3508,7 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
-    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol)
+    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
     title(title, line = 3)
     abline(h = 0, col = SARIcolors[2], lwd = 3)
     if (input$traceLog && length(info$log) > 0) {
@@ -4429,12 +4430,12 @@ server <- function(input,output,session) {
           sigmas <- T
         }
         if (input$series2filter == 1) {
-          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol)
+          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
         } else if (input$series2filter == 2 && length(trans$res) > 0) {
           if (input$fitType == 1) {
-            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,"",input$symbol)
+            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
           } else if (input$fitType == 2) {
-            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol)
+            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
           }
         }
         title(title, line = 3)
@@ -9430,7 +9431,7 @@ server <- function(input,output,session) {
     }
     return(changes)
   }
-  plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol) {
+  plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol,unit) {
     options(digits = 10)
     if (symbol == 0) {
       s <- 'p'
@@ -9439,12 +9440,13 @@ server <- function(input,output,session) {
     } else if (symbol == 2) {
       s <- 'o'
     }
-    if (input$sunits == 1) {
-      units <- "(m)"
-    } else if (input$sunits == 2) {
-      units <- "(mm)"
-    } else {
-      units <- ""
+    units <- ""
+    if (unit) {
+      if (input$sunits == 1) {
+        units <- "(m)"
+      } else if (input$sunits == 2) {
+        units <- "(mm)"
+      }
     }
     mini <- min(y, na.rm = T)
     maxi <- max(y, na.rm = T)
