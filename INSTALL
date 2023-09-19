@@ -55,7 +55,7 @@ install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magr
 
 
 
-5) In addition, the package "mvcwt" needs to be downloaded from here:  
+5) In addition, the package "mvcwt" can be installed as an option. If installed this package allows computing wavelet transforms. This package can be downloaded from here:  
 https://cran.r-project.org/src/contrib/Archive/mvcwt/
 
 To install this package there are two options:
@@ -68,7 +68,7 @@ install.packages("/path/to/the/mvcwt/tar.gz/file")
 `
 
 
-6) The package "leaflet" is optional. If installed, this package allows adding an interactive location map when the GNSS station coordinates are known. This package can be installed like the others, but it requires installing the GDAL library first, at least in order to compile the package on a Linux system. For Windows, this can be avoided if installing the package binary file.  
+6) The package "leaflet" is also optional. If installed, this package allows adding an interactive location map when the GNSS station coordinates are known. This package can be installed like the others, but it requires installing the GDAL library first, at least in order to compile the package on a Linux system. For Windows, this can be avoided if installing the package binary file.  
 More information on the GDAL library here:  
 https://gdal.org/download.html
 
@@ -76,232 +76,43 @@ https://gdal.org/download.html
 
 The list below shows the package versions used when accessing SARI from Docker or the Shinyapps server. Installing the required packages with a different version may produce different results. 
 
-              Package    Version
-                   BH   1.81.0-1
-                RCurl  1.98-1.12
-                 Rcpp     1.0.11
-          RgoogleMaps    1.4.5.3
-                  XML  3.99-0.14
-              anytime      0.3.9
-            assertive      0.3-6
-       assertive.base      0.0-9
-       assertive.code      0.0-3
-       assertive.data      0.0-3
-    assertive.data.uk      0.0-2
-    assertive.data.us      0.0-2
-  assertive.datetimes      0.0-3
-      assertive.files      0.0-2
-   assertive.matrices      0.0-2
-     assertive.models      0.0-2
-    assertive.numbers      0.0-2
- assertive.properties      0.0-4
- assertive.reflection      0.0-5
-       assertive.sets      0.0-3
-    assertive.strings      0.0-3
-      assertive.types      0.0-3
-               bitops      1.0-7
-                bslib      0.4.0
-           cellranger      1.1.0
-                  cli      3.6.1
-           commonmark      1.8.0
-               crayon      1.5.1
-            crosstalk      1.2.0
-               digest     0.6.29
-                dplyr      1.0.8
-          fontawesome      0.4.0
-                   fs      1.5.2
-               gargle      1.2.0
-                ggmap      3.0.2
-                 glue      1.6.2
-          googledrive      2.0.0
-        googlesheets4      1.0.0
-            htmltools      0.5.4
-          htmlwidgets      1.6.1
-               httpuv      1.6.5
-                  ids      1.0.1
-                 jpeg     0.1-10
-             jsonlite      1.8.0
-             lazyeval      0.2.2
-              leaflet      2.1.2
-    leaflet.providers     1.13.0
-            lifecycle      1.0.3
-             magrittr      2.0.3
-                 maps      3.4.1
-              memoise      2.0.1
-                nlmrt   2016.3.2
-              openssl      2.1.0
-        optimParallel      1.0-2
-              packrat      0.7.0
-               pillar      1.9.0
-                 plyr      1.8.8
-                  png      0.1-8
-               pracma      2.3.8
-              profvis      0.3.7
-                purrr      1.0.2
-               raster     3.6-20
-               rdrop2    0.8.2.1
-             reactlog      1.1.0
-              rematch      1.0.1
-                 renv      1.0.2
-                rlang      1.1.1
-            rmarkdown       2.11
-            rsconnect     0.8.29
-                 sass      0.4.2
-                shiny      1.7.3
-         shinyWidgets      0.7.6
-      shinycssloaders 1.0.0.9000
-      shinyscreenshot      0.2.0
-                   sp      2.0-0
-              stringr      1.5.0
-                terra     1.7-23
-               tibble      3.2.1
-                tidyr      1.3.0
-           tidyselect      1.2.0
-                 uuid      1.0-4
-                vctrs      0.6.3
-                withr      2.5.0
-              askpass        1.1
-            base64enc      0.1-3
-                 brew      1.0-6
-                 brio      1.1.2
-                bslib      0.3.1
-               cachem      1.0.6
-                callr      3.7.0
-                  cli      3.1.0
-                clipr      0.7.1
-           colorspace      2.0-2
-           commonmark        1.7
-                cpp11      0.4.1
-               crayon      1.4.2
-          credentials      1.3.1
-                 curl      4.3.2
-           data.table     1.14.2
-                 desc      1.4.0
-             devtools      2.4.2
-              diffobj      0.3.5
-               digest     0.6.28
-                  dlm      1.1-5
-           doParallel     1.0.16
-            dotCall64      1.0-1
-             ellipsis      0.3.2
-             evaluate       0.14
-                fansi      0.5.0
-               farver      2.1.0
-              fastmap      1.1.0
-               fields       13.3
-          fontawesome      0.2.2
-              foreach      1.5.1
-                   fs      1.5.0
-             generics      0.1.1
-                 gert      1.4.3
-              ggplot2      3.3.5
-                   gh      1.3.0
-             gitcreds      0.1.1
-                 glue      1.5.0
-            gridExtra        2.3
-               gtable      0.3.0
-                highr        0.9
-            htmltools      0.5.2
-               httpuv      1.6.3
-                 httr      1.4.2
-                  ini      0.3.1
-              isoband      0.2.5
-            iterators     1.0.13
-            jquerylib      0.1.4
-             jsonlite      1.7.2
-                knitr       1.36
-             labeling      0.4.2
-                later      1.3.0
-            lifecycle      1.0.1
-            lubridate      1.8.0
-             magrittr      2.0.1
-                 maps      3.4.0
-             markdown        1.1
-          matrixStats     0.61.0
-              memoise      2.0.0
-                 mime       0.12
-               mnormt      2.0.2
-              munsell      0.5.0
-                mvcwt      1.3.1
-             numDeriv 2016.8-1.1
-              openssl      1.4.5
-              pbapply      1.5-0
-               pillar      1.6.4
-             pkgbuild      1.2.0
-            pkgconfig      2.0.3
-              pkgload      1.2.3
-              plotrix      3.8-2
-               praise      1.0.0
-          prettyunits      1.1.1
-             processx      3.5.2
-             promises    1.2.0.1
-                   ps      1.6.0
-                psych      2.1.9
-                purrr      0.3.4
-             quadprog      1.5-8
-             quantmod     0.4.18
-                   R6      2.5.1
-             rappdirs      0.3.3
-          rasterImage      0.4.0
-            rcmdcheck      1.4.0
-         RColorBrewer      1.1-2
-                 Rcpp      1.0.7
-             rematch2      2.1.2
-              remotes      2.4.1
-          RhpcBLASctl 0.21-247.1
-                rlang     0.4.12
-            rmarkdown       2.11
-             roxygen2      7.1.2
-            rprojroot      2.0.2
-           rstudioapi       0.13
-            rversions      2.1.1
-             sandwich      3.0-1
-                 sass      0.4.0
-               scales      1.1.1
-            segmented      1.3-4
-          sessioninfo      1.2.1
-                shiny      1.7.1
-              shinyBS       0.61
-      shinycssloaders      1.0.0
-              shinyjs      2.0.0
-          shinythemes      1.2.0
-          sourcetools      0.1.7
-                 spam      2.7-0
-             spectral        2.0
-              stringi      1.7.5
-              stringr      1.4.0
-          strucchange      1.5-2
-                  sys        3.4
-             testthat      3.1.0
-               tibble      3.1.6
-              tinytex       0.35
-              tmvnsim      1.0-2
-         translations      4.1.2
-              tseries    0.10-49
-                  TTR     0.24.2
-              usethis      2.1.3
-                 utf8      1.2.2
-                vctrs      0.3.8
-              viridis      0.6.2
-          viridisLite      0.4.0
-                waldo      0.3.1
-              whisker        0.4
-                withr      2.4.2
-                 xfun       0.28
-                 xml2      1.3.2
-                xopen      1.0.0
-               xtable      1.8-4
-                  xts     0.12.1
-                 yaml      2.2.1
-                  zip      2.2.0
-                  zoo      1.8-9
-
-This list can be extracted with:  
-`
-packs <- as.data.frame(installed.packages()[,c(1,3:4)])  
-packs <- packs[is.na(packs$Priority),1:2,drop=FALSE]  
-print(packs, row.names=FALSE)
-`
+Package         Version
+leaflet         v2.1.2
+tseries         v0.10-49
+strucchange     v1.5-2
+sandwich        v3.0-1
+zoo             v1.8-9
+spectral        v2.0
+pbapply         v1.5-0
+RhpcBLASctl     v0.21-247.1
+lattice         v0.20-45
+rasterImage     v0.4.0
+plotrix         v3.8-2
+shinythemes     v1.2.0
+shinyjs         v2.0.0
+shinycssloaders v1.0.0.9000
+shinyBS         v0.61
+jsonlite        v1.8.0
+XML             v3.99-0.14
+RCurl           v1.98-1.12
+RColorBrewer    v1.1-2
+psych           v2.1.9
+pracma          v2.3.8
+numDeriv        v2016.8-1.1
+mvcwt           v1.3.1
+mnormt          v2.0.2
+matrixStats     v0.61.0
+markdown        v1.1
+magrittr        v2.0.3
+lubridate       v1.8.0
+fields          v13.3
+viridis         v0.6.2
+viridisLite     v0.4.0
+spam            v2.7-0
+dotCall64       v1.0-1
+dlm             v1.1-5
+data.table      v1.14.2
+shiny           v1.7.3
 
 If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to install this version from its github repo using:  
 `

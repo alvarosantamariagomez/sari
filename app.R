@@ -1510,47 +1510,50 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       
                                                                       # % Wavelet ####
-                                                                      div(style = "padding: 0px 0px; margin-top:0em",
-                                                                          fluidRow(
-                                                                            column(4,
-                                                                                   checkboxInput(inputId = "wavelet",
-                                                                                                 div("Wavelets",
-                                                                                                     helpPopup("To plot the heatmap from the wavelet transform")),
-                                                                                                 value = F)
-                                                                            ),
-                                                                            column(4, offset = 4,
-                                                                                   conditionalPanel(
-                                                                                     condition = "input.wavelet == true",
-                                                                                     textInput(inputId = "loc_wavelet",
-                                                                                               div("Sampling",
-                                                                                                   helpPopup("The temporal resolution or time separation between wavelets. The maximum valid is half the total observed period. The minimum valid is the sampling period of the series.")),
-                                                                                               value = "")
-                                                                                   )
-                                                                            )
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "input.wavelet == true",
+                                                                      conditionalPanel(
+                                                                        condition = "output.wavelet == true",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
                                                                             fluidRow(
                                                                               column(4,
-                                                                                     textInput(inputId = "min_wavelet",
-                                                                                               div("Min.",
-                                                                                                   helpPopup("The shortest period to compute the wavelet. The minimum valid is twice the median sampling period.")),
-                                                                                               value = "")
+                                                                                     checkboxInput(inputId = "wavelet",
+                                                                                                   div("Wavelets",
+                                                                                                       helpPopup("To plot the heatmap from the wavelet transform")),
+                                                                                                   value = F)
                                                                               ),
-                                                                              column(4,
-                                                                                     textInput(inputId = "max_wavelet",
-                                                                                               div("Max.",
-                                                                                                   helpPopup("The longest period to compute the wavelet. The maximum valid is half the total observed period.")),
-                                                                                               value = "")
-                                                                              ),
-                                                                              column(4,
-                                                                                     textInput(inputId = "res_wavelet",
-                                                                                               div("Step",
-                                                                                                   helpPopup("The resolution or separation between the periods to compute the wavelet.")),
-                                                                                               value = "")
+                                                                              column(4, offset = 4,
+                                                                                     conditionalPanel(
+                                                                                       condition = "input.wavelet == true",
+                                                                                       textInput(inputId = "loc_wavelet",
+                                                                                                 div("Sampling",
+                                                                                                     helpPopup("The temporal resolution or time separation between wavelets. The maximum valid is half the total observed period. The minimum valid is the sampling period of the series.")),
+                                                                                                 value = "")
+                                                                                     )
+                                                                              )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.wavelet == true",
+                                                                              fluidRow(
+                                                                                column(4,
+                                                                                       textInput(inputId = "min_wavelet",
+                                                                                                 div("Min.",
+                                                                                                     helpPopup("The shortest period to compute the wavelet. The minimum valid is twice the median sampling period.")),
+                                                                                                 value = "")
+                                                                                ),
+                                                                                column(4,
+                                                                                       textInput(inputId = "max_wavelet",
+                                                                                                 div("Max.",
+                                                                                                     helpPopup("The longest period to compute the wavelet. The maximum valid is half the total observed period.")),
+                                                                                                 value = "")
+                                                                                ),
+                                                                                column(4,
+                                                                                       textInput(inputId = "res_wavelet",
+                                                                                                 div("Step",
+                                                                                                     helpPopup("The resolution or separation between the periods to compute the wavelet.")),
+                                                                                                 value = "")
+                                                                                )
                                                                               )
                                                                             )
-                                                                          )
+                                                                        )
                                                                       ),
                                                                       conditionalPanel(
                                                                         condition = "input.wavelet == true",
@@ -1935,6 +1938,11 @@ server <- function(input,output,session) {
     return(exists("leaflet", mode = "function") && isTruthy(input$station_lat) & isTruthy(input$station_lon))
   })
   outputOptions(output, "location", suspendWhenHidden = F)
+  
+  output$wavelet <- reactive({
+    return(exists("get.nscales", mode = "function"))
+  })
+  outputOptions(output, "wavelet", suspendWhenHidden = F)
   
   output$log <- reactive({
     return(!is.null(file$sitelog))
