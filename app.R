@@ -409,7 +409,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -758,7 +758,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(5,
-                                                                                   selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EPOS", "EUREF", "NGL", "JPL", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
@@ -5936,6 +5936,8 @@ server <- function(input,output,session) {
       updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server1 == "SIRGAS") {
       updateSelectInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
+    } else if (input$server1 == "EARTHSCOPE") {
+      updateSelectInput(session, inputId = "product1", choices = list("CWU", "PBO", "NMT"), selected = "")
     }
     output$station1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
@@ -5963,6 +5965,8 @@ server <- function(input,output,session) {
       updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server2 == "SIRGAS") {
       updateSelectInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
+    } else if (input$server2 == "EARTHSCOPE") {
+      updateSelectInput(session, inputId = "product2", choices = list("CWU", "PBO", "NMT"), selected = "")
     }
     output$station2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
@@ -7508,6 +7512,17 @@ server <- function(input,output,session) {
               lon <- tableAll[1,2]
               updateTextInput(inputId = "station_lat", value = lat)
               updateTextInput(inputId = "station_lon", value = lon)
+            } else if (url$server == "EARTHSCOPE") {
+              tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
+              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
+              updateTextInput(session, inputId = "station_x", value = as.numeric(tableAll[6]))
+              updateTextInput(session, inputId = "station_y", value = as.numeric(tableAll[8]))
+              updateTextInput(session, inputId = "station_z", value = as.numeric(tableAll[10]))
+              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
+              lat <- stationGeo[1] * 180/pi
+              lon <- stationGeo[2] * 180/pi
+              updateTextInput(inputId = "station_lat", value = lat)
+              updateTextInput(inputId = "station_lon", value = lon)
             }
           } else {
             if (isTruthy(spotgins)) {
@@ -7565,7 +7580,7 @@ server <- function(input,output,session) {
         if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
           updateRadioButtons(session, inputId = "neuenu", selected = 2)
           disable("neuenu")
-        } else if (url$server == "SONEL" || url$server == "IGS"  || url$server == "SIRGAS" ) {
+        } else if (url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE" ) {
           updateRadioButtons(session, inputId = "neuenu", selected = 1)
           disable("neuenu")
         }
@@ -7573,15 +7588,15 @@ server <- function(input,output,session) {
       # Setting series units if known
       if (isTruthy(url$server)) {
         if (url$server == "EPOS" || url$server == "EOSTSL") {
-          updateRadioButtons(session, inputId = "sunits", selected = 2)
+          shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 2))
         } else {
-          updateRadioButtons(session, inputId = "sunits", selected = 1)
+          shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
       }  else if (info$format == 2 || info$format == 3) {
-        updateRadioButtons(session, inputId = "sunits", selected = 1)
+        shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
       } else {
         if (isTruthy(spotgins)) {
-          updateRadioButtons(session, inputId = "sunits", selected = 1)
+          shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
       }
       # Resampling the primary series
@@ -7909,7 +7924,7 @@ server <- function(input,output,session) {
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
                     output$tabName3 <<- renderText({ info$components[3] })
-                  } else if (url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS") {
+                  } else if (url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE") {
                     info$components <- c("North component", "East component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
@@ -7991,6 +8006,9 @@ server <- function(input,output,session) {
         de <- N * (tableAll[,3] - tableAll[1,3]) * pi/180 * cos(tableAll[,2]*pi/180)
         sde <- N * tableAll[,6] * pi/180 * cos(tableAll[,2]*pi/180)
         tableAll <- cbind(dn, de, sdn, sde, tableAll)[,c(5,1,2,8,3,4,11)]
+      } else if (server == "EARTHSCOPE") { # extracting NEU format from UNAVCO series
+        unavco_new <- grep("^Datetime,", grep("^#", readLines(file, warn = F), ignore.case = F, value = T, perl = T, invert = T), ignore.case = F, value = T, perl = T, invert = T)
+        tableAll <- try(read.table(text = unavco_new, sep = ",")[,c("V1", "V14", "V15", "V16", "V17", "V18", "V19")], silent = T)
       } else {
         tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
       }
@@ -8053,6 +8071,14 @@ server <- function(input,output,session) {
                   extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
                   extracted$x <- tableAll[,9]
+                }
+              } else if (server == "EARTHSCOPE") {
+                if (input$tunits == 1) {
+                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                } else if (input$tunits == 2) {
+                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                } else if (input$tunits == 3) {
+                  extracted$x <- decimal_date(as.Date(tableAll[,1]))
                 }
               }
             } else {
@@ -10645,21 +10671,41 @@ server <- function(input,output,session) {
         return(NULL)
       }
     # UNAVCO ####
-    # } else if (tolower(server) == "unavco") {
-    #   format <- 2
-    #   if (tolower(product) == "cwu") {
-    #     name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-    #     file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
-    #   } else if (tolower(product) == "nmt") {
-    #     name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-    #     file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
-    #   } else if (tolower(product) == "pbo") {
-    #     name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-    #     file <- paste0("https://data.unavco.org/archive/gnss/products/position/",station,"/",name)
-    #   } else {
-    #     showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-    #     return(NULL)
-    #   }
+    } else if (server == "EARTHSCOPE") {
+      format <- 1
+      if (isTruthy(product)) {
+        if (isTruthy(station) && !isTruthy(series)) {
+          if (product == "CWU" || product == "PBO" || product == "NMT") {
+            name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
+            file <- paste0("https://web-services.unavco.org/gps/data/position/", toupper(station), "/v3?analysisCenter=", tolower(product), "&referenceFrame=igs14&starttime=&endtime=&report=long&dataPostProcessing=Uncleaned&refCoordOption=from_analysis_center")
+          } else {
+            return(NULL)
+          }
+        } else {
+          withBusyIndicatorServer(variable, {
+            if (file.exists("www/UNAVCO_database.txt")) {
+              stations_available <- readLines("www/UNAVCO_database.txt", warn = F)
+            } else {
+              tmp_unavco <- tempfile()
+              download.file("https://web-services.unavco.org/gps/metadata/sites/v1?minlatitude=-90&maxlatitude=90&minlongitude=-180&maxlongitude=180&starttime=&endtime=&summary=false", destfile = tmp_unavco, method = "curl", extra = "-X GET", headers = c(accept = "text/csv"), quiet = T, cacheOK = F)
+              stations_available <- sort(unique(read.csv(tmp_unavco, comment.char = "#")[,1]))
+              writeLines(stations_available, "www/UNAVCO_database.txt", sep = "\n")
+            }
+            if (series == 1) {
+              output$station1 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })  
+            } else if (series == 2) {
+              output$station2 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })
+            }
+            return(NULL)
+          })
+        }
+      } else {
+        return(NULL)
+      }
     # EUREF ####
     } else if (server == "EUREF") {
       format <- 2
