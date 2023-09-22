@@ -7569,7 +7569,7 @@ server <- function(input,output,session) {
         map <- leaflet(options = leafletOptions(dragging = T)) %>%
           addTiles() %>%
           setView(lng = lon, lat = lat, zoom = 2) %>%
-          addMarkers(lng = lon, lat = lat)
+          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
         output$myMap = renderLeaflet(map)
         output$map <- renderUI({
           suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
