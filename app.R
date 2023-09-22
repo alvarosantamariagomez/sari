@@ -2868,7 +2868,7 @@ server <- function(input,output,session) {
         withProgress(message = 'Computing MIDAS trend',
                      detail = 'This may take a while ...', value = 0, {
                        setProgress(0)
-                       vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0))
+                       vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0, trans$y))
                        vel <- c(vel[1,],vel[2,])
                        vel <- vel[vel > -999999]
                        if (length(vel) > 9) {
@@ -2885,7 +2885,7 @@ server <- function(input,output,session) {
                        }
                        if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
                          setProgress(0)
-                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1))
+                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1, trans$y))
                          vel <- c(vel[1,],vel[2,])
                          vel <- vel[vel > -999999]
                          if (length(vel) > 9) {
@@ -8183,16 +8183,42 @@ server <- function(input,output,session) {
       stationGeo <- c()
       poleCartesian <- c()
       if (messages > 0) cat(file = stderr(), "Plate rotation", "\n")
-      if (format == 4) { 
-        selected <- extracted$y1 # current series
-      } else {
-        selected <- extracted$y3 # up series
-      }
-      rate <- (mean(selected[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(selected[1:as.integer(length(extracted$x*0.1))])) / (mean(extracted$x[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(extracted$x[1:as.integer(length(extracted$x*0.1))]))
-      if (abs(rate) > 0.05 && sd(selected - rate*(extracted$x - mean(extracted$x))) > 0.05) {
+      if (input$sunits == 1) {
+        scaling <- 1
+      } else if (input$sunits == 2) {
         scaling <- 1000
       } else {
-        scaling <- 1
+        if (input$tunits == 1) {
+          period <- 365.25
+        } else if (input$tunits == 2) {
+          period <- 365.25/7
+        } else if (input$tunits == 3) {
+          period <- 1
+        }
+        if (format == 4) { 
+          selected <- extracted$y1 # current series
+        } else {
+          selected <- extracted$y3 # up series
+        }
+        if (diff(range(extracted$x))/period < 1 || length(extracted$x) < 6) {
+          rate <- (mean(selected[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(selected[1:as.integer(length(extracted$x*0.1))])) / (mean(extracted$x[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(extracted$x[1:as.integer(length(extracted$x*0.1))]))
+        } else {
+          withProgress(message = 'Series units not defined',
+                       detail = 'Trying to guess the units ...', value = 0, {
+                         setProgress(0)
+                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                         vel <- c(vel[1,],vel[2,])
+                         vel <- vel[vel > -999999]
+                         vel_sig <- 1.4826*mad(vel, na.rm = T)
+                         vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
+                         rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                       })
+        }
+        if (abs(rate) > 0.05 && sd(selected - rate*(extracted$x - mean(extracted$x))) > 0.05) {
+          scaling <- 1000 # series units are mm most likely
+        } else {
+          scaling <- 1 # series units are m most likely
+        }
       }
       if (input$station_coordinates == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
         stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
@@ -10372,7 +10398,7 @@ server <- function(input,output,session) {
       value
     })
   }
-  midas_vel <- function(m,t,disc) {
+  midas_vel <- function(m,t,disc,series) {
     setProgress(round(m/info$points, digits = 1))
     vel_f <- -999999
     vel_b <- -999999
@@ -10383,11 +10409,11 @@ server <- function(input,output,session) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
           if (!any(trans$x[m] < as.numeric(trans$offsetEpochs) & trans$x[index_f] > as.numeric(trans$offsetEpochs))) {
-            vel_f <- (trans$y[index_f] - trans$y[m]) / (trans$x[index_f] - trans$x[m])
+            vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
           }
         }
       } else {
-        vel_f <- (trans$y[index_f] - trans$y[m]) / (trans$x[index_f] - trans$x[m])
+        vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
       }
     }
     # checking backward pair
@@ -10395,11 +10421,11 @@ server <- function(input,output,session) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
           if (!any(trans$x[index_b] < as.numeric(trans$offsetEpochs) & trans$x[m] > as.numeric(trans$offsetEpochs))) {
-            vel_b <- (trans$y[m] - trans$y[index_b]) / (trans$x[m] - trans$x[index_b])
+            vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
           }
         }
       } else {
-        vel_b <- (trans$y[m] - trans$y[index_b]) / (trans$x[m] - trans$x[index_b])
+        vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
       }
     }
     return(c(vel_f,vel_b))
