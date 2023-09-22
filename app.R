@@ -7587,7 +7587,7 @@ server <- function(input,output,session) {
       }
       # Setting series units if known
       if (isTruthy(url$server)) {
-        if (url$server == "EPOS" || url$server == "EOSTSL") {
+        if (url$server == "EPOS" || url$server == "EOSTLS") {
           shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 2))
         } else {
           shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
