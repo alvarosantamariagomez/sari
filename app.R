@@ -7859,7 +7859,7 @@ server <- function(input,output,session) {
             file$id1 <- toupper(url$station)
           }
         } else {
-          file$id1 <- toupper(strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1])
+          file$id1 <- toupper(strsplit(gsub(pattern = "SPOTGINS_", replacement = "", x = input$series$name, ignore.case = F, perl = F, fixed = T), "\\.|_|\\s|-|\\(")[[1]][1])
         }
         if (length(file$secondary) > 0) {
           if (isTruthy(url$station2)) {
@@ -7869,7 +7869,7 @@ server <- function(input,output,session) {
               file$id2 <- toupper(url$station2)
             }
           } else {
-            file$id2 <- toupper(strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1])
+            file$id2 <- toupper(strsplit(gsub(pattern = "SPOTGINS_", replacement = "", x = input$series2$name, ignore.case = F, perl = F, fixed = T), "\\.|_|\\s|-|\\(")[[1]][1])
           }
         }
       }
