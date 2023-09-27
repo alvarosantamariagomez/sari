@@ -1801,7 +1801,8 @@ server <- function(input,output,session) {
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
-                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F)
+                         white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
+                         product1 = NULL)
 
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -5805,6 +5806,7 @@ server <- function(input,output,session) {
             url$server <- toupper(query[['server']])
             file$primary$name <- url_info[3]
             info$format <- url_info[4]
+            info$product1 <- toupper(query[['product']])
             if (tolower(query[['server']]) == "local") {
               if (!isTruthy(file.exists(url$file))) {
                 showNotification(paste0("Local file ",url$file," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5978,6 +5980,7 @@ server <- function(input,output,session) {
     removeNotification("bad_url")
     removeNotification("parsing_url1")
     removeNotification("no_answer")
+    info$product1 <- input$product1
     get_URL_info(input$server1,NULL,input$product1,1)
   })
   observeEvent(c(inputs$station1), {
@@ -6061,7 +6064,7 @@ server <- function(input,output,session) {
             filename2 <- file$secondary$name
             session$sendCustomMessage("filename2", filename2)
             if ((input$server1 == "NGL" || input$server1 == "JPL" || input$server1 == "EPOS" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL"  && input$server2 != "EPOS" && input$product2 != "SPOTGINS_POS") ||
-                (input$server2 == "NGL" || input$server2 == "JPL" || input$server2 == "EPOS" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$server1 != "EPOS" && input$product1 != "SPOTGINS_POS")) {
+                (input$server2 == "NGL" || input$server2 == "JPL" || input$server2 == "EPOS" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$server1 != "EPOS" && info$product1 != "SPOTGINS_POS")) {
               updateCheckboxInput(session, inputId = "ne", value = T)
             }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
@@ -7526,6 +7529,7 @@ server <- function(input,output,session) {
             }
           } else {
             if (isTruthy(spotgins)) {
+              info$product1 <- "SPOTGINS_POS"
               coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
               updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
               updateTextInput(session, inputId = "station_x", value = coordinates[1])
