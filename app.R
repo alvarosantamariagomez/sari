@@ -10792,14 +10792,18 @@ server <- function(input,output,session) {
             dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
             if (isTruthy(dir_contents)) {
               stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
-              if (series == 1) {
-                output$station1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })  
-              } else if (series == 2) {
-                output$station2 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })
+              if (length(stations_available) > 0) {
+                if (series == 1) {
+                  output$station1 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })  
+                } else if (series == 2) {
+                  output$station2 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })
+                }
+              } else {
+                showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
               }
             } else {
               showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
