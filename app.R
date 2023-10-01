@@ -45,7 +45,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -10843,7 +10843,7 @@ server <- function(input,output,session) {
                 stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$id, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
                 stationsFromEPOS$provider <- gsub(" ", "|", stationsFromEPOS$provider)
                 stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
-                write.table(stationsFromEPOS, file = "stationsFromEPOS.txt", append = F, quote = F, row.names = F)
+                write.table(stationsFromEPOS, file = "www/EPOS_database.txt", append = F, quote = F, row.names = F)
               } else {
                 showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
                 return(NULL)
