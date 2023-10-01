@@ -7501,7 +7501,7 @@ server <- function(input,output,session) {
               updateTextInput(inputId = "station_lat", value = lat)
               updateTextInput(inputId = "station_lon", value = lon)
             } else if (url$server == "SIRGAS") {
-              tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein), value = T, fixed = T)[1], comment.char = "#"), silent = T)
+              tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein, warn = F), value = T, fixed = T)[1], comment.char = "#"), silent = T)
               updateRadioButtons(inputId = "station_coordinates", selected = 2)
               lat <- tableAll[1,7]
               lon <- tableAll[1,8]
