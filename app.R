@@ -45,12 +45,12 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-devmode(TRUE)
+# devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI septiembre 2023"
+version <- "SARI octubre 2023"
 
 # Some GUI functions
 

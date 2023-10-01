@@ -4,7 +4,7 @@ urlcolor: #2297E6
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version septiembre 2023'
+title: 'SARI documentation - version octubre 2023'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -65,7 +65,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *septiembre 2023*  --  "Shall we play a game?"
+Current SARI version: *octubre 2023*  --  "We're now on full automatic, in the hands of the computers"
 
 -----------------
 
@@ -186,6 +186,13 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;">REPRO2018A</td>
   </tr>
   <tr>
+   <td style="text-align:left;"><a href="https://www.earthscope.org/" target="_blank">EARTHSCOPE</a></td>
+   <td style="text-align:left;"><sup>3</sup></td>
+   <td style="text-align:left;">4 characters (TLSE)</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">CWU, PBO, NMT</td>
+  </tr>
+  <tr>
    <td style="text-align:left;"><a href="https://www.sirgas.org/en/" target="_blank">SIRGAS</a></td>
    <td style="text-align:left;"><sup></sup></td>
    <td style="text-align:left;">4 characters (TLSE)</td>
@@ -206,7 +213,8 @@ At this moment, the following servers and products are available:
 Notes:  
 <sup>1</sup> The *LOCAL* server is used only to upload series from local files on a local SARI session (more details in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh)).  
 <sup>2</sup> The NGL series correspond to the *IGS14* solution.  
-<sup>3</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected.  
+<sup>3</sup> The EarthScope (UNAVCO) series correspond to the *IGS14* solution.
+<sup>4</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected.  
 
 Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
@@ -218,9 +226,8 @@ It is possible to average them and reduce the sampling, for instance from daily 
 If high-frequency data are not needed, averaging the series will save a lot of time when fitting models, finding discontinuities or when estimating the colored noise in the series (see the [<a href="#additional-fit" target="_self">Additional fit</a>](#v.-additional-fit) block).  
 If the series was computed with a constant integration period, like the common 24 h in GNSS position series, this option is useful to transform daily GNSS series with irregular sampling into daily GNSS series with regular sampling, i.e., one point every 24 h, except when data gaps exist.  
 If there were points already removed from the series before reducing the sampling, these points will not contribute to the new averaged values.  
-Also, if there is a secondary series being used with the `correct` or `average` options, the reduced sampling will be obtained before the secondary series is used. This means that the primary and secondary series would be compared after their original sampling has been reduced.  
+Also, if there is a secondary series being used with the `correct` or `average` options, the reduced sampling will be obtained before the secondary series is used. This means that the primary and secondary series would be compared after their original sampling has been reduced.
 
-Finally, after the series have been plotted (see the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block), the `load SARI model` button allows the user to upload the model parameters from a previously saved SARI file containing a LS or KF fit (not necessarily from the same series). Note that a downloaded SARI file can also be uploaded as a `1D` series.
 
 <h3 id="plot-controls"></h3>
 
@@ -252,6 +259,7 @@ Note: Unfortunately, at this moment, the values of the UI interface, including t
 
 This block allows for the uploading of files containing complementary information related to the analysis of GNSS position time series. The user can upload any of the following possibilities:
 
+* a file with the LS or KF model parameters from a previously saved SARI file
 * a GNSS *sitelog* file (an example of this file can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/iraf00fra_20201021.log))
 * a GAMIT-like *station.info* file (an example of this file can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/station.info))
 * an IGS-like soln discontinuity file (an example of this file can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/soln.snx))
@@ -482,7 +490,7 @@ For the same reason, when previously removed points are included back again into
 In addition to using the selected areas, large residuals can be automatically excluded using the `auto toggle` button. Large is defined by providing the absolute *residual threshold* or the absolute *normalized residual*, i.e., the residual divided by its own error bar if available.
 
 The `reset` button will erase all the plots and all the parameters from the server memory, except the pointer to the *station.info* and the *custom offset* files, which will remain ready to be used again (even if they are not shown to be uploaded, the `plot` and `list` options will still be available).  
-After finishing a series and before uploading a new one, it is mandatory to `reset` all the processing.  
+After finishing a series and before uploading a new one, it is recommended to click the `reset` button instead of refreshing the page.  
 
 Some features require intensive and time-consuming processing (*noise analysis*, *automatic offset detection*, *wavelet*). In order to save server resources and make the app always accessible to anyone, after 15 min without user interaction, the server will kill the connection, go to sleep, and may even dream of electric sheep!  
 
@@ -519,7 +527,7 @@ This is how I usually estimate the linear trend in a GNSS position time series (
 21) Load the parameters of a `plate model` to check if the site is located where it should be and it is not moving away from its plate.  
 22) Save the results on your computer using the `save` icon at the top right corner. The periodogram data can be saved by clicking on the `get periodogram data` link below the periodogram.  
 23) Iterate through the different coordinate components and save each one of them. The same component can be saved multiple times, for instance if the model was improved.  
-24) `Reset` before starting a new series.  
+24) `Reset` before starting a new series. Do not refresh the page.  
 
 -----------------
 

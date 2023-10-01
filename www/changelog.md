@@ -1,5 +1,32 @@
 # **SARI changelog**
 
+# octubre 2023 [2023.10]
+
+### Fixed
+- Checking the number of stations found in remote server
+- Identifying the North/East columns of a SPOTGINS series when loaded from a file
+- Correcting the server name EOSTSL by EOSTLS when checking the series units
+- Checking if the series units are defined when computing the plate motion
+- Correct units on the plot of the instantaneous rate
+- Fixing the checks of geographic coordinates for the station
+- Bug when clicking back on the web browser
+- Opening the plate model file in a new browser tab
+- Checking for numerical values before setting the numeric format for the downloaded result file
+
+### Changed
+- Improving the extraction of the station name from the series file
+- New location marker on map to avoid problems with Docker
+- Setting R package mvcwt as an option
+- Adding the coordinate component name to the name of the downloaded results file
+- Starting and running a new SARI container if necessary with the script sari.sh
+- Improved formatting of numericals on screen and improved LS a priori values for the KF fit
+- Improved handling of the optimized measurement noise in the KF fit
+- New url for the Formater server
+
+### Added
+- Accesss to the GNSS series from the EarthScope/UNAVCO server
+- Asking for confirmation to refresh the webpage on remote sessions (better use the reset button)
+
 # septiembre 2023 [2023.09]
 
 ### Fixed

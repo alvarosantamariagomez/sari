@@ -1,6 +1,6 @@
 ![twitter](https://img.shields.io/twitter/follow/timeserious?style=social)
 ![license](https://img.shields.io/github/license/alvarosantamariagomez/sari)
-![version](https://img.shields.io/badge/version-septiembre%202023-blue)
+![version](https://img.shields.io/badge/version-octubre%202023-blue)
 ![github](https://img.shields.io/github/languages/code-size/alvarosantamariagomez/sari?color=g)
 ![docker](https://img.shields.io/docker/image-size/alvarosg/sari?color=g)
 
@@ -23,7 +23,7 @@ SARI can be run:
 The [SARI shell script](/scripts/sari.sh) can be used to launch SARI from the command line on Unix-like desktop environments. To add the script to the PATH environment variable of your system use this from the SARI Git directory:  
 `sudo ln -s $(realpath scripts/sari.sh) /usr/local/bin/.`
 
-The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers that can accessed via specific parameters on the interface or included in the URL. The latter option makes it possible to add weblinks in a series database to open and analyse them on a new tab with SARI. See for example [this page.](https://www.poleterresolide.fr/geodesy-plotter/#/station/TLSE00FRA)
+The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers that can accessed via specific parameters on the interface or included in the URL. The latter option makes it possible to add weblinks in a series database to open and analyse them on a new tab with SARI. See for example [this page.](https://www.poleterresolide.fr/geodesy-plotter/#/station/ARUF00FRA/185)
 
 The [help file](/www/about.pdf) contains detailed information on how to use SARI, including the description of all the implemented functionalities. This file is also accessible from the main web interface of SARI by clicking on the `Help` button.  
 
