@@ -142,6 +142,11 @@ Shiny.addCustomMessageHandler('filename2', function(txt) {
   var target = $('#series2').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
+jscode_update_sitelog <- "
+Shiny.addCustomMessageHandler('log', function(txt) {
+  var target = $('#log').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
 
 # Confirmation when refreshing the page
 # askRefresh <- 'window.onbeforeunload = function() { return ""; };'
@@ -379,6 +384,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   # update fileInput file name from URL
                   tags$script(HTML(jscode_update_series)),
                   tags$script(HTML(jscode_update_series2)),
+                  tags$script(HTML(jscode_update_sitelog)),
                   
                   # confirm click on refresh button
                   # uiOutput("refresh")
@@ -1845,7 +1851,7 @@ server <- function(input,output,session) {
   output_excluded <- reactiveValues(df = NULL)
 
   # 8. input parameters via URL
-  url <- reactiveValues(station = NULL, server = NULL, file = NULL, station2 = NULL, server2 = NULL, file2 = NULL)
+  url <- reactiveValues(station = NULL, server = NULL, file = NULL, station2 = NULL, server2 = NULL, file2 = NULL, logfile = NULL, logfile2 = NULL)
 
   # Resetting all parameters to default values each time the page loads (avoids problems when clicking back on the browser)
   reset("side-panel")
@@ -1959,7 +1965,7 @@ server <- function(input,output,session) {
   outputOptions(output, "wavelet", suspendWhenHidden = F)
   
   output$log <- reactive({
-    return(!is.null(file$sitelog))
+    return(!is.null(file$sitelog) || !is.null(file$primary$logfile) || !is.null(file$secondary$logfile))
   })
   outputOptions(output, "log", suspendWhenHidden = F)
 
@@ -5819,6 +5825,7 @@ server <- function(input,output,session) {
             url$server <- toupper(query[['server']])
             file$primary$name <- url_info[3]
             info$format <- url_info[4]
+            url$logfile <- url_info[5]
             info$product1 <- toupper(query[['product']])
             if (tolower(query[['server']]) == "local") {
               if (!isTruthy(file.exists(url$file))) {
@@ -5846,6 +5853,19 @@ server <- function(input,output,session) {
               if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
               # update format for primary series
               shinyjs::delay(100, updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format))
+              # download associated logfile
+              if (isTruthy(url$logfile)) {
+                showNotification(paste0("Downloading logfile from ",toupper(url$server),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+                file$primary$logfile <- tempfile()
+                down <- download(url$server, url$logfile, file$primary$logfile)
+                if (down == 0) {
+                  file$sitelog <- NULL
+                  session$sendCustomMessage("log", basename(url$logfile))
+                } else {
+                  showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                  file$primary$logfile <- NULL
+                }
+              }
               # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
                 url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],NULL))
@@ -5855,6 +5875,7 @@ server <- function(input,output,session) {
                   url$server2 <- toupper(query[['server2']])
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
+                  url$logfile2 <- url_info[5]
                   if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "epos" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "epos" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
                       (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "epos" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "epos" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
@@ -5893,6 +5914,18 @@ server <- function(input,output,session) {
                       filename2 <- file$secondary$name
                     }
                     session$sendCustomMessage("filename2", filename2)
+                    if (isTruthy(url$logfile2)) {
+                      showNotification(paste0("Downloading logfile from ",toupper(url$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+                      file$secondary$logfile <- tempfile()
+                      down <- download(url$server2, url$logfile2, file$secondary$logfile)
+                      if (down == 0) {
+                        file$sitelog <- NULL
+                        session$sendCustomMessage("log", basename(url$logfile2))
+                      } else {
+                        showNotification(HTML(paste0("Logfile not found in ", url$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                        file$secondary$logfile <- NULL
+                      }
+                    }
                   } else {
                     removeNotification("parsing_url2")
                     showNotification(HTML(paste0("File ",file$secondary$name," not found in ",toupper(query[['server2']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -6009,6 +6042,7 @@ server <- function(input,output,session) {
         url$server <- input$server1
         file$primary$name <- url_info[3]
         info$format <- url_info[4]
+        url$logfile <- url_info[5]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
         file$primary$file <- tempfile()
         down <- download(url$server, url$file, file$primary$file)
@@ -6029,6 +6063,18 @@ server <- function(input,output,session) {
             filename <- file$primary$name
             session$sendCustomMessage("filename", filename)
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
+            if (isTruthy(url$logfile)) {
+              showNotification(paste0("Downloading logfile from ",toupper(input$server1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+              file$primary$logfile <- tempfile()
+              down <- download(url$server, url$logfile, file$primary$logfile)
+              if (down == 0) {
+                file$sitelog <- NULL
+                session$sendCustomMessage("log", basename(url$logfile))
+              } else {
+                showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                file$primary$logfile <- NULL
+              }
+            }
           }
         } else {
           removeNotification("parsing_url1")
@@ -6061,6 +6107,7 @@ server <- function(input,output,session) {
         url$server2 <- input$server2
         file$secondary$name <- url_info[3]
         info$format2 <- url_info[4]
+        url$logfile2 <- url_info[5]
         showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
         file$secondary$file <- tempfile()
         down <- download(url$server2, url$file2, file$secondary$file)
@@ -6085,6 +6132,16 @@ server <- function(input,output,session) {
             }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
             updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
+            if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
+              showNotification(paste0("Downloading logfile from ",toupper(input$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+              file$secondary$logfile <- tempfile()
+              down <- download(url$server2, url$logfile2, file$secondary$logfile)
+              if (down != 0) {
+                showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                file$secondary$logfile <- NULL
+              }
+              session$sendCustomMessage("log", basename(url$logfile2))
+            }
           }
         } else {
           removeNotification("parsing_url2")
@@ -6351,9 +6408,16 @@ server <- function(input,output,session) {
       info$tab <- input$tab
       info$format <- input$format
       info$format2 <- input$format2
+      if (isTruthy(file$sitelog)) {
+        sitelog <- file$sitelog$name
+      } else if (isTruthy(file$primary$logfile)) {
+        sitelog <- basename(url$logfile)
+      } else if (isTruthy(file$secondary$logfile)) {
+        sitelog <- basename(url$logfile2)
+      }
       if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                            file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
+                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
                             "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
     }
@@ -6741,9 +6805,16 @@ server <- function(input,output,session) {
   observeEvent(input$plot, {
     req(file$primary)
     removeNotification("no_component")
+    if (isTruthy(file$sitelog)) {
+      sitelog <- file$sitelog$name
+    } else if (isTruthy(file$primary$logfile)) {
+      sitelog <- basename(url$logfile)
+    } else if (isTruthy(file$secondary$logfile)) {
+      sitelog <- basename(url$logfile2)
+    }
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
                           "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                          file$sitelog$name, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
+                          sitelog, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     if (input$tab < 1) {
       if (messages > 0) cat(file = stderr(), "WARNING: tab number is ", input$tab, "\n")
@@ -7132,12 +7203,18 @@ server <- function(input,output,session) {
   })
 
   # Observe sitelog ####
-  observeEvent(file$sitelog, {
+  observeEvent(c(file$sitelog, file$primary$logfile, file$secondary$logfile), {
     if (messages > 0) cat(file = stderr(), "Reading sitelog", "\n")
-    info$log <- ReadLog(file$sitelog)
+    if (isTruthy(file$sitelog)) {
+      info$log <- ReadLog(file$sitelog$datapath)
+    } else if (isTruthy(file$primary$logfile)) {
+      info$log <- ReadLog(file$primary$logfile)
+    } else if (isTruthy(file$primary$logfile)) {
+      info$log <- ReadLog(file$secondary$logfile)
+    }
   }, priority = 1)
   observeEvent(c(input$printLog),{
-    req(file$primary, file$sitelog)
+    req(file$primary)
     output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
       if (length(info$log[[1]]) > 0) {
         sprintf("Antenna changes from log file at\n%s",paste(unlist(info$log[[1]]), collapse = ", "))
@@ -9344,8 +9421,8 @@ server <- function(input,output,session) {
   }
   ReadLog <- function(x) {
     removeNotification("bad_sitelog")
-    antrec <- grep("^[34].[x0-9]+ ",readLines(con = x$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
-    dates <- grep(" Date Removed ",readLines(con = x$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+    antrec <- grep("^[34].[x0-9]+ ",readLines(con = x, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+    dates <- grep(" Date Removed ",readLines(con = x, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
     if (length(antrec) > 0 && length(dates) > 0) {
       ante = c()
       rece = c()
@@ -10547,6 +10624,7 @@ server <- function(input,output,session) {
         variable <- "station2"
       }
     }
+    logfile <- NULL
     server <- toupper(server)
     product <- toupper(product)
     # NGL ####
@@ -10597,10 +10675,12 @@ server <- function(input,output,session) {
       format <- 2
       if (product == "UGA") {
         url <- "ftp://webrenag.unice.fr/products/position-timeseries/"
+        url_log <- "ftp://webrenag.unice.fr/sitelogs/"
         pattern <- "_raw.pos_UGA_ITRF14.pos"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
           file <- paste0(url,name)
+          logfile <- paste0(url_log,toupper(station),"00FRA.log")
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
@@ -11018,7 +11098,7 @@ server <- function(input,output,session) {
       showNotification(paste0("Unknown server ",server,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
       return(NULL)
     }
-    return(list(station,file,name,format))
+    return(list(station,file,name,format,logfile))
   }
   deg2m <- function(lat,lon,h,dlat,dlon) {
     #lat, lon, dlat, dlon in radians; h in m
@@ -11110,23 +11190,24 @@ server <- function(input,output,session) {
     } else {
       # download series using curl or wget
       if (isTruthy(Sys.which("curl"))) {
+        method <- "curl"
         if (server == "FORMATER") {
           extras <- "-u SARI:bwPgzhe4Zu"
         } else {
           extras <- ""
         }
-        down <- suppressWarnings(try(download.file(remote, destfile = local, method = "curl", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
       } else if (isTruthy(Sys.which("wget"))) {
+        method <- "wget"
         if (server == "FORMATER") {
           extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
         } else {
           extras <- ""
         }
-        down <- suppressWarnings(try(download.file(remote, destfile = local, method = "wget", extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
       } else {
         showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
-        down <- 1
+        return(1)
       }
+      down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     }
     return(down)
   }
