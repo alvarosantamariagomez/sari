@@ -1849,7 +1849,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   debug <- F # saving the environment
-  messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3)
+  messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("1st component", "2nd component", "3rd component")
   output$tabName1 <- renderText({ info$components[1] })
   output$tabName2 <- renderText({ info$components[2] })
@@ -3131,7 +3131,7 @@ server <- function(input,output,session) {
               trans$results <- synthesis
               trans$LScoefs <- synthesis$coefficients
               trans$res <- res
-              if (input$waveletType != 1) {
+              if (isTruthy(input$wavelet) && input$waveletType != 1) {
                 updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
               }
               trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
@@ -5832,7 +5832,7 @@ server <- function(input,output,session) {
             if (isTruthy(down) && down == 0) {
               if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
               # update format for primary series
-              updateRadioButtons(session, inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format, inline = T)
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format))
               # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
                 url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],NULL))
@@ -5846,7 +5846,7 @@ server <- function(input,output,session) {
                       (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "epos" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "epos" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
                     updateCheckboxInput(session, inputId = "ne", value = T)
                   }
-                  updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = info$format2, inline = T)
+                  updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2)
                   if (tolower(query[['server2']]) == "local") {
                     if (!isTruthy(file.exists(url$file2))) {
                       showNotification(paste0("Local file ",url$file2," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5873,7 +5873,7 @@ server <- function(input,output,session) {
                     if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
-                    shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1, inline = F))
+                    shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
                     if (url$server2 == "LOCAL") {
                       filename2 <- basename(url$file2)
                     } else {
@@ -5886,6 +5886,7 @@ server <- function(input,output,session) {
                   }
                 }
               }
+              if (messages > 4) cat(file = stderr(), "From: observe url\n")
               data <- digest()
               if (!is.null(data)) {
                 obs(data)
@@ -6007,6 +6008,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(down) && down == 0) {
           if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
+          if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
           data <- digest()
           if (!is.null(data)) {
             obs(data)
@@ -6058,6 +6060,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(down) && down == 0) {
           if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
+          if (messages > 4) cat(file = stderr(), "From: observe remote series (secondary)\n")
           data <- digest()
           if (!is.null(data)) {
             obs(data)
@@ -6091,6 +6094,7 @@ server <- function(input,output,session) {
     req(obs())
     req(input$euler)
     obs(NULL)
+    if (messages > 4) cat(file = stderr(), "From: observe euler (1)\n")
     data <- digest()
     obs(data)
   })
@@ -6100,6 +6104,7 @@ server <- function(input,output,session) {
     if (input$eulerType > 0) {
       shinyjs::delay(300, { # to avoid firing the computation of the plate rotation before updating the parameters
         obs(NULL)
+        if (messages > 4) cat(file = stderr(), "From: observe euler (2)\n")
         data <- digest()
         obs(data)
       })
@@ -6387,6 +6392,7 @@ server <- function(input,output,session) {
     trans$x <- NULL
     trans$y <- NULL
     trans$sy <- NULL
+    if (messages > 4) cat(file = stderr(), "From: observe format 1D\n")
     data <- digest()
     obs(data)
     if (input$fitType == 2) {
@@ -6420,6 +6426,7 @@ server <- function(input,output,session) {
     req(obs())
     if (info$format != input$format) {
       obs(NULL)
+      if (messages > 4) cat(file = stderr(), "From: observe primary series format (1)\n")
       data <- digest()
       obs(data)
     }
@@ -6427,6 +6434,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$separator, input$tunits, input$neuenu), {
     req(obs())
     obs(NULL)
+    if (messages > 4) cat(file = stderr(), "From: observe primary series format (2)\n")
     data <- digest()
     obs(data)
   }, priority = 6)
@@ -6459,6 +6467,7 @@ server <- function(input,output,session) {
     updateTextInput(session, "short_period", value = "")
     updateTextInput(session, "ObsError", value = "")
     obs(NULL)
+    if (messages > 4) cat(file = stderr(), "From: observe averaging\n")
     data <- digest()
     if (!is.null(data)) {
       obs(data)
@@ -6495,6 +6504,7 @@ server <- function(input,output,session) {
       if (input$optionSecondary > 0) {
         if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
         obs(NULL)
+        if (messages > 4) cat(file = stderr(), "From: observe secondary series (1)\n")
         data <- digest()
         obs(data)
       }
@@ -6506,6 +6516,7 @@ server <- function(input,output,session) {
     if (input$optionSecondary > 0) {
       if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
       obs(NULL)
+      if (messages > 4) cat(file = stderr(), "From: observe secondary series (2)\n")
       data <- digest()
       obs(data)
     }
@@ -6525,6 +6536,7 @@ server <- function(input,output,session) {
       }
     }
     obs(NULL)
+    if (messages > 4) cat(file = stderr(), "From: observe secondary series (3)\n")
     data <- digest()
     if (!is.null(data)) {
       obs(data)
@@ -6727,6 +6739,7 @@ server <- function(input,output,session) {
     }
     info$format <- input$format
     info$width <- isolate(session$clientData$output_plot1_width)
+    if (messages > 4) cat(file = stderr(), "From: observe plotting\n")
     data <- digest()
     if (!is.null(data)) {
       obs(data)
@@ -7581,10 +7594,10 @@ server <- function(input,output,session) {
       }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
-        if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
+        if ((url$server == "FORMATER" && isTruthy(spotgins)) || url$server == "JPL" || url$server == "NGL" || url$server == "EPOS") {
           updateRadioButtons(session, inputId = "neuenu", selected = 2)
           disable("neuenu")
-        } else if (url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE" ) {
+        } else if ((url$server == "FORMATER" && !isTruthy(spotgins)) || url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE" ) {
           updateRadioButtons(session, inputId = "neuenu", selected = 1)
           disable("neuenu")
         }
