@@ -367,6 +367,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                 });
                             '),
                   
+                  # Getting the elements that change
+                  tags$script(
+                    "$(document).on('shiny:inputchanged', function(event) {
+                      if (event.name != 'changed') {
+                        Shiny.setInputValue('changed', event.name);
+                      }
+                    });"
+                  ),
+                  
                   # update fileInput file name from URL
                   tags$script(HTML(jscode_update_series)),
                   tags$script(HTML(jscode_update_series2)),
@@ -1849,7 +1858,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   debug <- F # saving the environment
-  messages <- 5 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("1st component", "2nd component", "3rd component")
   output$tabName1 <- renderText({ info$components[1] })
   output$tabName2 <- renderText({ info$components[2] })
@@ -1857,6 +1866,7 @@ server <- function(input,output,session) {
 
   # Welcome ####
   observe({
+    if (messages > 5) cat(file = stderr(), paste("Latest input fired:", paste(input$changed, collapse = ", ")), "\n")
     req(input$size, info$intro)
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
