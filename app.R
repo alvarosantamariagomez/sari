@@ -1866,7 +1866,10 @@ server <- function(input,output,session) {
 
   # Welcome ####
   observe({
-    if (messages > 5) cat(file = stderr(), paste("Latest input fired:", paste(input$changed, collapse = ", ")), "\n")
+    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable", x, value = F))) == 0]
+    if (length(inputChanged) > 0 && messages > 5) {
+      cat(file = stderr(), paste("Latest input fired:", paste(input$changed, collapse = ", ")), "\n")
+    }
     req(input$size, info$intro)
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
