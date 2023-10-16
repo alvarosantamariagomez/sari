@@ -11093,7 +11093,7 @@ server <- function(input,output,session) {
           url <- "https://www.sirgas.org/en/stations/station-list/"
           withBusyIndicatorServer(variable, {
             dir_contents <- try(httr::GET(url), silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error") && length(dir_contents) > 50) {
               stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
               if (series == 1) {
                 output$station1 <- renderUI({
