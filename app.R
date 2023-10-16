@@ -6131,8 +6131,8 @@ server <- function(input,output,session) {
             obs(data)
             filename2 <- file$secondary$name
             session$sendCustomMessage("filename2", filename2)
-            if ((input$server1 == "NGL" || input$server1 == "JPL" || input$server1 == "EPOS" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL"  && input$server2 != "EPOS" && input$product2 != "SPOTGINS_POS") ||
-                (input$server2 == "NGL" || input$server2 == "JPL" || input$server2 == "EPOS" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$server1 != "EPOS" && info$product1 != "SPOTGINS_POS")) {
+            if ((input$server1 == "NGL" || input$server1 == "JPL" || input$server1 == "EPOS" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL"  && input$server2 != "EPOS" && isTruthy(input$product2) && input$product2 != "SPOTGINS_POS") ||
+                (input$server2 == "NGL" || input$server2 == "JPL" || input$server2 == "EPOS" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$server1 != "EPOS" && isTruthy(info$product1) && info$product1 != "SPOTGINS_POS")) {
               updateCheckboxInput(session, inputId = "ne", value = T)
             }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
@@ -10755,15 +10755,14 @@ server <- function(input,output,session) {
       format <- 1
       if (product == "IGS20") {
         url <- "ftp://igs-rf.ign.fr/pub/crd/"
-        url_log <- "ftp://igs-rf.ign.fr/pub/sitelogs/igs/"
         pattern <- "_igs.plh"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
           file <- paste0(url,name)
+          url_log <- "ftp://igs-rf.ign.fr/pub/sitelogs/igs/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
           if (isTruthy(dir_contents)) {
-            pattern <- paste0(tolower(station),"_")
-            found <- grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T)
+            found <- grep(paste0(tolower(station),"_"), strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T)
             if (isTruthy(found)) {
               logfile <- paste0(url_log,found)
             }
@@ -10799,6 +10798,14 @@ server <- function(input,output,session) {
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station))
           file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
+          url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
+          dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+          if (isTruthy(dir_contents)) {
+            found <- grep(paste0("^",tolower(station)), strsplit(dir_contents, "\r*\n")[[1]], perl = T, value = T, fixed = F)
+            if (isTruthy(found)) {
+              logfile <- paste0(url_log,found)
+            }
+          }
         } else {
           url <- "https://api.sonel.org/v1/products/vlm/gnss/meta?mode=solution"
           withBusyIndicatorServer(variable, {
