@@ -5861,6 +5861,7 @@ server <- function(input,output,session) {
                 if (down == 0) {
                   file$sitelog <- NULL
                   session$sendCustomMessage("log", basename(url$logfile))
+                  updateCheckboxInput(inputId = "traceLog", value = T)
                 } else {
                   showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                   file$primary$logfile <- NULL
@@ -5921,6 +5922,7 @@ server <- function(input,output,session) {
                       if (down == 0) {
                         file$sitelog <- NULL
                         session$sendCustomMessage("log", basename(url$logfile2))
+                        updateCheckboxInput(inputId = "traceLog", value = T)
                       } else {
                         showNotification(HTML(paste0("Logfile not found in ", url$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                         file$secondary$logfile <- NULL
@@ -6070,6 +6072,7 @@ server <- function(input,output,session) {
               if (down == 0) {
                 file$sitelog <- NULL
                 session$sendCustomMessage("log", basename(url$logfile))
+                updateCheckboxInput(inputId = "traceLog", value = T)
               } else {
                 showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                 file$primary$logfile <- NULL
@@ -6136,7 +6139,11 @@ server <- function(input,output,session) {
               showNotification(paste0("Downloading logfile from ",toupper(input$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
               file$secondary$logfile <- tempfile()
               down <- download("", url$logfile2, file$secondary$logfile)
-              if (down != 0) {
+              if (down == 0) {
+                file$sitelog <- NULL
+                session$sendCustomMessage("log", basename(url$logfile2))
+                updateCheckboxInput(inputId = "traceLog", value = T)
+              } else {
                 showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                 file$secondary$logfile <- NULL
               }
