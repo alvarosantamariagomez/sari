@@ -11210,13 +11210,15 @@ server <- function(input,output,session) {
     removeNotification("no_cmd")
     # stream JSON file
     if (server == "EPOS") {
-      json <- suppressWarnings(try(jsonlite::stream_in(url(remote), verbose = F), silent = T))
-      if (length(json) > 0) {
+      con <- url(remote)
+      json <- suppressWarnings(try(jsonlite::stream_in(con, verbose = F), silent = T))
+      if (!inherits(json,"try-error") && !is.null(json)) {
         down <- 0
         json <- json[,c("epoch","e","n","u")]
         write.table(json, file = local, append = F, quote = F, row.names = F, col.names = F)
       } else {
         down <- 1
+        close(con)
       }
     } else {
       # download series using curl or wget
