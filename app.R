@@ -5834,11 +5834,11 @@ server <- function(input,output,session) {
                 url$file <- NULL
                 req(info$stop)
               }
-              showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
               down <- 0
               file$primary$file <- url$file
             } else {
-              showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
               file$primary$file <- tempfile()
               down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
@@ -5890,11 +5890,11 @@ server <- function(input,output,session) {
                       url$file2 <- NULL
                       req(info$stop)
                     }
-                    showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+                    showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                     down <- 0
                     file$secondary$file <- url$file2
                   } else {
-                    showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+                    showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                     file$secondary$file <- tempfile()
                     down <- download(url$server2, url$file2, file$secondary$file)
                     if (file.exists(file$secondary$file)) {
@@ -6046,7 +6046,7 @@ server <- function(input,output,session) {
         file$primary$name <- url_info[3]
         info$format <- url_info[4]
         url$logfile <- url_info[5]
-        showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
         file$primary$file <- tempfile()
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
@@ -6113,7 +6113,7 @@ server <- function(input,output,session) {
         file$secondary$name <- url_info[3]
         info$format2 <- url_info[4]
         url$logfile2 <- url_info[5]
-        showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(input$server2),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
         file$secondary$file <- tempfile()
         down <- download(url$server2, url$file2, file$secondary$file)
         if (file.exists(file$secondary$file)) {
@@ -11080,7 +11080,7 @@ server <- function(input,output,session) {
           return(NULL)
         })
       }
-    # SIRGAS
+    # SIRGAS ####
     } else if (server == "SIRGAS") {
       if (product == "IGB14") {
         format <- 1
@@ -11114,7 +11114,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # LOCAL
+    # LOCAL ####
     } else if (server == "LOCAL") {
       if (product == "NEU" || product == "ENU") {
         format <- 1
