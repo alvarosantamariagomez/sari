@@ -5865,6 +5865,7 @@ server <- function(input,output,session) {
                 } else {
                   showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                   file$primary$logfile <- NULL
+                  url$logfile <- NULL
                 }
               }
               # processing secondary series
@@ -5915,7 +5916,7 @@ server <- function(input,output,session) {
                       filename2 <- file$secondary$name
                     }
                     session$sendCustomMessage("filename2", filename2)
-                    if (isTruthy(url$logfile2)) {
+                    if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
                       showNotification(paste0("Downloading logfile from ",toupper(url$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
                       file$secondary$logfile <- tempfile()
                       down <- download("", url$logfile2, file$secondary$logfile)
@@ -6076,6 +6077,7 @@ server <- function(input,output,session) {
               } else {
                 showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                 file$primary$logfile <- NULL
+                url$logfile <- NULL
               }
             }
           }
@@ -6147,7 +6149,6 @@ server <- function(input,output,session) {
                 showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                 file$secondary$logfile <- NULL
               }
-              session$sendCustomMessage("log", basename(url$logfile2))
             }
           }
         } else {
@@ -6421,6 +6422,8 @@ server <- function(input,output,session) {
         sitelog <- basename(url$logfile)
       } else if (isTruthy(file$secondary$logfile)) {
         sitelog <- basename(url$logfile2)
+      } else {
+        sitelog <- NULL
       }
       if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
@@ -6818,6 +6821,8 @@ server <- function(input,output,session) {
       sitelog <- basename(url$logfile)
     } else if (isTruthy(file$secondary$logfile)) {
       sitelog <- basename(url$logfile2)
+    } else {
+      sitelog <- NULL
     }
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
                           "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
@@ -7216,7 +7221,7 @@ server <- function(input,output,session) {
       info$log <- ReadLog(file$sitelog$datapath)
     } else if (isTruthy(file$primary$logfile)) {
       info$log <- ReadLog(file$primary$logfile)
-    } else if (isTruthy(file$primary$logfile)) {
+    } else if (isTruthy(file$secondary$logfile)) {
       info$log <- ReadLog(file$secondary$logfile)
     }
   }, priority = 1)
