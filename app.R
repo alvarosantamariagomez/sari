@@ -5857,7 +5857,7 @@ server <- function(input,output,session) {
               if (isTruthy(url$logfile)) {
                 showNotification(paste0("Downloading logfile from ",toupper(url$server),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
                 file$primary$logfile <- tempfile()
-                down <- download(url$server, url$logfile, file$primary$logfile)
+                down <- download("", url$logfile, file$primary$logfile)
                 if (down == 0) {
                   file$sitelog <- NULL
                   session$sendCustomMessage("log", basename(url$logfile))
@@ -5917,7 +5917,7 @@ server <- function(input,output,session) {
                     if (isTruthy(url$logfile2)) {
                       showNotification(paste0("Downloading logfile from ",toupper(url$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
                       file$secondary$logfile <- tempfile()
-                      down <- download(url$server2, url$logfile2, file$secondary$logfile)
+                      down <- download("", url$logfile2, file$secondary$logfile)
                       if (down == 0) {
                         file$sitelog <- NULL
                         session$sendCustomMessage("log", basename(url$logfile2))
@@ -6066,7 +6066,7 @@ server <- function(input,output,session) {
             if (isTruthy(url$logfile)) {
               showNotification(paste0("Downloading logfile from ",toupper(input$server1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
               file$primary$logfile <- tempfile()
-              down <- download(url$server, url$logfile, file$primary$logfile)
+              down <- download("", url$logfile, file$primary$logfile)
               if (down == 0) {
                 file$sitelog <- NULL
                 session$sendCustomMessage("log", basename(url$logfile))
@@ -6135,7 +6135,7 @@ server <- function(input,output,session) {
             if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
               showNotification(paste0("Downloading logfile from ",toupper(input$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
               file$secondary$logfile <- tempfile()
-              down <- download(url$server2, url$logfile2, file$secondary$logfile)
+              down <- download("", url$logfile2, file$secondary$logfile)
               if (down != 0) {
                 showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                 file$secondary$logfile <- NULL
@@ -10950,6 +10950,11 @@ server <- function(input,output,session) {
             file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/UGA-CNRS/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
           } else if (product == "ROB-EUREF") {
             file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/ROB-EUREF/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+          }
+          url_log <- "https://gnss-metadata.eu/data/station/log/"
+          found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
+          if (isTruthy(found)) {
+            logfile <- paste0(url_log,found)
           }
         } else {
           withBusyIndicatorServer(variable, {
