@@ -10743,10 +10743,19 @@ server <- function(input,output,session) {
       format <- 1
       if (product == "IGS20") {
         url <- "ftp://igs-rf.ign.fr/pub/crd/"
+        url_log <- "ftp://igs-rf.ign.fr/pub/sitelogs/igs/"
         pattern <- "_igs.plh"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
           file <- paste0(url,name)
+          dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+          if (isTruthy(dir_contents)) {
+            pattern <- paste0(tolower(station),"_")
+            found <- grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T)
+            if (isTruthy(found)) {
+              logfile <- paste0(url_log,found)
+            }
+          }
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
@@ -10851,6 +10860,11 @@ server <- function(input,output,session) {
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
           file <- paste0(url,name)
+          url_log <- "https://gnss-metadata.eu/data/station/log/"
+          found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
+          if (isTruthy(found)) {
+            logfile <- paste0(url_log,found)
+          }
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(readHTMLTable(getURL(url, crlf = TRUE), skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
