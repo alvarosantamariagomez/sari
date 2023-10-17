@@ -299,8 +299,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   id = "loading_page",
                   h1(style = "text-align: center; color: #333333; font-weight: bold", "SARI session established."),
                   h1(style = "text-align: center; color: #333333; font-weight: bold", "Loading user interface ..."),
-                  div( style = "width: 40%; margin: 0 auto",
-                       img(src = "SARI_logo_animated.gif", width = "100%")
+                  div( style = "margin: 0 auto",
+                       img(src = "SARI_logo_animated.gif", width = "80%")
                   )
                 ),
                 
