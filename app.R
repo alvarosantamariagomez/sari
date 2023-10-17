@@ -2192,7 +2192,7 @@ server <- function(input,output,session) {
   observeEvent(c(step_d()), {
     if (grepl("^=", trimws(step_d()), perl = T)) {
       step <- try(eval(parse(text = sub("=", "", trimws(step_d())))), silent = T)
-      if (isTruthy(step)) {
+      if (isTruthy(step) && !inherits(step,"try-error")) {
         updateTextInput(session, inputId = "step", value = step)
       }
       req(info$stop)
@@ -2205,7 +2205,7 @@ server <- function(input,output,session) {
   observeEvent(c(step2_d()), {
     if (grepl("^=", trimws(step2_d()), perl = T)) {
       step <- try(eval(parse(text = sub("=","",trimws(step2_d())))), silent = T)
-      if (isTruthy(step)) {
+      if (isTruthy(step) && !inherits(step,"try-error")) {
         updateTextInput(session, inputId = "step2", value = step)
       }
       req(info$stop)
@@ -3131,7 +3131,7 @@ server <- function(input,output,session) {
                   phase <- atan2(cosine,sine)
                   amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
                   phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
-                  if (isTruthy(amp_err) && isTruthy(phase_err)) {
+                  if (isTruthy(amp_err) && isTruthy(phase_err) && !inherits(amp_err,"try-error") && !inherits(phase_err,"try-error")) {
                     for (i in list(noquote(trans$periods[ss]), amp, amp_err, phase, phase_err)) {
                       info_out[[length(info_out) + 1]] = i
                     }
@@ -4151,7 +4151,7 @@ server <- function(input,output,session) {
           c <- max(which(trans$spectra_old))
           p <- trans$psd[,c]
           # slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
-          # if (isTruthy(slope)) {
+          # if (isTruthy(slope) && !inherits(slope,"try-error")) {
           #   slope$coef[2] <- -1*slope$coef[2]
           #   regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
           #   lines(1/trans$fs, regression, col = SARIcolors[c], lwd = 3)
@@ -8227,7 +8227,7 @@ server <- function(input,output,session) {
     } else if (format == 2) { #PBO
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
-      if (isTruthy(tableAll)) {
+      if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
         if (isTruthy(swap)) {
           extracted <- tableAll[,c(17,16,18,20,19,21)]
         } else {
@@ -8245,7 +8245,7 @@ server <- function(input,output,session) {
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
-      if (isTruthy(tableAll)) {
+      if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
         if (input$tunits == 1) {
           extracted <- data.frame( x = tableAll[,4])
         } else if (input$tunits == 2) {
@@ -8271,7 +8271,7 @@ server <- function(input,output,session) {
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
         skip <- 0
         tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
-        if (isTruthy(tableAll)) {
+        if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
           columns <- dim(tableAll)[2]
           if (epoch <= columns && variable <= columns) {
             extracted <- data.frame(x = tableAll[[epoch]])
@@ -9558,7 +9558,7 @@ server <- function(input,output,session) {
     removeNotification("bad_custom")
     changes <- c()
     cols <- try(range(count.fields(z$datapath, comment.char = "#")), silent = F)
-    if (!isTruthy(cols)) {
+    if (!isTruthy(cols) || inherits(cols,"try-error")) {
       showNotification("Unable to read the input custom discontinuity file.", action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
@@ -9569,7 +9569,7 @@ server <- function(input,output,session) {
         col <- 1
       }
       table <- try(read.table(z$datapath, comment.char = "#", fill = T, col.names = c(1:cols[2]))[,1:col], silent = F)
-      if (isTruthy(table)) {
+      if (isTruthy(table) && !inherits(table,"try-error")) {
         if (col == 2) {
           if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$X2, ignore.case = F, perl = T))) { #NGL steps file
             table$dyear <- decimal_date(as.Date(ymd(table$X2)))
@@ -10659,7 +10659,7 @@ server <- function(input,output,session) {
               stations_available <- readLines("www/NGL_database.txt", warn = F)
             } else {
               dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-              if (isTruthy(dir_contents)) {
+              if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
                 stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
                 writeLines(stations_available, "www/NGL_database.txt", sep = "\n")
               } else {
@@ -10688,16 +10688,16 @@ server <- function(input,output,session) {
       format <- 2
       if (product == "UGA") {
         url <- "ftp://webrenag.unice.fr/products/position-timeseries/"
-        url_log <- "ftp://webrenag.unice.fr/sitelogs/"
         pattern <- "_raw.pos_UGA_ITRF14.pos"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
           file <- paste0(url,name)
+          url_log <- "ftp://webrenag.unice.fr/sitelogs/"
           logfile <- paste0(url_log,toupper(station),"00FRA.log")
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
               if (series == 1) {
                 output$station1 <- renderUI({
@@ -10730,7 +10730,7 @@ server <- function(input,output,session) {
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
               if (series == 1) {
                 output$station1 <- renderUI({
@@ -10762,7 +10762,7 @@ server <- function(input,output,session) {
           file <- paste0(url,name)
           url_log <- "ftp://igs-rf.ign.fr/pub/sitelogs/igs/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
-          if (isTruthy(dir_contents)) {
+          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             found <- grep(paste0(tolower(station),"_"), strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T)
             if (isTruthy(found)) {
               logfile <- paste0(url_log,found)
@@ -10771,7 +10771,7 @@ server <- function(input,output,session) {
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
               if (series == 1) {
                 output$station1 <- renderUI({
@@ -10801,7 +10801,7 @@ server <- function(input,output,session) {
           file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
-          if (isTruthy(dir_contents)) {
+          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             found <- grep(paste0("^",tolower(station)), strsplit(dir_contents, "\r*\n")[[1]], perl = T, value = T, fixed = F)
             if (isTruthy(found)) {
               logfile <- paste0(url_log,found)
@@ -10811,7 +10811,7 @@ server <- function(input,output,session) {
           url <- "https://api.sonel.org/v1/products/vlm/gnss/meta?mode=solution"
           withBusyIndicatorServer(variable, {
             dir_contents <- try(fromJSON(txt = url), silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               code <- which(dir_contents$code == product)
               if (code > 0) {
                 stations_available <- dir_contents$stations[[code]]
@@ -10888,7 +10888,7 @@ server <- function(input,output,session) {
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(readHTMLTable(getURL(url, crlf = TRUE), skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sub(pattern, "", grep(pattern, dir_contents, ignore.case = F, value = T))
               if (series == 1) {
                 output$station1 <- renderUI({
@@ -10930,7 +10930,7 @@ server <- function(input,output,session) {
           withBusyIndicatorServer(variable, {
             url <- paste0(url,"api/1.0/products/?output=csv")
             dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
-            if (isTruthy(dir_contents)) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
               if (length(stations_available) > 0) {
                 if (series == 1) {
@@ -11064,7 +11064,7 @@ server <- function(input,output,session) {
       } else {
         withBusyIndicatorServer(variable, {
           dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-          if (isTruthy(dir_contents)) {
+          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             stations_available <- sub(paste0(pattern,".*"), "", grep(pattern, dir_contents, fixed = T, value = T), perl = T)
             if (series == 1) {
               output$station1 <- renderUI({
@@ -11090,11 +11090,20 @@ server <- function(input,output,session) {
           url <- "https://www.sirgas.org/fileadmin/docs/SIRGAS_CRD/"
           name <- paste0(toupper(station),".PLH")
           file <- paste0(url,name)
+          url_log <- "ftp://ftp.sirgas.org/pub/gps/DGF/station/log/"
+          dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+            found <- grep(tolower(station), strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T)
+            if (isTruthy(found)) {
+              logfile <- paste0(url_log,found)
+            }
+          }
         } else {
           url <- "https://www.sirgas.org/en/stations/station-list/"
+          url2 <- "https://sirgas.ipgh.org/maps/stations/stations-list.php"
           withBusyIndicatorServer(variable, {
             dir_contents <- try(httr::GET(url), silent = T)
-            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error") && length(dir_contents) > 50) {
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
               if (series == 1) {
                 output$station1 <- renderUI({
@@ -11106,7 +11115,21 @@ server <- function(input,output,session) {
                 })
               }
             } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              dir_contents <- try(httr::GET(url2), silent = T)
+              if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
+                if (series == 1) {
+                  output$station1 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })  
+                } else if (series == 2) {
+                  output$station2 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })
+                }
+              } else {
+                showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              }
             }
             return(NULL)
           })
@@ -11220,7 +11243,7 @@ server <- function(input,output,session) {
     if (server == "EPOS") {
       con <- url(remote)
       json <- suppressWarnings(try(jsonlite::stream_in(con, verbose = F), silent = T))
-      if (!inherits(json,"try-error") && !is.null(json)) {
+      if (isTruthy(json) && !inherits(json,"try-error")) {
         down <- 0
         json <- json[,c("epoch","e","n","u")]
         write.table(json, file = local, append = F, quote = F, row.names = F, col.names = F)
