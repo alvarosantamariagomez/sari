@@ -132,24 +132,29 @@ color: gray62 !important;
 }'
 
 # Update fileInput file names from URL (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
-jscode_update_series <- "
+update_series <- "
 Shiny.addCustomMessageHandler('filename', function(txt) {
   var target = $('#series').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
-jscode_update_series2 <- "
+update_series2 <- "
 Shiny.addCustomMessageHandler('filename2', function(txt) {
   var target = $('#series2').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
-jscode_update_sitelog <- "
+update_sitelog <- "
 Shiny.addCustomMessageHandler('log', function(txt) {
   var target = $('#log').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
-jscode_update_soln <- "
+update_soln <- "
 Shiny.addCustomMessageHandler('soln', function(txt) {
   var target = $('#soln').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
+update_custom <- "
+Shiny.addCustomMessageHandler('custom', function(txt) {
+  var target = $('#custom').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
 
@@ -387,10 +392,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   ),
                   
                   # update fileInput file name from URL
-                  tags$script(HTML(jscode_update_series)),
-                  tags$script(HTML(jscode_update_series2)),
-                  tags$script(HTML(jscode_update_sitelog)),
-                  tags$script(HTML(jscode_update_soln)),
+                  tags$script(HTML(update_series)),
+                  tags$script(HTML(update_series2)),
+                  tags$script(HTML(update_sitelog)),
+                  tags$script(HTML(update_soln)),
+                  tags$script(HTML(update_custom)),
                   
                   # confirm click on refresh button
                   # uiOutput("refresh")
@@ -1802,7 +1808,7 @@ server <- function(input,output,session) {
   # Initialize reactive variables of the global database
 
   # 1. input files.
-  file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL, soln = NULL)
+  file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL, soln = NULL, custom = NULL)
 
   # 2. series ranges:
   #   x1 = original time axis
@@ -1986,7 +1992,7 @@ server <- function(input,output,session) {
   outputOptions(output, "soln", suspendWhenHidden = F)
 
   output$custom <- reactive({
-    return(!is.null(input$custom))
+    return(!is.null(file$custom))
   })
   outputOptions(output, "custom", suspendWhenHidden = F)
 
@@ -6111,7 +6117,7 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
-      url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,1))
+      url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,2))
       if (isTruthy(url_info)) {
         url$station2 <- url_info[1]
         url$file2 <- url_info[2]
@@ -6410,6 +6416,10 @@ server <- function(input,output,session) {
     req(file$primary)
     file$soln <- isolate(input$soln)
   }, priority = 8)
+  observeEvent(input$custom, {
+    req(file$primary)
+    file$custom <- isolate(input$custom)
+  }, priority = 8)
 
   # Observe secondary file ####
   observeEvent(input$series2, {
@@ -6418,7 +6428,7 @@ server <- function(input,output,session) {
   }, priority = 8)
 
   # Observe series info ####
-  observeEvent(c(input$tab, input$format, input$format2, input$tunits, input$sigmas, input$series2, input$optionSecondary, input$log, input$sinfo, input$soln, input$custom, inputs$step), {
+  observeEvent(c(input$tab, input$format, input$format2, input$tunits, input$sigmas, file$secondary, input$optionSecondary, input$log, input$sinfo, file$soln, file$custom, inputs$step), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
@@ -6440,10 +6450,15 @@ server <- function(input,output,session) {
       } else {
         soln <- NULL
       }
-      if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
+      if (isTruthy(file$custom)) {
+        custom <- file$custom$name
+      } else {
+        custom <- NULL
+      }
+      if (messages > 0) cat(file = stderr(), "CHANGE file : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
                             sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                            input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
+                            custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
                             "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
     }
   }, priority = 7)
@@ -6844,10 +6859,15 @@ server <- function(input,output,session) {
     } else {
       soln <- NULL
     }
-    if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
+    if (isTruthy(file$custom)) {
+      custom <- file$custom$name
+    } else {
+      custom <- NULL
+    }
+    if (messages > 0) cat(file = stderr(), "PLOT   file : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
                           "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
                           sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                          input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
+                          custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     if (input$tab < 1) {
       if (messages > 0) cat(file = stderr(), "WARNING: tab number is ", input$tab, "\n")
       showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
@@ -7208,8 +7228,8 @@ server <- function(input,output,session) {
   })
 
   # Observe custom ####
-  observeEvent(c(input$custom, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
-    req(input$custom,file$id1)
+  observeEvent(c(file$custom, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
+    req(file$custom,file$id1)
     if (messages > 0) cat(file = stderr(), "Reading custom", "\n")
     id1 <- file$id1
     if (length(file$secondary) > 0) {
@@ -7221,10 +7241,10 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$custom <- ReadCustom(id1,id2,input$custom)
+    info$custom <- ReadCustom(id1,id2,file$custom)
   }, priority = 4)
   observeEvent(c(input$printCustom),{
-    req(file$primary, input$custom)
+    req(file$primary, file$custom)
     output$changes_ant1c <- output$changes_ant2c <- output$changes_ant3c <- renderText({
       if (length(info$custom) > 0) {
         sprintf("Changes from custom file at\n%s",paste(unlist(info$custom), collapse = ", "))
@@ -10673,6 +10693,12 @@ server <- function(input,output,session) {
         if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
+          if (file.exists("www/steps.txt") && series == 1) {
+            file$custom$name <- "steps.txt"
+            file$custom$datapath <- "www/steps.txt"
+            session$sendCustomMessage("custom", "steps.txt")
+            updateCheckboxInput(inputId = "traceCustom", value = T)
+          }
         } else {
           withBusyIndicatorServer(variable, {
             if (file.exists("www/NGL_database.txt")) {
@@ -10780,12 +10806,12 @@ server <- function(input,output,session) {
         if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
-          if (file.exists("www/soln.snx")) {
-            file$soln <- "soln.snx"
+          if (file.exists("www/soln.snx") && series == 1) {
+            file$soln$name <- "soln.snx"
             file$soln$datapath <- "www/soln.snx"
             session$sendCustomMessage("soln", "soln.snx")
+            updateCheckboxInput(inputId = "traceSoln", value = T)
           }
-          updateCheckboxInput(inputId = "traceSoln", value = T)
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
