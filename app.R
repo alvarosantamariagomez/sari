@@ -5824,7 +5824,7 @@ server <- function(input,output,session) {
             url$file <- NULL
             req(info$stop)
           }
-          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']],NULL))
+          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']],1))
           if (isTruthy(url_info)) {
             url$station <- url_info[1]
             url$file <- url_info[2]
@@ -5876,7 +5876,7 @@ server <- function(input,output,session) {
               }
               # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
-                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],NULL))
+                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],2))
                 if (isTruthy(url_info)) {
                   url$station2 <- url_info[1]
                   url$file2 <- url_info[2]
@@ -6044,7 +6044,7 @@ server <- function(input,output,session) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
       removeNotification("parsing_url1")
-      url_info <- unlist(get_URL_info(input$server1,inputs$station1,input$product1,NULL))
+      url_info <- unlist(get_URL_info(input$server1,inputs$station1,input$product1,1))
       if (isTruthy(url_info)) {
         url$station <- url_info[1]
         url$file <- url_info[2]
@@ -6111,7 +6111,7 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
-      url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,NULL))
+      url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,1))
       if (isTruthy(url_info)) {
         url$station2 <- url_info[1]
         url$file2 <- url_info[2]
@@ -10670,7 +10670,7 @@ server <- function(input,output,session) {
       }
       if (product == "FINAL" || product == "RAPID") {
         pattern <- ".tenv3"
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
         } else {
@@ -10709,7 +10709,7 @@ server <- function(input,output,session) {
       if (product == "UGA") {
         url <- "ftp://webrenag.unice.fr/products/position-timeseries/"
         pattern <- "_raw.pos_UGA_ITRF14.pos"
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
           url_log <- "ftp://webrenag.unice.fr/sitelogs/"
@@ -10744,7 +10744,7 @@ server <- function(input,output,session) {
       if (product == "REPRO2018A") {
         url <- "https://sideshow.jpl.nasa.gov/pub/JPL_GPS_Timeseries/repro2018a/post/point/"
         pattern <- ".series"
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
         } else {
@@ -10777,7 +10777,7 @@ server <- function(input,output,session) {
       if (product == "IGS20") {
         url <- "ftp://igs-rf.ign.fr/pub/crd/"
         pattern <- "_igs.plh"
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
           if (file.exists("www/soln.snx")) {
@@ -10814,7 +10814,7 @@ server <- function(input,output,session) {
     } else if (server == "SONEL") {
       format <- 1
       if (product == "ULR7A") {
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(toupper(station))
           filepath <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
@@ -10857,7 +10857,7 @@ server <- function(input,output,session) {
     } else if (server == "EARTHSCOPE") {
       format <- 1
       if (isTruthy(product)) {
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           if (product == "CWU" || product == "PBO" || product == "NMT") {
             name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
             filepath <- paste0("https://web-services.unavco.org/gps/data/position/", toupper(station), "/v3?analysisCenter=", tolower(product), "&referenceFrame=igs14&starttime=&endtime=&report=long&dataPostProcessing=Uncleaned&refCoordOption=from_analysis_center")
@@ -10895,7 +10895,7 @@ server <- function(input,output,session) {
       if (product == "IGB14") {
         url <- "https://epncb.eu/ftp/product/cumulative/C2235/pbo/"
         pattern <- ".pos"
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
           url_log <- "https://gnss-metadata.eu/data/station/log/"
@@ -10942,7 +10942,7 @@ server <- function(input,output,session) {
       }
       url <- "https://geodesy-plotter.ipgp.fr/"
       if (product == "SPOTGINS_POS" || product == "UGA_POS") {
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           filepath <- paste0(url,"data/",toupper(station),"/",name)
         } else {
           withBusyIndicatorServer(variable, {
@@ -10977,7 +10977,7 @@ server <- function(input,output,session) {
     } else if (server == "EPOS") {
       format <- 1
       if (product == "INGV" || product == "SGO-EPND" || product == "UGA-CNRS" || product == "ROB-EUREF") {
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           name <- paste0(station,"_",product,".enu")
           station <- toupper(strtrim(station, 4))
           if (product == "INGV") {
@@ -11075,7 +11075,7 @@ server <- function(input,output,session) {
         return(NULL)
       }
       filepath <- paste0(url,name)
-      if (isTruthy(station) && !isTruthy(series)) {
+      if (isTruthy(station)) {
         updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
         updateTextInput(session, inputId = "scaleFactor", value = "0.001")
         updateTextInput(session, inputId = "step2", value = "1")
@@ -11104,7 +11104,7 @@ server <- function(input,output,session) {
       if (product == "IGB14") {
         format <- 1
         pattern <- ".PLH"
-        if (isTruthy(station) && !isTruthy(series)) {
+        if (isTruthy(station)) {
           url <- "https://www.sirgas.org/fileadmin/docs/SIRGAS_CRD/"
           name <- paste0(toupper(station),".PLH")
           filepath <- paste0(url,name)
