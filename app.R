@@ -144,7 +144,7 @@ Shiny.addCustomMessageHandler('filename2', function(txt) {
 }); "
 
 # Confirmation when refreshing the page
-askRefresh <- 'window.onbeforeunload = function() { return ""; };'
+# askRefresh <- 'window.onbeforeunload = function() { return ""; };'
 
 # Hide loading page from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
@@ -381,7 +381,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$script(HTML(jscode_update_series2)),
                   
                   # confirm click on refresh button
-                  uiOutput("refresh")
+                  # uiOutput("refresh")
                 ),
                 
                 hidden(
@@ -1899,9 +1899,9 @@ server <- function(input,output,session) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
       } else {
-        output$refresh <- renderUI({
-          tags$script(HTML(askRefresh))    
-        })
+        # output$refresh <- renderUI({
+        #   tags$script(HTML(askRefresh))    
+        # })
         if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
         if (messages > 2) cat(file = stderr(), "Pixel ratio ", info$pixelratio, "\n")
         if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
