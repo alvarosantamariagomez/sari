@@ -147,6 +147,11 @@ Shiny.addCustomMessageHandler('log', function(txt) {
   var target = $('#log').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
+jscode_update_soln <- "
+Shiny.addCustomMessageHandler('soln', function(txt) {
+  var target = $('#soln').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
 
 # Confirmation when refreshing the page
 # askRefresh <- 'window.onbeforeunload = function() { return ""; };'
@@ -385,6 +390,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$script(HTML(jscode_update_series)),
                   tags$script(HTML(jscode_update_series2)),
                   tags$script(HTML(jscode_update_sitelog)),
+                  tags$script(HTML(jscode_update_soln)),
                   
                   # confirm click on refresh button
                   # uiOutput("refresh")
@@ -1796,7 +1802,7 @@ server <- function(input,output,session) {
   # Initialize reactive variables of the global database
 
   # 1. input files.
-  file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL)
+  file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL, soln = NULL)
 
   # 2. series ranges:
   #   x1 = original time axis
@@ -1975,7 +1981,7 @@ server <- function(input,output,session) {
   outputOptions(output, "sinfo", suspendWhenHidden = F)
 
   output$soln <- reactive({
-    return(!is.null(input$soln))
+    return(!is.null(file$soln))
   })
   outputOptions(output, "soln", suspendWhenHidden = F)
 
@@ -6395,10 +6401,14 @@ server <- function(input,output,session) {
     updateRadioButtons(session, inputId = "waveletType", label = NULL, selected = 0)
   }, priority = 100)
 
-  # Observe sitelog ####
+  # Observe ancillary files ####
   observeEvent(input$log, {
     req(file$primary)
     file$sitelog <- isolate(input$log)
+  }, priority = 8)
+  observeEvent(input$soln, {
+    req(file$primary)
+    file$soln <- isolate(input$soln)
   }, priority = 8)
 
   # Observe secondary file ####
@@ -6425,9 +6435,14 @@ server <- function(input,output,session) {
       } else {
         sitelog <- NULL
       }
+      if (isTruthy(file$soln)) {
+        soln <- file$soln$name
+      } else {
+        soln <- NULL
+      }
       if (messages > 0) cat(file = stderr(), "File : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
+                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
                             input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
                             "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
     }
@@ -6824,9 +6839,14 @@ server <- function(input,output,session) {
     } else {
       sitelog <- NULL
     }
+    if (isTruthy(file$soln)) {
+      soln <- file$soln$name
+    } else {
+      soln <- NULL
+    }
     if (messages > 0) cat(file = stderr(), "File : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
                           "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                          sitelog, "   station.info: ", input$sinfo$name,"   soln: ", input$soln$name,"   custom: ",
+                          sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
                           input$custom$name, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     if (input$tab < 1) {
       if (messages > 0) cat(file = stderr(), "WARNING: tab number is ", input$tab, "\n")
@@ -7161,8 +7181,8 @@ server <- function(input,output,session) {
   })
 
   # Observe soln.snx ####
-  observeEvent(c(input$soln, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
-    req(input$soln,file$id1)
+  observeEvent(c(file$soln, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
+    req(file$soln,file$id1)
     if (messages > 0) cat(file = stderr(), "Reading soln", "\n")
     id1 <- file$id1
     if (length(file$secondary) > 0) {
@@ -7174,10 +7194,10 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$soln <- ReadSoln(id1,id2,input$soln)
+    info$soln <- ReadSoln(id1,id2,file$soln)
   }, priority = 4)
   observeEvent(c(input$printSoln),{
-    req(file$primary, input$soln)
+    req(file$primary, file$soln)
     output$changes_ant1so <- output$changes_ant2so <- output$changes_ant3so <- renderText({
       if (length(info$soln) > 0) {
         sprintf("Discontinuities from soln file at\n%s",paste(unlist(info$soln), collapse = ", "))
@@ -10652,7 +10672,7 @@ server <- function(input,output,session) {
         pattern <- ".tenv3"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
-          file <- paste0(url,name)
+          filepath <- paste0(url,name)
         } else {
           withBusyIndicatorServer(variable, {
             if (file.exists("www/NGL_database.txt")) {
@@ -10691,7 +10711,7 @@ server <- function(input,output,session) {
         pattern <- "_raw.pos_UGA_ITRF14.pos"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
-          file <- paste0(url,name)
+          filepath <- paste0(url,name)
           url_log <- "ftp://webrenag.unice.fr/sitelogs/"
           logfile <- paste0(url_log,toupper(station),"00FRA.log")
         } else {
@@ -10726,7 +10746,7 @@ server <- function(input,output,session) {
         pattern <- ".series"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
-          file <- paste0(url,name)
+          filepath <- paste0(url,name)
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
@@ -10759,15 +10779,13 @@ server <- function(input,output,session) {
         pattern <- "_igs.plh"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
-          file <- paste0(url,name)
-          url_log <- "ftp://igs-rf.ign.fr/pub/sitelogs/igs/"
-          dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            found <- grep(paste0(tolower(station),"_"), strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T)
-            if (isTruthy(found)) {
-              logfile <- paste0(url_log,found)
-            }
+          filepath <- paste0(url,name)
+          if (file.exists("www/soln.snx")) {
+            file$soln <- "soln.snx"
+            file$soln$datapath <- "www/soln.snx"
+            session$sendCustomMessage("soln", "soln.snx")
           }
+          updateCheckboxInput(inputId = "traceSoln", value = T)
         } else {
           withBusyIndicatorServer(variable, {
             dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
@@ -10798,7 +10816,7 @@ server <- function(input,output,session) {
       if (product == "ULR7A") {
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station))
-          file <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
+          filepath <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
@@ -10842,7 +10860,7 @@ server <- function(input,output,session) {
         if (isTruthy(station) && !isTruthy(series)) {
           if (product == "CWU" || product == "PBO" || product == "NMT") {
             name <- paste0(toupper(station),".",tolower(product),".igs14.pos")
-            file <- paste0("https://web-services.unavco.org/gps/data/position/", toupper(station), "/v3?analysisCenter=", tolower(product), "&referenceFrame=igs14&starttime=&endtime=&report=long&dataPostProcessing=Uncleaned&refCoordOption=from_analysis_center")
+            filepath <- paste0("https://web-services.unavco.org/gps/data/position/", toupper(station), "/v3?analysisCenter=", tolower(product), "&referenceFrame=igs14&starttime=&endtime=&report=long&dataPostProcessing=Uncleaned&refCoordOption=from_analysis_center")
           } else {
             return(NULL)
           }
@@ -10879,7 +10897,7 @@ server <- function(input,output,session) {
         pattern <- ".pos"
         if (isTruthy(station) && !isTruthy(series)) {
           name <- paste0(toupper(station),pattern)
-          file <- paste0(url,name)
+          filepath <- paste0(url,name)
           url_log <- "https://gnss-metadata.eu/data/station/log/"
           found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
           if (isTruthy(found)) {
@@ -10925,7 +10943,7 @@ server <- function(input,output,session) {
       url <- "https://geodesy-plotter.ipgp.fr/"
       if (product == "SPOTGINS_POS" || product == "UGA_POS") {
         if (isTruthy(station) && !isTruthy(series)) {
-          file <- paste0(url,"data/",toupper(station),"/",name)
+          filepath <- paste0(url,"data/",toupper(station),"/",name)
         } else {
           withBusyIndicatorServer(variable, {
             url <- paste0(url,"api/1.0/products/?output=csv")
@@ -10963,13 +10981,13 @@ server <- function(input,output,session) {
           name <- paste0(station,"_",product,".enu")
           station <- toupper(strtrim(station, 4))
           if (product == "INGV") {
-            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/INGV/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/INGV/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
           } else if (product == "SGO-EPND") {
-            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/SGO-EPND/weekly/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/SGO-EPND/weekly/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
           } else if (product == "UGA-CNRS") {
-            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/UGA-CNRS/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/UGA-CNRS/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
           } else if (product == "ROB-EUREF") {
-            file <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/ROB-EUREF/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
+            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/ROB-EUREF/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
           }
           url_log <- "https://gnss-metadata.eu/data/station/log/"
           found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
@@ -11056,7 +11074,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-      file <- paste0(url,name)
+      filepath <- paste0(url,name)
       if (isTruthy(station) && !isTruthy(series)) {
         updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
         updateTextInput(session, inputId = "scaleFactor", value = "0.001")
@@ -11089,7 +11107,7 @@ server <- function(input,output,session) {
         if (isTruthy(station) && !isTruthy(series)) {
           url <- "https://www.sirgas.org/fileadmin/docs/SIRGAS_CRD/"
           name <- paste0(toupper(station),".PLH")
-          file <- paste0(url,name)
+          filepath <- paste0(url,name)
           url_log <- "ftp://ftp.sirgas.org/pub/gps/DGF/station/log/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
@@ -11153,14 +11171,14 @@ server <- function(input,output,session) {
         return(NULL)
       }
       name <- basename(station)
-      file <- station
+      filepath <- station
       station <- strsplit(name, "\\.|_|\\s|-|\\(")[[1]][1]
       #
     } else {
       showNotification(paste0("Unknown server ",server,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
       return(NULL)
     }
-    return(list(station,file,name,format,logfile))
+    return(list(station,filepath,name,format,logfile))
   }
   deg2m <- function(lat,lon,h,dlat,dlon) {
     #lat, lon, dlat, dlon in radians; h in m
