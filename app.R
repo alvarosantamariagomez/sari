@@ -9621,6 +9621,10 @@ server <- function(input,output,session) {
                 changes <- unique(c(changes, as.numeric(unlist(table$dyear[table$X1 == y]))))
               }
             }
+          } else if (grepl(pattern = "# Offset file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = F, fixed = T)) { #FORMATER offset file
+            table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + table$X2*86400)
+              changes <- as.numeric(unlist(unique(table$dyear[table$X1 == x])))
+              changes <- unique(c(changes, as.numeric(unlist(unique(table$dyear[table$X1 == y])))))
           } else {
             if (cols[2] > 2 && info$custom_warn == 0) {
               info$custom_warn <- 1
@@ -10970,6 +10974,22 @@ server <- function(input,output,session) {
       if (product == "SPOTGINS_POS" || product == "UGA_POS") {
         if (isTruthy(station)) {
           filepath <- paste0(url,"data/",toupper(station),"/",name)
+          if (series == 1) {
+            if (product == "SPOTGINS_POS") {
+              if (file.exists("www/formater_offset.dat")) {
+                file$custom$name <- "formater_offset.dat"
+                file$custom$datapath <- "www/formater_offset.dat"
+                session$sendCustomMessage("custom", "formater_offset.dat")
+                updateCheckboxInput(inputId = "traceCustom", value = T)
+              }
+            } else if (product == "UGA_POS") {
+              url_log <- "https://gnss-metadata.eu/data/station/log/"
+              found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
+              if (isTruthy(found)) {
+                logfile <- paste0(url_log,found)
+              }
+            }
+          }
         } else {
           withBusyIndicatorServer(variable, {
             url <- paste0(url,"api/1.0/products/?output=csv")
