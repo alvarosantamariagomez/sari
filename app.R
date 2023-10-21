@@ -1822,7 +1822,7 @@ server <- function(input,output,session) {
   ranges <- reactiveValues(x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL)
 
   # 3. series info
-  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, custom = NULL, custom_years = NULL,
+  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, sinfo = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
@@ -6382,6 +6382,15 @@ server <- function(input,output,session) {
         info$custom <- info$custom_years
       }
     }
+    if (length(info$soln) > 0) {
+      if (input$tunits == 1) {
+        info$soln <- as.numeric(difftime(date_decimal(info$soln_years), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+      } else if (input$tunits == 2) {
+        info$soln <- as.numeric(difftime(date_decimal(info$soln_years), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+      } else if (input$tunits == 3) {
+        info$soln <- info$soln_years
+      }
+    }
   }, priority = 100)
 
   # Observe tab ####
@@ -7223,7 +7232,7 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$soln <- ReadSoln(id1,id2,file$soln)
+    info$soln_years <- info$soln <- ReadSoln(id1,id2,file$soln)
   }, priority = 4)
   observeEvent(c(input$printSoln),{
     req(file$primary, file$soln)
