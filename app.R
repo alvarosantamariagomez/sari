@@ -1822,7 +1822,7 @@ server <- function(input,output,session) {
   ranges <- reactiveValues(x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL)
 
   # 3. series info
-  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
+  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
@@ -6404,6 +6404,19 @@ server <- function(input,output,session) {
       }
       info$log <- tmp_log
     }
+    if (length(info$sinfo) > 0) {
+      tmp_sinfo <- list()
+      for (d in 1:length(info$sinfo_years)) {
+        if (input$tunits == 1) {
+          tmp_sinfo[[d]] <- as.numeric(difftime(date_decimal(info$sinfo_years[[d]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+        } else if (input$tunits == 2) {
+          tmp_sinfo[[d]] <- as.numeric(difftime(date_decimal(info$sinfo_years[[d]]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+        } else if (input$tunits == 3) {
+          tmp_sinfo[[d]] <- info$sinfo_years[[d]]
+        }
+      }
+      info$sinfo <- tmp_sinfo
+    }
   }, priority = 100)
 
   # Observe tab ####
@@ -7211,7 +7224,7 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$sinfo <- ReadInfo(id1,id2,input$sinfo)
+    info$sinfo_years <- info$sinfo <- ReadInfo(id1,id2,input$sinfo)
   }, priority = 4)
   observeEvent(c(input$printSinfo),{
     req(file$primary, input$sinfo)
