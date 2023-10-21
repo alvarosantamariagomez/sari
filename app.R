@@ -1826,7 +1826,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, tunits = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
+                         run = F, tunits = NULL, tunitsKnown = F, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL)
@@ -5867,7 +5867,7 @@ server <- function(input,output,session) {
               shinyjs::delay(100, updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format))
               # download associated logfile
               if (isTruthy(url$logfile)) {
-                showNotification(paste0("Downloading logfile from ",toupper(url$server),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(paste0("Downloading logfile for ",toupper(url$station),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
                 file$primary$logfile <- tempfile()
                 down <- download("", url$logfile, file$primary$logfile)
                 if (down == 0) {
@@ -5929,7 +5929,7 @@ server <- function(input,output,session) {
                     }
                     session$sendCustomMessage("filename2", filename2)
                     if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
-                      showNotification(paste0("Downloading logfile from ",toupper(url$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+                      showNotification(paste0("Downloading logfile for ",toupper(url$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
                       file$secondary$logfile <- tempfile()
                       down <- download("", url$logfile2, file$secondary$logfile)
                       if (down == 0) {
@@ -6079,7 +6079,7 @@ server <- function(input,output,session) {
             session$sendCustomMessage("filename", filename)
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
             if (isTruthy(url$logfile)) {
-              showNotification(paste0("Downloading logfile from ",toupper(input$server1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
               file$primary$logfile <- tempfile()
               down <- download("", url$logfile, file$primary$logfile)
               if (down == 0) {
@@ -6150,7 +6150,7 @@ server <- function(input,output,session) {
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
             updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
             if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
-              showNotification(paste0("Downloading logfile from ",toupper(input$server2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+              showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
               file$secondary$logfile <- tempfile()
               down <- download("", url$logfile2, file$secondary$logfile)
               if (down == 0) {
@@ -6373,7 +6373,7 @@ server <- function(input,output,session) {
       trans$filter <- NULL
       updateCheckboxInput(session, inputId = "filter", value = F)
     }
-    if (length(info$custom) > 0) {
+    if (length(info$custom) > 0 && isTruthy(info$tunitsKnown)) {
       if (input$tunits == 1) {
         info$custom <- as.numeric(difftime(date_decimal(info$custom_years), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
       } else if (input$tunits == 2) {
@@ -6382,7 +6382,7 @@ server <- function(input,output,session) {
         info$custom <- info$custom_years
       }
     }
-    if (length(info$soln) > 0) {
+    if (length(info$soln) > 0 && isTruthy(info$tunitsKnown)) {
       if (input$tunits == 1) {
         info$soln <- as.numeric(difftime(date_decimal(info$soln_years), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
       } else if (input$tunits == 2) {
@@ -6391,7 +6391,7 @@ server <- function(input,output,session) {
         info$soln <- info$soln_years
       }
     }
-    if (length(info$log) > 0) {
+    if (length(info$log) > 0 && isTruthy(info$tunitsKnown)) {
       tmp_log <- list()
       for (d in 1:length(info$log_years)) {
         if (input$tunits == 1) {
@@ -6404,7 +6404,7 @@ server <- function(input,output,session) {
       }
       info$log <- tmp_log
     }
-    if (length(info$sinfo) > 0) {
+    if (length(info$sinfo) > 0 && isTruthy(info$tunitsKnown)) {
       tmp_sinfo <- list()
       for (d in 1:length(info$sinfo_years)) {
         if (input$tunits == 1) {
@@ -8253,18 +8253,21 @@ server <- function(input,output,session) {
               }
               # get other time units for different series
               if (server == "JPL" && columns > 16) {
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 }
               } else if (server == "SIRGAS") {
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 3) {
                   extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
                 }
               } else if (server == "IGS") {
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 2) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
                 } else if (input$tunits == 3) {
@@ -8272,12 +8275,14 @@ server <- function(input,output,session) {
                   extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7)
                 }
               } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
                   extracted$x <- tableAll[,9]
                 }
               } else if (server == "EARTHSCOPE") {
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
@@ -8290,12 +8295,14 @@ server <- function(input,output,session) {
               extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
               info$errorbars <- F
               if (server == "EOSTLS") {
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
                 } else if (input$tunits == 3) {
                   extracted$x <- decimal_date(as.Date(tableAll[,1], origin = "1858-11-17"))
                 }
               } else if (server == "EPOS") {
+                if (series == 1) info$tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
@@ -8313,6 +8320,7 @@ server <- function(input,output,session) {
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
+        if (series == 1) info$tunitsKnown <- T
         if (isTruthy(swap)) {
           extracted <- tableAll[,c(17,16,18,20,19,21)]
         } else {
@@ -8331,6 +8339,7 @@ server <- function(input,output,session) {
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
+        if (series == 1) info$tunitsKnown <- T
         if (input$tunits == 1) {
           extracted <- data.frame( x = tableAll[,4])
         } else if (input$tunits == 2) {
