@@ -3595,19 +3595,19 @@ server <- function(input,output,session) {
     }
     if (input$histogramType == 1) {
       values <- trans$y[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "Original series"
+      label <- "original series"
     } else if (input$histogramType == 2 && length(trans$mod) > 0) {
       values <- trans$mod[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "Model series"
+      label <- "model series"
     } else if (input$histogramType == 3 && length(trans$res) > 0) {
       values <- trans$res[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "Model residual series"
+      label <- "model residual series"
     } else if (input$histogramType == 4 && length(trans$filter) > 0) {
       values <- trans$filter[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "Filter series"
+      label <- "filter series"
     } else if (input$histogramType == 5 && length(trans$filterRes) > 0) {
       values <- trans$filterRes[trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]]
-      label <- "Filter residual series"
+      label <- "filter residual series"
     } else {
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
       req(info$stop)
@@ -3617,7 +3617,8 @@ server <- function(input,output,session) {
     if (isTruthy(values) && isTruthy(sd(values)) && length(values) > 1 && sd(values) > 0) {
       if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
       output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
-        hist(values, breaks = "FD", freq = F, xlab = paste(label,units), ylab = "", main = "", col = SARIcolors[5])
+        title <- paste("Histogram of the", label, units)
+        hist(values, breaks = "FD", freq = F, xlab = paste("Values",units), ylab = "Density per series unit", main = title, col = SARIcolors[5])
         dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
         xfit <- seq(min(values),max(values),length = 40)
         yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
