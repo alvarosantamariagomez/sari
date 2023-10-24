@@ -5822,6 +5822,7 @@ server <- function(input,output,session) {
         removeNotification("parsing_url2")
         removeNotification("no_local")
         if (messages > 0) cat(file = stderr(), "Analyzing URL", "\n")
+        info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # info$local needs to be set here too
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
           if (!isTruthy(info$local) && tolower(query[['server']]) == "local") {
