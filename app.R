@@ -2469,7 +2469,6 @@ server <- function(input,output,session) {
       info$minx <- min(c(trans$x, trans$xe), na.rm = T)
       info$maxx <- max(c(trans$x, trans$xe), na.rm = T)
     }
-    ranges$x1 <- c(info$minx, info$maxx)
     info$miny <- min(trans$y, na.rm = T)
     info$maxy <- max(trans$y, na.rm = T)
     ids <- trans$x0[!is.na(trans$y0)] >= ranges$x1[1] & trans$x0[!is.na(trans$y0)] <= ranges$x1[2]
