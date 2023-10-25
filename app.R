@@ -10756,7 +10756,7 @@ server <- function(input,output,session) {
             file$custom$name <- "steps.txt"
             file$custom$datapath <- "www/steps.txt"
             session$sendCustomMessage("custom", "steps.txt")
-            updateCheckboxInput(inputId = "traceCustom", value = T)
+            shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
           }
         } else {
           withBusyIndicatorServer(variable, {
@@ -10869,7 +10869,7 @@ server <- function(input,output,session) {
             file$soln$name <- "soln.snx"
             file$soln$datapath <- "www/soln.snx"
             session$sendCustomMessage("soln", "soln.snx")
-            updateCheckboxInput(inputId = "traceSoln", value = T)
+            shinyjs::delay(100, updateCheckboxInput(inputId = "traceSoln", value = T))
           }
         } else {
           withBusyIndicatorServer(variable, {
@@ -11035,7 +11035,7 @@ server <- function(input,output,session) {
                 file$custom$name <- "formater_offset.dat"
                 file$custom$datapath <- "www/formater_offset.dat"
                 session$sendCustomMessage("custom", "formater_offset.dat")
-                updateCheckboxInput(inputId = "traceCustom", value = T)
+                shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
               }
             } else if (product == "UGA_POS") {
               url_log <- "https://gnss-metadata.eu/data/station/log/"
