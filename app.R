@@ -8124,7 +8124,7 @@ server <- function(input,output,session) {
               ranges$x1 <- c(info$minx, info$maxx)
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
-                if (isTruthy(url$server)) {
+                if (isTruthy(url$server) && url$server != "LOCAL") {
                   if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
                     info$components <- c("East component", "North component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
