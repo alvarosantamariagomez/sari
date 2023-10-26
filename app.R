@@ -5874,7 +5874,7 @@ server <- function(input,output,session) {
                 if (down == 0) {
                   file$sitelog <- NULL
                   session$sendCustomMessage("log", basename(url$logfile))
-                  updateCheckboxInput(inputId = "traceLog", value = T)
+                  shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
                 } else {
                   showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                   file$primary$logfile <- NULL
@@ -5893,9 +5893,9 @@ server <- function(input,output,session) {
                   url$logfile2 <- url_info[5]
                   if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "epos" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "epos" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
                       (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "epos" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "epos" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
-                    updateCheckboxInput(session, inputId = "ne", value = T)
+                    shinyjs::delay(100, updateCheckboxInput(session, inputId = "ne", value = T))
                   }
-                  updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2)
+                  shinyjs::delay(100, updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2))
                   if (tolower(query[['server2']]) == "local") {
                     if (!isTruthy(file.exists(url$file2))) {
                       showNotification(paste0("Local file ",url$file2," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -5936,7 +5936,7 @@ server <- function(input,output,session) {
                       if (down == 0) {
                         file$sitelog <- NULL
                         session$sendCustomMessage("log", basename(url$logfile2))
-                        updateCheckboxInput(inputId = "traceLog", value = T)
+                        shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
                       } else {
                         showNotification(HTML(paste0("Logfile not found in ", url$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                         file$secondary$logfile <- NULL
@@ -7663,110 +7663,110 @@ server <- function(input,output,session) {
           if (isTruthy(url$server)) {
             if (url$server == "FORMATER") {
               coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
-              updateTextInput(session, inputId = "station_x", value = coordinates[1])
-              updateTextInput(session, inputId = "station_y", value = coordinates[2])
-              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             } else if (url$server == "SONEL") {
               coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
-              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
-              updateTextInput(session, inputId = "station_x", value = coordinates[1])
-              updateTextInput(session, inputId = "station_y", value = coordinates[2])
-              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             } else if (url$server == "IGS") {
               tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
-              updateRadioButtons(inputId = "station_coordinates", selected = 2)
+              shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
               lat <- tableAll[1,5]
               lon <- tableAll[1,6]
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             } else if (url$server == "JPL") {
               coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
-              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
-              updateTextInput(session, inputId = "station_x", value = coordinates[1])
-              updateTextInput(session, inputId = "station_y", value = coordinates[2])
-              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             } else if (url$server == "SIRGAS") {
               tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein, warn = F), value = T, fixed = T)[1], comment.char = "#"), silent = T)
-              updateRadioButtons(inputId = "station_coordinates", selected = 2)
+              shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
               lat <- tableAll[1,7]
               lon <- tableAll[1,8]
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             } else if (url$server == "EPOS") {
               stationsFromEPOS <- try(read.table(file = "www/EPOS_database.txt", header = T), silent = T)
               tableAll <- stationsFromEPOS[grepl(url$station, stationsFromEPOS$id), c(2,3)]
-              updateRadioButtons(inputId = "station_coordinates", selected = 2)
+              shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
               lat <- tableAll[1,1]
               lon <- tableAll[1,2]
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             } else if (url$server == "EARTHSCOPE") {
               tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
-              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
-              updateTextInput(session, inputId = "station_x", value = as.numeric(tableAll[6]))
-              updateTextInput(session, inputId = "station_y", value = as.numeric(tableAll[8]))
-              updateTextInput(session, inputId = "station_z", value = as.numeric(tableAll[10]))
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = as.numeric(tableAll[6])))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = as.numeric(tableAll[8])))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = as.numeric(tableAll[10])))
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             }
           } else {
             if (isTruthy(spotgins)) {
               info$product1 <- "SPOTGINS_POS"
               coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-              updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
-              updateTextInput(session, inputId = "station_x", value = coordinates[1])
-              updateTextInput(session, inputId = "station_y", value = coordinates[2])
-              updateTextInput(session, inputId = "station_z", value = coordinates[3])
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
+              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
               stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
               lat <- stationGeo[1] * 180/pi
               lon <- stationGeo[2] * 180/pi
-              updateTextInput(inputId = "station_lat", value = lat)
-              updateTextInput(inputId = "station_lon", value = lon)
+              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
             }
           }
         } else if (info$format == 2) {
           ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
           if (length(ref_pos) > 0) {
-            updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
+            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T))
             x <- unlist(strsplit(ref_pos, split = " +"))[5]
             y <- unlist(strsplit(ref_pos, split = " +"))[6]
             z <- unlist(strsplit(ref_pos, split = " +"))[7]
-            updateTextInput(inputId = "station_x", value = x)
-            updateTextInput(inputId = "station_y", value = y)
-            updateTextInput(inputId = "station_z", value = z)
+            shinyjs::delay(100, updateTextInput(inputId = "station_x", value = x))
+            shinyjs::delay(100, updateTextInput(inputId = "station_y", value = y))
+            shinyjs::delay(100, updateTextInput(inputId = "station_z", value = z))
             stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
             lat <- stationGeo[1] * 180/pi
             lon <- stationGeo[2] * 180/pi
-            updateTextInput(inputId = "station_lat", value = lat)
-            updateTextInput(inputId = "station_lon", value = lon)
+            shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+            shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
           }
         } else if (info$format == 3) {
           skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
           tableAll <- try(read.table(filein, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
-          updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T))
           lat <- tableAll[1,21]
           lon <- tableAll[1,22] + 360
-          updateTextInput(inputId = "station_lat", value = lat)
-          updateTextInput(inputId = "station_lon", value = lon)
+          shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
+          shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
         }
       }
       if (exists("leaflet", mode = "function") && isTruthy(lat) && isTruthy(lon)) {
@@ -7783,25 +7783,25 @@ server <- function(input,output,session) {
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
         if ((url$server == "FORMATER" && isTruthy(spotgins)) || url$server == "JPL" || url$server == "NGL" || url$server == "EPOS") {
-          updateRadioButtons(session, inputId = "neuenu", selected = 2)
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "neuenu", selected = 2))
           disable("neuenu")
         } else if ((url$server == "FORMATER" && !isTruthy(spotgins)) || url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE" ) {
-          updateRadioButtons(session, inputId = "neuenu", selected = 1)
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "neuenu", selected = 1))
           disable("neuenu")
         }
       }
       # Setting series units if known
       if (isTruthy(url$server)) {
         if (url$server == "EPOS" || url$server == "EOSTLS") {
-          shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 2))
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 2))
         } else {
-          shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
       }  else if (info$format == 2 || info$format == 3) {
-        shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
+        shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
       } else {
         if (isTruthy(spotgins)) {
-          shinyjs::delay(1000, updateRadioButtons(session, inputId = "sunits", selected = 1))
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
       }
       # Resampling the primary series
@@ -8039,7 +8039,7 @@ server <- function(input,output,session) {
                 table <- table_common
                 rm(table_common)
               } else {
-                updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1)
+                shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1))
               }
             } else {
               showNotification("Problem when averaging the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
@@ -8093,7 +8093,7 @@ server <- function(input,output,session) {
         removeNotification(id = "ids_info", session = getDefaultReactiveDomain())
         showNotification(HTML("Problem extracting the series ID from the file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
       }
-      updateTextInput(session, inputId = "ids", value = ids_info)
+      shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
       # Checking series values and time order
       if (!is.null(table)) {
         table <- table[order(table$x),]
