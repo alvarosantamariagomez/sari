@@ -895,7 +895,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  div("Select NEU or ENU format:")
                                                                           ),
                                                                           column(6,
-                                                                                 radioButtons(inputId = "neuenu", label = NULL, choices = list("NEU" = 1, "ENU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
+                                                                                 radioButtons(inputId = "neuenu", label = NULL, choices = list("ENU" = 1, "NEU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
                                                                           )
                                                                         ),
                                                                         conditionalPanel(
@@ -5891,10 +5891,6 @@ server <- function(input,output,session) {
                   file$secondary$name <- url_info[3]
                   info$format2 <- url_info[4]
                   url$logfile2 <- url_info[5]
-                  if ((tolower(query[['server']]) == "ngl" || tolower(query[['server']]) == "epos" || tolower(query[['server']]) == "jpl" || tolower(query[['product']]) == "spotgins_pos") && (tolower(query[['server2']]) != "ngl" && tolower(query[['server2']]) != "epos" && tolower(query[['server2']]) != "jpl" && tolower(query[['product2']]) != "spotgins_pos" && tolower(query[['server2']]) != "local") ||
-                      (tolower(query[['server2']]) == "ngl" || tolower(query[['server2']]) == "epos" || tolower(query[['server2']]) == "jpl" || tolower(query[['product2']]) == "spotgins_pos") && (tolower(query[['server']]) != "ngl" && tolower(query[['server']]) != "epos" && tolower(query[['server']]) != "jpl" && tolower(query[['product']]) != "spotgins_pos" && tolower(query[['server']]) != "local")) {
-                    shinyjs::delay(100, updateCheckboxInput(session, inputId = "ne", value = T))
-                  }
                   shinyjs::delay(100, updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2))
                   if (tolower(query[['server2']]) == "local") {
                     if (!isTruthy(file.exists(url$file2))) {
@@ -6144,10 +6140,6 @@ server <- function(input,output,session) {
             obs(data)
             filename2 <- file$secondary$name
             session$sendCustomMessage("filename2", filename2)
-            if ((input$server1 == "NGL" || input$server1 == "JPL" || input$server1 == "EPOS" || input$product1 == "SPOTGINS_POS") && (input$server2 != "NGL" && input$server2 != "JPL"  && input$server2 != "EPOS" && isTruthy(input$product2) && input$product2 != "SPOTGINS_POS") ||
-                (input$server2 == "NGL" || input$server2 == "JPL" || input$server2 == "EPOS" || input$product2 == "SPOTGINS_POS") && (input$server1 != "NGL" && input$server1 != "JPL" && input$server1 != "EPOS" && isTruthy(info$product1) && info$product1 != "SPOTGINS_POS")) {
-              updateCheckboxInput(session, inputId = "ne", value = T)
-            }
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
             updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
             if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
@@ -7782,13 +7774,7 @@ server <- function(input,output,session) {
       }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
-        if ((url$server == "FORMATER" && isTruthy(spotgins)) || url$server == "JPL" || url$server == "NGL" || url$server == "EPOS") {
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "neuenu", selected = 2))
-          disable("neuenu")
-        } else if ((url$server == "FORMATER" && !isTruthy(spotgins)) || url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE" ) {
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "neuenu", selected = 1))
-          disable("neuenu")
-        }
+        disable("neuenu")
       }
       # Setting series units if known
       if (isTruthy(url$server)) {
@@ -8117,25 +8103,13 @@ server <- function(input,output,session) {
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
                 if (isTruthy(url$server) && url$server != "LOCAL") {
-                  if (url$server == "FORMATER" || url$server == "JPL" || url$server == "EPOS") {
-                    info$components <- c("East component", "North component", "Up component")
-                    output$tabName1 <<- renderText({ info$components[1] })
-                    output$tabName2 <<- renderText({ info$components[2] })
-                    output$tabName3 <<- renderText({ info$components[3] })
-                  } else if (url$server == "SONEL" || url$server == "IGS" || url$server == "SIRGAS" || url$server == "EARTHSCOPE") {
-                    info$components <- c("North component", "East component", "Up component")
-                    output$tabName1 <<- renderText({ info$components[1] })
-                    output$tabName2 <<- renderText({ info$components[2] })
-                    output$tabName3 <<- renderText({ info$components[3] })
-                  }
+                  info$components <- c("East component", "North component", "Up component")
+                  output$tabName1 <<- renderText({ info$components[1] })
+                  output$tabName2 <<- renderText({ info$components[2] })
+                  output$tabName3 <<- renderText({ info$components[3] })
                 } else {
-                  extension <- tolower(strsplit(file$primary$name, ".", fixed = T)[[1]][-1])
-                  if (isTruthy(extension) && extension == "neu") {
-                    info$components <- c("North component", "East component", "Up component")
-                    output$tabName1 <<- renderText({ info$components[1] })
-                    output$tabName2 <<- renderText({ info$components[2] })
-                    output$tabName3 <<- renderText({ info$components[3] })
-                  } else if (isTruthy(extension) && extension == "enu") {
+                  extension <- tolower(rev(strsplit(file$primary$name, ".", fixed = T)[[1]])[1])
+                  if (isTruthy(extension) && (extension == "neu" || extension == "enu")) {
                     info$components <- c("East component", "North component", "Up component")
                     output$tabName1 <<- renderText({ info$components[1] })
                     output$tabName2 <<- renderText({ info$components[2] })
@@ -8144,24 +8118,27 @@ server <- function(input,output,session) {
                 }
                 showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
                 showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-              } else if (info$format == 2) { #PBO
-                info$components <- c("North component", "East component", "Up component")
-                output$tabName1 <<- renderText({ info$components[1] })
-                output$tabName2 <<- renderText({ info$components[2] })
-                output$tabName3 <<- renderText({ info$components[3] })
-                showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-                showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-              } else if (info$format == 3) { #NGL
+              } else if (info$format == 4) { #1D
+                output$tabName1 <- renderText({ "1D series" })
+                hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+                hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+              } else { #PBO & NGL
                 info$components <- c("East component", "North component", "Up component")
                 output$tabName1 <<- renderText({ info$components[1] })
                 output$tabName2 <<- renderText({ info$components[2] })
                 output$tabName3 <<- renderText({ info$components[3] })
                 showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
                 showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-              } else if (info$format == 4) { #1D
-                output$tabName1 <- renderText({ "1D series" })
-                hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-                hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+              }
+              if (length(file$secondary) > 0 && input$optionSecondary > 0) {
+                if (info$format2 == 1 && server == "LOCAL") {
+                  extension <- tolower(rev(strsplit(files, ".", fixed = T)[[1]])[1])
+                  if (isTruthy(extension) && (extension != "neu" && extension != "enu")) {
+                    showNotification(HTML("Unknown coordinate components in the secondary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
+                  }
+                } else if (info$components != "East component") {
+                  showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
+                }
               }
               table
             }
@@ -8194,7 +8171,7 @@ server <- function(input,output,session) {
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
       spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
-      # extracting series from SIRGAS format and transforming lat lon into NEU format
+      # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
         tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
@@ -8203,30 +8180,46 @@ server <- function(input,output,session) {
         sdn <- N * tableAll[,5] * pi/180
         de <- N * (tableAll[,3] - tableAll[1,3]) * pi/180 * cos(tableAll[,2]*pi/180)
         sde <- N * tableAll[,6] * pi/180 * cos(tableAll[,2]*pi/180)
-        tableAll <- cbind(dn, de, sdn, sde, tableAll)[,c(5,1,2,8,3,4,11)]
-      } else if (server == "EARTHSCOPE") { # extracting NEU format from UNAVCO series
+        tableAll <- cbind(de, dn, sde, sdn, tableAll)[,c(5,1,2,8,3,4,11)]
+      } else if (server == "EARTHSCOPE") { # extracting ENU format from UNAVCO series
         unavco_new <- grep("^Datetime,", grep("^#", readLines(file, warn = F), ignore.case = F, value = T, perl = T, invert = T), ignore.case = F, value = T, perl = T, invert = T)
-        tableAll <- try(read.table(text = unavco_new, sep = ",")[,c("V1", "V14", "V15", "V16", "V17", "V18", "V19")], silent = T)
+        tableAll <- try(read.table(text = unavco_new, sep = ",")[,c("V1", "V15", "V14", "V16", "V17", "V18", "V19")], silent = T)
       } else {
         tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
       }
-      # extracting series from EPOS format
+      # extracting series from EPOS format into ENU format
       if (server == "EPOS") {
           tableAll$new <- paste(tableAll$V1, tableAll$V2)
           tableAll <- tableAll[, c("new", "V3", "V4", "V5")]
       }
-      # transforming series from IGS lat lon into NEU format
+      # extracting series from SONEL format into ENU format
+      if (server == "SONEL") {
+        tableAll <- tableAll[, c("V1", "V3", "V2", "V4", "V6", "V5", "V7")]
+      }
+      # extracting series from EOSTLS format into ENU format
+      if (server == "SONEL") {
+        tableAll <- tableAll[, c("V1", "V3", "V2", "V4")]
+      }
+      # transforming series from IGS lat lon into ENU format
       if (server == "IGS") {
         N <- a / sqrt( 1 - e2 * sin(tableAll[,5]*pi/180)^2) + tableAll[,7]
         dn <- N * (tableAll[,5] - tableAll[1,5]) * pi/180
         sdn <- N * tableAll[,8] * pi/180
         de <- N * (tableAll[,6] - tableAll[1,6]) * pi/180 * cos(tableAll[,5]*pi/180)
         sde <- N * tableAll[,9] * pi/180 * cos(tableAll[,5]*pi/180)
-        tableAll <- cbind(dn, de, sdn, sde, tableAll)[,c(7,1,2,11,3,4,14,5,6)]
+        tableAll <- cbind(de, dn, sde, sdn, tableAll)[,c(7,1,2,11,3,4,14,5,6)]
       }
       if (isTruthy(tableAll)) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
+          extension <- tolower(rev(strsplit(file, ".", fixed = T)[[1]])[1])
+          if (isTruthy(extension) && extension == "neu") {
+            if (columns > 6) {
+              tableAll <- tableAll[,c(1,3,2,4,6,5,7)]
+            } else {
+              tableAll <- tableAll[,c(1,3,2,4)]
+            }
+          }
           if (isTruthy(swap)) {
             extracted <- tableAll[,c(1,3,2,4)]
           } else {
@@ -8315,9 +8308,9 @@ server <- function(input,output,session) {
       if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
         if (series == 1) info$tunitsKnown <- T
         if (isTruthy(swap)) {
-          extracted <- tableAll[,c(17,16,18,20,19,21)]
-        } else {
           extracted <- tableAll[,c(16,17,18,19,20,21)]
+        } else {
+          extracted <- tableAll[,c(17,16,18,20,19,21)]
         }
         names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
         if (input$tunits == 1) {
@@ -8456,11 +8449,12 @@ server <- function(input,output,session) {
           req(info$stop)
         }
         plateCartesian <- cross(poleCartesian,stationCartesian)
-        rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3)
+        # rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #NEU
+        rotation <- matrix(data = c(-1*sin(stationGeo[2]),-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),0,cos(stationGeo[1]),-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #ENU
         plate_neu <- c(rotation %*% plateCartesian)
-        if ((format == 1 && input$neuenu == 1) || format == 2 || format == 4) { #NEU & PBO & 1D
+        if ((format == 1 && input$neuenu == 1) || format == 2 || format == 3 || format == 4) { #ENU
           trans$plate <- plate_neu
-        } else if ((format == 1 && input$neuenu == 2) || format == 3) { #ENU & NGL
+        } else if ((format == 1 && input$neuenu == 2)) { #NEU
           trans$plate <- c(plate_neu[2],plate_neu[1],plate_neu[3])
         }
         if (input$tunits == 1) {
