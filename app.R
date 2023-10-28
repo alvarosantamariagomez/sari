@@ -9697,7 +9697,7 @@ server <- function(input,output,session) {
         } else {
           changes <- as.numeric(unique(unlist(table)))
         }
-        changes <- na.omit(changes)
+        changes <- sort(na.omit(changes), decreasing = F)
       }
     }
     return(changes)
