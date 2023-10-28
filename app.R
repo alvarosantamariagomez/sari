@@ -4152,7 +4152,7 @@ server <- function(input,output,session) {
           psd <- psd*trans$var/sum(psd)
           lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
           output$crossover <- renderUI({
-            if (length(crossover) > 0) {
+            if (!is.null(trans$noise) && length(crossover) > 0) {
               line <- sprintf("<br/>Crossover period %s = %.2f %s\n", type_crossover, crossover, period)
               HTML(line)
             } else {
