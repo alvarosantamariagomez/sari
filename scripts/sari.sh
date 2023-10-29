@@ -63,7 +63,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         +------------+--------------------------------------+---------+------------------------------------------------+
         | Server     | Product                              | Station | Reference                                      |
         +------------+--------------------------------------+---------+------------------------------------------------+
-        | LOCAL      | ENU, NEU, PBO, NGL                   | path    |                                                |
+        | LOCAL      | ENU, NEU, PBO, NGL, 1D*              | path    |                                                |
         | RENAG      | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
         | FORMATER   | SPOTGINS_POS, UGA                    | 9 char  | https://en.poleterresolide.fr/                 |
         | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  | 9 char  | https://www.epos-eu.org/                       |
@@ -79,6 +79,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         |            | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
         |            | MERRA2ATM, MERRA2HYD                 |         |                                                |
         +------------+--------------------------------------+---------+------------------------------------------------+
+	* 1D products must have the eochs in the first column, the data in the second and the errorbars in the third
 
 " 1>&2; exit 1; }
 
@@ -93,7 +94,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
 				  or more 14 (e.g., PIMI_10025M001) depending on the server used
 	-v 			: keeps the log of the current SARI session in $saridir
-	-h			: shows this help
+	-h			: shows detailed help
 
 	Empty local session from source code	$(basename $0) -l
 	Empty local session from Docker image	$(basename $0) -d
@@ -109,6 +110,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 # Setting list of available URL parameters
 servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas eostls "
 products=" enu neu pbo ngl uga spotgins_pos ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+products_local=" enu neu pbo ngl 1d "
 
 # Setting a trap to do a clean exit
 cleaning () {
@@ -241,10 +243,12 @@ if [[ ! -z $local ]]; then
 fi
 
 # Splitting parameters of the primary and secondary series
-if [[ ! -z $server && ! -z $product ]]; then
+if [[ ! -z $server ]]; then
 	IFS=+ read -r server1 server2 <<< $server
 	server1=$(echo $server1 | tr '[:upper:]' '[:lower:]')
 	server2=$(echo $server2 | tr '[:upper:]' '[:lower:]')
+fi
+if [[ ! -z $product ]]; then
 	IFS=+ read -r product1 product2 <<< $product
 	product1=$(echo $product1 | tr '[:upper:]' '[:lower:]')
 	product2=$(echo $product2 | tr '[:upper:]' '[:lower:]')
@@ -262,8 +266,13 @@ contains() {
 }
 contains "$servers" $server1
 contains "$servers" $server2
-contains "$products" $product1
-contains "$products" $product2
+if [[ ! -z $local ]]; then
+	contains "$products_local" $product1
+	contains "$products_local" $product2
+else
+	contains "$products" $product1
+	contains "$products" $product2
+fi
 
 # Catching SARI installation error
 checkR() {
