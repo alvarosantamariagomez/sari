@@ -8053,25 +8053,17 @@ server <- function(input,output,session) {
       }
       # Setting station IDs
       if (!isTruthy(inputs$ids)) {
-        removes <- "SPOTGINS_|UGA_"
+        removes <- "^SPOTGINS_|^UGA_"
         if (isTruthy(url$station)) {
-          if (url$server == "LOCAL") {
-            file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
-          } else {
-            file$id1 <- toupper(url$station)
-          }
+          file$id1 <- toupper(url$station)
         } else {
-          file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = F, perl = F, fixed = T), "\\.|_|\\s|-|\\(")[[1]][1])
+          file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
         }
         if (length(file$secondary) > 0) {
           if (isTruthy(url$station2)) {
-            if (url$server2 == "LOCAL") {
-              file$id2 <- toupper(strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
-            } else {
-              file$id2 <- toupper(url$station2)
-            }
+            file$id2 <- toupper(url$station2)
           } else {
-            file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = F, perl = F, fixed = T), "\\.|_|\\s|-|\\(")[[1]][1])
+            file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
           }
         }
       }
@@ -11273,7 +11265,8 @@ server <- function(input,output,session) {
       }
       name <- basename(station)
       filepath <- station
-      station <- strsplit(name, "\\.|_|\\s|-|\\(")[[1]][1]
+      removes <- "^SPOTGINS_|^UGA_"
+      station <- strsplit(gsub(pattern = removes, replacement = "", x = name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1]
       #
     } else {
       showNotification(paste0("Unknown server ",server,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
