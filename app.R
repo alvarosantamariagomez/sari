@@ -8175,7 +8175,7 @@ server <- function(input,output,session) {
                   if (isTruthy(extension) && (extension != "neu" && extension != "enu")) {
                     showNotification(HTML("Unknown coordinate components in the secondary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
                   }
-                } else if (info$components != "East component") {
+                } else if (info$components[1] != "East component") {
                   showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
                 }
               }
