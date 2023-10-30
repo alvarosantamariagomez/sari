@@ -5918,7 +5918,7 @@ server <- function(input,output,session) {
                     if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
-                    shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
+                    shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
                     if (url$server2 == "LOCAL") {
                       filename2 <- basename(url$file2)
                     } else {
@@ -5944,18 +5944,20 @@ server <- function(input,output,session) {
                   }
                 }
               }
-              if (messages > 4) cat(file = stderr(), "From: observe url\n")
-              data <- digest()
-              if (!is.null(data)) {
-                obs(data)
-                values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-                if (url$server == "LOCAL") {
-                  filename <- basename(url$file)
-                } else {
-                  filename <- file$primary$name
+              shinyjs::delay(1000, {
+                if (messages > 4) cat(file = stderr(), "From: observe url\n")
+                data <- digest()
+                if (!is.null(data)) {
+                  obs(data)
+                  values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+                  if (url$server == "LOCAL") {
+                    filename <- basename(url$file)
+                  } else {
+                    filename <- file$primary$name
+                  }
+                  session$sendCustomMessage("filename", filename)
                 }
-                session$sendCustomMessage("filename", filename)
-              }
+              })
             } else {
               removeNotification("parsing_url1")
               showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(query[['server']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -6465,7 +6467,7 @@ server <- function(input,output,session) {
   }, priority = 8)
 
   # Observe series info ####
-  observeEvent(c(input$tab, input$format, input$format2, input$tunits, input$sigmas, file$secondary, input$optionSecondary, input$log, input$sinfo, file$soln, file$custom, inputs$step), {
+  observeEvent(c(input$tab, input$format, input$format2), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
@@ -6473,6 +6475,37 @@ server <- function(input,output,session) {
       info$tab <- input$tab
       info$format <- input$format
       info$format2 <- input$format2
+      if (isTruthy(file$sitelog)) {
+        sitelog <- file$sitelog$name
+      } else if (isTruthy(file$primary$logfile)) {
+        sitelog <- basename(url$logfile)
+      } else if (isTruthy(file$secondary$logfile)) {
+        sitelog <- basename(url$logfile2)
+      } else {
+        sitelog <- NULL
+      }
+      if (isTruthy(file$soln)) {
+        soln <- file$soln$name
+      } else {
+        soln <- NULL
+      }
+      if (isTruthy(file$custom)) {
+        custom <- file$custom$name
+      } else {
+        custom <- NULL
+      }
+      if (messages > 0) cat(file = stderr(), "CHANGE file : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
+                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
+                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
+                            custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
+                            "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
+    }
+  }, priority = 7)
+  observeEvent(c(input$tunits, input$sigmas, file$secondary, input$optionSecondary, input$log, input$sinfo, file$soln, file$custom, inputs$step), {
+    if (input$tab == "4") {
+      if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
+    } else {
+      req(obs())
       if (isTruthy(file$sitelog)) {
         sitelog <- file$sitelog$name
       } else if (isTruthy(file$primary$logfile)) {
@@ -6882,29 +6915,6 @@ server <- function(input,output,session) {
   observeEvent(input$plot, {
     req(file$primary)
     removeNotification("no_component")
-    if (isTruthy(file$sitelog)) {
-      sitelog <- file$sitelog$name
-    } else if (isTruthy(file$primary$logfile)) {
-      sitelog <- basename(url$logfile)
-    } else if (isTruthy(file$secondary$logfile)) {
-      sitelog <- basename(url$logfile2)
-    } else {
-      sitelog <- NULL
-    }
-    if (isTruthy(file$soln)) {
-      soln <- file$soln$name
-    } else {
-      soln <- NULL
-    }
-    if (isTruthy(file$custom)) {
-      custom <- file$custom$name
-    } else {
-      custom <- NULL
-    }
-    if (messages > 0) cat(file = stderr(), "PLOT   file : ", input$series$name,"   Format: ",input$format,"   Component: ", input$tab,
-                          "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                          sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                          custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, "\n")
     if (input$tab < 1) {
       if (messages > 0) cat(file = stderr(), "WARNING: tab number is ", input$tab, "\n")
       showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
@@ -7603,6 +7613,35 @@ server <- function(input,output,session) {
     removeNotification("parsing_url1")
     removeNotification("parsing_url2")
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
+    if (isTruthy(url$file)) {
+      fileName <- file$primary$name
+    } else {
+      fileName <- input$series$name
+    }
+    if (isTruthy(file$sitelog)) {
+      sitelog <- file$sitelog$name
+    } else if (isTruthy(file$primary$logfile)) {
+      sitelog <- basename(url$logfile)
+    } else if (isTruthy(file$secondary$logfile)) {
+      sitelog <- basename(url$logfile2)
+    } else {
+      sitelog <- NULL
+    }
+    if (isTruthy(file$soln)) {
+      soln <- file$soln$name
+    } else {
+      soln <- NULL
+    }
+    if (isTruthy(file$custom)) {
+      custom <- file$custom$name
+    } else {
+      custom <- NULL
+    }
+    if (messages > 0) cat(file = stderr(), "PLOT   file : ", fileName,"   Format: ",input$format,"   Component: ", input$tab,
+                          "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
+                          sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
+                          custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, 
+                          "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
     # Setting column separation
     if (input$separator == "1") {
       sep <- ""
