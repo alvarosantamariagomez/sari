@@ -746,7 +746,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   tags$a(href = "http://geodesy.unr.edu/NGLStationPages/steps.txt", "Show file example", target = "_blank")
+                                                                                   tags$a(href = "steps.txt", "Show file example", target = "_blank")
                                                                             )
                                                                           ),
                                                                           fluidRow(
