@@ -330,7 +330,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$meta(name = "application-name", content = "SARI"),
                   tags$meta(name = "description", content = "Interactive & online GNSS position time series analysis tool"),
                   tags$meta(name = "keywords", content = "SARI,sari,GNSS,time,series,analysis"),
-                  tags$meta(name = "author", content = "Alvaro SantamarC-a-GC3mez"),
+                  tags$meta(name = "author", content = "Alvaro Santamaria-Gomez"),
                   tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),
                   tags$html(lang = "en"),
                   tags$style(HTML("
@@ -342,7 +342,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .navbar-nav li:nth-child(2) { width: 17%; }
                       .navbar-nav li:nth-child(1) { width: 17%; }
                       .tabbable > .nav > li[class=active] > a { background-color: #333333; color:white; }
-                      .shiny-notification { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; }
+                      .shiny-notification { word-break: break-word; color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; }
                       .shiny-notification-warning { color: #ffffff; }
                       .shiny-notification-error { color: #F5C710; }
                       .shiny-notification-message { color: #ffffff; background-color: #446e9b; font-size: large; font-weight: bold; border: 3px solid #333333; padding: 10px 8px 10px 10px; margin: 2px; position:fixed; top: 0; left: calc(28%); width: 71%}
@@ -439,7 +439,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
-                                                                               selectInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
+                                                                               selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
                                                                         ),
                                                                         column(4,
                                                                                withBusyIndicatorUI(
@@ -788,7 +788,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
-                                                                                   selectInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, selectize = T)
+                                                                                   selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
                                                                             ),
                                                                             column(3,
                                                                                    withBusyIndicatorUI(
@@ -5980,27 +5980,27 @@ server <- function(input,output,session) {
   # Observe remote series ####
   observeEvent(input$server1, {
     if (input$server1 == "RENAG") {
-      updateSelectInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
+      updateSelectizeInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
     } else if (input$server1 == "FORMATER") {
-      updateSelectInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
     } else if (input$server1 == "IGS") {
-      updateSelectInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
+      updateSelectizeInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
     } else if (input$server1 == "EUREF") {
-      updateSelectInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
+      updateSelectizeInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server1 == "EPOS") {
-      updateSelectInput(session, inputId = "product1", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server1 == "NGL") {
-      updateSelectInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
     } else if (input$server1 == "JPL") {
-      updateSelectInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
+      updateSelectizeInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server1 == "EOSTLS") {
-      updateSelectInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
     } else if (input$server1 == "SONEL") {
-      updateSelectInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
+      updateSelectizeInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server1 == "SIRGAS") {
-      updateSelectInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
+      updateSelectizeInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server1 == "EARTHSCOPE") {
-      updateSelectInput(session, inputId = "product1", choices = list("CWU", "PBO", "NMT"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("CWU", "PBO", "NMT"), selected = "")
     }
     output$station1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
@@ -6009,27 +6009,27 @@ server <- function(input,output,session) {
   observeEvent(input$server2, {
     req(obs())
     if (input$server2 == "RENAG") {
-      updateSelectInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
+      updateSelectizeInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
     } else if (input$server2 == "FORMATER") {
-      updateSelectInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
     } else if (input$server2 == "IGS") {
-      updateSelectInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
+      updateSelectizeInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
     } else if (input$server2 == "EUREF") {
-      updateSelectInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
+      updateSelectizeInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server2 == "EPOS") {
-      updateSelectInput(session, inputId = "product2", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server2 == "NGL") {
-      updateSelectInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
     } else if (input$server2 == "JPL") {
-      updateSelectInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
+      updateSelectizeInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server2 == "EOSTLS") {
-      updateSelectInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "", options = list(maxItems = 16))
     } else if (input$server2 == "SONEL") {
-      updateSelectInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
+      updateSelectizeInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server2 == "SIRGAS") {
-      updateSelectInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
+      updateSelectizeInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server2 == "EARTHSCOPE") {
-      updateSelectInput(session, inputId = "product2", choices = list("CWU", "PBO", "NMT"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("CWU", "PBO", "NMT"), selected = "")
     }
     output$station2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
@@ -6116,51 +6116,70 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
-      url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,2))
+      # url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,2))
+      url_info <- get_URL_info(input$server2,inputs$station2,input$product2,2)
       if (isTruthy(url_info)) {
-        url$station2 <- url_info[1]
-        url$file2 <- url_info[2]
+        url$station2 <- url_info[[1]]
+        url$file2 <- url_info[[2]]
         url$server2 <- input$server2
-        file$secondary$name <- url_info[3]
-        info$format2 <- url_info[4]
-        url$logfile2 <- url_info[5]
-        showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(input$server2),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-        file$secondary$file <- tempfile()
-        down <- download(url$server2, url$file2, file$secondary$file)
-        if (file.exists(file$secondary$file)) {
-          downloaded <- readLines(file$secondary$file, n = 2, warn = F)
-          if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-               length(downloaded) < 2) {
-            down <- 1
+        file$secondary$name <- url_info[[3]]
+        info$format2 <- url_info[[4]]
+        url$logfile2 <- url_info[[5]]
+        file$secondary$file <- c()
+        secondary_files <- 0
+        for (f in 1:length(url$file2)) {
+          if (length(url$file2) > 1) {
+            showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          } else {
+            showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+          }
+          file$secondary$file <- c(file$secondary$file, tempfile())
+          down <- download(url$server2, url$file2[f], file$secondary$file[f])
+          if (file.exists(file$secondary$file[f])) {
+            downloaded <- readLines(file$secondary$file[f], n = 2, warn = F)
+            if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                length(downloaded) < 2) {
+              down <- 1
+            }
+          }
+          if (isTruthy(down) && down == 0) {
+            secondary_files <- secondary_files + 1
+            if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2[f], " downloaded in ", file$secondary$file[f], "\n")
+          } else {
+            file$secondary$file <- file$secondary$file[-length(file$secondary$file)]
+            removeNotification("parsing_url2")
+            showNotification(HTML(paste0("File ",file$secondary$name[f]," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           }
         }
-        if (isTruthy(down) && down == 0) {
-          if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
+        if (secondary_files > 0) {
           if (messages > 4) cat(file = stderr(), "From: observe remote series (secondary)\n")
           data <- digest()
           if (!is.null(data)) {
             obs(data)
-            filename2 <- file$secondary$name
+            if (length(file$secondary$name) > 1) {
+              filename2 <- paste(input$station2, paste(input$product2, collapse = "_"), sep = "_")
+              file$secondary$file <- as.matrix(file$secondary$file)
+            } else {
+              filename2 <- file$secondary$name
+              if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
+                showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+                file$secondary$logfile <- tempfile()
+                down <- download("", url$logfile2, file$secondary$logfile)
+                if (down == 0) {
+                  file$sitelog <- NULL
+                  session$sendCustomMessage("log", basename(url$logfile2))
+                  updateCheckboxInput(inputId = "traceLog", value = T)
+                } else {
+                  showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                  file$secondary$logfile <- NULL
+                }
+              }
+            }
             session$sendCustomMessage("filename2", filename2)
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
             updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
-            if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
-              showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-              file$secondary$logfile <- tempfile()
-              down <- download("", url$logfile2, file$secondary$logfile)
-              if (down == 0) {
-                file$sitelog <- NULL
-                session$sendCustomMessage("log", basename(url$logfile2))
-                updateCheckboxInput(inputId = "traceLog", value = T)
-              } else {
-                showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                file$secondary$logfile <- NULL
-              }
-            }
           }
         } else {
-          removeNotification("parsing_url2")
-          showNotification(HTML(paste0("File ",file$secondary$name," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           updateSelectInput(session, inputId = "station2", selected = "")
           file$secondary <- NULL
         }
@@ -7876,120 +7895,50 @@ server <- function(input,output,session) {
           files <- input$series2$datapath
           server <- ""
         }
-        if (isTruthy(dim(files)) && dim(files)[1] > 1) {
-          table_stack <- NULL
-          for (i in 1:dim(files)[1]) {
-            table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,"",2)
-            if (!is.null(table2)) {
-              if (!is.null(table_stack)) {
-                table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
-                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
-                  sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
-                  sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
-                  sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
-                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-              } else {
-                table_stack <- table2
-              }
-            } else {
-              showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+        table_stack <- NULL
+        for (i in 1:dim(as.matrix(files))[1]) {
+          table2 <- extract_table(files[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,"",2)
+          # starting EOSTSL series at .0
+          if (dim(as.matrix(files))[1] > 1) {
+            while (table2$x[1] %% 1 > 0) { 
+              table2 <- table2[-1,]
             }
-          }
-          if (!is.null(table_stack)) {
-            table2 <- table_stack
-            rm(table_stack)
-          } else {
-            table2 <- NULL
-            showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
-          }
-        } else {
-          table2 <- extract_table(files,sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
-        }
-        if (!is.null(table2)) {
-          if (anyNA(table2)) {
-            table2 <- na.omit(table2)
-            showNotification(HTML("The secondary input file contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
           }
           # Resampling the secondary series
-          if (input$optionSecondary > 0) {
-            if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
+          if (nchar(input$step2) > 0 && is.na(inputs$step2)) {;
+            if (is.na(as.numeric(input$step2))) {
               info$step2 <- NULL
               showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-            } else if (isTruthy(inputs$step2)) {
-              if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
-                tolerance <- min(diff(table2$x,1))/3
-                info$step2 <- inputs$step2
-                withProgress(message = 'Averaging the series',
-                             detail = 'This may take a while ...', value = 0, {
-                               w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
-                               if (info$format2 == 4) {
-                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
-                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
-                               } else {
-                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
-                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
-                               }
-                             })
-                table2 <- na.omit(table2)
-              } else {
-                info$step2 <- NULL
-                # showNotification(HTML("The resampling period of the secondary series is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-              }
+            }
+          } else if (isTruthy(inputs$step2)) {
+            if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
+              tolerance <- min(diff(table2$x,1))/3
+              info$step2 <- inputs$step2
+              withProgress(message = 'Averaging the series.',
+                           detail = 'This may take a while ...', value = 0, {
+                             w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
+                             if (info$format2 == 4) {
+                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
+                             } else {
+                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                             }
+                           })
+              table2 <- na.omit(table2)
             } else {
               info$step2 <- NULL
             }
-            if (!is.null(table2)) {
-              if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
-                showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
-              }
-              if (info$format < 4 && info$format != info$format2) {
-                showNotification(HTML("The primary and secondary series have different format.<br>Verify the time units from both series are the same."), action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
-              }
-              if (input$optionSecondary == 1) {
-                if (info$format == 4) {
-                  table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-                    y1 <- y1.x
-                    z1 <- y1.y * inputs$scaleFactor
-                    sy1 <- sy1.x
-                    sz1 <- sy1.y  * inputs$scaleFactor
-                  })[,c("x","y1","sy1","z1","sz1")])
-                } else {
-                  table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-                    if (info$format2 == 4) {
-                      y1 <- y1.x
-                      z1 <- y1.y * inputs$scaleFactor
-                      y2 <- y2
-                      z2 <- y1.y * inputs$scaleFactor
-                      y3 <- y3
-                      z3 <- y1.y * inputs$scaleFactor
-                      sy1 <- sy1.x
-                      sz1 <- sy1.y * inputs$scaleFactor
-                      sy2 <- sy2
-                      sz2 <- sy1.y * inputs$scaleFactor
-                      sy3 <- sy3
-                      sz3 <- sy1.y * inputs$scaleFactor
-                    } else {
-                      y1 <- y1.x
-                      z1 <- y1.y * inputs$scaleFactor
-                      y2 <- y2.x
-                      z2 <- y2.y * inputs$scaleFactor
-                      y3 <- y3.x
-                      z3 <- y3.y * inputs$scaleFactor
-                      sy1 <- sy1.x
-                      sz1 <- sy1.y * inputs$scaleFactor
-                      sy2 <- sy2.x
-                      sz2 <- sy2.y * inputs$scaleFactor
-                      sy3 <- sy3.x
-                      sz3 <- sy3.y * inputs$scaleFactor
-                    }
-                  })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
-                }
-                info$sampling2 <- min(diff(table2$x,1))
-              } else if (input$optionSecondary == 2) {
+          } else {
+            info$step2 <- NULL
+          }
+          # computing the sum of secondary series
+          if (!is.null(table2)) {
+            if (!is.null(table_stack)) {
+              if (isTruthy(inputs$step2)) {
+                # shifting the next secondary series if necessary
                 if (input$tunits == 1) {
-                  delta <- as.numeric(names(sort(table(table$x - floor(table$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
+                  delta <- as.numeric(names(sort(table(table_stack$x - floor(table_stack$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
                   if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
                     table2$x <- table2$x + delta
                     showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
@@ -8001,76 +7950,162 @@ server <- function(input,output,session) {
                     }
                   }
                 }
-                if (info$format == 4) {
-                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                    y1 <- y1.x - y1.y * inputs$scaleFactor
-                    sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                  })[,c("x","y1","sy1")])
-                } else {
-                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                    if (info$format2 == 4) {
-                      y1 <- y1.x - y1.y * inputs$scaleFactor
-                      y2 <- y2 - y1.y * inputs$scaleFactor
-                      y3 <- y3 - y1.y * inputs$scaleFactor
-                      sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                      sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
-                      sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
-                    } else {
-                      y1 <- y1.x - y1.y * inputs$scaleFactor
-                      y2 <- y2.x - y2.y * inputs$scaleFactor
-                      y3 <- y3.x - y3.y * inputs$scaleFactor
-                      sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                      sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
-                      sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
-                    }
-                  })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-                }
-                showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-              } else if (input$optionSecondary == 3) {
-                if (input$tunits == 1) {
-                  delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
-                  if (delta != 0) {
-                    table2$x <- table2$x + delta
-                    showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-                  }
-                }
-                if (info$format == 4) {
-                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                    y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                    sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-                  })[,c("x","y1","sy1")])
-                } else {
-                  table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                    if (info$format2 == 4) {
-                      y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                      y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
-                      y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
-                      sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-                      sy2 <- abs(sy2 - sy1.y * inputs$scaleFactor)/2
-                      sy3 <- abs(sy3 - sy1.y * inputs$scaleFactor)/2
-                    } else {
-                      y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                      y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
-                      y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
-                      sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-                      sy2 <- abs(sy2.x - sy2.y * inputs$scaleFactor)/2
-                      sy3 <- abs(sy3.x - sy3.y * inputs$scaleFactor)/2
-                    }
-                  })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-                }
-                showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-              }
-              if (nrow(table_common) > 0) {
-                table <- table_common
-                rm(table_common)
-              } else {
-                shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1))
+                table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
+                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                  sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
+                  sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
+                  sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
+                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
               }
             } else {
-              showNotification("Problem when averaging the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
+              table_stack <- table2
             }
           } else {
-            info$step2 <- NULL
+            showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          }
+        }
+        if (!is.null(table_stack)) {
+          table2 <- table_stack
+          rm(table_stack)
+        } else {
+          table2 <- NULL
+          showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
+        }
+        if (!is.null(table2)) {
+          if (anyNA(table2)) {
+            table2 <- na.omit(table2)
+            showNotification(HTML("The secondary input file contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
+          }
+          if (!is.null(table2)) {
+            if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
+              showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
+            }
+            if (info$format < 4 && info$format != info$format2) {
+              showNotification(HTML("The primary and secondary series have different format.<br>Verify the time units from both series are the same."), action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
+            }
+            if (input$optionSecondary == 1) {
+              if (info$format == 4) {
+                table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+                  y1 <- y1.x
+                  z1 <- y1.y * inputs$scaleFactor
+                  sy1 <- sy1.x
+                  sz1 <- sy1.y  * inputs$scaleFactor
+                })[,c("x","y1","sy1","z1","sz1")])
+              } else {
+                table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+                  if (info$format2 == 4) {
+                    y1 <- y1.x
+                    z1 <- y1.y * inputs$scaleFactor
+                    y2 <- y2
+                    z2 <- y1.y * inputs$scaleFactor
+                    y3 <- y3
+                    z3 <- y1.y * inputs$scaleFactor
+                    sy1 <- sy1.x
+                    sz1 <- sy1.y * inputs$scaleFactor
+                    sy2 <- sy2
+                    sz2 <- sy1.y * inputs$scaleFactor
+                    sy3 <- sy3
+                    sz3 <- sy1.y * inputs$scaleFactor
+                  } else {
+                    y1 <- y1.x
+                    z1 <- y1.y * inputs$scaleFactor
+                    y2 <- y2.x
+                    z2 <- y2.y * inputs$scaleFactor
+                    y3 <- y3.x
+                    z3 <- y3.y * inputs$scaleFactor
+                    sy1 <- sy1.x
+                    sz1 <- sy1.y * inputs$scaleFactor
+                    sy2 <- sy2.x
+                    sz2 <- sy2.y * inputs$scaleFactor
+                    sy3 <- sy3.x
+                    sz3 <- sy3.y * inputs$scaleFactor
+                  }
+                })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
+              }
+              info$sampling2 <- min(diff(table2$x,1))
+            } else if (input$optionSecondary == 2) {
+              if (input$tunits == 1) {
+                delta <- as.numeric(names(sort(table(table$x - floor(table$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
+                if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
+                  table2$x <- table2$x + delta
+                  showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                } else {
+                  if (info$sampling < info$sampling_regular) {
+                    showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                  } else {
+                    showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                  }
+                }
+              }
+              if (info$format == 4) {
+                table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                  y1 <- y1.x - y1.y * inputs$scaleFactor
+                  sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                })[,c("x","y1","sy1")])
+              } else {
+                table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                  if (info$format2 == 4) {
+                    y1 <- y1.x - y1.y * inputs$scaleFactor
+                    y2 <- y2 - y1.y * inputs$scaleFactor
+                    y3 <- y3 - y1.y * inputs$scaleFactor
+                    sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                    sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
+                    sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
+                  } else {
+                    y1 <- y1.x - y1.y * inputs$scaleFactor
+                    y2 <- y2.x - y2.y * inputs$scaleFactor
+                    y3 <- y3.x - y3.y * inputs$scaleFactor
+                    sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+                    sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
+                    sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
+                  }
+                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+              }
+              showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+            } else if (input$optionSecondary == 3) {
+              if (input$tunits == 1) {
+                delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
+                if (delta != 0) {
+                  table2$x <- table2$x + delta
+                  showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                }
+              }
+              if (info$format == 4) {
+                table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                  y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                  sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+                })[,c("x","y1","sy1")])
+              } else {
+                table_common <- data.frame(within(merge(table,table2,by = "x"), {
+                  if (info$format2 == 4) {
+                    y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                    y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
+                    y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
+                    sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+                    sy2 <- abs(sy2 - sy1.y * inputs$scaleFactor)/2
+                    sy3 <- abs(sy3 - sy1.y * inputs$scaleFactor)/2
+                  } else {
+                    y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+                    y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
+                    y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
+                    sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+                    sy2 <- abs(sy2.x - sy2.y * inputs$scaleFactor)/2
+                    sy3 <- abs(sy3.x - sy3.y * inputs$scaleFactor)/2
+                  }
+                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+              }
+              showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+            }
+            if (nrow(table_common) > 0) {
+              table <- table_common
+              rm(table_common)
+            } else {
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1))
+            }
+          } else {
+            showNotification("Problem when averaging the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
           }
         } else {
           showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
@@ -11158,58 +11193,62 @@ server <- function(input,output,session) {
     } else if (server == "EOSTLS") {
       format <- 1
       pattern <- "_NEU."
-      name <- paste0(toupper(station),pattern,tolower(product))
-      if (tolower(product) == "atmib") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMIB/"
-      } else if (tolower(product) == "atmmo") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMMO/"
-      } else if (tolower(product) == "erain") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAin/"
-      } else if (tolower(product) == "erahyd") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAhyd/"
-      } else if (tolower(product) == "era5ib") {
-        name <- paste0(toupper(station),"_NEU.era5")
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_IB/"
-      } else if (tolower(product) == "era5hyd") {
-        name <- paste0(toupper(station),"_NEU.era5")
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_hydro/"
-      } else if (tolower(product) == "era5tugo") {
-        name <- paste0(toupper(station),"_NEU.era5")
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_TUGO/"
-      } else if (tolower(product) == "gldas") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS/"
-      } else if (tolower(product) == "gldas2") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS2/"
-      } else if (tolower(product) == "merra") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA/"
-      } else if (tolower(product) == "merra2atm") {
-        name <- paste0(toupper(station),"_NEU_ib.merra2")
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/"
-      } else if (tolower(product) == "merra2hyd") {
-        name <- paste0(toupper(station),"_NEU.merra2")
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/"
-      } else if (tolower(product) == "grace") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/GRACE/"
-      } else if (tolower(product) == "ecco") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO/"
-      } else if (tolower(product) == "ecco2") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO2/"
-      } else if (tolower(product) == "glorys") {
-        url <- "http://loading.u-strasbg.fr/ITRF/CF/GLORYS/"
-      } else {
-        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-        return(NULL)
-      }
-      filepath <- paste0(url,name)
       if (isTruthy(station)) {
+        filepath <- c()
+        name <- c()
+        for (p in product) {
+          naming <- paste0(toupper(station),pattern,tolower(p))
+          if (tolower(p) == "atmib") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMIB/"
+          } else if (tolower(p) == "atmmo") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMMO/"
+          } else if (tolower(p) == "erain") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAin/"
+          } else if (tolower(p) == "erahyd") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAhyd/"
+          } else if (tolower(p) == "era5ib") {
+            naming <- paste0(toupper(station),"_NEU.era5")
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_IB/"
+          } else if (tolower(p) == "era5hyd") {
+            naming <- paste0(toupper(station),"_NEU.era5")
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_hydro/"
+          } else if (tolower(p) == "era5tugo") {
+            naming <- paste0(toupper(station),"_NEU.era5")
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_TUGO/"
+          } else if (tolower(p) == "gldas") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS/"
+          } else if (tolower(p) == "gldas2") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS2/"
+          } else if (tolower(p) == "merra") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA/"
+          } else if (tolower(p) == "merra2atm") {
+            naming <- paste0(toupper(station),"_NEU_ib.merra2")
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/"
+          } else if (tolower(p) == "merra2hyd") {
+            naming <- paste0(toupper(station),"_NEU.merra2")
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/"
+          } else if (tolower(p) == "grace") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/GRACE/"
+          } else if (tolower(p) == "ecco") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO/"
+          } else if (tolower(p) == "ecco2") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO2/"
+          } else if (tolower(p) == "glorys") {
+            url <- "http://loading.u-strasbg.fr/ITRF/CF/GLORYS/"
+          } else {
+            showNotification(paste0("Unknown product ",p,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+            return(NULL)
+          }
+          name <- c(name, naming)
+          filepath <- c(filepath, paste0(url,naming))
+        }
         updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
         updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-        updateTextInput(session, inputId = "step2", value = "1")
+        shinyjs::delay(1000, updateTextInput(session, inputId = "step2", value = "1"))
       } else {
         withBusyIndicatorServer(variable, {
-          dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- sub(paste0(pattern,".*"), "", grep(pattern, dir_contents, fixed = T, value = T), perl = T)
+          if (file.exists("www/EOSTSL_database.txt")) {
+            stations_available <- readLines("www/EOSTSL_database.txt", warn = F)
             if (series == 1) {
               output$station1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -11220,7 +11259,7 @@ server <- function(input,output,session) {
               })
             }
           } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            showNotification(HTML("The list of EOSTSL stations is not found.<br>It is not possible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
           }
           return(NULL)
         })
