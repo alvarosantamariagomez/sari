@@ -7867,11 +7867,11 @@ server <- function(input,output,session) {
                          detail = 'This may take a while ...', value = 0, {
                            if (info$format == 4) {
                              w <- as.integer((max(table$x) - min(table$x))/inputs$step)
-                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F), simplify = T)
+                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                              table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
                            } else {
                              w <- as.integer((max(table$x) - min(table$x))/inputs$step)
-                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance, w = w, s = inputs$step, second = F), simplify = T)
+                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                              table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
                            }
                          })
@@ -7918,11 +7918,11 @@ server <- function(input,output,session) {
                            detail = 'This may take a while ...', value = 0, {
                              w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
                              if (info$format2 == 4) {
-                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
+                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
                              } else {
-                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(table2$x)), sy2 = rep(1, length(table2$x)), sy3 = rep(1, length(table2$x)))
                              }
                            })
               table2 <- na.omit(table2)
@@ -10734,55 +10734,88 @@ server <- function(input,output,session) {
     }
   }
   trim <- function(x) gsub("^\\s+|\\s+$", "", x)
-  average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w,s,second) {
+  average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w,s,second,sigmas) {
     index <- x >= x[1] + (p - 1)*s - tol & x < x[1] + p*s - tol * 2/3
-    x_ <- y1_ <- y2_ <- y3_ <- sy1_ <- sy2_ <- sy3_ <- NULL
+    x_ <- y1_ <- y2_ <- y3_ <- NULL
+    if (sigmas) sy1_ <- sy2_ <- sy3_ <- NULL
     if (length(x[index]) == 1) {
       x_ <- x[1] + (p - 0.5)*s
       if (isTruthy(second)) {
         y1_ <- y1[index]
         y2_ <- y2[index]
         y3_ <- y3[index]
-        sy1_ <- sy1[index]
-        sy2_ <- sy2[index]
-        sy3_ <- sy3[index]
+        if (sigmas) {
+          sy1_ <- sy1[index]
+          sy2_ <- sy2[index]
+          sy3_ <- sy3[index]
+        }
       } else {
         y1_ <- y1[index & values$previous1 & !is.na(values$previous1)]
         y2_ <- y2[index & values$previous2 & !is.na(values$previous2)]
         y3_ <- y3[index & values$previous3 & !is.na(values$previous3)]
-        sy1_ <- sy1[index & values$previous1 & !is.na(values$previous1)]
-        sy2_ <- sy2[index & values$previous2 & !is.na(values$previous2)]
-        sy3_ <- sy3[index & values$previous3 & !is.na(values$previous3)]
+        if (sigmas) {
+          sy1_ <- sy1[index & values$previous1 & !is.na(values$previous1)]
+          sy2_ <- sy2[index & values$previous2 & !is.na(values$previous2)]
+          sy3_ <- sy3[index & values$previous3 & !is.na(values$previous3)]
+        }
       }
     } else if (length(x[index]) > 1) {
       x_ <- x[1] + (p - 0.5)*s
       if (isTruthy(second)) {
-        y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2)
-        y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2)
-        y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2)
-        sy1_ <- sqrt(1/sum(1/sy1[index]^2))
-        sy2_ <- sqrt(1/sum(1/sy2[index]^2))
-        sy3_ <- sqrt(1/sum(1/sy3[index]^2))
+        if (sigmas) {
+          y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2)
+          y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2)
+          y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2)
+          sy1_ <- sqrt(1/sum(1/sy1[index]^2))
+          sy2_ <- sqrt(1/sum(1/sy2[index]^2))
+          sy3_ <- sqrt(1/sum(1/sy3[index]^2))
+        } else {
+          y1_ <- mean(y1[index])
+          y2_ <- mean(y2[index])
+          y3_ <- mean(y3[index])
+        }
       } else {
-        y1_ <- weighted.mean(y1[index & values$previous1 & !is.na(values$previous1)], 1/(sy1[index & values$previous1 & !is.na(values$previous1)])^2)
-        y2_ <- weighted.mean(y2[index & values$previous2 & !is.na(values$previous2)], 1/(sy2[index & values$previous2 & !is.na(values$previous2)])^2)
-        y3_ <- weighted.mean(y3[index & values$previous3 & !is.na(values$previous3)], 1/(sy3[index & values$previous3 & !is.na(values$previous3)])^2)
-        sy1_ <- sqrt(1/sum(1/sy1[index & values$previous1 & !is.na(values$previous1)]^2))
-        sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
-        sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
+        if (sigmas) {
+          y1_ <- weighted.mean(y1[index & values$previous1 & !is.na(values$previous1)], 1/(sy1[index & values$previous1 & !is.na(values$previous1)])^2)
+          y2_ <- weighted.mean(y2[index & values$previous2 & !is.na(values$previous2)], 1/(sy2[index & values$previous2 & !is.na(values$previous2)])^2)
+          y3_ <- weighted.mean(y3[index & values$previous3 & !is.na(values$previous3)], 1/(sy3[index & values$previous3 & !is.na(values$previous3)])^2)
+          sy1_ <- sqrt(1/sum(1/sy1[index & values$previous1 & !is.na(values$previous1)]^2))
+          sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
+          sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
+        } else {
+          y1_ <- mean(y1[index & values$previous1 & !is.na(values$previous1)])
+          y2_ <- mean(y2[index & values$previous2 & !is.na(values$previous2)])
+          y3_ <- mean(y3[index & values$previous3 & !is.na(values$previous3)])
+        }
       }
     }
     if (input$format == 4) {
-      if (isTruthy(x_) && isTruthy(y1_) && isTruthy(sy1_)) {
-        out <- c(x_,y1_,sy1_)  
+      if (sigmas) {
+        if (isTruthy(x_) && isTruthy(y1_) && isTruthy(sy1_)) {
+          out <- c(x_,y1_,sy1_)
+        } else {
+          out <- c(NA,NA,NA)
+        }
       } else {
-        out <- c(NA,NA,NA)
+        if (isTruthy(x_) && isTruthy(y1_)) {
+          out <- c(x_,y1_)
+        } else {
+          out <- c(NA,NA)
+        }
       }
     } else {
-      if (isTruthy(x_) && isTruthy(y1_) && isTruthy(sy1_) && isTruthy(y2_) && isTruthy(sy2_) && isTruthy(y3_) && isTruthy(sy3_)) {
-        out <- c(x_,y1_,y2_,y3_,sy1_,sy2_,sy3_)
+      if (sigmas) {
+        if (isTruthy(x_) && isTruthy(y1_) && isTruthy(sy1_) && isTruthy(y2_) && isTruthy(sy2_) && isTruthy(y3_) && isTruthy(sy3_)) {
+          out <- c(x_,y1_,y2_,y3_,sy1_,sy2_,sy3_)
+        } else {
+          out <- c(NA,NA,NA,NA,NA,NA,NA)
+        }
       } else {
-        out <- c(NA,NA,NA,NA,NA,NA,NA)
+        if (isTruthy(x_) && isTruthy(y1_) && isTruthy(y2_) && isTruthy(y3_)) {
+          out <- c(x_,y1_,y2_,y3_)
+        } else {
+          out <- c(NA,NA,NA,NA)
+        }
       }
     }
     setProgress(round(p/w, digits = 1))
