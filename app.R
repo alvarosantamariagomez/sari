@@ -7897,7 +7897,7 @@ server <- function(input,output,session) {
         }
         table_stack <- NULL
         for (i in 1:dim(as.matrix(files))[1]) {
-          table2 <- extract_table(files[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,"",2)
+          table2 <- extract_table(files[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
           # starting EOSTSL series at .0
           if (dim(as.matrix(files))[1] > 1) {
             while (table2$x[1] %% 1 > 0) { 
@@ -8271,7 +8271,7 @@ server <- function(input,output,session) {
         tableAll <- tableAll[, c("V1", "V3", "V2", "V4", "V6", "V5", "V7")]
       }
       # extracting series from EOSTLS format into ENU format
-      if (server == "SONEL") {
+      if (server == "EOSTLS") {
         tableAll <- tableAll[, c("V1", "V3", "V2", "V4")]
       }
       # transforming series from IGS lat lon into ENU format
