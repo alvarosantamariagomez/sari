@@ -45,7 +45,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   # library(optimParallel)
 })))
 
-# devmode(TRUE)
+devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
 Sys.setlocale('LC_ALL','C')
 
@@ -427,7 +427,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "font-weight: bold", "Input series file",
                                                                                        helpPopup("Select a column-based text file; comments must start with '#'")
                                                                                    ),
-                                                                                   div(style = "margin-right: -1em", tags$a(href = "TLSE.neu", "Show file example", targe = "_blank"))
+                                                                                   div(style = "margin-right: -1em", uiOutput("fileSeries1"))
                                                                             ),
                                                                             column(8,
                                                                                    fileInput(inputId = "series", label = "", multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
@@ -1948,6 +1948,12 @@ server <- function(input,output,session) {
       })
       output$station2 <- renderUI({
         textInput(inputId = "station2", label = "Station", value = "")
+      })
+      output$fileSeries1 <- renderUI({
+        tags$a(href = "TLSE.neu", "Show file example", targe = "_blank")
+      })
+      output$fileSeries2 <- renderUI({
+        NULL
       })
     }
     info$intro <- F
@@ -6058,7 +6064,7 @@ server <- function(input,output,session) {
         info$format <- url_info[4]
         url$logfile <- url_info[5]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-        file$primary$file <- tempfile()
+        file$primary$file <- "www/fileSeries1.txt"
         down <- download(url$server, url$file, file$primary$file)
         if (file.exists(file$primary$file)) {
           downloaded <- readLines(file$primary$file, n = 2, warn = F)
@@ -6130,10 +6136,11 @@ server <- function(input,output,session) {
         for (f in 1:length(url$file2)) {
           if (length(url$file2) > 1) {
             showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            file$secondary$file <- c(file$secondary$file, tempfile())
           } else {
             showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+            file$secondary$file <- "www/fileSeries2.txt"
           }
-          file$secondary$file <- c(file$secondary$file, tempfile())
           down <- download(url$server2, url$file2[f], file$secondary$file[f])
           if (file.exists(file$secondary$file[f])) {
             downloaded <- readLines(file$secondary$file[f], n = 2, warn = F)
@@ -7440,6 +7447,12 @@ server <- function(input,output,session) {
     output$tabName1 <<- renderText({ info$components[1] })
     output$tabName2 <<- renderText({ info$components[2] })
     output$tabName3 <<- renderText({ info$components[3] })
+    output$fileSeries1 <- renderUI({
+      tags$a(href = "TLSE.neu", "Show file example", targe = "_blank")
+    })
+    output$fileSeries2 <- renderUI({
+      NULL
+    })
   })
 
   # Observe hide buttons ####
@@ -7635,8 +7648,14 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
     if (isTruthy(url$file)) {
       fileName <- file$primary$name
+      output$fileSeries1 <- renderUI({
+        tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in new tab", target = "_blank")
+      })
     } else {
       fileName <- input$series$name
+      output$fileSeries1 <- renderUI({
+        NULL
+      })
     }
     if (isTruthy(file$sitelog)) {
       sitelog <- file$sitelog$name
@@ -7970,6 +7989,11 @@ server <- function(input,output,session) {
           }
         }
         if (!is.null(table_stack)) {
+          names(table_stack) <- c("# MJD East North Up")
+          suppressWarnings(write.table(x = table_stack[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = " ", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = F))
+          output$fileSeries2 <- renderUI({
+            tags$a(href = "fileSeries2.txt", "Show series file", title = "Open the file of the secondary series in new tab", target = "_blank")
+          })
           table2 <- table_stack
           rm(table_stack)
         } else {
