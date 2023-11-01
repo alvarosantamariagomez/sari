@@ -7922,7 +7922,7 @@ server <- function(input,output,session) {
                                table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
                              } else {
                                averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(table2$x)), sy2 = rep(1, length(table2$x)), sy3 = rep(1, length(table2$x)))
+                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
                              }
                            })
               table2 <- na.omit(table2)
