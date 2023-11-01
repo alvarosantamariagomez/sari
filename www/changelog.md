@@ -1,5 +1,28 @@
 # **SARI changelog**
 
+# noviembre 2023 [2023.11]
+
+### Fixed
+- Loading a PBO series from a URL query
+- Checking if the EPOS JSON file was correctly downloaded
+- Holding the zoom on the primary series when toggling points
+- Loading a local series using the sari.sh script
+- Avoiding overflow in the text of the notifications on the screen
+
+### Changed
+- Converting any series format into a ENU format
+- Deactivating the confirmation on screen when resetting the analysis
+- Transforming the epochs extracted from the station.info, sitelog, soln.snx and custom file following the selected time units of the series
+- Removing the crossover period shown on the screen if the noise model is not available
+- Sorting the extracted epochs from the custom offset file
+
+### Added
+- Combining several loading series from the EOSTSL server as a single secondary series
+- Automatic download of sitelogs from the RENAG, EUREF, EPOS, SONEL and SIRGAS servers
+- Automatic upload of the soln.snx file from the IGS server
+- Automatic upload of the steps.txt file from the NGL server
+- Automatic upload of the formater_offsets.dat file from the FORMATER server
+
 # octubre 2023 [2023.10]
 
 ### Fixed

@@ -55,7 +55,7 @@ install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magr
 
 
 
-5) In addition, the package "mvcwt" can be installed as an option. If installed this package allows computing wavelet transforms. This package can be downloaded from here:  
+5) In addition, the package "mvcwt" can be installed as an option. If installed, this package allows computing wavelet transforms. This package can be downloaded from here:  
 https://cran.r-project.org/src/contrib/Archive/mvcwt/
 
 To install this package there are two options:
