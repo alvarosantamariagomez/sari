@@ -2548,12 +2548,14 @@ server <- function(input,output,session) {
     trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
     trans$ordinate <- median(trans$y)
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
-    updateRadioButtons(session, inputId = "waveletType", label = NULL,
-                       choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5),
-                       selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
-    updateTextInput(session, "min_wavelet", value = "")
-    updateTextInput(session, "max_wavelet", value = "")
-    updateTextInput(session, "res_wavelet", value = "")
+    if (input$waveletType > 0) {
+      updateRadioButtons(session, inputId = "waveletType", label = NULL,
+                         choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5),
+                         selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
+      updateTextInput(session, "min_wavelet", value = "")
+      updateTextInput(session, "max_wavelet", value = "")
+      updateTextInput(session, "res_wavelet", value = "")
+    }
   }, priority = 3)
 
   # Load SARI file ####
