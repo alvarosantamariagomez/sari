@@ -2404,7 +2404,8 @@ server <- function(input,output,session) {
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
                  input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
-                 values$series1, values$series2, values$series3, values$series_all, input$fullSeries, obs()), {
+                 values$series1, values$series2, values$series3, values$series_all, input$fullSeries, obs(),
+                 trans$plate, input$eulerType), {
     req(obs())
     if (input$tab == 4) {
       req(info$stop)
@@ -2456,6 +2457,17 @@ server <- function(input,output,session) {
       }
       ranges$x1 <- c(info$minx, info$maxx)
     }
+    # removing plate model
+    if (isTruthy(trans$plate) && input$eulerType == 2) {
+      if (input$format == 4) {
+        data$y <- data$y - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0)) - median(data$y)
+      } else {
+        data$y1 <- data$y1 - trans$plate[1]*(trans$x0 - median(trans$x0)) - median(data$y1)
+        data$y2 <- data$y2 - trans$plate[2]*(trans$x0 - median(trans$x0)) - median(data$y2)
+        data$y3 <- data$y3 - trans$plate[3]*(trans$x0 - median(trans$x0)) - median(data$y3)
+      }
+    }
+    # extract data
     if ((input$tab == 1) || (input$format == 4)) {
       trans$y0 <- as.numeric(data$y1)
       trans$sy0 <- as.numeric(data$sy1)
@@ -6230,26 +6242,101 @@ server <- function(input,output,session) {
   })
 
   # Observe Euler ####
-  observeEvent(c(input$eulerType), {
+  observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers), {
     req(obs())
-    req(input$euler)
-    obs(NULL)
-    if (messages > 4) cat(file = stderr(), "From: observe euler (1)\n")
-    data <- digest()
-    obs(data)
-  })
-  observeEvent(c(input$plateModel, inputs$plate, input$neu1D), {
-    req(obs())
-    req(input$euler)
-    if (input$eulerType > 0) {
-      shinyjs::delay(300, { # to avoid firing the computation of the plate rotation before updating the parameters
-        obs(NULL)
-        if (messages > 4) cat(file = stderr(), "From: observe euler (2)\n")
-        data <- digest()
-        obs(data)
-      })
+    if (input$euler && input$eulerType > 0) {
+      stationCartesian <- c()
+      stationGeo <- c()
+      poleCartesian <- c()
+      if (messages > 0) cat(file = stderr(), "Plate rotation", "\n")
+      if (input$sunits == 1) {
+        scaling <- 1
+      } else if (input$sunits == 2) {
+        scaling <- 1000
+      } else { #guessing the series units
+        data <- obs()
+        if (input$tunits == 1) {
+          period <- 365.25
+        } else if (input$tunits == 2) {
+          period <- 365.25/7
+        } else if (input$tunits == 3) {
+          period <- 1
+        }
+        if (format == 4) { 
+          selected <- data$y1 # current series
+        } else {
+          selected <- data$y3 # up series
+        }
+        if (diff(range(data$x))/period < 1 || length(data$x) < 6) {
+          rate <- (mean(selected[-1*as.integer(length(data$x*0.1)):length(data$x)]) - mean(selected[1:as.integer(length(data$x*0.1))])) / (mean(data$x[-1*as.integer(length(data$x*0.1)):length(data$x)]) - mean(data$x[1:as.integer(length(data$x*0.1))]))
+        } else {
+          withProgress(message = 'Series units not defined',
+                       detail = 'Trying to guess the units ...', value = 0, {
+                         setProgress(0)
+                         vel <- sapply(1:length(data$x), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                         vel <- c(vel[1,],vel[2,])
+                         vel <- vel[vel > -999999]
+                         vel_sig <- 1.4826*mad(vel, na.rm = T)
+                         vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
+                         rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                       })
+        }
+        if (abs(rate) > 0.05 && sd(selected - rate*(data$x - mean(data$x))) > 0.05) {
+          scaling <- 1000 # series units are mm most likely
+        } else {
+          scaling <- 1 # series units are m most likely
+        }
+      }
+      if (input$station_coordinates == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+        stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
+        stationGeo <- do.call(xyz2llh,as.list(stationCartesian))
+      } else if (input$station_coordinates == 2 && isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+        stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
+        stationCartesian <- do.call(latlon2xyz,as.list(c(stationGeo,scaling)))
+      }
+      if (input$pole_coordinates == 2) {
+        poleCartesian <- inputs$pole_rot*degMa2radyr * c(cos(inputs$pole_lat*pi/180)*cos(inputs$pole_lon*pi/180),cos(inputs$pole_lat*pi/180)*sin(inputs$pole_lon*pi/180),sin(inputs$pole_lat*pi/180))
+      } else {
+        poleCartesian <- c(inputs$pole_x,inputs$pole_y,inputs$pole_z)*degMa2radyr
+      }
+      if (length(stationCartesian[!is.na(stationCartesian)]) == 3 && length(stationGeo[!is.na(stationGeo)]) == 2 && length(poleCartesian[!is.na(poleCartesian)]) == 3) {
+        if (stationGeo[1] < -pi/2 || stationGeo[1] > pi/2 || stationGeo[2] > 2*pi || stationGeo[2] < -2*pi) {
+          showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
+          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          req(info$stop)
+        }
+        if (sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) < 6355000*scaling || sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) > 6385000*scaling) {
+          showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
+          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          req(info$stop)
+        }
+        if (sqrt(poleCartesian[1]^2 + poleCartesian[2]^2 + poleCartesian[3]^2) > 2) {
+          showNotification(HTML("Euler pole parameters missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_pole", type = "error", session = getDefaultReactiveDomain())
+          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          req(info$stop)
+        }
+        plateCartesian <- cross(poleCartesian,stationCartesian)
+        # rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #NEU
+        rotation <- matrix(data = c(-1*sin(stationGeo[2]),-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),0,cos(stationGeo[1]),-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #ENU
+        plate_neu <- c(rotation %*% plateCartesian)
+        if ((input$format == 1 && input$neuenu == 1) || input$format == 2 || input$format == 3 || input$format == 4) { #ENU
+          trans$plate <- plate_neu
+        } else if ((input$format == 1 && input$neuenu == 2)) { #NEU
+          trans$plate <- c(plate_neu[2],plate_neu[1],plate_neu[3])
+        }
+        if (input$tunits == 1) {
+          trans$plate <- trans$plate/daysInYear
+        } else if (input$tunits == 2) {
+          trans$plate <- trans$plate*7/daysInYear
+        }
+      } else {
+        showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
+        updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+      }
+    } else {
+      trans$plate <- NULL
     }
-  })
+  }, priority = 4)
   observeEvent(c(input$plateModel, inputs$plate), {
     req(input$euler)
     removeNotification("bad_plate")
@@ -6356,7 +6443,7 @@ server <- function(input,output,session) {
         }
       }
     }
-  })
+  }, priority = 200)
 
   # Observe wavelet ####
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
@@ -8624,104 +8711,6 @@ server <- function(input,output,session) {
             }
           }
         }
-      }
-    }
-    if (input$euler && input$eulerType > 0 && length(extracted) > 0 && series == 1) {
-      stationCartesian <- c()
-      stationGeo <- c()
-      poleCartesian <- c()
-      if (messages > 0) cat(file = stderr(), "Plate rotation", "\n")
-      if (input$sunits == 1) {
-        scaling <- 1
-      } else if (input$sunits == 2) {
-        scaling <- 1000
-      } else {
-        if (input$tunits == 1) {
-          period <- 365.25
-        } else if (input$tunits == 2) {
-          period <- 365.25/7
-        } else if (input$tunits == 3) {
-          period <- 1
-        }
-        if (format == 4) { 
-          selected <- extracted$y1 # current series
-        } else {
-          selected <- extracted$y3 # up series
-        }
-        if (diff(range(extracted$x))/period < 1 || length(extracted$x) < 6) {
-          rate <- (mean(selected[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(selected[1:as.integer(length(extracted$x*0.1))])) / (mean(extracted$x[-1*as.integer(length(extracted$x*0.1)):length(extracted$x)]) - mean(extracted$x[1:as.integer(length(extracted$x*0.1))]))
-        } else {
-          withProgress(message = 'Series units not defined',
-                       detail = 'Trying to guess the units ...', value = 0, {
-                         setProgress(0)
-                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0, selected))
-                         vel <- c(vel[1,],vel[2,])
-                         vel <- vel[vel > -999999]
-                         vel_sig <- 1.4826*mad(vel, na.rm = T)
-                         vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
-                         rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
-                       })
-        }
-        if (abs(rate) > 0.05 && sd(selected - rate*(extracted$x - mean(extracted$x))) > 0.05) {
-          scaling <- 1000 # series units are mm most likely
-        } else {
-          scaling <- 1 # series units are m most likely
-        }
-      }
-      if (input$station_coordinates == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
-        stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
-        stationGeo <- do.call(xyz2llh,as.list(stationCartesian))
-      } else if (input$station_coordinates == 2 && isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
-        stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
-        stationCartesian <- do.call(latlon2xyz,as.list(c(stationGeo,scaling)))
-      }
-      if (input$pole_coordinates == 2) {
-        poleCartesian <- inputs$pole_rot*degMa2radyr * c(cos(inputs$pole_lat*pi/180)*cos(inputs$pole_lon*pi/180),cos(inputs$pole_lat*pi/180)*sin(inputs$pole_lon*pi/180),sin(inputs$pole_lat*pi/180))
-      } else {
-        poleCartesian <- c(inputs$pole_x,inputs$pole_y,inputs$pole_z)*degMa2radyr
-      }
-      if (length(stationCartesian[!is.na(stationCartesian)]) == 3 && length(stationGeo[!is.na(stationGeo)]) == 2 && length(poleCartesian[!is.na(poleCartesian)]) == 3) {
-        if (stationGeo[1] < -pi/2 || stationGeo[1] > pi/2 || stationGeo[2] > 2*pi || stationGeo[2] < -2*pi) {
-          showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
-          req(info$stop)
-        }
-        if (sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) < 6355000*scaling || sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) > 6385000*scaling) {
-          showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
-          req(info$stop)
-        }
-        if (sqrt(poleCartesian[1]^2 + poleCartesian[2]^2 + poleCartesian[3]^2) > 2) {
-          showNotification(HTML("Euler pole parameters missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_pole", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
-          req(info$stop)
-        }
-        plateCartesian <- cross(poleCartesian,stationCartesian)
-        # rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #NEU
-        rotation <- matrix(data = c(-1*sin(stationGeo[2]),-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),0,cos(stationGeo[1]),-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #ENU
-        plate_neu <- c(rotation %*% plateCartesian)
-        if ((format == 1 && input$neuenu == 1) || format == 2 || format == 3 || format == 4) { #ENU
-          trans$plate <- plate_neu
-        } else if ((format == 1 && input$neuenu == 2)) { #NEU
-          trans$plate <- c(plate_neu[2],plate_neu[1],plate_neu[3])
-        }
-        if (input$tunits == 1) {
-          trans$plate <- trans$plate/daysInYear
-        } else if (input$tunits == 2) {
-          trans$plate <- trans$plate*7/daysInYear
-        }
-        if (input$eulerType == 2) {
-          if (format == 4) {
-            extracted$y1 <- extracted$y1 - trans$plate[as.numeric(input$neu1D)]*(extracted$x - median(extracted$x)) - median(extracted$y1)
-          } else {
-            extracted$y1 <- extracted$y1 - trans$plate[1]*(extracted$x - median(extracted$x)) - median(extracted$y1)
-            extracted$y2 <- extracted$y2 - trans$plate[2]*(extracted$x - median(extracted$x)) - median(extracted$y2)
-            extracted$y3 <- extracted$y3 - trans$plate[3]*(extracted$x - median(extracted$x)) - median(extracted$y3)
-          }
-        }
-      } else {
-        showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
-        updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
       }
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
