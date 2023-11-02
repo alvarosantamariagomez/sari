@@ -1779,7 +1779,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                         # * component 3 ####
                                         tabContents(3),
                                         
-                                        tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Print"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
+                                        tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","PDF"), class = "fa fa-print", style = "font-size:30px; margin-top:-0.9em"), value = 6),
                                         tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Save"), class = "fa-solid fa-floppy-disk", style = "font-size:30px; margin-top:-0.9em"), value = 5)
                                       )
                                     )
