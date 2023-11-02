@@ -7922,7 +7922,7 @@ server <- function(input,output,session) {
         for (i in 1:dim(as.matrix(files))[1]) {
           table2 <- extract_table(files[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
           # starting EOSTSL series at .0
-          if (dim(as.matrix(files))[1] > 1) {
+          if (server == "EOSTLS" && dim(as.matrix(files))[1] > 1) {
             while (table2$x[1] %% 1 > 0) { 
               table2 <- table2[-1,]
             }
@@ -7944,8 +7944,13 @@ server <- function(input,output,session) {
                                averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                                table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
                              } else {
-                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
+                               if (server == "EOSTLS" || server == "EPOS") {
+                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
+                               } else {
+                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                               }
                              }
                            })
               table2 <- na.omit(table2)
@@ -7994,7 +7999,7 @@ server <- function(input,output,session) {
           if (input$optionSecondary == 1) {
             if (dim(as.matrix(files))[1] > 1) {
               names(table_stack) <- c("# MJD", "East", "North", "Up")
-              suppressWarnings(write.table(x = table_stack[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = " ", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
+              suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 1, digits = 1, scientific = F)[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
             }
             output$fileSeries2 <- renderUI({
               tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank")
