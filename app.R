@@ -8142,6 +8142,7 @@ server <- function(input,output,session) {
             if (nrow(table_common) > 0) {
               table <- table_common
               rm(table_common)
+              rm(table2)
             } else {
               shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1))
             }
@@ -8413,6 +8414,16 @@ server <- function(input,output,session) {
                 }
               }
             }
+            # ISO 8601 dates
+            if (all(is.Date(as.Date(extracted$x)))) {
+              if (input$tunits == 1) {
+                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              } else if (input$tunits == 2) {
+                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              } else if (input$tunits == 3) {
+                extracted$x <- decimal_date(ymd_hms(extracted$x))
+              }
+            }
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
           }
         }
@@ -8485,6 +8496,16 @@ server <- function(input,output,session) {
             } else {
               extracted$sy1 <- rep(1,length(extracted$x))
               info$errorbars <- F
+            }
+            # ISO 8601 dates
+            if (all(is.Date(as.Date(extracted$x)))) {
+              if (input$tunits == 1) {
+                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              } else if (input$tunits == 2) {
+                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              } else if (input$tunits == 3) {
+                extracted$x <- decimal_date(ymd_hms(extracted$x))
+              }
             }
             if (isTruthy(extracted)) {
               extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
