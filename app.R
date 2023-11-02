@@ -1951,7 +1951,7 @@ server <- function(input,output,session) {
         textInput(inputId = "station2", label = "Station", value = "")
       })
       output$fileSeries1 <- renderUI({
-        tags$a(href = "TLSE.neu", "Show file example", targe = "_blank")
+        tags$a(href = "SPOTGINS_CRAL00FRA.enu", "Show file example", targe = "_blank")
       })
       output$fileSeries2 <- renderUI({
         NULL
@@ -7449,7 +7449,7 @@ server <- function(input,output,session) {
     output$tabName2 <<- renderText({ info$components[2] })
     output$tabName3 <<- renderText({ info$components[3] })
     output$fileSeries1 <- renderUI({
-      tags$a(href = "TLSE.neu", "Show file example", targe = "_blank")
+      tags$a(href = "SPOTGINS_CRAL00FRA.enu", "Show file example", targe = "_blank")
     })
     output$fileSeries2 <- renderUI({
       NULL
