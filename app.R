@@ -8194,7 +8194,7 @@ server <- function(input,output,session) {
       if (!is.null(table)) {
         table <- table[order(table$x),]
         table <- table[!is.infinite(rowSums(table)),]
-        if (anyNA(table) && is.null(table2)) {
+        if (anyNA(table)) {
           table <- na.omit(table)
           showNotification(HTML("The input file contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
         }
