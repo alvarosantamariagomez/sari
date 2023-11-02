@@ -6764,16 +6764,16 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   # Observe primary series format ####
-  observeEvent(c(input$format), {
-    req(obs())
-    if (info$format != input$format) {
-      obs(NULL)
-      if (messages > 4) cat(file = stderr(), "From: observe primary series format (1)\n")
-      data <- digest()
-      obs(data)
-    }
-  }, priority = 6)
-  observeEvent(c(input$separator, input$neuenu), {
+  # observeEvent(c(input$format), {
+  #   req(obs())
+  #   if (info$format != input$format) {
+  #     obs(NULL)
+  #     if (messages > 4) cat(file = stderr(), "From: observe primary series format (1)\n")
+  #     data <- digest()
+  #     obs(data)
+  #   }
+  # }, priority = 6)
+  observeEvent(c(input$separator), {
     req(obs())
     obs(NULL)
     if (messages > 4) cat(file = stderr(), "From: observe primary series format (2)\n")
