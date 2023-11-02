@@ -7890,9 +7890,11 @@ server <- function(input,output,session) {
       if (length(file$secondary) > 0 && input$optionSecondary > 0) {
         if (isTruthy(url$file2)) {
           files <- file$secondary$file
+          names <- file$secondary$name
           server <- url$server2
         } else {
           files <- input$series2$datapath
+          names <- input$series2$name
           server <- ""
         }
         table_stack <- NULL
@@ -7963,7 +7965,7 @@ server <- function(input,output,session) {
               table_stack <- table2
             }
           } else {
-            showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification(HTML(paste0("Wrong series format in ",names[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
         if (!is.null(table_stack)) {
