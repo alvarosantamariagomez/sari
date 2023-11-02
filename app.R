@@ -6483,6 +6483,7 @@ server <- function(input,output,session) {
   observeEvent(input$series2, {
     req(file$primary)
     file$secondary <- isolate(input$series2)
+    info$format2 <- input$format2
   }, priority = 8)
 
   # Observe series info ####
