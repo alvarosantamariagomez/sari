@@ -815,7 +815,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                             helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
                                                                                                         value = "")
                                                                                        )
-                                                                                     )
+                                                                                     ),
+                                                                                     div(style = "margin-right: -1em", uiOutput("fileSeries2"))
                                                                               ),
                                                                               column(4,
                                                                                      div(style = "padding: 0px 0px; margin-top:1em",
@@ -7649,7 +7650,7 @@ server <- function(input,output,session) {
     if (isTruthy(url$file)) {
       fileName <- file$primary$name
       output$fileSeries1 <- renderUI({
-        tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in new tab", target = "_blank")
+        tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank")
       })
     } else {
       fileName <- input$series$name
@@ -7989,12 +7990,20 @@ server <- function(input,output,session) {
           }
         }
         if (!is.null(table_stack)) {
-          names(table_stack) <- c("# MJD East North Up")
-          suppressWarnings(write.table(x = table_stack[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = " ", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = F))
-          output$fileSeries2 <- renderUI({
-            tags$a(href = "fileSeries2.txt", "Show series file", title = "Open the file of the secondary series in new tab", target = "_blank")
-          })
           table2 <- table_stack
+          if (input$optionSecondary == 1) {
+            if (dim(as.matrix(files))[1] > 1) {
+              names(table_stack) <- c("# MJD", "East", "North", "Up")
+              suppressWarnings(write.table(x = table_stack[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = " ", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
+            }
+            output$fileSeries2 <- renderUI({
+              tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank")
+            })
+          } else {
+            output$fileSeries2 <- renderUI({
+              NULL
+            })
+          }
           rm(table_stack)
         } else {
           table2 <- NULL
