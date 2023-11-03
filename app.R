@@ -6661,10 +6661,10 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   # Observe averaging ####
-  observeEvent(c(inputs$step, inputs$step2), {
+  observeEvent(c(inputs$step), {
     req(obs())
     req(file$primary)
-    if (messages > 0) cat(file = stderr(), "Averaging series", "\n")
+    if (messages > 0) cat(file = stderr(), "Averaging primary series", "\n")
     if (input$fitType == 2) {
       info$run <- NULL
       trans$res <- NULL
@@ -6692,7 +6692,7 @@ server <- function(input,output,session) {
     data <- digest()
     if (!is.null(data)) {
       obs(data)
-      if (isTruthy(info$step) || isTruthy(info$step2)) {
+      if (isTruthy(info$step)) {
         if (isTruthy(input$remove3D)) {
           values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
         } else {
@@ -6712,6 +6712,65 @@ server <- function(input,output,session) {
         }
         if (isTruthy(values$previous_all)) {
           values$series_all <- values$previous_all 
+        }
+      }
+    }
+  }, priority = 6)
+  observeEvent(c(inputs$step2), {
+    req(obs())
+    req(file$primary)
+    if (input$optionSecondary > 0) {
+      if (messages > 0) cat(file = stderr(), "Averaging secondary series", "\n")
+      if (input$optionSecondary > 1) {
+        if (input$fitType == 2) {
+          info$run <- NULL
+          trans$res <- NULL
+          trans$reserror <- NULL
+          trans$results <- NULL
+          trans$mod <- NULL
+          trans$kalman <- NULL
+          trans$equation <- NULL
+          trans$ordinate <- NULL
+          trans$filter <- NULL
+          trans$filterRes <- NULL
+        }
+        trans$midas_vel <- NULL
+        trans$midas_all <- NULL
+        info$points <- NULL
+        info$log <- NULL
+        trans$mle <- F
+        trans$verif <- NULL
+        trans$pattern <- NULL
+        updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+        updateTextInput(session, "short_period", value = "")
+        updateTextInput(session, "ObsError", value = "")
+      }
+      obs(NULL)
+      if (messages > 4) cat(file = stderr(), "From: observe averaging\n")
+      data <- digest()
+      if (!is.null(data)) {
+        obs(data)
+        if (isTruthy(info$step2)) {
+          if (isTruthy(input$remove3D)) {
+            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
+          } else {
+            values$series1 <- rep(T, length(data$x[!is.na(data$y1)]))
+            values$series2 <- rep(T, length(data$x[!is.na(data$y2)]))
+            values$series3 <- rep(T, length(data$x[!is.na(data$y3)]))
+          }
+        } else {
+          if (isTruthy(values$previous1)) {
+            values$series1 <- values$previous1  
+          }
+          if (isTruthy(values$previous2)) {
+            values$series2 <- values$previous2  
+          }
+          if (isTruthy(values$previous3)) {
+            values$series3 <- values$previous3  
+          }
+          if (isTruthy(values$previous_all)) {
+            values$series_all <- values$previous_all 
+          }
         }
       }
     }
