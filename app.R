@@ -6494,6 +6494,9 @@ server <- function(input,output,session) {
     req(file$primary)
     file$secondary <- isolate(input$series2)
     info$format2 <- input$format2
+    url$file2 <- url$logfile2 <- url$server2 <- url$station2 <- NULL
+    updateRadioButtons(inputId = "optionSecondary", selected = 0)
+    updateSelectInput(inputId = "server2", selected = "")
   }, priority = 8)
 
   # Observe series info ####
