@@ -8007,7 +8007,11 @@ server <- function(input,output,session) {
               suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 1, digits = 1, scientific = F)[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
             }
             output$fileSeries2 <- renderUI({
-              tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank")
+              if (isTruthy(url$station2)) {
+                tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank")
+              } else {
+                NULL
+              }
             })
           } else {
             output$fileSeries2 <- renderUI({
