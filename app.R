@@ -6185,6 +6185,7 @@ server <- function(input,output,session) {
                 }
               }
             }
+            file$secondary$newname <- filename2
             session$sendCustomMessage("filename2", filename2)
             updateRadioButtons(session, inputId = "format2", selected = info$format2)
             updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
@@ -7655,7 +7656,7 @@ server <- function(input,output,session) {
     if (isTruthy(url$file)) {
       fileName <- file$primary$name
       output$fileSeries1 <- renderUI({
-        tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank")
+        tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
       })
     } else {
       fileName <- input$series$name
@@ -7999,6 +8000,7 @@ server <- function(input,output,session) {
             showNotification(HTML(paste0("Wrong series format in ",names[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
+        # create secondary series merged file
         if (!is.null(table_stack)) {
           table2 <- table_stack
           if (input$optionSecondary == 1) {
@@ -8008,7 +8010,7 @@ server <- function(input,output,session) {
             }
             output$fileSeries2 <- renderUI({
               if (isTruthy(url$station2)) {
-                tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank")
+                tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = paste0(file$secondary$newname,".enu"))
               } else {
                 NULL
               }
