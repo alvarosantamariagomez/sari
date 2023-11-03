@@ -5911,13 +5911,13 @@ server <- function(input,output,session) {
                     }
                     showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
                     down <- 0
-                    file$secondary$file <- url$file2
+                    file$secondary$datapath <- url$file2
                   } else {
                     showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    file$secondary$file <- tempfile()
-                    down <- download(url$server2, url$file2, file$secondary$file)
-                    if (file.exists(file$secondary$file)) {
-                      downloaded <- readLines(file$secondary$file, warn = F)
+                    file$secondary$datapath <- tempfile()
+                    down <- download(url$server2, url$file2, file$secondary$datapath)
+                    if (file.exists(file$secondary$datapath)) {
+                      downloaded <- readLines(file$secondary$datapath, warn = F)
                       if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                           length(downloaded) < 2) {
                         down <- 1
@@ -5925,7 +5925,7 @@ server <- function(input,output,session) {
                     }
                   }
                   if (isTruthy(down) && down == 0) {
-                    if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$file, "\n")
+                    if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$datapath, "\n")
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
@@ -6135,19 +6135,19 @@ server <- function(input,output,session) {
         file$secondary$name <- url_info[[3]]
         info$format2 <- url_info[[4]]
         url$logfile2 <- url_info[[5]]
-        file$secondary$file <- c()
+        file$secondary$datapath <- c()
         secondary_files <- 0
         for (f in 1:length(url$file2)) {
           if (length(url$file2) > 1) {
             showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
-            file$secondary$file <- c(file$secondary$file, tempfile())
+            file$secondary$datapath <- c(file$secondary$datapath, tempfile())
           } else {
             showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-            file$secondary$file <- "www/fileSeries2.txt"
+            file$secondary$datapath <- "www/fileSeries2.txt"
           }
-          down <- download(url$server2, url$file2[f], file$secondary$file[f])
-          if (file.exists(file$secondary$file[f])) {
-            downloaded <- readLines(file$secondary$file[f], n = 2, warn = F)
+          down <- download(url$server2, url$file2[f], file$secondary$datapath[f])
+          if (file.exists(file$secondary$datapath[f])) {
+            downloaded <- readLines(file$secondary$datapath[f], n = 2, warn = F)
             if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                 length(downloaded) < 2) {
               down <- 1
@@ -6155,9 +6155,9 @@ server <- function(input,output,session) {
           }
           if (isTruthy(down) && down == 0) {
             secondary_files <- secondary_files + 1
-            if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2[f], " downloaded in ", file$secondary$file[f], "\n")
+            if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2[f], " downloaded in ", file$secondary$datapath[f], "\n")
           } else {
-            file$secondary$file <- file$secondary$file[-length(file$secondary$file)]
+            file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
             removeNotification("parsing_url2")
             showNotification(HTML(paste0("File ",file$secondary$name[f]," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           }
@@ -6169,7 +6169,7 @@ server <- function(input,output,session) {
             obs(data)
             if (length(file$secondary$name) > 1) {
               filename2 <- paste(input$station2, paste(input$product2, collapse = "_"), sep = "_")
-              file$secondary$file <- as.matrix(file$secondary$file)
+              file$secondary$datapath <- as.matrix(file$secondary$datapath)
             } else {
               filename2 <- file$secondary$name
               if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
@@ -6200,7 +6200,7 @@ server <- function(input,output,session) {
         updateSelectInput(session, inputId = "station2", selected = "")
       }
     } else if (isTruthy(input$server2) && isTruthy(input$product2)) {
-      url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$file <- NULL
+      url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$datapath <- NULL
       updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 0)
     }
   })
@@ -7976,19 +7976,17 @@ server <- function(input,output,session) {
       # Getting secondary series from input file(s)
       if (length(file$secondary) > 0 && input$optionSecondary > 0) {
         if (isTruthy(url$file2)) {
-          files <- file$secondary$file
-          names <- file$secondary$name
+          files <- file$secondary
           server <- url$server2
         } else {
-          files <- input$series2$datapath
-          names <- input$series2$name
+          files <- input$series2
           server <- ""
         }
         table_stack <- NULL
-        for (i in 1:dim(as.matrix(files))[1]) {
-          table2 <- extract_table(files[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
+        for (i in 1:dim(as.matrix(files$datapath))[1]) {
+          table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
           # starting EOSTSL series at .0
-          if (server == "EOSTLS" && dim(as.matrix(files))[1] > 1) {
+          if (server == "EOSTLS" && dim(as.matrix(files$datapath))[1] > 1) {
             while (table2$x[1] %% 1 > 0) { 
               table2 <- table2[-1,]
             }
@@ -8057,14 +8055,14 @@ server <- function(input,output,session) {
               table_stack <- table2
             }
           } else {
-            showNotification(HTML(paste0("Wrong series format in ",names[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
         # create secondary series merged file
         if (!is.null(table_stack)) {
           table2 <- table_stack
           if (input$optionSecondary == 1) {
-            if (dim(as.matrix(files))[1] > 1) {
+            if (dim(as.matrix(files$datapath))[1] > 1) {
               names(table_stack) <- c("# MJD", "East", "North", "Up")
               suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 1, digits = 1, scientific = F)[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
             }
@@ -8318,7 +8316,7 @@ server <- function(input,output,session) {
               }
               if (length(file$secondary) > 0 && input$optionSecondary > 0) {
                 if (info$format2 == 1 && server == "LOCAL") {
-                  extension <- tolower(rev(strsplit(files, ".", fixed = T)[[1]])[1])
+                  extension <- tolower(rev(strsplit(files$datapath, ".", fixed = T)[[1]])[1])
                   if (isTruthy(extension) && (extension != "neu" && extension != "enu")) {
                     showNotification(HTML("Unknown coordinate components in the secondary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
                   }
