@@ -1827,7 +1827,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, tunits = NULL, tunitsKnown = F, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
+                         run = F, tunits = NULL, tunitsKnown = F, tunits_orig = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL)
@@ -2424,6 +2424,38 @@ server <- function(input,output,session) {
     # trans$sy2 = sigmas from secondary series (independent)
 
     trans$x0 <- as.numeric(data$x)
+    # changing the time units
+    if (isTruthy(info$tunitsKnown)) {
+      if (info$tunits_orig == 1) {
+        if (input$tunits == 2) {
+          trans$x0 <- (trans$x0 - 44244)/7
+        } else if (input$tunits == 3) {
+          trans$x0 <- decimal_date(as.Date(trans$x0, origin = as.Date("1858-11-17")))
+        }
+      } else if (info$tunits_orig == 2) {
+        if (input$tunits == 1) {
+          trans$x0 <- as.numeric(difftime(as.Date("1980-01-06") + trans$x0 * 7, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+        } else if (input$tunits == 3) {
+          trans$x0 <- decimal_date(as.Date("1980-01-06") + trans$x0 * 7)
+        }
+      } else if (info$tunits_orig == 3) {
+        if (input$tunits == 1) {
+          trans$x0 <- as.numeric(difftime(date_decimal(trans$x0), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+        } else if (input$tunits == 2) {
+          trans$x0 <- as.numeric(difftime(date_decimal(trans$x0), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+        }
+      }
+      if (isTruthy(input$fullSeries)) {
+        # show all points from primary & secondary series
+        info$minx <- min(trans$x0, na.rm = T)
+        info$maxx <- max(trans$x0, na.rm = T)
+      } else {
+        # show all points from primary series only
+        info$minx <- min(trans$x0[!is.na(data$y1)], na.rm = T)
+        info$maxx <- max(trans$x0[!is.na(data$y1)], na.rm = T)
+      }
+      ranges$x1 <- c(info$minx, info$maxx)
+    }
     if ((input$tab == 1) || (input$format == 4)) {
       trans$y0 <- as.numeric(data$y1)
       trans$sy0 <- as.numeric(data$sy1)
@@ -6683,7 +6715,7 @@ server <- function(input,output,session) {
       obs(data)
     }
   }, priority = 6)
-  observeEvent(c(input$separator, input$tunits, input$neuenu), {
+  observeEvent(c(input$separator, input$neuenu), {
     req(obs())
     obs(NULL)
     if (messages > 4) cat(file = stderr(), "From: observe primary series format (2)\n")
@@ -8314,6 +8346,7 @@ server <- function(input,output,session) {
                 info$maxx <- max(table$x[!is.na(table$y1)], na.rm = T)
               }
               ranges$x1 <- c(info$minx, info$maxx)
+              info$tunits_orig <- input$tunits
               # Setting new tab names if necessary
               if (info$format == 1) { #NEU/ENU
                 if (isTruthy(url$server) && url$server != "LOCAL") {
