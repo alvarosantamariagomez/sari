@@ -8144,7 +8144,6 @@ server <- function(input,output,session) {
             if (nrow(table_common) > 0) {
               table <- table_common
               rm(table_common)
-              rm(table2)
             } else {
               shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1))
             }
@@ -8194,7 +8193,7 @@ server <- function(input,output,session) {
       if (!is.null(table)) {
         table <- table[order(table$x),]
         table <- table[!is.infinite(rowSums(table)),]
-        if (anyNA(table)) {
+        if (anyNA(table) && is.null(table2)) {
           table <- na.omit(table)
           showNotification(HTML("The input file contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
         }
@@ -8288,6 +8287,7 @@ server <- function(input,output,session) {
       a <- 6378137
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
+      tunitsKnown <- F
       spotgins <- grepl("^# SPOTGINS ", readLines(file, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
@@ -8358,6 +8358,7 @@ server <- function(input,output,session) {
               # get other time units for different series
               if (server == "JPL" && columns > 16) {
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
@@ -8365,6 +8366,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "SIRGAS") {
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 3) {
@@ -8372,6 +8374,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "IGS") {
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 2) {
                   extracted$x <- tableAll[,8] + tableAll[,9]/7
                 } else if (input$tunits == 3) {
@@ -8380,6 +8383,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
                 } else if (input$tunits == 3) {
@@ -8387,6 +8391,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "EARTHSCOPE") {
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
@@ -8400,6 +8405,7 @@ server <- function(input,output,session) {
               info$errorbars <- F
               if (server == "EOSTLS") {
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 2) {
                   extracted$x <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
                 } else if (input$tunits == 3) {
@@ -8407,6 +8413,7 @@ server <- function(input,output,session) {
                 }
               } else if (server == "EPOS") {
                 if (series == 1) info$tunitsKnown <- T
+                tunitsKnown <- T
                 if (input$tunits == 1) {
                   extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 } else if (input$tunits == 2) {
@@ -8417,7 +8424,7 @@ server <- function(input,output,session) {
               }
             }
             # ISO 8601 dates
-            if (all(is.Date(as.Date(extracted$x)))) {
+            if (!isTruthy(tunitsKnown) && all(is.Date(as.Date(extracted$x)))) {
               if (input$tunits == 1) {
                 extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
               } else if (input$tunits == 2) {
