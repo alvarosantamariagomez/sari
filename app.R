@@ -6522,6 +6522,13 @@ server <- function(input,output,session) {
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     updateSelectInput(inputId = "server2", selected = "")
     updateSelectInput(inputId = "product2", selected = "")
+    if (grepl("tenv3", file$secondary$name)) {
+      updateRadioButtons(inputId = "format2", selected = 3)
+    } else if (grepl("pbo", file$secondary$name)) {
+      updateRadioButtons(inputId = "format2", selected = 2)
+    } else {
+      updateRadioButtons(inputId = "format2", selected = 1)
+    }
   }, priority = 8)
 
   # Observe series info ####
@@ -6591,7 +6598,7 @@ server <- function(input,output,session) {
     }
   }, priority = 7)
 
-  # Observe primary series ####
+  # Observe primary file ####
   observeEvent(c(input$series), {
     file$primary <- isolate(input$series)
     if (grepl("tenv3", file$primary$name)) {
