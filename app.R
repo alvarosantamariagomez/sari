@@ -2772,6 +2772,7 @@ server <- function(input,output,session) {
   # Plot series ####
   output$plot1 <- output$plot2 <- output$plot3 <- renderPlot({
     req(obs(), trans$x, trans$y, trans$sy)
+    removeNotification("wrong_series")
     if (messages > 0) cat(file = stderr(), "Plotting the series", "\n")
     title <- ""
     sigmas <- F
@@ -9955,9 +9956,14 @@ server <- function(input,output,session) {
       axis(3, at = ticks, labels = labels_dyear)
     }
     if (sigma == T) {
-      ba <- y + z
-      bb <- y - z
-      polygon(c(x, rev(x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
+      if (length(y) == length(z)) {
+        ba <- y + z
+        bb <- y - z
+        polygon(c(x, rev(x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
+      } else {
+        if (messages > 0) cat(file = stderr(), paste0("Different length of the series values (", length(y), ") and errorbars (", length(z), "\n"))
+        showNotification(HTML("Something is wrong with the series plot and the errorbars could not be plotted.<br>Please contact the author to provide feedback"), action = NULL, duration = 10, closeButton = T, id = "wrong_series", type = "error", session = getDefaultReactiveDomain())
+      }
     }
   }
   periodogram <- function(serie) {
