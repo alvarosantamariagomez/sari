@@ -2462,9 +2462,9 @@ server <- function(input,output,session) {
       if (input$format == 4) {
         data$y <- data$y - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0)) - median(data$y)
       } else {
-        data$y1 <- data$y1 - trans$plate[1]*(trans$x0 - median(trans$x0)) - median(data$y1)
-        data$y2 <- data$y2 - trans$plate[2]*(trans$x0 - median(trans$x0)) - median(data$y2)
-        data$y3 <- data$y3 - trans$plate[3]*(trans$x0 - median(trans$x0)) - median(data$y3)
+        data$y1 <- data$y1 - trans$plate[1]*(trans$x0 - median(trans$x0)) - median(data$y1, na.rm = T)
+        data$y2 <- data$y2 - trans$plate[2]*(trans$x0 - median(trans$x0)) - median(data$y2, na.rm = T)
+        data$y3 <- data$y3 - trans$plate[3]*(trans$x0 - median(trans$x0)) - median(data$y3, na.rm = T)
       }
     }
     # extract data
