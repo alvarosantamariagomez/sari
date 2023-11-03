@@ -11159,8 +11159,8 @@ server <- function(input,output,session) {
       format <- 1
       if (product == "ULR7A") {
         if (isTruthy(station)) {
-          name <- paste0(toupper(station))
-          filepath <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",name,"&format=neu&sampling=daily")
+          name <- paste0(toupper(station), ".enu")
+          filepath <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",station,"&format=neu&sampling=daily")
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
