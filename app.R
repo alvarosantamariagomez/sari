@@ -5386,7 +5386,6 @@ server <- function(input,output,session) {
           shinyjs::delay(100, disable("format2"))
         } else {
           enable("format2")
-          enable("euler")
         }
         if (input$format2 == 4) {
           disable("ne")
@@ -5499,6 +5498,8 @@ server <- function(input,output,session) {
           enable("loadSARI")
           enable("midas")
           enable("reset")
+          enable("euler")
+          enable("neuenu")
           if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0) {
             enable("remove")
           } else {
