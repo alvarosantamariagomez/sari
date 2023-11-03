@@ -6242,7 +6242,7 @@ server <- function(input,output,session) {
   })
 
   # Observe Euler ####
-  observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers), {
+  observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers, input$neuenu), {
     req(obs())
     if (input$euler && input$eulerType > 0) {
       stationCartesian <- c()
@@ -6262,7 +6262,7 @@ server <- function(input,output,session) {
         } else if (input$tunits == 3) {
           period <- 1
         }
-        if (format == 4) { 
+        if (input$format == 4) { 
           selected <- data$y1 # current series
         } else {
           selected <- data$y3 # up series
@@ -6283,8 +6283,10 @@ server <- function(input,output,session) {
         }
         if (abs(rate) > 0.05 && sd(selected - rate*(data$x - mean(data$x))) > 0.05) {
           scaling <- 1000 # series units are mm most likely
+          updateRadioButtons(session, inputId = "sunits", selected = 2)
         } else {
           scaling <- 1 # series units are m most likely
+          updateRadioButtons(session, inputId = "sunits", selected = 1)
         }
       }
       if (input$station_coordinates == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
