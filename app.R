@@ -6018,6 +6018,7 @@ server <- function(input,output,session) {
   })
   observeEvent(input$server2, {
     req(obs())
+    updateRadioButtons(inputId = "optionSecondary", selected = 0)
     if (input$server2 == "RENAG") {
       updateSelectizeInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
     } else if (input$server2 == "FORMATER") {
@@ -6044,6 +6045,9 @@ server <- function(input,output,session) {
     output$station2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
     })
+    if (input$server2 != "") {
+      file$secondary <- NULL
+    }
   })
   observeEvent(c(input$product1), {
     req(input$server1,input$product1)
@@ -6119,10 +6123,17 @@ server <- function(input,output,session) {
     removeNotification("bad_remote")
     removeNotification("bad_url")
     removeNotification("no_answer")
+    if (input$product2 != "") {
+      file$secondary <- NULL
+    }
+    updateRadioButtons(inputId = "optionSecondary", selected = 0)
     get_URL_info(input$server2,NULL,input$product2,2)
   })
   observeEvent(c(inputs$station2), {
     req(obs())
+    if (input$station2 != "") {
+      file$secondary <- NULL
+    }
     if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
@@ -6163,33 +6174,37 @@ server <- function(input,output,session) {
           }
         }
         if (secondary_files > 0) {
-          if (messages > 4) cat(file = stderr(), "From: observe remote series (secondary)\n")
-          data <- digest()
-          if (!is.null(data)) {
-            obs(data)
-            if (length(file$secondary$name) > 1) {
-              filename2 <- paste(input$station2, paste(input$product2, collapse = "_"), sep = "_")
-              file$secondary$datapath <- as.matrix(file$secondary$datapath)
-            } else {
-              filename2 <- file$secondary$name
-              if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
-                showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-                file$secondary$logfile <- tempfile()
-                down <- download("", url$logfile2, file$secondary$logfile)
-                if (down == 0) {
-                  file$sitelog <- NULL
-                  session$sendCustomMessage("log", basename(url$logfile2))
-                  updateCheckboxInput(inputId = "traceLog", value = T)
-                } else {
-                  showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                  file$secondary$logfile <- NULL
-                }
+          shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
+          if (length(file$secondary$name) > 1) {
+            filename2 <- paste(input$station2, paste(input$product2, collapse = "_"), sep = "_")
+            file$secondary$datapath <- as.matrix(file$secondary$datapath)
+          } else {
+            filename2 <- file$secondary$name
+            if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
+              showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+              file$secondary$logfile <- tempfile()
+              down <- download("", url$logfile2, file$secondary$logfile)
+              if (down == 0) {
+                file$sitelog <- NULL
+                session$sendCustomMessage("log", basename(url$logfile2))
+                updateCheckboxInput(inputId = "traceLog", value = T)
+              } else {
+                showNotification(HTML(paste0("Logfile not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                file$secondary$logfile <- NULL
               }
             }
-            file$secondary$newname <- filename2
-            session$sendCustomMessage("filename2", filename2)
-            updateRadioButtons(session, inputId = "format2", selected = info$format2)
-            updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
+          }
+          file$secondary$newname <- filename2
+          session$sendCustomMessage("filename2", filename2)
+          updateRadioButtons(session, inputId = "format2", selected = info$format2)
+          if (input$optionSecondary == 1) {
+            shinyjs::delay(1000, {
+              if (messages > 4) cat(file = stderr(), "From: observe remote series (secondary)\n")
+              data <- digest()
+              if (!is.null(data)) {
+                obs(data)
+              }
+            })
           }
         } else {
           updateSelectInput(session, inputId = "station2", selected = "")
@@ -6496,9 +6511,14 @@ server <- function(input,output,session) {
     req(file$primary)
     file$secondary <- isolate(input$series2)
     info$format2 <- input$format2
-    url$file2 <- url$logfile2 <- url$server2 <- url$station2 <- NULL
+    url$file2 <- url$server2 <- url$station2 <- NULL
+    if (isTruthy(url$logfile2)) {
+      url$logfile2 <- info$log <- NULL
+      session$sendCustomMessage("log", "")
+    }
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     updateSelectInput(inputId = "server2", selected = "")
+    updateSelectInput(inputId = "product2", selected = "")
   }, priority = 8)
 
   # Observe series info ####
@@ -6689,7 +6709,7 @@ server <- function(input,output,session) {
     updateTextInput(session, "short_period", value = "")
     updateTextInput(session, "ObsError", value = "")
     obs(NULL)
-    if (messages > 4) cat(file = stderr(), "From: observe averaging\n")
+    if (messages > 4) cat(file = stderr(), "From: observe averaging primary\n")
     data <- digest()
     if (!is.null(data)) {
       obs(data)
@@ -6747,7 +6767,7 @@ server <- function(input,output,session) {
         updateTextInput(session, "ObsError", value = "")
       }
       obs(NULL)
-      if (messages > 4) cat(file = stderr(), "From: observe averaging\n")
+      if (messages > 4) cat(file = stderr(), "From: observe averaging secondary\n")
       data <- digest()
       if (!is.null(data)) {
         obs(data)
@@ -8001,7 +8021,7 @@ server <- function(input,output,session) {
             if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
               tolerance <- min(diff(table2$x,1))/3
               info$step2 <- inputs$step2
-              withProgress(message = 'Averaging the series.',
+              withProgress(message = paste('Averaging the', files$name[i], 'series.'),
                            detail = 'This may take a while ...', value = 0, {
                              w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
                              if (info$format2 == 4) {
@@ -8033,12 +8053,12 @@ server <- function(input,output,session) {
                   delta <- as.numeric(names(sort(table(table_stack$x - floor(table_stack$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
                   if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
                     table2$x <- table2$x + delta
-                    showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                    showNotification(paste("The time axis of the", files$name[i], "series has been shifted by a constant",delta,info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
                   } else {
                     if (info$sampling < info$sampling_regular) {
                       showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
                     } else {
-                      showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                      showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
                     }
                   }
                 }
@@ -11420,7 +11440,7 @@ server <- function(input,output,session) {
         }
         updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
         updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-        shinyjs::delay(1000, updateTextInput(session, inputId = "step2", value = "1"))
+        updateTextInput(session, inputId = "step2", value = "1")
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/EOSTSL_database.txt")) {
