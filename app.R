@@ -5494,6 +5494,7 @@ server <- function(input,output,session) {
           disable("plot")
           disable("series")
           disable("format")
+          enable("server2")
           enable("average")
           enable("loadSARI")
           enable("midas")
@@ -5725,6 +5726,7 @@ server <- function(input,output,session) {
           enable("series")
           enable("format")
           disable("average")
+          disable("server2")
         }
       } else {
         hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
