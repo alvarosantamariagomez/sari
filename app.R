@@ -6125,7 +6125,7 @@ server <- function(input,output,session) {
     removeNotification("bad_remote")
     removeNotification("bad_url")
     removeNotification("no_answer")
-    if (input$product2 != "") {
+    if (input$product2[1] != "") {
       file$secondary <- NULL
     }
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
