@@ -1876,7 +1876,7 @@ server <- function(input,output,session) {
   SARIcolors <- c("black", "#DF536B", "#61D04F", "#2297E6", "#28E2E5", "#CD0BBC", "#F5C710", "gray62") # colorblind palette copied from the palette R4 for R versions < 4
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
-  debug <- F # saving the environment
+  debug <- F # saving the environment (if it were really true ...)
   messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("1st component", "2nd component", "3rd component")
   output$tabName1 <- renderText({ info$components[1] })
@@ -3149,83 +3149,83 @@ server <- function(input,output,session) {
           apriori <- m$apriori
           req(model, apriori)
           if (messages > 1) cat(file = stderr(), model, "\n")
-            fit <- NULL
-            fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
-            if (!inherits(fit,"try-error") && !is.null(fit)) {
-              info$run <- T
-              jacobian <- fit$m$gradient()/sqrt(weights)
-              synthesis <- summary(fit,correlation = T, signif.stars = T)
-              synthesis$coefficients[1] <- coef(synthesis)[1] + trans$ordinate
-              trans$names <- names(coef(fit))
-              synthesis$formula <- deparse(synthesis$formula)
-              synthesis$formula <- gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, synthesis$formula), perl = TRUE)))))))
-              synthesis$parameters[1,1] <- synthesis$parameters[1,1] + trans$ordinate
-              trans$unc <- synthesis$coefficients[2,2]
-              mod <- predict(fit)
-              if (length(mod) == 1) {
-                mod <- rep(mod, length(trans$x))
-              }
-              mod <- mod + trans$ordinate
-              if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
-                mod <- mod + trans$pattern
-              }
-              res <- residuals(fit)
-              if (any(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
-                ss <- 0
-                info_out <- list()
-                for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
-                  ss <- ss + 1
-                  sine <- synthesis$coefficients[s,1]
-                  cosine <- synthesis$coefficients[s + 1,1]
-                  sine_err <- synthesis$coefficients[s,2]
-                  cosine_err <- synthesis$coefficients[s + 1,2]
-                  sine_cosine_cov <- synthesis$sigma^2 * synthesis$cov.unscaled[s,s + 1]
-                  amp <- sqrt(sine^2 + cosine^2)
-                  phase <- atan2(cosine,sine)
-                  amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
-                  phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
-                  if (isTruthy(amp_err) && isTruthy(phase_err) && !inherits(amp_err,"try-error") && !inherits(phase_err,"try-error")) {
-                    for (i in list(noquote(trans$periods[ss]), amp, amp_err, phase, phase_err)) {
-                      info_out[[length(info_out) + 1]] = i
-                    }
-                  } else {
-                    if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
-                    showNotification(HTML(paste0("Unable to compute the amplitude and/or phase error from the errors of the sine and cosine coefficients of sinusoid ",ss,".<br><br>Please contact the author to repport this problem.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
-                    ss <- ss - 1
-                  }
-                }
-                if (isTruthy(info_out)) {
-                  synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 5, byrow = T)
-                  dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Period","Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
-                }
-              }
-              trans$equation <- sub("y ~","Model =",m$model)
-              trans$results <- synthesis
-              trans$LScoefs <- synthesis$coefficients
-              trans$res <- res
-              if (isTruthy(input$wavelet) && input$waveletType != 1) {
-                updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
-              }
-              trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
-              if (isTruthy(synthesis$sigma)) {
-                if (!any(1/weights < trans$moderror^2)) {
-                  trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
-                }
-                trans$moderror <- trans$moderror * synthesis$sigma
-              }
-              trans$mod <- mod
-              if (isTruthy(inputs$waveformPeriod)) {
-                save_value <- inputs$waveformPeriod
-                updateTextInput(session, "waveformPeriod", value = "")
-                updateTextInput(session, "waveformPeriod", value = save_value)
-              }
-            } else {
-              trans$results <- NULL
-              trans$unc <- NULL
-              trans$res <- NULL
-              trans$mod <- NULL
-              showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
+          fit <- NULL
+          fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
+          if (!inherits(fit,"try-error") && !is.null(fit)) {
+            info$run <- T
+            jacobian <- fit$m$gradient()/sqrt(weights)
+            synthesis <- summary(fit,correlation = T, signif.stars = T)
+            synthesis$coefficients[1] <- coef(synthesis)[1] + trans$ordinate
+            trans$names <- names(coef(fit))
+            synthesis$formula <- deparse(synthesis$formula)
+            synthesis$formula <- gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, synthesis$formula), perl = TRUE)))))))
+            synthesis$parameters[1,1] <- synthesis$parameters[1,1] + trans$ordinate
+            trans$unc <- synthesis$coefficients[2,2]
+            mod <- predict(fit)
+            if (length(mod) == 1) {
+              mod <- rep(mod, length(trans$x))
             }
+            mod <- mod + trans$ordinate
+            if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
+              mod <- mod + trans$pattern
+            }
+            res <- residuals(fit)
+            if (any(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
+              ss <- 0
+              info_out <- list()
+              for (s in which(grepl(pattern = "S", row.names(synthesis$coefficients)))) {
+                ss <- ss + 1
+                sine <- synthesis$coefficients[s,1]
+                cosine <- synthesis$coefficients[s + 1,1]
+                sine_err <- synthesis$coefficients[s,2]
+                cosine_err <- synthesis$coefficients[s + 1,2]
+                sine_cosine_cov <- synthesis$sigma^2 * synthesis$cov.unscaled[s,s + 1]
+                amp <- sqrt(sine^2 + cosine^2)
+                phase <- atan2(cosine,sine)
+                amp_err <- try(sqrt((sine^2*sine_err^2 + cosine^2*cosine_err^2 + 2*sine*cosine*sine_cosine_cov)/amp^2), silent = F)
+                phase_err <- try(sqrt((sine^2*cosine_err^2 + cosine^2*sine_err^2 - 2*sine*cosine*sine_cosine_cov)/amp^4), silent = F)
+                if (isTruthy(amp_err) && isTruthy(phase_err) && !inherits(amp_err,"try-error") && !inherits(phase_err,"try-error")) {
+                  for (i in list(noquote(trans$periods[ss]), amp, amp_err, phase, phase_err)) {
+                    info_out[[length(info_out) + 1]] = i
+                  }
+                } else {
+                  if (messages > 1) cat(file = stderr(), a, amp, phase, sine, sine_err, cosine, cosine_err, synthesis$cov.unscaled[s,s + 1], "\n")
+                  showNotification(HTML(paste0("Unable to compute the amplitude and/or phase error from the errors of the sine and cosine coefficients of sinusoid ",ss,".<br><br>Please contact the author to repport this problem.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal", type = "error", session = getDefaultReactiveDomain())
+                  ss <- ss - 1
+                }
+              }
+              if (isTruthy(info_out)) {
+                synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 5, byrow = T)
+                dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Period","Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
+              }
+            }
+            trans$equation <- sub("y ~","Model =",m$model)
+            trans$results <- synthesis
+            trans$LScoefs <- synthesis$coefficients
+            trans$res <- res
+            if (isTruthy(input$wavelet) && input$waveletType != 1) {
+              updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
+            }
+            trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
+            if (isTruthy(synthesis$sigma)) {
+              if (!any(1/weights < trans$moderror^2)) {
+                trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
+              }
+              trans$moderror <- trans$moderror * synthesis$sigma
+            }
+            trans$mod <- mod
+            if (isTruthy(inputs$waveformPeriod)) {
+              save_value <- inputs$waveformPeriod
+              updateTextInput(session, "waveformPeriod", value = "")
+              updateTextInput(session, "waveformPeriod", value = save_value)
+            }
+          } else {
+            trans$results <- NULL
+            trans$unc <- NULL
+            trans$res <- NULL
+            trans$mod <- NULL
+            showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
+          }
         } else {
           trans$results <- NULL
           trans$res <- NULL
@@ -5033,6 +5033,7 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
     }
   })
+  
   # Search offsets ####
   observeEvent(input$search, {
     req(file$primary)
