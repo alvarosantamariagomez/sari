@@ -6730,7 +6730,7 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   # Observe format 1D ####
-  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2), {
+  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator), {
     req(obs())
     obs(NULL)
     trans$x <- NULL
@@ -6763,24 +6763,6 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
-  }, priority = 6)
-
-  # Observe primary series format ####
-  # observeEvent(c(input$format), {
-  #   req(obs())
-  #   if (info$format != input$format) {
-  #     obs(NULL)
-  #     if (messages > 4) cat(file = stderr(), "From: observe primary series format (1)\n")
-  #     data <- digest()
-  #     obs(data)
-  #   }
-  # }, priority = 6)
-  observeEvent(c(input$separator), {
-    req(obs())
-    obs(NULL)
-    if (messages > 4) cat(file = stderr(), "From: observe primary series format (2)\n")
-    data <- digest()
-    obs(data)
   }, priority = 6)
 
   # Observe averaging ####
