@@ -8526,6 +8526,7 @@ server <- function(input,output,session) {
             }
             # ISO 8601 dates
             if (!isTruthy(tunitsKnown) && all(isTruthy(suppressWarnings(parse_date_time(extracted$x, c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
+              if (series == 1) info$tunitsKnown <- T
               if (input$tunits == 1) {
                 extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
               } else if (input$tunits == 2) {
@@ -8609,6 +8610,7 @@ server <- function(input,output,session) {
             }
             # ISO 8601 dates
             if (all(isTruthy(suppressWarnings(parse_date_time(extracted$x, c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
+              if (series == 1) info$tunitsKnown <- T
               if (input$tunits == 1) {
                 extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
               } else if (input$tunits == 2) {
