@@ -2403,7 +2403,7 @@ server <- function(input,output,session) {
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
-                 input$series2, input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
+                 input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
                  values$series1, values$series2, values$series3, values$series_all, input$fullSeries, obs(),
                  trans$plate, input$eulerType), {
     req(obs())
@@ -2424,50 +2424,160 @@ server <- function(input,output,session) {
     # trans$y2  = points from secondary series (independent)
     # trans$sy2 = sigmas from secondary series (independent)
 
-    trans$x0 <- as.numeric(data$x)
-    # changing the time units
+    trans$x_orig <- data$x[!is.na(data$y1)]
+    if (length(file$secondary) > 0) {
+      if (input$optionSecondary > 1) {
+        # merging primary and secondary series
+        table1 <- data[!is.na(data$y1),][c(grep(pattern = "x|y", x = names(data), ignore.case = F, perl = F, value = T, fixed = F))]
+        table2 <- data[!is.na(data$z1),][c(grep(pattern = "x|z", x = names(data), ignore.case = F, perl = F, value = T, fixed = F))]
+        if (input$tunits == 1) {
+          delta <- as.numeric(names(sort(table(table1$x - floor(table1$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
+          if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
+            table2$x <- table2$x + delta
+            showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+          } else {
+            if (info$sampling < info$sampling_regular) {
+              showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+            } else {
+              showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+            }
+          }
+        }
+        if (input$optionSecondary == 2) {
+          if (info$format == 4) {
+            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
+              y1 <- y1.x - y1.y * inputs$scaleFactor
+              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+            })[,c("x","y1","sy1")])
+          } else {
+            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
+              if (info$format2 == 4) {
+                y1 <- y1 - z1 * inputs$scaleFactor
+                y2 <- y2 - z1 * inputs$scaleFactor
+                y3 <- y3 - z1 * inputs$scaleFactor
+                sy1 <- sqrt(sy1^2 + (sz1 * inputs$scaleFactor)^2)
+                sy2 <- sqrt(sy2^2 + (sz1 * inputs$scaleFactor)^2)
+                sy3 <- sqrt(sy3^2 + (sz1 * inputs$scaleFactor)^2)
+              } else {
+                y1 <- y1 - z1 * inputs$scaleFactor
+                y2 <- y2 - z2 * inputs$scaleFactor
+                y3 <- y3 - z3 * inputs$scaleFactor
+                sy1 <- sqrt(sy1^2 + (sz1 * inputs$scaleFactor)^2)
+                sy2 <- sqrt(sy2^2 + (sz2 * inputs$scaleFactor)^2)
+                sy3 <- sqrt(sy3^2 + (sz3 * inputs$scaleFactor)^2)
+              }
+            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+          }
+          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+        } else if (input$optionSecondary == 3) {
+          if (info$format == 4) {
+            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
+              y1 <- (y1 + z1 * inputs$scaleFactor) / 2
+              sy1 <- abs(sy1 - sz1 * inputs$scaleFactor)/2
+            })[,c("x","y1","sy1")])
+          } else {
+            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
+              if (info$format2 == 4) {
+                y1 <- (y1 + z1 * inputs$scaleFactor) / 2
+                y2 <- (y2 + z1 * inputs$scaleFactor) / 2
+                y3 <- (y3 + z1 * inputs$scaleFactor) / 2
+                sy1 <- abs(sy1 - sz1 * inputs$scaleFactor)/2
+                sy2 <- abs(sy2 - sz2 * inputs$scaleFactor)/2
+                sy3 <- abs(sy3 - sz3 * inputs$scaleFactor)/2
+              } else {
+                y1 <- (y1 + z1 * inputs$scaleFactor) / 2
+                y2 <- (y2 + z2 * inputs$scaleFactor) / 2
+                y3 <- (y3 + z3 * inputs$scaleFactor) / 2
+                sy1 <- abs(sy1 - sz1 * inputs$scaleFactor)/2
+                sy2 <- abs(sy2 - sz2 * inputs$scaleFactor)/2
+                sy3 <- abs(sy3 - sz3 * inputs$scaleFactor)/2
+              }
+            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+          }
+          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+        }
+        if (nrow(table_common) > 0) {
+          data <- table_common
+          rm(table_common,table1,table2)
+          values$previous1 <- values$series1
+          values$previous2 <- values$series2
+          values$previous3 <- values$series3
+          values$previous_all <- values$series_all
+          if (isTruthy(input$remove3D)) {
+            # values$series_all <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series_all), by = "x", all = F)$s
+            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x))
+          } else {
+            # values$series1 <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series1), by = "x", all = F)$s
+            # values$series2 <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series2), by = "x", all = F)$s
+            # values$series3 <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series3), by = "x", all = F)$s
+          }
+        } else {
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", selected = 1))
+        }
+      # } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
+      #   # recover values of series before merging
+      #   if (isTruthy(input$remove3D)) {
+      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y1)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
+      #     values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      #     values$series1 <- values$series2 <- values$series3 <- values$series_all
+      #   } else {
+      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y1)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
+      #     values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y2)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
+      #     values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y3)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
+      #     values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+      #   }
+      #   rm(tempo)
+      }
+    }
+    
+    # changing the time units for both primary and secondary series
     if (isTruthy(info$tunitsKnown)) {
       if (info$tunits_orig == 1) {
         if (input$tunits == 2) {
-          trans$x0 <- (trans$x0 - 44244)/7
+          data$x <- (data$x - 44244)/7
         } else if (input$tunits == 3) {
-          trans$x0 <- decimal_date(as.Date(trans$x0, origin = as.Date("1858-11-17")))
+          data$x <- decimal_date(as.Date(data$x, origin = as.Date("1858-11-17")))
         }
       } else if (info$tunits_orig == 2) {
         if (input$tunits == 1) {
-          trans$x0 <- as.numeric(difftime(as.Date("1980-01-06") + trans$x0 * 7, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+          data$x <- as.numeric(difftime(as.Date("1980-01-06") + data$x * 7, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
         } else if (input$tunits == 3) {
-          trans$x0 <- decimal_date(as.Date("1980-01-06") + trans$x0 * 7)
+          data$x <- decimal_date(as.Date("1980-01-06") + data$x * 7)
         }
       } else if (info$tunits_orig == 3) {
         if (input$tunits == 1) {
-          trans$x0 <- as.numeric(difftime(date_decimal(trans$x0), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+          data$x <- as.numeric(difftime(date_decimal(data$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
         } else if (input$tunits == 2) {
-          trans$x0 <- as.numeric(difftime(date_decimal(trans$x0), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+          data$x <- as.numeric(difftime(date_decimal(data$x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
         }
       }
       if (isTruthy(input$fullSeries)) {
         # show all points from primary & secondary series
-        info$minx <- min(trans$x0, na.rm = T)
-        info$maxx <- max(trans$x0, na.rm = T)
+        info$minx <- min(data$x, na.rm = T)
+        info$maxx <- max(data$x, na.rm = T)
       } else {
         # show all points from primary series only
-        info$minx <- min(trans$x0[!is.na(data$y1)], na.rm = T)
-        info$maxx <- max(trans$x0[!is.na(data$y1)], na.rm = T)
+        info$minx <- min(data$x[!is.na(data$y1)], na.rm = T)
+        info$maxx <- max(data$x[!is.na(data$y1)], na.rm = T)
       }
       ranges$x1 <- c(info$minx, info$maxx)
     }
+    
     # removing plate model
     if (isTruthy(trans$plate) && input$eulerType == 2) {
       if (input$format == 4) {
-        data$y <- data$y - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0)) - median(data$y)
+        data$y <- data$y - trans$plate[as.numeric(input$neu1D)]*(data$x - median(data$x[!is.na(data$y1)])) - median(data$y, na.rm = T)
       } else {
-        data$y1 <- data$y1 - trans$plate[1]*(trans$x0 - median(trans$x0)) - median(data$y1, na.rm = T)
-        data$y2 <- data$y2 - trans$plate[2]*(trans$x0 - median(trans$x0)) - median(data$y2, na.rm = T)
-        data$y3 <- data$y3 - trans$plate[3]*(trans$x0 - median(trans$x0)) - median(data$y3, na.rm = T)
+        data$y1 <- data$y1 - trans$plate[1]*(data$x - median(data$x[!is.na(data$y1)])) - median(data$y1, na.rm = T)
+        data$y2 <- data$y2 - trans$plate[2]*(data$x - median(data$x[!is.na(data$y2)])) - median(data$y2, na.rm = T)
+        data$y3 <- data$y3 - trans$plate[3]*(data$x - median(data$x[!is.na(data$y3)])) - median(data$y3, na.rm = T)
       }
     }
-    # extract data
+    
+    # extract data for each component
+    trans$x0 <- as.numeric(data$x)
     if ((input$tab == 1) || (input$format == 4)) {
       trans$y0 <- as.numeric(data$y1)
       trans$sy0 <- as.numeric(data$sy1)
@@ -2537,6 +2647,7 @@ server <- function(input,output,session) {
     trans$sy <- trans$sye <- trans$sy0[!is.na(trans$y0)]
     trans$sy <- trans$sy[series & !is.na(series)]
     trans$sye <- trans$sye[!series & !is.na(series)]
+print(head(trans$y))
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       if (length(trans$mod0) > sum(kf[!is.na(kf)])) {
         trans$mod <- trans$mod0[kf & !is.na(kf)]
@@ -6242,7 +6353,7 @@ server <- function(input,output,session) {
   })
 
   # Observe Euler ####
-  observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers, input$neuenu), {
+  observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers, input$neuenu, input$tunits, input$sunits), {
     req(obs())
     if (input$euler && input$eulerType > 0) {
       stationCartesian <- c()
@@ -6605,7 +6716,6 @@ server <- function(input,output,session) {
   observeEvent(input$series2, {
     req(file$primary)
     file$secondary <- isolate(input$series2)
-    info$format2 <- input$format2
     url$file2 <- url$server2 <- url$station2 <- NULL
     if (isTruthy(url$logfile2)) {
       url$logfile2 <- info$log <- NULL
@@ -6616,11 +6726,19 @@ server <- function(input,output,session) {
     updateSelectInput(inputId = "product2", selected = "")
     if (grepl(".tenv3", file$secondary$name)) {
       updateRadioButtons(inputId = "format2", selected = 3)
+      info$format2 <- 3
     } else if (grepl("pbo|.pos", file$secondary$name)) {
       updateRadioButtons(inputId = "format2", selected = 2)
+      info$format2 <- 2
     } else {
       updateRadioButtons(inputId = "format2", selected = 1)
+      info$format2 <- 1
     }
+    shinyjs::delay(100, {
+      if (messages > 4) cat(file = stderr(), "From: observe secondary file\n")
+      data <- digest()
+      obs(data)
+    })
   }, priority = 8)
 
   # Observe series info ####
@@ -6730,7 +6848,7 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   # Observe format 1D ####
-  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator), {
+  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(obs())
     obs(NULL)
     trans$x <- NULL
@@ -6763,6 +6881,24 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+  }, priority = 6)
+
+  # Observe primary series format ####
+  # observeEvent(c(input$format), {
+  #   req(obs())
+  #   if (info$format != input$format) {
+  #     obs(NULL)
+  #     if (messages > 4) cat(file = stderr(), "From: observe primary series format (1)\n")
+  #     data <- digest()
+  #     obs(data)
+  #   }
+  # }, priority = 6)
+  observeEvent(c(input$separator), {
+    req(obs())
+    obs(NULL)
+    if (messages > 4) cat(file = stderr(), "From: observe primary series format (2)\n")
+    data <- digest()
+    obs(data)
   }, priority = 6)
 
   # Observe averaging ####
@@ -6907,8 +7043,7 @@ server <- function(input,output,session) {
     }
   }, priority = 6)
   observeEvent(input$optionSecondary, {
-    req(obs())
-    req(file$primary)
+    req(obs(), file$primary, file$secondary)
     if (messages > 0) {
       if (input$optionSecondary == 0) {
         cat(file = stderr(), "Hidding secondary series", "\n")
@@ -6920,52 +7055,46 @@ server <- function(input,output,session) {
         cat(file = stderr(), "Averaging with secondary series", "\n")
       }
     }
-    obs(NULL)
-    if (messages > 4) cat(file = stderr(), "From: observe secondary series (3)\n")
-    data <- digest()
-    if (!is.null(data)) {
-      obs(data)
-      if (input$optionSecondary > 1) {
-        values$previous1 <- values$series1
-        values$previous2 <- values$series2
-        values$previous3 <- values$series3
-        values$previous_all <- values$series_all
-        trans$x_orig <- trans$x0[!is.na(trans$y0)]
-        if (isTruthy(input$remove3D)) {
-          values$series_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), by = "x", all = F)$s
-          values$series1 <- values$series2 <- values$series3 <- values$series_all
-        } else {
-          values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
-          values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
-          values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s
-        }
-      } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-        if (isTruthy(input$remove3D)) {
-          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
-          values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-          values$series1 <- values$series2 <- values$series3 <- values$series_all
-        } else {
-          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
-          values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
-          values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-          tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
-          values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-        }
-        rm(tempo)
-      }
-      if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        info$run <- F
-        trans$mod <- trans$mod0 <- NULL
-        trans$res <- trans$res0 <- NULL
-        trans$kalman <- trans$kalman0 <- NULL
-        trans$kalman_unc <- trans$kalman_unc0 <- NULL
-      }
-      updateTextInput(session, "ObsError", value = "")
-      updateTextInput(session, "waveformPeriod", value = "")
-      updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
-      info$last_optionSecondary <- input$optionSecondary
+    # if (input$optionSecondary > 1) {
+    #   values$previous1 <- values$series1
+    #   values$previous2 <- values$series2
+    #   values$previous3 <- values$series3
+    #   values$previous_all <- values$series_all
+    #   trans$x_orig <- trans$x0[!is.na(trans$y0)]
+    #   if (isTruthy(input$remove3D)) {
+    #     values$series_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), by = "x", all = F)$s
+    #     values$series1 <- values$series2 <- values$series3 <- values$series_all
+    #   } else {
+    #     values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
+    #     values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
+    #     values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s
+    #   }
+    # } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
+    #   if (isTruthy(input$remove3D)) {
+    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
+    #     values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+    #     values$series1 <- values$series2 <- values$series3 <- values$series_all
+    #   } else {
+    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
+    #     values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
+    #     values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
+    #     values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
+    #   }
+    #   rm(tempo)
+    # }
+    if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+      info$run <- F
+      trans$mod <- trans$mod0 <- NULL
+      trans$res <- trans$res0 <- NULL
+      trans$kalman <- trans$kalman0 <- NULL
+      trans$kalman_unc <- trans$kalman_unc0 <- NULL
     }
+    updateTextInput(session, "ObsError", value = "")
+    updateTextInput(session, "waveformPeriod", value = "")
+    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+    info$last_optionSecondary <- input$optionSecondary
   }, priority = 6)
 
   # Observe ids ####
@@ -7811,6 +7940,7 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("bad_x")
     removeNotification("bad_series")
+    removeNotification("bad_merge")
     removeNotification("bad_secondary")
     removeNotification("time_shift")
     removeNotification("different_formats")
@@ -8078,7 +8208,7 @@ server <- function(input,output,session) {
         info$step <- NULL
       }
       # Getting secondary series from input file(s)
-      if (length(file$secondary) > 0 && input$optionSecondary > 0) {
+      if (length(file$secondary) > 0) {
         if (isTruthy(url$file2)) {
           files <- file$secondary
           server <- url$server2
@@ -8199,127 +8329,54 @@ server <- function(input,output,session) {
             if (info$format < 4 && info$format != info$format2) {
               showNotification(HTML("The primary and secondary series have different format.<br>Verify the time units from both series are the same."), action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
             }
-            if (input$optionSecondary == 1) {
-              if (info$format == 4) {
-                table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+            # merging table1 and table2
+            if (info$format == 4) {
+              table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+                y1 <- y1.x
+                z1 <- y1.y
+                sy1 <- sy1.x
+                sz1 <- sy1.y
+              })[,c("x","y1","sy1","z1","sz1")])
+            } else {
+              table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
+                if (info$format2 == 4) {
                   y1 <- y1.x
-                  z1 <- y1.y * inputs$scaleFactor
+                  z1 <- y1.y
+                  y2 <- y2
+                  z2 <- y1.y
+                  y3 <- y3
+                  z3 <- y1.y
                   sy1 <- sy1.x
-                  sz1 <- sy1.y  * inputs$scaleFactor
-                })[,c("x","y1","sy1","z1","sz1")])
-              } else {
-                table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-                  if (info$format2 == 4) {
-                    y1 <- y1.x
-                    z1 <- y1.y * inputs$scaleFactor
-                    y2 <- y2
-                    z2 <- y1.y * inputs$scaleFactor
-                    y3 <- y3
-                    z3 <- y1.y * inputs$scaleFactor
-                    sy1 <- sy1.x
-                    sz1 <- sy1.y * inputs$scaleFactor
-                    sy2 <- sy2
-                    sz2 <- sy1.y * inputs$scaleFactor
-                    sy3 <- sy3
-                    sz3 <- sy1.y * inputs$scaleFactor
-                  } else {
-                    y1 <- y1.x
-                    z1 <- y1.y * inputs$scaleFactor
-                    y2 <- y2.x
-                    z2 <- y2.y * inputs$scaleFactor
-                    y3 <- y3.x
-                    z3 <- y3.y * inputs$scaleFactor
-                    sy1 <- sy1.x
-                    sz1 <- sy1.y * inputs$scaleFactor
-                    sy2 <- sy2.x
-                    sz2 <- sy2.y * inputs$scaleFactor
-                    sy3 <- sy3.x
-                    sz3 <- sy3.y * inputs$scaleFactor
-                  }
-                })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
-              }
-              info$sampling2 <- min(diff(table2$x,1))
-            } else if (input$optionSecondary == 2) {
-              if (input$tunits == 1) {
-                delta <- as.numeric(names(sort(table(table$x - floor(table$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
-                if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
-                  table2$x <- table2$x + delta
-                  showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                  sz1 <- sy1.y
+                  sy2 <- sy2
+                  sz2 <- sy1.y
+                  sy3 <- sy3
+                  sz3 <- sy1.y
                 } else {
-                  if (info$sampling < info$sampling_regular) {
-                    showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-                  } else {
-                    showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-                  }
+                  y1 <- y1.x
+                  z1 <- y1.y
+                  y2 <- y2.x
+                  z2 <- y2.y
+                  y3 <- y3.x
+                  z3 <- y3.y
+                  sy1 <- sy1.x
+                  sz1 <- sy1.y
+                  sy2 <- sy2.x
+                  sz2 <- sy2.y
+                  sy3 <- sy3.x
+                  sz3 <- sy3.y
                 }
-              }
-              if (info$format == 4) {
-                table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                  y1 <- y1.x - y1.y * inputs$scaleFactor
-                  sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                })[,c("x","y1","sy1")])
-              } else {
-                table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                  if (info$format2 == 4) {
-                    y1 <- y1.x - y1.y * inputs$scaleFactor
-                    y2 <- y2 - y1.y * inputs$scaleFactor
-                    y3 <- y3 - y1.y * inputs$scaleFactor
-                    sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                    sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
-                    sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
-                  } else {
-                    y1 <- y1.x - y1.y * inputs$scaleFactor
-                    y2 <- y2.x - y2.y * inputs$scaleFactor
-                    y3 <- y3.x - y3.y * inputs$scaleFactor
-                    sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-                    sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
-                    sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
-                  }
-                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-              }
-              showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-            } else if (input$optionSecondary == 3) {
-              if (input$tunits == 1) {
-                delta <- as.numeric(tail(names(sort(table(table$x - floor(table$x)))))) - as.numeric(tail(names(sort(table(table2$x - floor(table2$x))))))
-                if (delta != 0) {
-                  table2$x <- table2$x + delta
-                  showNotification(paste0("The time axis of the secondary series has been shifted by ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-                }
-              }
-              if (info$format == 4) {
-                table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                  y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                  sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-                })[,c("x","y1","sy1")])
-              } else {
-                table_common <- data.frame(within(merge(table,table2,by = "x"), {
-                  if (info$format2 == 4) {
-                    y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                    y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
-                    y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
-                    sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-                    sy2 <- abs(sy2 - sy1.y * inputs$scaleFactor)/2
-                    sy3 <- abs(sy3 - sy1.y * inputs$scaleFactor)/2
-                  } else {
-                    y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-                    y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
-                    y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
-                    sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
-                    sy2 <- abs(sy2.x - sy2.y * inputs$scaleFactor)/2
-                    sy3 <- abs(sy3.x - sy3.y * inputs$scaleFactor)/2
-                  }
-                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-              }
-              showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+              })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
             }
+            info$sampling2 <- min(diff(table2$x,1))
             if (nrow(table_common) > 0) {
               table <- table_common
               rm(table_common)
             } else {
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = 1))
+              showNotification("Problem when merging the primary and secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_merge", type = "error", session = getDefaultReactiveDomain())
             }
           } else {
-            showNotification("Problem when averaging the secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
+            showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
           }
         } else {
           showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
