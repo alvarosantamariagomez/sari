@@ -2600,6 +2600,10 @@ server <- function(input,output,session) {
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
         showNotification(HTML("At least one point previously not used in the KF fit has been restored in the series. The KF fit is no longer valid.<br>Consider running it again."), action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
       } else {
+        trans$mod <- trans$mod0[kf & !is.na(kf)]
+        trans$res <- trans$res0[kf & !is.na(kf)]
+        trans$kalman <- trans$kalman0[kf & !is.na(kf),]
+        trans$kalman_unc <- trans$kalman_unc0[kf & !is.na(kf),]
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
     }
@@ -7452,9 +7456,8 @@ server <- function(input,output,session) {
             } else {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
             }
-            db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1.kf[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
           }
           if (length(brush2) > 0) {
@@ -7465,11 +7468,11 @@ server <- function(input,output,session) {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres_kf$selected_)
+              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
-            db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
-            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
           }
+          db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
+          db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
         } else {
           if (input$tab == 1 || is.null(input$tab)) {
             if (length(brush1) > 0) {
@@ -7619,43 +7622,48 @@ server <- function(input,output,session) {
       }
     }
     if (isTruthy(excluding) && sum(excluding) > 0) {
-      if (isTruthy(input$remove3D)) {
-        db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding)
-        if (isTruthy(input$permanent)) {
-          db1[[info$db1]]$status1[excluding] <- NA
-          updateCheckboxInput(session, inputId = "permanent", value = F)
-        }
-        db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
-        if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
-        }
+      if (min(sum(db1[[info$db1]]$status1),sum(db1[[info$db1]]$status2),sum(db1[[info$db1]]$status3)) - sum(excluding) < 2) {
+        showNotification(HTML("The residual threshold will remove all data from the residual series.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())
       } else {
-        if (input$tab == 1 || is.null(input$tab)) {
+        if (isTruthy(input$remove3D)) {
           db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding)
           if (isTruthy(input$permanent)) {
             db1[[info$db1]]$status1[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
+          db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
             db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
           }
-        } else if (input$tab == 2) {
-          db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding)
-          if (isTruthy(input$permanent)) {
-            db1[[info$db1]]$status2[excluding] <- NA
-            updateCheckboxInput(session, inputId = "permanent", value = F)
-          }
-          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status2[(db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
-          }
-        } else if (input$tab == 3) {
-          db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding)
-          if (isTruthy(input$permanent)) {
-            db1[[info$db1]]$status3[excluding] <- NA
-            updateCheckboxInput(session, inputId = "permanent", value = F)
-          }
-          if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status3[(db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+        } else {
+          if (input$tab == 1 || is.null(input$tab)) {
+            db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding)
+            if (isTruthy(input$permanent)) {
+              db1[[info$db1]]$status1[excluding] <- NA
+              updateCheckboxInput(session, inputId = "permanent", value = F)
+            }
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            }
+          } else if (input$tab == 2) {
+            db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding)
+            if (isTruthy(input$permanent)) {
+              db1[[info$db1]]$status2[excluding] <- NA
+              updateCheckboxInput(session, inputId = "permanent", value = F)
+            }
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status2[(db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            }
+          } else if (input$tab == 3) {
+            db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding)
+            if (isTruthy(input$permanent)) {
+              db1[[info$db1]]$status3[excluding] <- NA
+              updateCheckboxInput(session, inputId = "permanent", value = F)
+            }
+            if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
+              db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status3[(db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            }
           }
         }
       }
