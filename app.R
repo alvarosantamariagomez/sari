@@ -157,6 +157,21 @@ Shiny.addCustomMessageHandler('custom', function(txt) {
   var target = $('#custom').parent().parent().parent().find('input[type=text]');
   target.val(txt);
 }); "
+update_step <- "
+Shiny.addCustomMessageHandler('step', function(txt) {
+  var target = $('#step').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
+update_step2 <- "
+Shiny.addCustomMessageHandler('step2', function(txt) {
+  var target = $('#step2').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
+update_trendRef <- "
+Shiny.addCustomMessageHandler('trendRef', function(txt) {
+  var target = $('#trendRef').parent().parent().parent().find('input[type=text]');
+  target.val(txt);
+}); "
 
 # Confirmation when refreshing the page
 # askRefresh <- 'window.onbeforeunload = function() { return ""; };'
@@ -178,6 +193,7 @@ tabContents <- function(tabNum) {
   }
   tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
            tags$style(type = "text/css", "body {padding-top: 60px;}"),
+           hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 99999;", "Zoomed in")),
            withSpinner(
              plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
@@ -397,6 +413,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$script(HTML(update_sitelog)),
                   tags$script(HTML(update_soln)),
                   tags$script(HTML(update_custom)),
+                  tags$script(HTML(update_step)),
+                  tags$script(HTML(update_step2)),
+                  tags$script(HTML(update_trendRef)),
                   
                   # confirm click on refresh button
                   # uiOutput("refresh")
@@ -1827,10 +1846,12 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, tunits = NULL, tunitsKnown = F, tunits_orig = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
+                         run = F, tunits.label = NULL, tunits.known = F, tunits.last = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
-                         product1 = NULL)
+                         product1 = NULL,
+                         db1 = "stop", db2 = "stop",
+                         trendRef = F, PolyRef = F, periodRef = F)
 
   # 4. point status: valid (T), excluded (F) or deleted (NA)
   #   series: status of the primary series
@@ -1839,6 +1860,15 @@ server <- function(input,output,session) {
   values <- reactiveValues(series1 = NULL, series2 = NULL, series3 = NULL, series_all = NULL,
                            previous1 = NULL, previous2 = NULL, previous3 = NULL, previous_all = NULL,
                            kf1 = NULL, kf2 = NULL, kf3 = NULL, kf_all = NULL)
+  
+  # 4. database:
+  #   1 = primary
+  #   2 = primary.resampled
+  #   3 = primary.corrected (series are first resampled and then corrected)
+  #   4 = primary.averaged
+  
+  db1 <- reactiveValues(original = NULL)
+  db2 <- reactiveValues(original = NULL)
 
   # 5. user input
   inputs <- reactiveValues(thresholdRes = NULL, thresholdResN = NULL, trendRef = NULL, period = NULL,
@@ -2058,6 +2088,7 @@ server <- function(input,output,session) {
 
   # Series summary ####
   output$information1 <- output$information2 <- renderUI({
+    
     if (input$tunits == 1) {
       units <- "days"
     } else if (input$tunits == 2) {
@@ -2403,18 +2434,20 @@ server <- function(input,output,session) {
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
-                 input$optionSecondary, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
-                 values$series1, values$series2, values$series3, values$series_all, input$fullSeries, obs(),
-                 trans$plate, input$eulerType), {
-    req(obs())
+                 inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
+                 input$fullSeries, info$db1, info$db2, input$eulerType, trans$plate,
+                 db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3), {
+    req(db1[[info$db1]])
     if (input$tab == 4) {
       req(info$stop)
     }
     removeNotification("kf_not_valid")
     removeNotification("regular")
     if (messages > 0) cat(file = stderr(), "Updating dataset", "\n")
-    data <- obs()
 
+    table1 <- db1[[info$db1]]
+    table2 <- db2[[info$db2]]
+    
     # data$y    = all points read from input series
     # trans$y0  = all points from input series (same as data$y)
     # trans$y   = points valid
@@ -2424,207 +2457,72 @@ server <- function(input,output,session) {
     # trans$y2  = points from secondary series (independent)
     # trans$sy2 = sigmas from secondary series (independent)
 
-    trans$x_orig <- data$x[!is.na(data$y1)]
-    if (length(file$secondary) > 0) {
-      if (input$optionSecondary > 1) {
-        # merging primary and secondary series
-        table1 <- data[!is.na(data$y1),][c(grep(pattern = "x|y", x = names(data), ignore.case = F, perl = F, value = T, fixed = F))]
-        table2 <- data[!is.na(data$z1),][c(grep(pattern = "x|z", x = names(data), ignore.case = F, perl = F, value = T, fixed = F))]
-        if (input$tunits == 1) {
-          delta <- as.numeric(names(sort(table(table1$x - floor(table1$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
-          if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
-            table2$x <- table2$x + delta
-            showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," ",info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-          } else {
-            if (info$sampling < info$sampling_regular) {
-              showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-            } else {
-              showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-            }
-          }
-        }
-        if (input$optionSecondary == 2) {
-          if (info$format == 4) {
-            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
-              y1 <- y1.x - y1.y * inputs$scaleFactor
-              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
-            })[,c("x","y1","sy1")])
-          } else {
-            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
-              if (info$format2 == 4) {
-                y1 <- y1 - z1 * inputs$scaleFactor
-                y2 <- y2 - z1 * inputs$scaleFactor
-                y3 <- y3 - z1 * inputs$scaleFactor
-                sy1 <- sqrt(sy1^2 + (sz1 * inputs$scaleFactor)^2)
-                sy2 <- sqrt(sy2^2 + (sz1 * inputs$scaleFactor)^2)
-                sy3 <- sqrt(sy3^2 + (sz1 * inputs$scaleFactor)^2)
-              } else {
-                y1 <- y1 - z1 * inputs$scaleFactor
-                y2 <- y2 - z2 * inputs$scaleFactor
-                y3 <- y3 - z3 * inputs$scaleFactor
-                sy1 <- sqrt(sy1^2 + (sz1 * inputs$scaleFactor)^2)
-                sy2 <- sqrt(sy2^2 + (sz2 * inputs$scaleFactor)^2)
-                sy3 <- sqrt(sy3^2 + (sz3 * inputs$scaleFactor)^2)
-              }
-            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-          }
-          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-        } else if (input$optionSecondary == 3) {
-          if (info$format == 4) {
-            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
-              y1 <- (y1 + z1 * inputs$scaleFactor) / 2
-              sy1 <- abs(sy1 - sz1 * inputs$scaleFactor)/2
-            })[,c("x","y1","sy1")])
-          } else {
-            table_common <- data.frame(within(merge(table1,table2,by = "x"), {
-              if (info$format2 == 4) {
-                y1 <- (y1 + z1 * inputs$scaleFactor) / 2
-                y2 <- (y2 + z1 * inputs$scaleFactor) / 2
-                y3 <- (y3 + z1 * inputs$scaleFactor) / 2
-                sy1 <- abs(sy1 - sz1 * inputs$scaleFactor)/2
-                sy2 <- abs(sy2 - sz2 * inputs$scaleFactor)/2
-                sy3 <- abs(sy3 - sz3 * inputs$scaleFactor)/2
-              } else {
-                y1 <- (y1 + z1 * inputs$scaleFactor) / 2
-                y2 <- (y2 + z2 * inputs$scaleFactor) / 2
-                y3 <- (y3 + z3 * inputs$scaleFactor) / 2
-                sy1 <- abs(sy1 - sz1 * inputs$scaleFactor)/2
-                sy2 <- abs(sy2 - sz2 * inputs$scaleFactor)/2
-                sy3 <- abs(sy3 - sz3 * inputs$scaleFactor)/2
-              }
-            })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
-          }
-          showNotification(paste0("There are ",length(table_common$x)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-        }
-        if (nrow(table_common) > 0) {
-          data <- table_common
-          rm(table_common,table1,table2)
-          values$previous1 <- values$series1
-          values$previous2 <- values$series2
-          values$previous3 <- values$series3
-          values$previous_all <- values$series_all
-          if (isTruthy(input$remove3D)) {
-            # values$series_all <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series_all), by = "x", all = F)$s
-            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x))
-          } else {
-            # values$series1 <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series1), by = "x", all = F)$s
-            # values$series2 <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series2), by = "x", all = F)$s
-            # values$series3 <- merge(data, data.frame(x = obs()$x[!is.na(obs()$y1)], s = values$series3), by = "x", all = F)$s
-          }
-        } else {
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", selected = 1))
-        }
-      # } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-      #   # recover values of series before merging
-      #   if (isTruthy(input$remove3D)) {
-      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y1)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
-      #     values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      #     values$series1 <- values$series2 <- values$series3 <- values$series_all
-      #   } else {
-      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y1)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
-      #     values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y2)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
-      #     values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      #     tempo <- merge(data.frame(x = data$x[!is.na(data$y3)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
-      #     values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-      #   }
-      #   rm(tempo)
-      }
-    }
-    
-    # changing the time units for both primary and secondary series
-    if (isTruthy(info$tunitsKnown)) {
-      if (info$tunits_orig == 1) {
-        if (input$tunits == 2) {
-          data$x <- (data$x - 44244)/7
-        } else if (input$tunits == 3) {
-          data$x <- decimal_date(as.Date(data$x, origin = as.Date("1858-11-17")))
-        }
-      } else if (info$tunits_orig == 2) {
-        if (input$tunits == 1) {
-          data$x <- as.numeric(difftime(as.Date("1980-01-06") + data$x * 7, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-        } else if (input$tunits == 3) {
-          data$x <- decimal_date(as.Date("1980-01-06") + data$x * 7)
-        }
-      } else if (info$tunits_orig == 3) {
-        if (input$tunits == 1) {
-          data$x <- as.numeric(difftime(date_decimal(data$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-        } else if (input$tunits == 2) {
-          data$x <- as.numeric(difftime(date_decimal(data$x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-        }
-      }
-      if (isTruthy(input$fullSeries)) {
-        # show all points from primary & secondary series
-        info$minx <- min(data$x, na.rm = T)
-        info$maxx <- max(data$x, na.rm = T)
-      } else {
-        # show all points from primary series only
-        info$minx <- min(data$x[!is.na(data$y1)], na.rm = T)
-        info$maxx <- max(data$x[!is.na(data$y1)], na.rm = T)
-      }
-      ranges$x1 <- c(info$minx, info$maxx)
-    }
-    
-    # removing plate model
-    if (isTruthy(trans$plate) && input$eulerType == 2) {
-      if (input$format == 4) {
-        data$y <- data$y - trans$plate[as.numeric(input$neu1D)]*(data$x - median(data$x[!is.na(data$y1)])) - median(data$y, na.rm = T)
-      } else {
-        data$y1 <- data$y1 - trans$plate[1]*(data$x - median(data$x[!is.na(data$y1)])) - median(data$y1, na.rm = T)
-        data$y2 <- data$y2 - trans$plate[2]*(data$x - median(data$x[!is.na(data$y2)])) - median(data$y2, na.rm = T)
-        data$y3 <- data$y3 - trans$plate[3]*(data$x - median(data$x[!is.na(data$y3)])) - median(data$y3, na.rm = T)
-      }
+    # set time axis
+    if (input$tunits == 1) {
+      trans$x0 <- table1$x1
+      trans$x2 <- table2$x1
+    } else if (input$tunits == 2) {
+      trans$x0 <- table1$x2
+      trans$x2 <- table2$x2
+    } else if (input$tunits == 3) {
+      trans$x0 <- table1$x3
+      trans$x2 <- table2$x3
     }
     
     # extract data for each component
-    trans$x0 <- as.numeric(data$x)
     if ((input$tab == 1) || (input$format == 4)) {
-      trans$y0 <- as.numeric(data$y1)
-      trans$sy0 <- as.numeric(data$sy1)
-      trans$y2 <- as.numeric(data$z1[!is.na(data$z1)])
-      trans$sy2 <- as.numeric(data$sz1[!is.na(data$z1)])
-      if (isTruthy(input$remove3D)) {
-        series <- values$series_all
-        kf <- values$kf_all
-      } else {
-        series <- values$series1
-        kf <- values$kf1
+      trans$y0 <- as.numeric(table1$y1)
+      if (isTruthy(trans$plate) && input$eulerType == 2) {
+        if (input$format == 4) {
+          trans$y0 <- trans$y0 - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0[table1$status1])) - median(trans$y0, na.rm = T)
+        } else {
+          trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1])) - median(trans$y0, na.rm = T)
+        }
       }
+      trans$sy0 <- as.numeric(table1$sy1)
+      trans$y2 <- as.numeric(table2$y1) * inputs$scaleFactor
+      trans$sy2 <- as.numeric(table2$sy1) * inputs$scaleFactor
+      status <- table1$status1
+      kf <- table1$status1.kf
     } else if (input$tab == 2) {
-      trans$y0 <- as.numeric(data$y2)
-      trans$sy0 <- as.numeric(data$sy2)
-      trans$y2 <- as.numeric(data$z2[!is.na(data$z2)])
-      trans$sy2 <- as.numeric(data$sz2[!is.na(data$z2)])
+      trans$y0 <- as.numeric(table1$y2)
+      if (isTruthy(trans$plate) && input$eulerType == 2) {
+        trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2])) - median(trans$y0, na.rm = T)
+      }
+      trans$sy0 <- as.numeric(table1$sy2)
+      trans$y2 <- as.numeric(table2$y2) * inputs$scaleFactor
+      trans$sy2 <- as.numeric(table2$sy2) * inputs$scaleFactor
       if (isTruthy(input$remove3D)) {
-        series <- values$series_all
-        kf <- values$kf_all
+        status <- table1$status1
+        kf <- table1$status1.kf
       } else {
-        series <- values$series2
-        kf <- values$kf2
+        status <- table1$status2
+        kf <- table1$status2.kf
       }
     } else if (input$tab == 3) {
-      trans$y0 <- as.numeric(data$y3)
-      trans$sy0 <- as.numeric(data$sy3)
-      trans$y2 <- as.numeric(data$z3[!is.na(data$z3)])
-      trans$sy2 <- as.numeric(data$sz3[!is.na(data$z3)])
+      trans$y0 <- as.numeric(table1$y3)
+      if (isTruthy(trans$plate) && input$eulerType == 2) {
+        trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3])) - median(trans$y0, na.rm = T)
+      }
+      trans$sy0 <- as.numeric(table1$sy3)
+      trans$y2 <- as.numeric(table2$y3) * inputs$scaleFactor
+      trans$sy2 <- as.numeric(table2$sy3) * inputs$scaleFactor
       if (isTruthy(input$remove3D)) {
-        series <- values$series_all
-        kf <- values$kf_all
+        status <- table1$status1
+        kf <- table1$status1.kf
       } else {
-        series <- values$series3
-        kf <- values$kf3
+        status <- table1$status3
+        kf <- table1$status3.kf
       }
     }
-    trans$x <- trans$xe <- trans$x0[!is.na(trans$y0)]
-    trans$x <- trans$x[series & !is.na(series)]
-    trans$xe <- trans$xe[!series & !is.na(series)]
-    trans$x2 <- trans$x0[!is.na(data$z1)]
-    trans$y <- trans$y0[!is.na(trans$y0)]
-    trans$y <- trans$y[!is.na(series)]
+    trans$x <- trans$xe <- trans$x0
+    trans$x <- trans$x[status & !is.na(status)]
+    trans$xe <- trans$xe[!status & !is.na(status)]
+    trans$y <- trans$y0[!is.na(status)]
     if (isTruthy(input$fullSeries)) {
       # show all points from primary & secondary series
-      info$minx <- min(trans$x0, na.rm = T)
-      info$maxx <- max(trans$x0, na.rm = T)
+      info$minx <- min(trans$x, trans$xe, trans$x2, na.rm = T)
+      info$maxx <- max(trans$x, trans$xe, trans$x2, na.rm = T)
     } else {
       # show all points from primary series only
       info$minx <- min(c(trans$x, trans$xe), na.rm = T)
@@ -2632,7 +2530,7 @@ server <- function(input,output,session) {
     }
     info$miny <- min(trans$y, na.rm = T)
     info$maxy <- max(trans$y, na.rm = T)
-    ids <- trans$x0[!is.na(trans$y0)] >= ranges$x1[1] & trans$x0[!is.na(trans$y0)] <= ranges$x1[2]
+    ids <- trans$x0[!is.na(status)] >= ranges$x1[1] & trans$x0[!is.na(status)] <= ranges$x1[2]
     if (sum(ids) > 0) {
       ranges$y1 <- range(trans$y[ids], na.rm = T)
       if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
@@ -2641,13 +2539,42 @@ server <- function(input,output,session) {
     } else {
       ranges$y1 <- c(info$miny, info$maxy)
     }
-    trans$y <- trans$ye <- trans$y0[!is.na(trans$y0)]
-    trans$y <- trans$y[series & !is.na(series)]
-    trans$ye <- trans$ye[!series & !is.na(series)]
-    trans$sy <- trans$sye <- trans$sy0[!is.na(trans$y0)]
-    trans$sy <- trans$sy[series & !is.na(series)]
-    trans$sye <- trans$sye[!series & !is.na(series)]
-print(head(trans$y))
+    trans$y <- trans$y0[status & !is.na(status)]
+    trans$ye <- trans$y0[!status & !is.na(status)]
+    trans$sy <- trans$sy0[status & !is.na(status)]
+    trans$sye <- trans$sy0[!status & !is.na(status)]
+    if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+      ids <- trans$x2[!is.na(trans$y2)] >= ranges$x1[1] & trans$x2[!is.na(trans$y2)] <= ranges$x1[2]
+      if (sum(ids) > 0) {
+        ranges$y12 <- range(trans$y2[ids], na.rm = T)
+        if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
+          ranges$y12 <- range(trans$y2, na.rm = T)
+        }
+      } else {
+        ranges$y12 <- range(trans$y2, na.rm = T)
+      }
+    }
+    info$points <- length(trans$x)
+    info$sampling <- min(diff(trans$x,1))
+    if (!isTruthy(info$step)) {
+      info$sampling0 <- info$sampling
+    }
+    info$sampling_regular <- median(diff(trans$x))
+    info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
+    info$rangex <- trans$x[length(trans$x)] - trans$x[1]
+    times <- round(diff(trans$x)/info$sampling)
+    trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+    # Getting significant decimals from the primary series
+    info$decimalsx <- decimalplaces(signif(info$sampling, digits = 2))
+    info$decimalsy <- max(decimalplaces(trans$y))
+    if (!isTruthy(info$decimalsy)) {
+      info$decimalsy <- 4
+    }
+    if (info$decimalsy > 10) {
+      info$decimalsy <- 10
+    }
+    trans$ordinate <- median(trans$y)
+    info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       if (length(trans$mod0) > sum(kf[!is.na(kf)])) {
         trans$mod <- trans$mod0[kf & !is.na(kf)]
@@ -2680,29 +2607,6 @@ print(head(trans$y))
       trans$sye <- rep(1, length(trans$sye))
       trans$sy2 <- rep(1, length(trans$sy2))
     }
-    if (length(file$secondary) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
-      ids <- trans$x0[!is.na(trans$y2)] >= ranges$x1[1] & trans$x0[!is.na(trans$y2)] <= ranges$x1[2]
-      if (sum(ids) > 0) {
-        ranges$y12 <- range(trans$y2[ids], na.rm = T)
-        if (any(is.na(ranges$y12)) || any(is.infinite(ranges$y12))) {
-          ranges$y12 <- range(trans$y2, na.rm = T)
-        }
-      } else {
-        ranges$y12 <- range(trans$y2, na.rm = T)
-      }
-    }
-    info$points <- length(trans$x)
-    info$sampling <- min(diff(trans$x,1))
-    if (!isTruthy(info$step)) {
-      info$sampling0 <- info$sampling
-    }
-    info$sampling_regular <- median(diff(trans$x))
-    info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
-    info$rangex <- trans$x[length(trans$x)] - trans$x[1]
-    times <- round(diff(trans$x)/info$sampling)
-    trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
-    trans$ordinate <- median(trans$y)
-    info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     if (input$waveletType > 0) {
       updateRadioButtons(session, inputId = "waveletType", label = NULL,
                          choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5),
@@ -2715,7 +2619,7 @@ print(head(trans$y))
 
   # Load SARI file ####
   observeEvent(input$loadSARI, {
-    req(file$primary, obs())
+    req(db1[[info$db1]])
     removeNotification("sari_version")
     removeNotification("format_not_compatible")
     removeNotification("no_model")
@@ -2858,6 +2762,7 @@ print(head(trans$y))
             # Extracting Rate info
             if (grepl(" \\+ Rate", model, ignore.case = F, perl = T)) {
               updateTextInput(session, "trendRef", value = text[2])
+              info$trendRef <- T
               components <- c(components, "Linear")
             }
             # Extracting Polynomial info
@@ -2865,12 +2770,14 @@ print(head(trans$y))
               index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "PolyRef", value = text[index[1] + 1])
               updateTextInput(session, "PolyCoef", value = text[index[length(index)] + 3])
+              info$PolyRef <- T
               components <- c(components, "Polynomial")
             }
             # Extracting Sinusoidal info
             if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
               index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "periodRef", value = unique(text[index + 1]))
+              info$periodRef <- T
               if (input$tunits == 1) {
                 units <- "d"
               } else if (input$tunits == 2) {
@@ -2915,7 +2822,6 @@ print(head(trans$y))
             updateCollapse(session, id = "menu", open = info$menu)
             shinyjs::delay(1000, updateRadioButtons(session, inputId = "fitType", selected = 1))
             shinyjs::delay(1100, updateCheckboxGroupInput(session, inputId = "model", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), inline = T, selected = components))
-            
           }
         }
       }
@@ -2926,7 +2832,7 @@ print(head(trans$y))
 
   # Plot series ####
   output$plot1 <- output$plot2 <- output$plot3 <- renderPlot({
-    req(obs(), trans$x, trans$y, trans$sy)
+    req(db1[[info$db1]], trans$x, trans$y, trans$sy)
     removeNotification("wrong_series")
     if (messages > 0) cat(file = stderr(), "Plotting the series", "\n")
     title <- ""
@@ -3035,6 +2941,11 @@ print(head(trans$y))
     if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
       lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
     }
+    if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
+      shinyjs::show(paste0("zoomin",input$tab))
+    } else {
+      shinyjs::hide(paste0("zoomin",input$tab))
+    }
     output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
       if (length(input$plot_1click$x) > 0) {
         paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
@@ -3043,14 +2954,14 @@ print(head(trans$y))
 }, width = reactive(info$width))
 
   # MIDAS ####
-  observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
+  observeEvent(c(input$midas, trans$y, trans$offsetEpochs, input$tunits), {
     req(trans$x, trans$y, info$tol)
     removeNotification("no_interannual")
     if (isTruthy(input$midas)) {
       if (input$tunits == 1) {
-        period <- 365.25
+        period <- 365
       } else if (input$tunits == 2) {
-        period <- 365.25/7
+        period <- 52
       } else if (input$tunits == 3) {
         period <- 1
       }
@@ -3061,7 +2972,7 @@ print(head(trans$y))
       }
       if (messages > 0) cat(file = stderr(), "Computing MIDAS", "\n")
       if (length(trans$x) > 6) {
-        withProgress(message = 'Computing MIDAS trend',
+        withProgress(message = 'Computing MIDAS trend.',
                      detail = 'This may take a while ...', value = 0, {
                        setProgress(0)
                        vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0, trans$y))
@@ -3109,7 +3020,7 @@ print(head(trans$y))
 
   # Plot MIDAS histogram ####
   output$midas_hist1 <- output$midas_hist2 <- output$midas_hist3 <- renderPlot({
-    req(obs(), input$midas, trans$midas_all)
+    req(db1[[info$db1]], input$midas, trans$midas_all)
     if (messages > 0) cat(file = stderr(), "MIDAS histogram", "\n")
     if (input$tunits == 1) {
       period <- "day"
@@ -3151,7 +3062,7 @@ print(head(trans$y))
         estimatedTime <- as.integer(ceiling(1.3988*exp(0.0006*n)/60))
       }
       withBusyIndicatorServer("runVerif", {
-        withProgress(message = 'Verifying offset values',
+        withProgress(message = 'Verifying offset values.',
                      detail = paste("This should take about", estimatedTime, "min"), value = 0, {
                        start.time <- Sys.time()
                        if (isTruthy(inputs$verif_white) && inputs$verif_white > 0) {
@@ -3326,7 +3237,7 @@ print(head(trans$y))
             trans$results <- synthesis
             trans$LScoefs <- synthesis$coefficients
             trans$res <- res
-            if (isTruthy(input$wavelet) && input$waveletType != 1) {
+            if (isTruthy(input$wavelet) && input$waveletType > 1) {
               updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
             }
             trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
@@ -3398,7 +3309,7 @@ print(head(trans$y))
       trans$mle <- F
       trans$verif <- NULL
       withBusyIndicatorServer("runKF", {
-        withProgress(message = 'Running Kalman Filter',
+        withProgress(message = 'Running Kalman Filter.',
                      detail = 'This may take a while ...', value = 0, {
         x <- trans$x
         y <- trans$y
@@ -3681,7 +3592,7 @@ print(head(trans$y))
 
   # Plot residuals ####
   output$res1 <- output$res2 <- output$res3 <- renderPlot({
-    req(obs(), trans$res, trans$x, trans$sy, info$run)
+    req(trans$res, trans$x, trans$sy, info$run)
     if (messages > 0) cat(file = stderr(), "Plotting residual series", "\n")
     if (input$sunits == 1) {
       units <- "(m)"
@@ -3749,7 +3660,7 @@ print(head(trans$y))
 
   # Compute stats & histogram ####
   observeEvent(c(input$histogramType, trans$y, trans$res, trans$filter, ranges$x1, input$tab, inputs$epoch, inputs$variable, inputs$errorBar, input$sunits), {
-    req(obs(), input$histogram)
+    req(db1[[info$db1]], input$histogram)
     if (input$sunits == 1) {
       units <- "(m)"
     } else if (input$sunits == 2) {
@@ -3822,7 +3733,7 @@ print(head(trans$y))
 
   # Fit summary ####
   output$summary1 <- output$summary2 <- output$summary3 <- renderPrint({
-    req(obs())
+    req(db1[[info$db1]])
     options(scipen = 8)
     if (input$optionSecondary == 1 && isTruthy(trans$y2)) {
       serie1 <- data.frame(x = trans$x, y = trans$y)
@@ -3962,7 +3873,7 @@ print(head(trans$y))
 
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
-    req(obs(), input$spectrum)
+    req(db1[[info$db1]], input$spectrum)
     # removeNotification("bad_long")
     # removeNotification("bad_short")
     # removeNotification("bad_oversampling")
@@ -4092,7 +4003,7 @@ print(head(trans$y))
     }
   })
   observeEvent(c(input$spectrumOriginal), {
-    req(obs())
+    req(db1[[info$db1]])
     if (isTruthy(trans$spectra_old[1])) {
       trans$psd[,1] <- NA
       trans$amp[,1] <- NA
@@ -4111,7 +4022,7 @@ print(head(trans$y))
     }
   })
   observeEvent(c(input$spectrumModel), {
-    req(obs())
+    req(db1[[info$db1]])
     if (isTruthy(trans$spectra_old[2])) {
       trans$psd[,2] <- NA
       trans$amp[,2] <- NA
@@ -4130,7 +4041,7 @@ print(head(trans$y))
     }
   })
   observeEvent(c(input$spectrumResiduals), {
-    req(obs())
+    req(db1[[info$db1]])
     if (isTruthy(trans$spectra_old[3])) {
       trans$psd[,3] <- NA
       trans$amp[,3] <- NA
@@ -4149,7 +4060,7 @@ print(head(trans$y))
     }
   })
   observeEvent(c(input$spectrumFilter), {
-    req(obs())
+    req(db1[[info$db1]])
     if (isTruthy(trans$spectra_old[4])) {
       trans$psd[,4] <- NA
       trans$amp[,4] <- NA
@@ -4168,7 +4079,7 @@ print(head(trans$y))
     }
   })
   observeEvent(c(input$spectrumFilterRes), {
-    req(obs())
+    req(db1[[info$db1]])
     if (isTruthy(trans$spectra_old[5])) {
       trans$psd[,5] <- NA
       trans$amp[,5] <- NA
@@ -4187,19 +4098,19 @@ print(head(trans$y))
     }
   })
   observeEvent(c(trans$y, trans$sy), {
-    req(obs(), input$spectrum)
+    req(db1[[info$db1]], input$spectrum)
     if (input$spectrumOriginal) {
       periodogram("original")
     }
   })
   observeEvent(c(trans$res, trans$model), {
-    req(obs(), input$spectrum)
+    req(db1[[info$db1]], input$spectrum)
     if (input$spectrumModel || input$spectrumResiduals) {
       periodogram(c("model","residuals"))
     }
   })
   observeEvent(c(trans$filter, trans$filterRes), {
-    req(obs(), input$spectrum)
+    req(db1[[info$db1]], input$spectrum)
     if (input$spectrumFilter || input$spectrumFilterRes) {
       periodogram(c("filter","filterRes"))
     }
@@ -4207,7 +4118,7 @@ print(head(trans$y))
 
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
-    req(obs(), input$spectrum, trans$fs, trans$psd)
+    req(db1[[info$db1]], input$spectrum, trans$fs, trans$psd)
     removeNotification("no_noise_psd")
     if (length(trans$fs) > 0) {
       if (messages > 0) cat(file = stderr(), "Plotting periodogram", "\n")
@@ -4336,7 +4247,7 @@ print(head(trans$y))
   # Plot wavelet ####
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
     trans$wavelet <- NULL
-    req(obs(), input$wavelet, input$waveletType)
+    req(db1[[info$db1]], input$wavelet, input$waveletType)
     removeNotification("no_wavelet")
     if (isTruthy(isolate(info$run_wavelet))) {
       if (input$tunits == 1) {
@@ -4415,7 +4326,7 @@ print(head(trans$y))
       if (input$waveletType > 0) {
         start.time <- Sys.time()
         suppressWarnings({
-          withProgress(message = 'Computing wavelet transform',
+          withProgress(message = 'Computing wavelet transform.',
                        detail = 'This may take a while ...', value = 0.1, {
                          trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
                          setProgress(0.7) # just for progress bar lovers
@@ -4590,7 +4501,7 @@ print(head(trans$y))
 
   # Plot smoother ####
   output$vondrak1 <- output$vondrak2 <- output$vondrak3 <- output$Vondrak1 <- output$Vondrak2 <- output$Vondrak3 <- renderPlot({
-    req(obs(),input$filter)
+    req(db1[[info$db1]],input$filter)
     if (length(trans$filterRes) > 0) {
       if (messages > 0) cat(file = stderr(), "Plotting Vondrak", "\n")
       if ((length(inputs$low) > 0 && inputs$low > 0 && !is.na(inputs$low)) || (length(inputs$high) > 0 && inputs$high > 0 && !is.na(inputs$high))) {
@@ -4641,7 +4552,7 @@ print(head(trans$y))
         } else {
           message <- paste("This may take about", ceiling(info$timeMLE/60), "min")
         }
-        withProgress(message = 'Fitting the noise model',
+        withProgress(message = 'Fitting the noise model.',
                      detail = message, value = 0, {
                        # build known covariance matrices
                        if (input$white) {
@@ -5164,7 +5075,7 @@ print(head(trans$y))
         extended_series <- ts(c(rnorm(extension,center_ini,disp_ini),trans$res, rnorm(extension,center_end,disp_end)))
         extended_series <- cbind(extended_series, lag(extended_series, k = -lag))
         colnames(extended_series) <- c("y", "ylag1")
-        withProgress(message = 'Searching discontinuities',
+        withProgress(message = 'Searching discontinuities.',
                      detail = 'This may take a while ...', value = 0.1, {
                        breaks <- breakpoints(y ~ ylag1, data = extended_series, h = segment)
                        setProgress(0.7) # just for progress bar lovers
@@ -5275,17 +5186,16 @@ print(head(trans$y))
     if (messages > 0) cat(file = stderr(), "Deleting next points\n")
   })
   observeEvent(input$plot_2click, {
-    req(file$primary)
+    req(db1[[info$db1]])
     if (input$tab == 1) {
-      values_now <- values$series1
+      values_now <- db1[[info$db1]]$status1
     } else if (input$tab == 2) {
-      values_now <- values$series2
+      values_now <- db1[[info$db1]]$status2
     } else if (input$tab == 3) {
-      values_now <- values$series3
+      values_now <- db1[[info$db1]]$status3
     }
     brush <- input$plot_brush
     if (!is.null(brush) && isTruthy(trans$y0[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) && !all(is.na(values_now[trans$x0[!is.na(trans$y0)] > brush$xmin & trans$x0[!is.na(trans$y0)] < brush$xmax]))) {
-    # if (!is.null(brush) && length(trans$x[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) > 0) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
       ids <- trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]
       if (sum(trans$y[ids & trans$y >= brush$ymin & trans$y <= brush$ymax]) > 0) {
@@ -5320,7 +5230,7 @@ print(head(trans$y))
     }
   })
   observeEvent(input$res_2click, {
-    req(file$primary)
+    req(db1[[info$db1]])
     brush <- NULL
     if (isTruthy(input$res_brush)) {
       brush <- input$res_brush
@@ -5330,11 +5240,11 @@ print(head(trans$y))
       res <- trans$filterRes
     }
     if (input$tab == 1) {
-      values_now <- values$series1
+      values_now <- db1[[info$db1]]$status1
     } else if (input$tab == 2) {
-      values_now <- values$series2
+      values_now <- db1[[info$db1]]$status2
     } else if (input$tab == 3) {
-      values_now <- values$series3
+      values_now <- db1[[info$db1]]$status3
     }
     if (!is.null(brush) && isTruthy(trans$y0[trans$x0 > brush$xmin & trans$x0 < brush$xmax]) && !all(is.na(values_now[trans$x0[!is.na(trans$y0)] > brush$xmin & trans$x0[!is.na(trans$y0)] < brush$xmax]))) {
       ranges$x2 <- c(brush$xmin, brush$xmax)
@@ -5372,7 +5282,7 @@ print(head(trans$y))
     }
   })
   observeEvent(input$lomb_2click, {
-    req(file$primary)
+    req(db1[[info$db1]])
     brush <- input$lomb_brush
     if (!is.null(brush) && length(1/trans$fs[1/trans$fs >= brush$xmin & 1/trans$fs <= brush$xmax]) > 0) {
       ranges$x3 <- c(brush$xmin, brush$xmax)
@@ -5383,7 +5293,7 @@ print(head(trans$y))
     }
   })
   observeEvent(input$rate_2click, {
-    req(file$primary)
+    req(db1[[info$db1]])
     brush <- input$rate_brush
     if (!is.null(brush)) {
       ranges$x4 <- c(brush$xmin, brush$xmax)
@@ -5618,7 +5528,7 @@ print(head(trans$y))
           disable("variable2")
           disable("errorBar2")
         }
-        if (isTruthy(obs())) {
+        if (isTruthy(db1[[info$db1]])) {
           disable("plot")
           disable("series")
           disable("format")
@@ -5827,14 +5737,16 @@ print(head(trans$y))
           } else {
             disable("removeAuto")
           }
-          if (!isTruthy(input$wavelet)) {
+          if (!isTruthy(input$wavelet) && input$waveletType > 0) {
             updateTextInput(session, "corto_wavelet", value = "")
             updateTextInput(session, "largo_wavelet", value = "")
             updateRadioButtons(session, inputId = "waveletType", label = NULL, list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
             shinyjs::delay(100, disable("waveletType"))
           }
         } else {
-          updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
+          if (input$fitType > 0) {
+            updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
+          }
           shinyjs::delay(100, disable("fitType"))
           disable("traceLog")
           disable("traceSinfo")
@@ -5843,7 +5755,7 @@ print(head(trans$y))
           disable("filter")
           disable("spectrum")
           disable("wavelet")
-          updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
+          # updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
           shinyjs::delay(100, disable("waveletType"))
           updateTextInput(session, "corto_wavelet", value = "")
           updateTextInput(session, "largo_wavelet", value = "")
@@ -5860,7 +5772,7 @@ print(head(trans$y))
         }
       } else {
         hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
-        updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
+        # updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
         shinyjs::delay(100, disable("waveletType"))
         updateTextInput(session, "corto_wavelet", value = "")
         updateTextInput(session, "largo_wavelet", value = "")
@@ -6088,17 +6000,14 @@ print(head(trans$y))
               }
               shinyjs::delay(1000, {
                 if (messages > 4) cat(file = stderr(), "From: observe url\n")
-                data <- digest()
-                if (!is.null(data)) {
-                  obs(data)
-                  values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-                  if (url$server == "LOCAL") {
-                    filename <- basename(url$file)
-                  } else {
-                    filename <- file$primary$name
-                  }
-                  session$sendCustomMessage("filename", filename)
+                digest(1)
+                digest(2)
+                if (url$server == "LOCAL") {
+                  filename <- basename(url$file)
+                } else {
+                  filename <- file$primary$name
                 }
+                session$sendCustomMessage("filename", filename)
               })
             } else {
               removeNotification("parsing_url1")
@@ -6149,7 +6058,7 @@ print(head(trans$y))
     })
   })
   observeEvent(input$server2, {
-    req(obs())
+    req(db1[[info$db1]])
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     if (input$server2 == "RENAG") {
       updateSelectizeInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
@@ -6216,26 +6125,22 @@ print(head(trans$y))
         if (isTruthy(down) && down == 0) {
           if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
           if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
-          data <- digest()
-          if (!is.null(data)) {
-            obs(data)
-            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-            filename <- file$primary$name
-            session$sendCustomMessage("filename", filename)
-            updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
-            if (isTruthy(url$logfile)) {
-              showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-              file$primary$logfile <- tempfile()
-              down <- download("", url$logfile, file$primary$logfile)
-              if (down == 0) {
-                file$sitelog <- NULL
-                session$sendCustomMessage("log", basename(url$logfile))
-                updateCheckboxInput(inputId = "traceLog", value = T)
-              } else {
-                showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                file$primary$logfile <- NULL
-                url$logfile <- NULL
-              }
+          digest(1)
+          filename <- file$primary$name
+          session$sendCustomMessage("filename", filename)
+          updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
+          if (isTruthy(url$logfile)) {
+            showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+            file$primary$logfile <- tempfile()
+            down <- download("", url$logfile, file$primary$logfile)
+            if (down == 0) {
+              file$sitelog <- NULL
+              session$sendCustomMessage("log", basename(url$logfile))
+              updateCheckboxInput(inputId = "traceLog", value = T)
+            } else {
+              showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+              file$primary$logfile <- NULL
+              url$logfile <- NULL
             }
           }
         } else {
@@ -6262,7 +6167,7 @@ print(head(trans$y))
     get_URL_info(input$server2,NULL,input$product2,2)
   })
   observeEvent(c(inputs$station2), {
-    req(obs())
+    req(db1[[info$db1]])
     if (input$station2 != "") {
       file$secondary <- NULL
     }
@@ -6329,15 +6234,10 @@ print(head(trans$y))
           file$secondary$newname <- filename2
           session$sendCustomMessage("filename2", filename2)
           updateRadioButtons(session, inputId = "format2", selected = info$format2)
-          if (input$optionSecondary == 1) {
-            shinyjs::delay(1000, {
-              if (messages > 4) cat(file = stderr(), "From: observe remote series (secondary)\n")
-              data <- digest()
-              if (!is.null(data)) {
-                obs(data)
-              }
-            })
-          }
+          shinyjs::delay(1500, {
+            if (messages > 4) cat(file = stderr(), "From: observe remote series (secondary)\n")
+            digest(2)
+          })
         } else {
           updateSelectInput(session, inputId = "station2", selected = "")
           file$secondary <- NULL
@@ -6354,7 +6254,7 @@ print(head(trans$y))
 
   # Observe Euler ####
   observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers, input$neuenu, input$tunits, input$sunits), {
-    req(obs())
+    req(db1[[info$db1]])
     if (input$euler && input$eulerType > 0) {
       stationCartesian <- c()
       stationGeo <- c()
@@ -6365,7 +6265,6 @@ print(head(trans$y))
       } else if (input$sunits == 2) {
         scaling <- 1000
       } else { #guessing the series units
-        data <- obs()
         if (input$tunits == 1) {
           period <- 365.25
         } else if (input$tunits == 2) {
@@ -6374,17 +6273,17 @@ print(head(trans$y))
           period <- 1
         }
         if (input$format == 4) { 
-          selected <- data$y1 # current series
+          selected <- db1[[info$db1]]$y1 # current series
         } else {
-          selected <- data$y3 # up series
+          selected <- db1[[info$db1]]$y3 # up series
         }
-        if (diff(range(data$x))/period < 1 || length(data$x) < 6) {
-          rate <- (mean(selected[-1*as.integer(length(data$x*0.1)):length(data$x)]) - mean(selected[1:as.integer(length(data$x*0.1))])) / (mean(data$x[-1*as.integer(length(data$x*0.1)):length(data$x)]) - mean(data$x[1:as.integer(length(data$x*0.1))]))
+        if (diff(range(db1[[info$db1]]$x3))/period < 1 || length(db1[[info$db1]]$x3) < 6) {
+          rate <- (mean(selected[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(selected[1:as.integer(length(db1[[info$db1]]$x3*0.1))])) / (mean(db1[[info$db1]]$x3[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(db1[[info$db1]]$x3[1:as.integer(length(db1[[info$db1]]$x3*0.1))]))
         } else {
-          withProgress(message = 'Series units not defined',
+          withProgress(message = 'Series units not defined.',
                        detail = 'Trying to guess the units ...', value = 0, {
                          setProgress(0)
-                         vel <- sapply(1:length(data$x), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                         vel <- sapply(1:length(db1[[info$db1]]$x3), function(x) midas_vel(m = x, t = period, disc = 0, selected))
                          vel <- c(vel[1,],vel[2,])
                          vel <- vel[vel > -999999]
                          vel_sig <- 1.4826*mad(vel, na.rm = T)
@@ -6392,7 +6291,7 @@ print(head(trans$y))
                          rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
                        })
         }
-        if (abs(rate) > 0.05 && sd(selected - rate*(data$x - mean(data$x))) > 0.05) {
+        if (abs(rate) > 0.05 && sd(selected - rate*(db1[[info$db1]]$x3 - mean(db1[[info$db1]]$x3))) > 0.05) {
           scaling <- 1000 # series units are mm most likely
           updateRadioButtons(session, inputId = "sunits", selected = 2)
         } else {
@@ -6579,17 +6478,82 @@ print(head(trans$y))
 
   # Observe time units ####
   observeEvent(input$tunits, {
-    removeNotification("new_units")
+    req(db1[[info$db1]])
     if (input$tunits == 1) {
-      info$tunits <- "days"
+      info$tunits.label <- "days"
+      x1 <- db1[[info$db1]]$x1
+      x2 <- db2[[info$db2]]$x1
+      if (info$tunits.last == 2) {
+        fun <- "week2mjd"
+        scale <- 7
+      } else if (info$tunits.last == 3) {
+        fun <- "year2mjd"
+        scale <- daysInYear
+      }
     } else if (input$tunits == 2) {
-      info$tunits <- "weeks"
+      info$tunits.label <- "weeks"
+      x1 <- db1[[info$db1]]$x2
+      x2 <- db2[[info$db2]]$x2
+      if (info$tunits.last == 1) {
+        fun <- "mjd2week"
+        scale <- 1/7
+      } else if (info$tunits.last == 3) {
+        fun <- "year2week"
+        scale <- daysInYear/7
+      }
     } else if (input$tunits == 3) {
-      info$tunits <- "years"
+      info$tunits.label <- "years"
+      x1 <- db1[[info$db1]]$x3
+      x2 <- db2[[info$db2]]$x3
+      if (info$tunits.last == 1) {
+        fun <- "mjd2year"
+        scale <- 1/daysInYear
+      } else if (info$tunits.last == 2) {
+        fun <- "week2year"
+        scale <- 7/daysInYear
+      }
     }
-    if (isTruthy(input$average) && nchar(input$step) > 0 && !is.na(inputs$step)) {
-      showNotification(HTML(paste0("Changing the time units and resampling the series using an averaging period based on the previous time unit may produce unexpected results.<br>Check the validity of the input averaging period.")), action = NULL, duration = 10, closeButton = T, id = "new_units", type = "warning", session = getDefaultReactiveDomain())
+    if (isTruthy(inputs$step)) {
+      session$sendCustomMessage("step", min(diff(x1,1)))
     }
+    if (isTruthy(inputs$step2)) {
+      session$sendCustomMessage("step2", min(diff(x2,1)))
+    }
+    if (isTruthy(inputs$trendRef)) {
+      if (info$tunits.last == 1) {
+        if (input$tunits == 2) {
+          new <- mjd2week(inputs$trendRef)
+        } else if (input$tunits == 3) {
+          new <- mjd2year(inputs$trendRef)
+        }
+      } else if (info$tunits.last == 2) {
+        if (input$tunits == 1) {
+          new <- week2mjd(inputs$trendRef)
+        } else if (input$tunits == 3) {
+          new <- week2year(inputs$trendRef)
+        }
+      } else if (info$tunits.last == 3) {
+        if (input$tunits == 1) {
+          new <- year2mjd(inputs$trendRef)
+        } else if (input$tunits == 2) {
+          new <- year2week(inputs$trendRef)
+        }
+      }
+      if (isTruthy(new)) {
+        # session$sendCustomMessage("trendRef", new)
+      }
+    }
+    # Setting plot limits
+    if (isTruthy(input$fullSeries)) {
+      # show all points from primary & secondary series
+      info$minx <- min(x1, x2, na.rm = T)
+      info$maxx <- max(x1, x2, na.rm = T)
+    } else {
+      # show all points from primary series only
+      info$minx <- min(x1, na.rm = T)
+      info$maxx <- max(x1, na.rm = T)
+    }
+    ranges$x1 <- c(info$minx, info$maxx)
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       info$run <- F
       trans$mod <- trans$mod0 <- NULL
@@ -6597,76 +6561,119 @@ print(head(trans$y))
       trans$kalman <- trans$kalman0 <- NULL
       trans$kalman_unc <- trans$kalman_unc0 <- NULL
     }
+    if (isTruthy(inputs$trendRef)) {
+      info$trendRef <- F
+    }
+    if (isTruthy(inputs$PolyRef)) {
+      info$PolyRef <- F
+    }
+    if (isTruthy(inputs$periodRef)) {
+      info$periodRef <- F
+    }
     if (length(trans$offsetEpochs) > 0) {
-      trans$offsetEpochs <- NULL
-      updateTextInput(inputId = "offsetEpoch", value = "")
+      inputs$offsetEpoch <- paste(sapply(trans$offsetEpochs, fun), collapse = ", ")
+      updateTextInput(inputId = "offsetEpoch", value = inputs$offsetEpoch)
     }
-    updateTextInput(inputId = "ExponenRef", value = "")
-    updateTextInput(inputId = "LogariRef", value = "")
+    if (length(inputs$ExponenRef) > 0) {
+      inputs$ExponenRef <- paste(sapply(as.numeric(unlist(strsplit(inputs$ExponenRef,","))), fun), collapse = ", ")
+      inputs$TE0 <- paste(as.numeric(unlist(strsplit(inputs$TE0,",")))*scale, collapse = ", ")
+      updateTextInput(inputId = "ExponenRef", value = inputs$ExponenRef)
+      updateTextInput(inputId = "TE0", value = inputs$TE0)
+    }
+    if (length(inputs$LogariRef) > 0) {
+      inputs$LogariRef <- paste(sapply(as.numeric(unlist(strsplit(inputs$LogariRef,","))), fun), collapse = ", ")
+      inputs$TL0 <- paste(as.numeric(unlist(strsplit(inputs$TL0,",")))*scale, collapse = ", ")
+      updateTextInput(inputId = "LogariRef", value = inputs$LogariRef)
+      updateTextInput(inputId = "TL0", value = inputs$TL0)
+    }
     if (isTruthy(input$wavelet)) {
-      info$run_wavelet <- F
-      updateCheckboxInput(session, inputId = "wavelet", value = F)
+      updateRadioButtons(session, inputId = "waveletType", selected = 0)
+      min_wavelet <- as.numeric(inputs$min_wavelet)*scale
+      min_scale <- get.min.scale(x1)
+      if (min_scale > min_wavelet) {
+        min_wavelet <- min_scale
+      }
+      max_wavelet <- as.numeric(inputs$max_wavelet)*scale
+      max_scale <- get.max.scale(x1)
+      if (max_scale > max_wavelet) {
+        max_wavelet <- max_scale
+      }
+      res_wavelet <- as.numeric(inputs$res_wavelet)*scale
+      loc_wavelet <- as.numeric(inputs$loc_wavelet)*scale
+      shinyjs::delay(500,{
+        updateTextInput(session, "min_wavelet", value = sprintf("%.*f", info$decimalsx, min_wavelet))
+        updateTextInput(session, "max_wavelet", value = sprintf("%.*f", info$decimalsx, max_wavelet))
+        updateTextInput(session, "res_wavelet", value = res_wavelet)
+        updateTextInput(inputId = "loc_wavelet", value = sprintf("%.*f", info$decimalsx, loc_wavelet))
+      })
     }
-    if (isTruthy(input$waveform)) {
-      trans$pattern <- NULL
-      updateCheckboxInput(session, inputId = "waveform", value = F)
+    if (isTruthy(inputs$waveformPeriod)) {
+      inputs$waveformPeriod <- as.numeric(inputs$waveformPeriod)*scale
+      updateTextInput(inputId = "waveformPeriod", value = "")
+      shinyjs::delay(100, updateTextInput(inputId = "waveformPeriod", value = inputs$waveformPeriod))
     }
     if (isTruthy(input$mle)) {
       updateCheckboxInput(session, inputId = "mle", value = F)
     }
     if (isTruthy(input$spectrum)) {
       trans$fs <- NULL
-      updateCheckboxInput(session, inputId = "spectrum", value = F)
+      inputs$long_period <- as.numeric(inputs$long_period)*scale
+      inputs$short_period <- as.numeric(inputs$short_period)*scale
+      updateTextInput(inputId = "long_period", value = inputs$long_period)
+      updateTextInput(inputId = "short_period", value = inputs$short_period)
     }
     if (isTruthy(input$filter)) {
-      info$run_filter <- F
       trans$filter <- NULL
-      updateCheckboxInput(session, inputId = "filter", value = F)
+      inputs$low <- as.numeric(inputs$low)*scale
+      inputs$high <- as.numeric(inputs$high)*scale
+      updateTextInput(inputId = "low", value = inputs$low)
+      updateTextInput(inputId = "high", value = inputs$high)
     }
-    if (length(info$custom) > 0 && isTruthy(info$tunitsKnown)) {
+    if (length(info$custom) > 0) {
       if (input$tunits == 1) {
-        info$custom <- as.numeric(difftime(date_decimal(info$custom_years), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+        info$custom <- year2mjd(info$custom_years)
       } else if (input$tunits == 2) {
-        info$custom <- as.numeric(difftime(date_decimal(info$custom_years), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+        info$custom <- year2week(info$custom_years)
       } else if (input$tunits == 3) {
         info$custom <- info$custom_years
       }
     }
-    if (length(info$soln) > 0 && isTruthy(info$tunitsKnown)) {
+    if (length(info$soln) > 0) {
       if (input$tunits == 1) {
-        info$soln <- as.numeric(difftime(date_decimal(info$soln_years), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+        info$soln <- year2mjd(info$soln_years)
       } else if (input$tunits == 2) {
-        info$soln <- as.numeric(difftime(date_decimal(info$soln_years), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+        info$soln <- year2week(info$soln_years)
       } else if (input$tunits == 3) {
         info$soln <- info$soln_years
       }
     }
-    if (length(info$log) > 0 && isTruthy(info$tunitsKnown)) {
+    if (length(info$log) > 0) {
       tmp_log <- list()
       for (d in 1:length(info$log_years)) {
         if (input$tunits == 1) {
-          tmp_log[[d]] <- as.numeric(difftime(date_decimal(info$log_years[[d]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+          tmp_log[[d]] <- year2mjd(info$log_years[[d]])
         } else if (input$tunits == 2) {
-          tmp_log[[d]] <- as.numeric(difftime(date_decimal(info$log_years[[d]]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+          tmp_log[[d]] <- year2week(info$log_years[[d]])
         } else if (input$tunits == 3) {
           tmp_log[[d]] <- info$log_years[[d]]
         }
       }
       info$log <- tmp_log
     }
-    if (length(info$sinfo) > 0 && isTruthy(info$tunitsKnown)) {
+    if (length(info$sinfo) > 0) {
       tmp_sinfo <- list()
       for (d in 1:length(info$sinfo_years)) {
         if (input$tunits == 1) {
-          tmp_sinfo[[d]] <- as.numeric(difftime(date_decimal(info$sinfo_years[[d]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+          tmp_sinfo[[d]] <- year2mjd(info$sinfo_years[[d]])
         } else if (input$tunits == 2) {
-          tmp_sinfo[[d]] <- as.numeric(difftime(date_decimal(info$sinfo_years[[d]]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+          tmp_sinfo[[d]] <- year2week(info$sinfo_years[[d]])
         } else if (input$tunits == 3) {
           tmp_sinfo[[d]] <- info$sinfo_years[[d]]
         }
       }
       info$sinfo <- tmp_sinfo
     }
+    info$tunits.last <- input$tunits
   }, priority = 100)
 
   # Observe tab ####
@@ -6695,7 +6702,9 @@ print(head(trans$y))
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
-    updateRadioButtons(session, inputId = "waveletType", label = NULL, selected = 0)
+    if (input$waveletType > 0) {
+      updateRadioButtons(session, inputId = "waveletType", label = NULL, selected = 0)
+    }
   }, priority = 100)
 
   # Observe ancillary files ####
@@ -6712,41 +6721,12 @@ print(head(trans$y))
     file$custom <- isolate(input$custom)
   }, priority = 8)
 
-  # Observe secondary file ####
-  observeEvent(input$series2, {
-    req(file$primary)
-    file$secondary <- isolate(input$series2)
-    url$file2 <- url$server2 <- url$station2 <- NULL
-    if (isTruthy(url$logfile2)) {
-      url$logfile2 <- info$log <- NULL
-      session$sendCustomMessage("log", "")
-    }
-    updateRadioButtons(inputId = "optionSecondary", selected = 0)
-    updateSelectInput(inputId = "server2", selected = "")
-    updateSelectInput(inputId = "product2", selected = "")
-    if (grepl(".tenv3", file$secondary$name)) {
-      updateRadioButtons(inputId = "format2", selected = 3)
-      info$format2 <- 3
-    } else if (grepl("pbo|.pos", file$secondary$name)) {
-      updateRadioButtons(inputId = "format2", selected = 2)
-      info$format2 <- 2
-    } else {
-      updateRadioButtons(inputId = "format2", selected = 1)
-      info$format2 <- 1
-    }
-    shinyjs::delay(100, {
-      if (messages > 4) cat(file = stderr(), "From: observe secondary file\n")
-      data <- digest()
-      obs(data)
-    })
-  }, priority = 8)
-
   # Observe series info ####
   observeEvent(c(input$tab, input$format, input$format2), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
-      req(obs())
+      req(db1[[info$db1]])
       info$tab <- input$tab
       info$format <- input$format
       info$format2 <- input$format2
@@ -6780,7 +6760,7 @@ print(head(trans$y))
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
-      req(obs())
+      req(db1[[info$db1]])
       if (isTruthy(file$sitelog)) {
         sitelog <- file$sitelog$name
       } else if (isTruthy(file$primary$logfile)) {
@@ -6848,15 +6828,13 @@ print(head(trans$y))
   }, priority = 6)
 
   # Observe format 1D ####
-  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2), {
-    req(obs())
-    obs(NULL)
+  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator), {
+    req(db1[[info$db1]])
     trans$x <- NULL
     trans$y <- NULL
     trans$sy <- NULL
     if (messages > 4) cat(file = stderr(), "From: observe format 1D\n")
-    data <- digest()
-    obs(data)
+    digest(1)
     if (input$fitType == 2) {
       trans$midas_vel <- NULL
       trans$midas_all <- NULL
@@ -6883,28 +6861,10 @@ print(head(trans$y))
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
   }, priority = 6)
 
-  # Observe primary series format ####
-  # observeEvent(c(input$format), {
-  #   req(obs())
-  #   if (info$format != input$format) {
-  #     obs(NULL)
-  #     if (messages > 4) cat(file = stderr(), "From: observe primary series format (1)\n")
-  #     data <- digest()
-  #     obs(data)
-  #   }
-  # }, priority = 6)
-  observeEvent(c(input$separator), {
-    req(obs())
-    obs(NULL)
-    if (messages > 4) cat(file = stderr(), "From: observe primary series format (2)\n")
-    data <- digest()
-    obs(data)
-  }, priority = 6)
-
   # Observe averaging ####
   observeEvent(c(inputs$step), {
-    req(obs())
-    req(file$primary)
+    req(db1$original)
+    removeNotification("bad_window")
     if (messages > 0) cat(file = stderr(), "Averaging primary series", "\n")
     if (input$fitType == 2) {
       info$run <- NULL
@@ -6928,162 +6888,359 @@ print(head(trans$y))
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
     updateTextInput(session, "short_period", value = "")
     updateTextInput(session, "ObsError", value = "")
-    obs(NULL)
-    if (messages > 4) cat(file = stderr(), "From: observe averaging primary\n")
-    data <- digest()
-    if (!is.null(data)) {
-      obs(data)
-      if (isTruthy(info$step)) {
-        if (isTruthy(input$remove3D)) {
-          values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-        } else {
-          values$series1 <- rep(T, length(data$x[!is.na(data$y1)]))
-          values$series2 <- rep(T, length(data$x[!is.na(data$y2)]))
-          values$series3 <- rep(T, length(data$x[!is.na(data$y3)]))
-        }
-      } else {
-        if (isTruthy(values$previous1)) {
-          values$series1 <- values$previous1  
-        }
-        if (isTruthy(values$previous2)) {
-          values$series2 <- values$previous2  
-        }
-        if (isTruthy(values$previous3)) {
-          values$series3 <- values$previous3  
-        }
-        if (isTruthy(values$previous_all)) {
-          values$series_all <- values$previous_all 
-        }
+    if (nchar(input$step) > 0 && is.na(inputs$step)) {
+      info$step <- NULL
+      showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+    } else if (isTruthy(inputs$step)) {
+      if (input$tunits == 1) {
+        x <- db1$original$x1
+      } else if (input$tunits == 2) {
+        x <- db1$original$x2
+      } else if (input$tunits == 3) {
+        x <- db1$original$x3
       }
+      db1$resampled <- NULL
+      if (inputs$step > info$sampling0 && inputs$step <= (max(x) - min(x))/2) {
+        tolerance <- min(diff(x,1))/3
+        info$step <- inputs$step
+        withProgress(message = 'Averaging the series.',
+                     detail = 'This may take a while ...', value = 0, {
+                       w <- as.integer((max(x) - min(x))/inputs$step)
+                       if (info$format == 4) {
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = db1$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
+                         }
+                       } else {
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = db1$original$sy1, sy2 = db1$original$sy2, sy3 = db1$original$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
+                         }
+                         
+                       }
+                     })
+        if (input$tunits == 1) {
+          db1$resampled$x2 <- mjd2week(db1$resampled$x1)
+          db1$resampled$x3 <- mjd2year(db1$resampled$x1)
+        } else if (input$tunits == 2) {
+          db1$resampled$x2 <- db1$resampled$x1
+          db1$resampled$x3 <- week2year(db1$resampled$x1)
+          db1$resampled$x1 <- week2mjd(db1$resampled$x1)
+        } else if (input$tunits == 3) {
+          db1$resampled$x3 <- db1$resampled$x1
+          db1$resampled$x2 <- year2week(db1$resampled$x1)
+          db1$resampled$x1 <- year2mjd(db1$resampled$x1)
+        }
+        info$db1 <- "resampled"
+        db1$resampled$status1 <- db1$resampled$status2 <- db1$resampled$status3 <- rep(T, length(db1$resampled$x1))
+      } else {
+        info$db1 <- "original"
+        updateTextInput(session, inputId = "step", value = "")
+        info$step <- NULL
+        showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+      }
+    } else {
+      info$db1 <- "original"
+      updateTextInput(session, inputId = "step", value = "")
+      info$step <- NULL
     }
   }, priority = 6)
+  
   observeEvent(c(inputs$step2), {
-    req(obs())
-    req(file$primary)
-    if (input$optionSecondary > 0) {
-      if (messages > 0) cat(file = stderr(), "Averaging secondary series", "\n")
-      if (input$optionSecondary > 1) {
-        if (input$fitType == 2) {
-          info$run <- NULL
-          trans$res <- NULL
-          trans$reserror <- NULL
-          trans$results <- NULL
-          trans$mod <- NULL
-          trans$kalman <- NULL
-          trans$equation <- NULL
-          trans$ordinate <- NULL
-          trans$filter <- NULL
-          trans$filterRes <- NULL
-        }
-        trans$midas_vel <- NULL
-        trans$midas_all <- NULL
-        info$points <- NULL
-        info$log <- NULL
-        trans$mle <- F
-        trans$verif <- NULL
-        trans$pattern <- NULL
-        updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
-        updateTextInput(session, "short_period", value = "")
-        updateTextInput(session, "ObsError", value = "")
+    req(db2$original)
+    removeNotification("bad_window")
+    if (messages > 0) cat(file = stderr(), "Averaging secondary series", "\n")
+    if (input$optionSecondary > 1) {
+      if (input$fitType == 2) {
+        info$run <- NULL
+        trans$res <- NULL
+        trans$reserror <- NULL
+        trans$results <- NULL
+        trans$mod <- NULL
+        trans$kalman <- NULL
+        trans$equation <- NULL
+        trans$ordinate <- NULL
+        trans$filter <- NULL
+        trans$filterRes <- NULL
       }
-      obs(NULL)
-      if (messages > 4) cat(file = stderr(), "From: observe averaging secondary\n")
-      data <- digest()
-      if (!is.null(data)) {
-        obs(data)
-        if (isTruthy(info$step2)) {
-          if (isTruthy(input$remove3D)) {
-            values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-          } else {
-            values$series1 <- rep(T, length(data$x[!is.na(data$y1)]))
-            values$series2 <- rep(T, length(data$x[!is.na(data$y2)]))
-            values$series3 <- rep(T, length(data$x[!is.na(data$y3)]))
-          }
-        } else {
-          if (isTruthy(values$previous1)) {
-            values$series1 <- values$previous1  
-          }
-          if (isTruthy(values$previous2)) {
-            values$series2 <- values$previous2  
-          }
-          if (isTruthy(values$previous3)) {
-            values$series3 <- values$previous3  
-          }
-          if (isTruthy(values$previous_all)) {
-            values$series_all <- values$previous_all 
-          }
-        }
+      trans$midas_vel <- NULL
+      trans$midas_all <- NULL
+      info$points <- NULL
+      info$log <- NULL
+      trans$mle <- F
+      trans$verif <- NULL
+      trans$pattern <- NULL
+      updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+      updateTextInput(session, "short_period", value = "")
+      updateTextInput(session, "ObsError", value = "")
+    }
+    if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
+      info$step <- NULL
+      showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+    } else if (isTruthy(inputs$step2)) {
+      if (input$tunits == 1) {
+        x <- db2$original$x1
+      } else if (input$tunits == 2) {
+        x <- db2$original$x2
+      } else if (input$tunits == 3) {
+        x <- db2$original$x3
       }
+      db2$resampled <- NULL
+      if (inputs$step2 > 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
+        tolerance <- min(diff(x,1))/3
+        info$step2 <- inputs$step2
+        withProgress(message = 'Averaging the secondary series.',
+                     detail = 'This may take a while ...', value = 0, {
+                       w <- as.integer((max(x) - min(x))/inputs$step2)
+                       if (info$format == 4) {
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = db2$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
+                         }
+                       } else {
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = db2$original$sy1, sy2 = db2$original$sy2, sy3 = db2$original$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
+                         }
+                         
+                       }
+                     })
+        if (input$tunits == 1) {
+          db2$resampled$x2 <- mjd2week(db2$resampled$x1)
+          db2$resampled$x3 <- mjd2year(db2$resampled$x1)
+        } else if (input$tunits == 2) {
+          db2$resampled$x2 <- db2$resampled$x1
+          db2$resampled$x3 <- week2year(db2$resampled$x1)
+          db2$resampled$x1 <- week2mjd(db2$resampled$x1)
+        } else if (input$tunits == 3) {
+          db2$resampled$x3 <- db2$resampled$x1
+          db2$resampled$x2 <- year2week(db2$resampled$x1)
+          db2$resampled$x1 <- year2mjd(db2$resampled$x1)
+        }
+        info$db2 <- "resampled"
+      } else {
+        info$db2 <- "original"
+        info$step2 <- NULL
+        updateTextInput(session, inputId = "step2", value = "")
+        showNotification(HTML("The resampling period of the secondary series is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+      }
+    } else {
+      info$db2 <- "original"
+      updateTextInput(session, inputId = "step2", value = "")
+      info$step <- NULL
     }
   }, priority = 6)
 
   # Observe secondary series ####
+  observeEvent(input$series2, {
+    req(file$primary)
+    file$secondary <- isolate(input$series2)
+    url$file2 <- url$server2 <- url$station2 <- NULL
+    if (isTruthy(url$logfile2)) {
+      url$logfile2 <- info$log <- NULL
+      session$sendCustomMessage("log", "")
+    }
+    updateRadioButtons(inputId = "optionSecondary", selected = 0)
+    updateSelectInput(inputId = "server2", selected = "")
+    updateSelectInput(inputId = "product2", selected = "")
+    if (grepl(".tenv3", file$secondary$name)) {
+      updateRadioButtons(inputId = "format2", selected = 3)
+      info$format2 <- 3
+    } else if (grepl("pbo|.pos", file$secondary$name)) {
+      updateRadioButtons(inputId = "format2", selected = 2)
+      info$format2 <- 2
+    } else {
+      updateRadioButtons(inputId = "format2", selected = 1)
+      info$format2 <- 1
+    }
+    if (messages > 4) cat(file = stderr(), "From: observe secondary file\n")
+    digest(2)
+  }, priority = 8)
+  
   observeEvent(c(input$format2), {
-    req(obs())
-    req(file$primary)
+    req(db2[[info$db2]])
     if (info$format2 != input$format2) {
-      if (input$optionSecondary > 0) {
-        if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
-        obs(NULL)
-        if (messages > 4) cat(file = stderr(), "From: observe secondary series (1)\n")
-        data <- digest()
-        obs(data)
-      }
+      updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
     }
   }, priority = 6)
-  observeEvent(c(input$series2, input$separator2, input$ne, inputs$scaleFactor), {
-    req(obs())
-    req(file$primary)
-    if (input$optionSecondary > 0) {
-      if (messages > 0) cat(file = stderr(), "Loading secondary series", "\n")
-      obs(NULL)
-      if (messages > 4) cat(file = stderr(), "From: observe secondary series (2)\n")
-      data <- digest()
-      obs(data)
-    }
+  
+  observeEvent(c(input$separator2, input$ne), {
+    req(db2[[info$db2]])
+    if (messages > 4) cat(file = stderr(), "From: observe secondary series (2)\n")
+    digest(2)
   }, priority = 6)
+  
   observeEvent(input$optionSecondary, {
-    req(obs(), file$primary, file$secondary)
+    req(db2[[info$db2]])
+    removeNotification("in_common")
     if (messages > 0) {
       if (input$optionSecondary == 0) {
         cat(file = stderr(), "Hidding secondary series", "\n")
+        ids_info <- file$id1
       } else if (input$optionSecondary == 1) {
         cat(file = stderr(), "Showing secondary series", "\n")
+        ids_info <- paste(file$id1,file$id2, sep = " & ")
       } else if (input$optionSecondary == 2) {
         cat(file = stderr(), "Subtracting secondary series", "\n")
+        ids_info <- paste(file$id1,file$id2, sep = " - ")
       } else if (input$optionSecondary == 3) {
         cat(file = stderr(), "Averaging with secondary series", "\n")
+        ids_info <- paste(file$id1,file$id2, sep = " + ")
       }
     }
-    # if (input$optionSecondary > 1) {
-    #   values$previous1 <- values$series1
-    #   values$previous2 <- values$series2
-    #   values$previous3 <- values$series3
-    #   values$previous_all <- values$series_all
-    #   trans$x_orig <- trans$x0[!is.na(trans$y0)]
-    #   if (isTruthy(input$remove3D)) {
-    #     values$series_all <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), by = "x", all = F)$s
-    #     values$series1 <- values$series2 <- values$series3 <- values$series_all
-    #   } else {
-    #     values$series1 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), by = "x", all = F)$s
-    #     values$series2 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), by = "x", all = F)$s
-    #     values$series3 <- merge(data, data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), by = "x", all = F)$s
-    #   }
-    # } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
-    #   if (isTruthy(input$remove3D)) {
-    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series_all), data.frame(x = trans$x_orig, s = values$previous_all), by = "x", all.y = T)
-    #     values$series_all <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-    #     values$series1 <- values$series2 <- values$series3 <- values$series_all
-    #   } else {
-    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series1), data.frame(x = trans$x_orig, s = values$previous1), by = "x", all.y = T)
-    #     values$series1 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series2), data.frame(x = trans$x_orig, s = values$previous2), by = "x", all.y = T)
-    #     values$series2 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-    #     tempo <- merge(data.frame(x = trans$x0[!is.na(trans$y0)], s = values$series3), data.frame(x = trans$x_orig, s = values$previous3), by = "x", all.y = T)
-    #     values$series3 <- ifelse(!is.na(tempo$s.x), tempo$s.x, tempo$s.y)
-    #   }
-    #   rm(tempo)
-    # }
+    # merging primary and secondary series
+    if (input$optionSecondary > 1) {
+      table1 <- db1[[info$db1]]
+      table2 <- db2[[info$db2]]
+      if (min(diff(db1[[info$db1]]$x1)) <= 1 && min(diff(db2[[info$db2]]$x1)) <= 1) {
+        delta <- as.numeric(names(sort(table(table1$x1 - floor(table1$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
+        if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
+          if (delta != 0) {
+            table2$x1 <- table2$x1 + delta
+            showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+          }
+        } else {
+          if (info$sampling < info$sampling_regular) {
+            showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+          } else {
+            showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+          }
+        }
+      } else {
+        showNotification(HTML("The sampling of the primary and secondary series is larger than one day.<br>It is not possible to shift the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+      }
+      if (input$optionSecondary == 2) {
+        if (info$format == 4) {
+          table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
+            y1 <- y1.x - y1.y * inputs$scaleFactor
+            sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+            status1 <- status1
+          })[,c("x1","x2","x3","y1","sy1","status1")])
+        } else {
+          table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
+            if (info$format2 == 4) {
+              x2 <- x2.x
+              x3 <- x3.x
+              y1 <- y1.x - y1.y * inputs$scaleFactor
+              y2 <- y2 - y1.y * inputs$scaleFactor
+              y3 <- y3 - y1.y * inputs$scaleFactor
+              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+              sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
+              sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
+              status1 <- status1
+              status2 <- status2
+              status3 <- status3
+            } else {
+              x2 <- x2.x
+              x3 <- x3.x
+              y1 <- y1.x - y1.y * inputs$scaleFactor
+              y2 <- y2.x - y2.y * inputs$scaleFactor
+              y3 <- y3.x - y3.y * inputs$scaleFactor
+              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+              sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
+              sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
+              status1 <- status1
+              status2 <- status2
+              status3 <- status3
+            }
+          })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
+        }
+      } else if (input$optionSecondary == 3) {
+        if (info$format == 4) {
+          table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
+            x2 <- x2.x
+            x3 <- x3.x
+            y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+            sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+            status1 <- status1
+          })[,c("x1","x2","x3","y1","sy1")])
+        } else {
+          table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
+            if (info$format2 == 4) {
+              x2 <- x2.x
+              x3 <- x3.x
+              y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+              y2 <- (y2 + y1.y * inputs$scaleFactor) / 2
+              y3 <- (y3 + y1.y * inputs$scaleFactor) / 2
+              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+              sy2 <- sqrt(sy2^2 + (sy1.y * inputs$scaleFactor)^2)
+              sy3 <- sqrt(sy3^2 + (sy1.y * inputs$scaleFactor)^2)
+              status1 <- status1
+              status2 <- status2
+              status3 <- status3
+            } else {
+              x2 <- x2.x
+              x3 <- x3.x
+              y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
+              y2 <- (y2.x + y2.y * inputs$scaleFactor) / 2
+              y3 <- (y3.x + y3.y * inputs$scaleFactor) / 2
+              sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
+              sy2 <- sqrt(sy2.x^2 + (sy2.y * inputs$scaleFactor)^2)
+              sy3 <- sqrt(sy3.x^2 + (sy3.y * inputs$scaleFactor)^2)
+              status1 <- status1
+              status2 <- status2
+              status3 <- status3
+            }
+          })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
+        }
+      }
+      showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+      if (nrow(table_common) > 0) {
+        if (isTruthy(db1$merged)) {
+          table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
+        }
+        db1$merged <- table_common
+        info$db1 <- "merged"
+        rm(table_common,table1,table2)
+      } else {
+        updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
+      }
+    } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
+      if (isTruthy(inputs$step) && isTruthy(db1$resampled$x1)) {
+        info$db1 <- "resampled"  
+      } else {
+        info$db1 <- "original"
+      }
+      db1$merged <- NULL
+    }
+    # Updating plot ranges
+    if (input$optionSecondary > 1 || (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1)) {
+      # Setting plot limits
+      if (input$tunits == 1) {
+        x1 <- db1[[info$db1]]$x1
+        x2 <- db2[[info$db2]]$x1
+      } else if (input$tunits == 2) {
+        x1 <- db1[[info$db1]]$x2
+        x2 <- db2[[info$db2]]$x2
+      } else if (input$tunits == 3) {
+        x1 <- db1[[info$db1]]$x3
+        x2 <- db2[[info$db2]]$x3
+      }
+      if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+        # show all points from primary & secondary series
+        info$minx <- min(x1, x2, na.rm = T)
+        info$maxx <- max(x1, x2, na.rm = T)
+      } else {
+        # show all points from primary series only
+        info$minx <- min(x1, na.rm = T)
+        info$maxx <- max(x1, na.rm = T)
+      }
+      ranges$x1 <- c(info$minx, info$maxx)
+    }
+    # Updating station IDs
+    updateTextInput(session, inputId = "ids", value = ids_info)
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       info$run <- F
       trans$mod <- trans$mod0 <- NULL
@@ -7250,16 +7407,12 @@ print(head(trans$y))
     info$format <- input$format
     info$width <- isolate(session$clientData$output_plot1_width)
     if (messages > 4) cat(file = stderr(), "From: observe plotting\n")
-    data <- digest()
-    if (!is.null(data)) {
-      obs(data)
-      values$series1 <- values$series2 <- values$series3 <- values$series_all <- rep(T, length(data$x[!is.na(data$y1)]))
-    }
+    digest(1)
   }, priority = 4)
 
   # Observe removing points manual ####
   observeEvent(input$remove, {
-    req(file$primary)
+    req(db1[[info$db1]])
     removeNotification("no_toggle")
     removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), "Removing points, manually", "\n")
@@ -7292,96 +7445,97 @@ print(head(trans$y))
         if (isTruthy(input$remove3D)) {
           if (length(brush1) > 0) {
             if (isTruthy(input$permanent)) {
-              values$series_all[excluding_plot$selected_] <- NA
+              db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
               updateCheckboxInput(session, inputId = "permanent", value = F)
             } else {
-              values$series_all <- xor(values$series_all, excluding_plot$selected_)
+              db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
             }
+            db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$kf_all <- values$series_all[(values$series_all & !is.na(values$series_all)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1.kf[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
           }
           if (length(brush2) > 0) {
             if (isTruthy(input$permanent)) {
-              values$series_all[excluding_plotres$selected_] <- NA
+              db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
               updateCheckboxInput(session, inputId = "permanent", value = F)
             } else {
-              values$series_all <- xor(values$series_all, excluding_plotres$selected_)
+              db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              values$kf_all <- xor(values$kf_all, excluding_plotres_kf$selected_)
+              db1[[info$db1]]$kf_all <- xor(db1[[info$db1]]$kf_all, excluding_plotres_kf$selected_)
             }
+            db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
+            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
           }
-          values$series1 <- values$series2 <- values$series3 <- values$series_all
-          values$kf1 <- values$kf2 <- values$kf3 <- values$kf_all
         } else {
           if (input$tab == 1 || is.null(input$tab)) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series1[excluding_plot$selected_] <- NA
+                db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series1 <- xor(values$series1, excluding_plot$selected_)
+                db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$kf1 <- values$series1[(values$series1 & !is.na(values$series1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+                db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series1[excluding_plotres$selected_] <- NA
+                db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series1 <- xor(values$series1, excluding_plotres$selected_)
+                db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$kf1 <- xor(values$kf1, excluding_plotres_kf$selected_)
+                db1[[info$db1]]$status1.kf <- xor(db1[[info$db1]]$status1.kf, excluding_plotres_kf$selected_)
               }
             }
           } else if (input$tab == 2) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series2[excluding_plot$selected_] <- NA
+                db1[[info$db1]]$status2[excluding_plot$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series2 <- xor(values$series2, excluding_plot$selected_)
+                db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plot$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$kf2 <- values$series2[(values$series2 & !is.na(values$series2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+                db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status2[(db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series2[excluding_plotres$selected_] <- NA
+                db1[[info$db1]]$status2[excluding_plotres$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series2 <- xor(values$series2, excluding_plotres$selected_)
+                db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plotres$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$kf2 <- xor(values$kf2, excluding_plotres_kf$selected_)
+                db1[[info$db1]]$status2.kf <- xor(db1[[info$db1]]$status2.kf, excluding_plotres_kf$selected_)
               }
             }
           } else if (input$tab == 3) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series3[excluding_plot$selected_] <- NA
+                db1[[info$db1]]$status3[excluding_plot$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series3 <- xor(values$series3, excluding_plot$selected_)
+                db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding_plot$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$kf3 <- values$series3[(values$series3 & !is.na(values$series3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+                db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status3[(db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
               }
             }
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
-                values$series3[excluding_plotres$selected_] <- NA
+                db1[[info$db1]]$status3[excluding_plotres$selected_] <- NA
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
-                values$series3 <- xor(values$series3, excluding_plotres$selected_)
+                db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding_plotres$selected_)
               }
               if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-                values$kf3 <- xor(values$kf3, excluding_plotres_kf$selected_)
+                db1[[info$db1]]$status3.kf <- xor(db1[[info$db1]]$status3.kf, excluding_plotres_kf$selected_)
               }
             }
           }
@@ -7394,7 +7548,7 @@ print(head(trans$y))
 
   # Observe removing points auto ####
   observeEvent(input$removeAuto, {
-    req(file$primary)
+    req(db1[[info$db1]])
     removeNotification("bad_normalised_threshold")
     removeNotification("bad_threshold")
     removeNotification("no_point_auto")
@@ -7464,42 +7618,42 @@ print(head(trans$y))
     }
     if (isTruthy(excluding) && sum(excluding) > 0) {
       if (isTruthy(input$remove3D)) {
-        values$series_all <- xor(values$series_all, excluding)
+        db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding)
         if (isTruthy(input$permanent)) {
-          values$series_all[excluding] <- NA
+          db1[[info$db1]]$status1[excluding] <- NA
           updateCheckboxInput(session, inputId = "permanent", value = F)
         }
-        values$series1 <- values$series2 <- values$series3 <- values$series_all
+        db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$kf_all <- values$series_all[(values$series_all & !is.na(values$series_all)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+          db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
         }
       } else {
         if (input$tab == 1 || is.null(input$tab)) {
-          values$series1 <- xor(values$series1, excluding)
+          db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding)
           if (isTruthy(input$permanent)) {
-            values$series1[excluding] <- NA
+            db1[[info$db1]]$status1[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$kf1 <- values$series1[(values$series1 & !is.na(values$series1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
           }
         } else if (input$tab == 2) {
-          values$series2 <- xor(values$series2, excluding)
+          db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding)
           if (isTruthy(input$permanent)) {
-            values$series2[excluding] <- NA
+            db1[[info$db1]]$status2[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$kf2 <- values$series2[(values$series2 & !is.na(values$series2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status2[(db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
           }
         } else if (input$tab == 3) {
-          values$series3 <- xor(values$series3, excluding)
+          db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding)
           if (isTruthy(input$permanent)) {
-            values$series3[excluding] <- NA
+            db1[[info$db1]]$status3[excluding] <- NA
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            values$kf3 <- values$series3[(values$series3 & !is.na(values$series3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status3[(db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
           }
         }
       }
@@ -7513,26 +7667,26 @@ print(head(trans$y))
     req(file$primary)
     if (messages > 0) cat(file = stderr(), "Restoring points", "\n")
     if (isTruthy(input$remove3D)) {
-      values$series_all[!values$series_all & !is.na(values$series_all)] <- T
-      values$series1 <- values$series2 <- values$series3 <- values$series_all
+      db1[[info$db1]]$status1[!db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)] <- T
+      db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
       if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-        values$kf1 <- values$kf2 <- values$kf3 <- values$kf_all <- values$series_all
+        db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1
       }
     } else {
       if (input$tab == 1 || is.null(input$tab)) {
-        values$series1[!values$series1 & !is.na(values$series1)] <- T
+        db1[[info$db1]]$status1[!db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)] <- T
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$kf1 <- values$series1
+          db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1
         }
       } else if (input$tab == 2) {
-        values$series2[!values$series2 & !is.na(values$series2)] <- T
+        db1[[info$db1]]$status2[!db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)] <- T
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$kf2 <- values$series2
+          db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status2
         }
       } else if (input$tab == 3) {
-        values$series3[!values$series3 & !is.na(values$series3)] <- T
+        db1[[info$db1]]$status3[!db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)] <- T
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-          values$kf3 <- values$series3
+          db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status3
         }
       }
     }
@@ -7680,7 +7834,12 @@ print(head(trans$y))
     reset("side-panel")
     reset("main-panel")
     updateCollapse(session, id = "menu", open = 1, close = c(2,3,4,5,6))
-    obs(NULL)
+    db1[[info$db1]] <- NULL
+    db1[[info$db2]] <- NULL
+    for (i in names(db1)) {
+      db1[[i]] <- NULL
+      db2[[i]] <- NULL
+    }
     ranges$x1 <- NULL
     ranges$y1 <- NULL
     ranges$y12 <- NULL
@@ -7753,6 +7912,9 @@ print(head(trans$y))
     output$fileSeries2 <- renderUI({
       NULL
     })
+    shinyjs::hide("zoomin1")
+    shinyjs::hide("zoomin2")
+    shinyjs::hide("zoomin3")
   })
 
   # Observe hide buttons ####
@@ -7910,123 +8072,125 @@ print(head(trans$y))
   })
 
   # Observe ??? ####
-  observe({
-    if (length(input$model) == 0) {
-      updateCheckboxInput(session, inputId = "spectrumResiduals", label = NULL, value = F)
-      updateCheckboxInput(session, inputId = "spectrumModel", label = NULL, value = F)
-      shinyjs::delay(1000, disable("spectrumResiduals"))
-      shinyjs::delay(1000, disable("spectrumModel"))
-    }
-    if (length(trans$filter) > 0) {
-      enable("spectrumFilter")
-      enable("spectrumFilterRes")
-    } else {
-      updateCheckboxInput(session, inputId = "spectrumFilter", label = NULL, value = F)
-      updateCheckboxInput(session, inputId = "spectrumFilterRes", label = NULL, value = F)
-      shinyjs::delay(1000, disable("spectrumFilter"))
-      shinyjs::delay(1000, disable("spectrumFilterRes"))
-    }
-  }, priority = 0)
+  # observe({
+  #   if (length(input$model) == 0) {
+  #     updateCheckboxInput(session, inputId = "spectrumResiduals", label = NULL, value = F)
+  #     updateCheckboxInput(session, inputId = "spectrumModel", label = NULL, value = F)
+  #     shinyjs::delay(1000, disable("spectrumResiduals"))
+  #     shinyjs::delay(1000, disable("spectrumModel"))
+  #   }
+  #   if (length(trans$filter) > 0) {
+  #     enable("spectrumFilter")
+  #     enable("spectrumFilterRes")
+  #   } else {
+  #     updateCheckboxInput(session, inputId = "spectrumFilter", label = NULL, value = F)
+  #     updateCheckboxInput(session, inputId = "spectrumFilterRes", label = NULL, value = F)
+  #     shinyjs::delay(1000, disable("spectrumFilter"))
+  #     shinyjs::delay(1000, disable("spectrumFilterRes"))
+  #   }
+  # }, priority = 0)
 
 
 
   # Functions ####
-  digest <- function() {
-    req(file$primary)
-    removeNotification("ids_info")
-    removeNotification("different_formats")
-    removeNotification("removing_NA")
-    removeNotification("removing_NA_secondary")
-    removeNotification("bad_window")
-    removeNotification("bad_x")
+  digest <- function(series) {
     removeNotification("bad_series")
-    removeNotification("bad_merge")
-    removeNotification("bad_secondary")
+    removeNotification("removing_NA")
+    removeNotification("bad_x")
+    removeNotification("bad_window")
+    removeNotification("unknown_components")
     removeNotification("time_shift")
-    removeNotification("different_formats")
-    removeNotification("parsing_url1")
-    removeNotification("parsing_url2")
-    if (messages > 0) cat(file = stderr(), "Reading input series", "\n")
-    if (isTruthy(url$file)) {
-      fileName <- file$primary$name
-      output$fileSeries1 <- renderUI({
-        tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
-      })
-    } else {
-      fileName <- input$series$name
-      output$fileSeries1 <- renderUI({
-        NULL
-      })
-    }
-    if (isTruthy(file$sitelog)) {
-      sitelog <- file$sitelog$name
-    } else if (isTruthy(file$primary$logfile)) {
-      sitelog <- basename(url$logfile)
-    } else if (isTruthy(file$secondary$logfile)) {
-      sitelog <- basename(url$logfile2)
-    } else {
-      sitelog <- NULL
-    }
-    if (isTruthy(file$soln)) {
-      soln <- file$soln$name
-    } else {
-      soln <- NULL
-    }
-    if (isTruthy(file$custom)) {
-      custom <- file$custom$name
-    } else {
-      custom <- NULL
-    }
-    if (messages > 0) cat(file = stderr(), "PLOT   file : ", fileName,"   Format: ",input$format,"   Component: ", input$tab,
-                          "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                          sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                          custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, 
-                          "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
-    # Setting column separation
-    if (input$separator == "1") {
-      sep <- ""
-    } else if (input$separator == "2") {
-      sep <- ","
-    } else if (input$separator == "3") {
-      sep <- ";"
-    }
-    if (input$separator2 == "1") {
-      sep2 <- ""
-    } else if (input$separator2 == "2") {
-      sep2 <- ","
-    } else if (input$separator2 == "3") {
-      sep2 <- ";"
-    }
-    if (isTruthy(info$format) && info$format == 4) {
-      updateTabsetPanel(session, inputId = "tab", selected = "1")
-    }
-    # Getting primary series from input file
-    table <- NULL
-    table2 <- NULL
-    if (isTruthy(url$file)) {
-      filein <- file$primary$file
-      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
-    } else {
-      filein <- input$series$datapath
-      table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"",1)
-    }
-    if (!is.null(table)) {
-      # Getting significant decimals from input series
-      info$decimalsx <- max(decimalplaces(table$x))
-      if (!isTruthy(info$decimalsx)) {
-        info$decimalsx <- 4
+    if (series == 1) { # primary series
+      if (messages > 0) cat(file = stderr(), "Reading primary series file", "\n")
+      if (isTruthy(url$file)) {
+        fileName <- file$primary$name
+        output$fileSeries1 <- renderUI({
+          tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
+        })
+      } else {
+        fileName <- input$series$name
+        output$fileSeries1 <- renderUI({
+          NULL
+        })
       }
-      if (info$decimalsx > 10) {
-        info$decimalsx <- 10
+      if (isTruthy(file$sitelog)) {
+        sitelog <- file$sitelog$name
+      } else if (isTruthy(file$primary$logfile)) {
+        sitelog <- basename(url$logfile)
+      } else if (isTruthy(file$secondary$logfile)) {
+        sitelog <- basename(url$logfile2)
+      } else {
+        sitelog <- NULL
       }
-      info$decimalsy <- max(decimalplaces(table$y1))
-      if (!isTruthy(info$decimalsy)) {
-        info$decimalsy <- 4
+      if (isTruthy(file$soln)) {
+        soln <- file$soln$name
+      } else {
+        soln <- NULL
       }
-      if (info$decimalsy > 10) {
-        info$decimalsy <- 10
+      if (isTruthy(file$custom)) {
+        custom <- file$custom$name
+      } else {
+        custom <- NULL
       }
-      # Extracting coordinates if known and not already set
+      if (messages > 0) cat(file = stderr(), "PLOT   file : ", fileName,"   Format: ",input$format,"   Component: ", input$tab,
+                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
+                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
+                            custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, 
+                            "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
+      # Setting column separation
+      if (input$separator == "1") {
+        sep <- ""
+      } else if (input$separator == "2") {
+        sep <- ","
+      } else if (input$separator == "3") {
+        sep <- ";"
+      }
+      if (isTruthy(info$format) && info$format == 4) {
+        updateTabsetPanel(session, inputId = "tab", selected = "1")
+      }
+      # Getting primary series
+      table <- NULL
+      if (isTruthy(url$file)) {
+        filein <- file$primary$file
+        table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
+      } else {
+        filein <- input$series$datapath
+        table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"",1)
+      }
+      # Checking series values and time order
+      if (!is.null(table)) {
+        table <- table[order(table$x1),]
+        if (any(diff(table$x1) <= 0)) {
+          bad_x <- which(diff(table$x1) <= 0)
+          showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same day epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
+        table <- table[order(table$x2),]
+        if (any(diff(table$x2) <= 0)) {
+          bad_x <- which(diff(table$x2) <= 0)
+          showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same week epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
+        table <- table[order(table$x3),]
+        if (any(diff(table$x3) <= 0)) {
+          bad_x <- which(diff(table$x3) <= 0)
+          showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same year epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
+        table <- table[!is.infinite(rowSums(table)),]
+        if (anyNA(table)) {
+          table <- na.omit(table)
+          showNotification(HTML("The primary series contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
+        }
+      } else {
+        showNotification("The input series is empty or has wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
+        req(info$stop)
+      }
+      if (is.null(table)) {
+        showNotification("All records in the series were removed.<br> Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
+        req(info$stop)
+      }
+      # Extracting station coordinates
       lat <- lon <- NULL
       spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
@@ -8140,6 +8304,7 @@ print(head(trans$y))
           shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
         }
       }
+      # Mapping the station position
       if (exists("leaflet", mode = "function") && isTruthy(lat) && isTruthy(lon)) {
         lon <- ifelse(lon > 180, lon - 360, lon)
         map <- leaflet(options = leafletOptions(dragging = T)) %>%
@@ -8162,139 +8327,195 @@ print(head(trans$y))
         } else {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
-      }  else if (info$format == 2 || info$format == 3) {
+      } else if (info$format == 2 || info$format == 3) {
         shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
       } else {
         if (isTruthy(spotgins)) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
       }
-      # Resampling the primary series
-      if (isTruthy(input$average)) {
-        if (nchar(input$step) > 0 && is.na(inputs$step)) {
-          info$step <- NULL
-          showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-        } else if (isTruthy(inputs$step)) {
-          if (inputs$step > info$sampling0 && inputs$step <= (max(table$x) - min(table$x))/2) {
-            tolerance <- min(diff(table$x,1))/3
-            if (!isTruthy(info$step)) {
-              values$previous1 <- values$series1
-              values$previous2 <- values$series2
-              values$previous3 <- values$series3
-              values$previous_all <- values$series_all
-            }
-            info$step <- inputs$step
-            withProgress(message = 'Averaging the series.',
-                         detail = 'This may take a while ...', value = 0, {
-                           if (info$format == 4) {
-                             w <- as.integer((max(table$x) - min(table$x))/inputs$step)
-                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = NULL, y3 = NULL, sy1 = table$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
-                             table <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,])
-                           } else {
-                             w <- as.integer((max(table$x) - min(table$x))/inputs$step)
-                             averaged <- sapply(1:w, function(p) average(p, x = table$x, y1 = table$y1, y2 = table$y2, y3 = table$y3, sy1 = table$sy1, sy2 = table$sy2, sy3 = table$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
-                             table <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
-                           }
-                         })
-            table <- na.omit(table)
-          } else {
-            info$step <- NULL
-            showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-          }
+      # Setting station IDs
+      if (!isTruthy(inputs$ids)) {
+        removes <- "^SPOTGINS_|^UGA_"
+        if (isTruthy(url$station)) {
+          file$id1 <- toupper(url$station)
         } else {
-          info$step <- NULL
+          file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
         }
-      } else {
-        info$step <- NULL
       }
-      # Getting secondary series from input file(s)
-      if (length(file$secondary) > 0) {
-        if (isTruthy(url$file2)) {
-          files <- file$secondary
-          server <- url$server2
+      # Setting plot limits
+      if (input$tunits == 1) {
+        x <- table$x1
+      } else if (input$tunits == 2) {
+        x <- table$x2
+      } else if (input$tunits == 3) {
+        x <- table$x3
+      }
+      info$minx <- min(x, na.rm = T)
+      info$maxx <- max(x, na.rm = T)
+      ranges$x1 <- c(info$minx, info$maxx)
+      # Setting new tab names if necessary
+      if (info$format == 1) { #NEU/ENU
+        if (isTruthy(url$server) && url$server != "LOCAL") {
+          info$components <- c("East component", "North component", "Up component")
+          output$tabName1 <<- renderText({ info$components[1] })
+          output$tabName2 <<- renderText({ info$components[2] })
+          output$tabName3 <<- renderText({ info$components[3] })
         } else {
-          files <- input$series2
-          server <- ""
-        }
-        table_stack <- NULL
-        for (i in 1:dim(as.matrix(files$datapath))[1]) {
-          table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
-          # starting EOSTSL series at .0
-          if (server == "EOSTLS" && dim(as.matrix(files$datapath))[1] > 1) {
-            while (table2$x[1] %% 1 > 0) { 
-              table2 <- table2[-1,]
-            }
+          extension <- tolower(rev(strsplit(file$primary$name, ".", fixed = T)[[1]])[1])
+          if (isTruthy(extension) && (extension == "neu" || extension == "enu")) {
+            info$components <- c("East component", "North component", "Up component")
+            output$tabName1 <<- renderText({ info$components[1] })
+            output$tabName2 <<- renderText({ info$components[2] })
+            output$tabName3 <<- renderText({ info$components[3] })
           }
-          # Resampling the secondary series
-          if (nchar(input$step2) > 0 && is.na(inputs$step2)) {;
+        }
+        showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+      } else if (info$format == 4) { #1D
+        output$tabName1 <- renderText({ "1D series" })
+        hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+      } else { #PBO & NGL
+        info$components <- c("East component", "North component", "Up component")
+        output$tabName1 <<- renderText({ info$components[1] })
+        output$tabName2 <<- renderText({ info$components[2] })
+        output$tabName3 <<- renderText({ info$components[3] })
+        showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+      }
+      if (info$components[1] != "East component") {
+        showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
+      }
+      # all good
+      info$tunits.last <- input$tunits
+      info$db1 <- "original"
+      db1$original <- as.data.frame(table)
+      db1$original$status1 <- db1$original$status2 <- db1$original$status3 <- rep(T, length(table$x1))
+    } else if (series == 2) { # secondary series
+      if (messages > 0) cat(file = stderr(), "Reading secondary series file", "\n")
+      # Setting column separation
+      if (input$separator2 == "1") {
+        sep2 <- ""
+      } else if (input$separator2 == "2") {
+        sep2 <- ","
+      } else if (input$separator2 == "3") {
+        sep2 <- ";"
+      }
+      # Getting secondary series
+      table2 <- NULL
+      if (isTruthy(url$file2)) {
+        files <- file$secondary
+        server <- url$server2
+      } else {
+        files <- input$series2
+        server <- ""
+      }
+      table_stack <- NULL
+      for (i in 1:dim(as.matrix(files$datapath))[1]) {
+        table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
+        # starting EOSTSL series at epoch .0
+        if (server == "EOSTLS" && dim(as.matrix(files$datapath))[1] > 1) {
+          while (table2$x1[1] %% 1 > 0) { 
+            table2 <- table2[-1,]
+          }
+        }
+        # Resampling the secondary series if there are more than one
+        if (dim(as.matrix(files$datapath))[1] > 1) {
+          if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
             if (is.na(as.numeric(input$step2))) {
               info$step2 <- NULL
               showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
             }
           } else if (isTruthy(inputs$step2)) {
-            if (inputs$step2 >= 2*min(diff(table2$x,1)) && inputs$step2 <= (max(table2$x) - min(table2$x))/2) {
-              tolerance <- min(diff(table2$x,1))/3
+            if (input$tunits == 1) {
+              x <- table2$x1
+            } else if (input$tunits == 2) {
+              x <- table2$x2
+            } else if (input$tunits == 3) {
+              x <- table2$x3
+            }
+            if (inputs$step2 >= 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
+              tolerance <- min(diff(x,1))/3
               info$step2 <- inputs$step2
               withProgress(message = paste('Averaging the', files$name[i], 'series.'),
                            detail = 'This may take a while ...', value = 0, {
-                             w <- as.integer((max(table2$x) - min(table2$x))/inputs$step2)
+                             w <- as.integer((max(x) - min(x))/inputs$step2)
                              if (info$format2 == 4) {
-                               averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                               table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
+                               averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                               table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
                              } else {
                                if (server == "EOSTLS" || server == "EPOS") {
-                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
+                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
                                } else {
-                                 averaged <- sapply(1:w, function(p) average(p, x = table2$x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
-                                 table2 <- data.frame(x = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
                                }
                              }
                            })
               table2 <- na.omit(table2)
+              if (input$tunits == 1) {
+                table2$x2 <- mjd2week(table2$x1)
+                table2$x3 <- mjd2year(table2$x1)
+              } else if (input$tunits == 2) {
+                table2$x2 <- table2$x1
+                table2$x3 <- week2year(table2$x1)
+                table2$x1 <- week2mjd(table2$x1)
+              } else if (input$tunits == 3) {
+                table2$x3 <- table2$x1
+                table2$x2 <- year2week(table2$x1)
+                table2$x1 <- year2mjd(table2$x1)
+              }
             } else {
               info$step2 <- NULL
             }
           } else {
             info$step2 <- NULL
           }
-          # computing the sum of secondary series
-          if (!is.null(table2)) {
-            if (!is.null(table_stack)) {
-              if (isTruthy(inputs$step2)) {
-                # shifting the next secondary series if necessary
-                if (input$tunits == 1) {
-                  delta <- as.numeric(names(sort(table(table_stack$x - floor(table_stack$x))))) - as.numeric(names(sort(table(table2$x - floor(table2$x)))))
-                  if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
-                    table2$x <- table2$x + delta
-                    showNotification(paste("The time axis of the", files$name[i], "series has been shifted by a constant",delta,info$tunits), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-                  } else {
-                    if (info$sampling < info$sampling_regular) {
-                      showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-                    } else {
-                      showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-                    }
-                  }
-                }
-                table_stack <- data.frame(within(merge(table_stack,table2, by = "x", all = T), {
-                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
-                  sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
-                  sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
-                  sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
-                })[,c("x","y1","y2","y3","sy1","sy2","sy3")])
+        }
+        # computing the sum of secondary series
+        if (!is.null(table2)) {
+          if (!is.null(table_stack)) {
+            # shifting the next secondary series if necessary
+            delta <- as.numeric(names(sort(table(table_stack$x1 - floor(table_stack$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
+            if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
+              if (delta != 0) {
+                table2$x1 <- table2$x1 + delta
+                showNotification(paste("The time axis of the", files$name[i], "series has been shifted by a constant",delta,info$tunits.label), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
               }
             } else {
-              table_stack <- table2
+              if (info$sampling < info$sampling_regular) {
+                showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+              } else {
+                showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+              }
             }
+            table_stack <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
+              x2 <- ifelse(x2.y,x2.y,x2.x)
+              x3 <- ifelse(x3.y,x3.y,x3.x)
+              y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+              y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+              y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+              sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
+              sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
+              sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
+            })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
           } else {
-            showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+            table_stack <- table2
           }
+        } else {
+          showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
         }
-        # create secondary series merged file
-        if (!is.null(table_stack)) {
-          table2 <- table_stack
+      }
+      # create secondary series merged file
+      if (!is.null(table_stack)) {
+        if (anyNA(table_stack)) {
+          table_stack <- na.omit(table_stack)
+          showNotification(HTML("The secondary series contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
+        }
+        table2 <- table_stack
+        if (!is.null(table2)) {
           if (input$optionSecondary == 1) {
             if (dim(as.matrix(files$datapath))[1] > 1) {
               names(table_stack) <- c("# MJD", "East", "North", "Up")
@@ -8313,193 +8534,21 @@ print(head(trans$y))
             })
           }
           rm(table_stack)
+          info$db2 <- "original"
+          db2$original <- as.data.frame(table2)
         } else {
-          table2 <- NULL
-          showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
+          showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         }
-        if (!is.null(table2)) {
-          if (anyNA(table2)) {
-            table2 <- na.omit(table2)
-            showNotification(HTML("The secondary input file contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA_secondary", type = "warning", session = getDefaultReactiveDomain())
-          }
-          if (!is.null(table2)) {
-            if (min(diff(table$x,1)) != min(diff(table2$x,1))) {
-              showNotification("The primary and secondary series have different sampling.", action = NULL, duration = 10, closeButton = T, id = "different_sampling", type = "warning", session = getDefaultReactiveDomain())
-            }
-            if (info$format < 4 && info$format != info$format2) {
-              showNotification(HTML("The primary and secondary series have different format.<br>Verify the time units from both series are the same."), action = NULL, duration = 10, closeButton = T, id = "different_formats", type = "warning", session = getDefaultReactiveDomain())
-            }
-            # merging table1 and table2
-            if (info$format == 4) {
-              table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-                y1 <- y1.x
-                z1 <- y1.y
-                sy1 <- sy1.x
-                sz1 <- sy1.y
-              })[,c("x","y1","sy1","z1","sz1")])
-            } else {
-              table_common <- data.frame(within(merge(table,table2,by = "x", all = T), {
-                if (info$format2 == 4) {
-                  y1 <- y1.x
-                  z1 <- y1.y
-                  y2 <- y2
-                  z2 <- y1.y
-                  y3 <- y3
-                  z3 <- y1.y
-                  sy1 <- sy1.x
-                  sz1 <- sy1.y
-                  sy2 <- sy2
-                  sz2 <- sy1.y
-                  sy3 <- sy3
-                  sz3 <- sy1.y
-                } else {
-                  y1 <- y1.x
-                  z1 <- y1.y
-                  y2 <- y2.x
-                  z2 <- y2.y
-                  y3 <- y3.x
-                  z3 <- y3.y
-                  sy1 <- sy1.x
-                  sz1 <- sy1.y
-                  sy2 <- sy2.x
-                  sz2 <- sy2.y
-                  sy3 <- sy3.x
-                  sz3 <- sy3.y
-                }
-              })[,c("x","y1","y2","y3","sy1","sy2","sy3","z1","z2","z3","sz1","sz2","sz3")])
-            }
-            info$sampling2 <- min(diff(table2$x,1))
-            if (nrow(table_common) > 0) {
-              table <- table_common
-              rm(table_common)
-            } else {
-              showNotification("Problem when merging the primary and secondary series.", action = NULL, duration = 10, closeButton = T, id = "bad_merge", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
-          }
-        } else {
-          showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_secondary", type = "error", session = getDefaultReactiveDomain())
-        }
+      } else {
+        showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
       }
       # Setting station IDs
-      if (!isTruthy(inputs$ids)) {
-        removes <- "^SPOTGINS_|^UGA_"
-        if (isTruthy(url$station)) {
-          file$id1 <- toupper(url$station)
-        } else {
-          file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
-        }
-        if (length(file$secondary) > 0) {
-          if (isTruthy(url$station2)) {
-            file$id2 <- toupper(url$station2)
-          } else {
-            file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
-          }
-        }
-      }
-      # Updating station IDs
-      if (isTruthy(file$id1) && isTruthy(file$id2)) {
-        if (input$optionSecondary == 0) {
-          ids_info <- file$id1
-        } else if (input$optionSecondary == 1) {
-          ids_info <- paste(file$id1,file$id2, sep = " & ")
-        } else if (input$optionSecondary == 2) {
-          ids_info <- paste(file$id1,file$id2, sep = " - ")
-        } else if (input$optionSecondary == 3) {
-          ids_info <- paste(file$id1,file$id2, sep = " + ")
-        }
-      } else if (isTruthy(file$id1)) {
-        ids_info <- file$id1
+      removes <- "^SPOTGINS_|^UGA_"
+      if (isTruthy(url$station2)) {
+        file$id2 <- toupper(url$station2)
       } else {
-        ids_info <- ""
-        removeNotification(id = "ids_info", session = getDefaultReactiveDomain())
-        showNotification(HTML("Problem extracting the series ID from the file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
+        file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
       }
-      shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
-      # Checking series values and time order
-      if (!is.null(table)) {
-        table <- table[order(table$x),]
-        table <- table[!is.infinite(rowSums(table)),]
-        if (anyNA(table) && is.null(table2)) {
-          table <- na.omit(table)
-          showNotification(HTML("The input file contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
-        }
-        # Checking for simultaneous values and setting series limits
-        if (nrow(table) > 0) {
-          if (input$tab == 4) {
-            NULL
-          } else {
-            if (any(diff(table$x) <= 0)) {
-              bad_x <- which(diff(table$x) <= 0)
-              showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
-              NULL
-            } else {
-              if (isTruthy(input$fullSeries)) {
-                # show all points from primary & secondary series
-                info$minx <- min(table$x, na.rm = T)
-                info$maxx <- max(table$x, na.rm = T)
-              } else {
-                # show all points from primary series only
-                info$minx <- min(table$x[!is.na(table$y1)], na.rm = T)
-                info$maxx <- max(table$x[!is.na(table$y1)], na.rm = T)
-              }
-              ranges$x1 <- c(info$minx, info$maxx)
-              info$tunits_orig <- input$tunits
-              # Setting new tab names if necessary
-              if (info$format == 1) { #NEU/ENU
-                if (isTruthy(url$server) && url$server != "LOCAL") {
-                  info$components <- c("East component", "North component", "Up component")
-                  output$tabName1 <<- renderText({ info$components[1] })
-                  output$tabName2 <<- renderText({ info$components[2] })
-                  output$tabName3 <<- renderText({ info$components[3] })
-                } else {
-                  extension <- tolower(rev(strsplit(file$primary$name, ".", fixed = T)[[1]])[1])
-                  if (isTruthy(extension) && (extension == "neu" || extension == "enu")) {
-                    info$components <- c("East component", "North component", "Up component")
-                    output$tabName1 <<- renderText({ info$components[1] })
-                    output$tabName2 <<- renderText({ info$components[2] })
-                    output$tabName3 <<- renderText({ info$components[3] })
-                  }
-                }
-                showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-                showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-              } else if (info$format == 4) { #1D
-                output$tabName1 <- renderText({ "1D series" })
-                hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-                hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-              } else { #PBO & NGL
-                info$components <- c("East component", "North component", "Up component")
-                output$tabName1 <<- renderText({ info$components[1] })
-                output$tabName2 <<- renderText({ info$components[2] })
-                output$tabName3 <<- renderText({ info$components[3] })
-                showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-                showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-              }
-              if (length(file$secondary) > 0 && input$optionSecondary > 0) {
-                if (info$format2 == 1 && server == "LOCAL") {
-                  extension <- tolower(rev(strsplit(files$datapath, ".", fixed = T)[[1]])[1])
-                  if (isTruthy(extension) && (extension != "neu" && extension != "enu")) {
-                    showNotification(HTML("Unknown coordinate components in the secondary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
-                  }
-                } else if (info$components[1] != "East component") {
-                  showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
-                }
-              }
-              table
-            }
-          }
-        } else {
-          showNotification(HTML("The input data file is empty or contains wrong data.<br>Check if all columns contain the same amount of numeric values."), action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
-          NULL
-        }
-      } else {
-        showNotification(HTML("Problem when merging the primary and secondary series.<br>Check both formats"), action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
-        NULL
-      }
-    } else {
-      showNotification("The input data file is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
-      NULL
     }
   }
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
@@ -8556,111 +8605,125 @@ print(head(trans$y))
         sde <- N * tableAll[,9] * pi/180 * cos(tableAll[,5]*pi/180)
         tableAll <- cbind(de, dn, sde, sdn, tableAll)[,c(7,1,2,11,3,4,14,5,6)]
       }
+      # extracting data in columns
       if (isTruthy(tableAll)) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
           extension <- tolower(rev(strsplit(file, ".", fixed = T)[[1]])[1])
-          if (isTruthy(extension) && extension == "neu") {
-            if (columns > 6) {
-              tableAll <- tableAll[,c(1,3,2,4,6,5,7)]
-            } else {
-              tableAll <- tableAll[,c(1,3,2,4)]
-            }
+          if (server == "" && isTruthy(extension) && extension == "neu") {
+            swap <- T
           }
           if (isTruthy(swap)) {
-            extracted <- tableAll[,c(1,3,2,4)]
+            extracted <- tableAll[,c(3,2,4)]
           } else {
-            extracted <- tableAll[,c(1,2,3,4)]
+            extracted <- tableAll[,c(2,3,4)]
           }
-          names(extracted) <- c("x","y1","y2","y3")
-          if (length(extracted) > 0) {
-            if (columns > 6) {
-              if (isTruthy(swap)) {
-                extracted$sy1 <- tableAll[,6]
-                extracted$sy2 <- tableAll[,5]
-                extracted$sy3 <- tableAll[,7]
-              } else {
-                extracted$sy1 <- tableAll[,5]
-                extracted$sy2 <- tableAll[,6]
-                extracted$sy3 <- tableAll[,7]
-              }
-              # get other time units for different series
-              if (server == "JPL" && columns > 16) {
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 1) {
-                  extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-                } else if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-                }
-              } else if (server == "SIRGAS") {
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 1) {
-                  extracted$x <- as.numeric(difftime(as.Date("1980-01-06") + extracted$x * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-                } else if (input$tunits == 3) {
-                  extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7 + 3.5)
-                }
-              } else if (server == "IGS") {
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 2) {
-                  extracted$x <- tableAll[,8] + tableAll[,9]/7
-                } else if (input$tunits == 3) {
-                  extracted$x <- tableAll[,8] + tableAll[,9]/7
-                  extracted$x <- decimal_date(as.Date("1980-01-06") + extracted$x * 7)
-                }
-              } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-                } else if (input$tunits == 3) {
-                  extracted$x <- tableAll[,9]
-                }
-              } else if (server == "EARTHSCOPE") {
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 1) {
-                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-                } else if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-                } else if (input$tunits == 3) {
-                  extracted$x <- decimal_date(as.Date(tableAll[,1]))
-                }
-              }
+          names(extracted) <- c("y1","y2","y3") 
+          if (columns > 6) {
+            if (isTruthy(swap)) {
+              extracted$sy1 <- tableAll[,6]
+              extracted$sy2 <- tableAll[,5]
+              extracted$sy3 <- tableAll[,7]
             } else {
-              extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$x))
-              info$errorbars <- F
-              if (server == "EOSTLS") {
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
-                } else if (input$tunits == 3) {
-                  extracted$x <- decimal_date(as.Date(tableAll[,1], origin = "1858-11-17"))
-                }
-              } else if (server == "EPOS") {
-                if (series == 1) info$tunitsKnown <- T
-                tunitsKnown <- T
-                if (input$tunits == 1) {
-                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-                } else if (input$tunits == 2) {
-                  extracted$x <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-                } else if (input$tunits == 3) {
-                  extracted$x <- decimal_date(as.Date(tableAll[,1]))
-                }
-              }
+              extracted$sy1 <- tableAll[,5]
+              extracted$sy2 <- tableAll[,6]
+              extracted$sy3 <- tableAll[,7]
             }
-            # ISO 8601 dates
-            if (!isTruthy(tunitsKnown) && all(isTruthy(suppressWarnings(parse_date_time(extracted$x, c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
-              if (series == 1) info$tunitsKnown <- T
-              if (input$tunits == 1) {
-                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              } else if (input$tunits == 2) {
-                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-              } else if (input$tunits == 3) {
-                extracted$x <- decimal_date(ymd_hms(extracted$x))
+          } else {
+            extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$y1))
+            info$errorbars <- F
+          }
+          # get different time units
+          if (isTruthy(extracted)) {
+            if (server == "JPL") {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              extracted$x2 <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              extracted$x3 <- tableAll[,1]
+            } else if (server == "SIRGAS") {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- as.numeric(difftime(as.Date("1980-01-06") + tableAll[,1] * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              extracted$x2 <- tableAll[,1]
+              extracted$x3 <- decimal_date(as.Date("1980-01-06") + tableAll[,1] * 7 + 3.5)
+            } else if (server == "IGS") {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- tableAll[,1]
+              extracted$x2 <- tableAll[,8] + tableAll[,9]/7
+              extracted$x3 <- decimal_date(as.Date("1980-01-06") + (tableAll[,8] + tableAll[,9]/7) * 7)
+            } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- tableAll[,1]
+              extracted$x2 <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              extracted$x3 <- tableAll[,9]
+            } else if (server == "EARTHSCOPE") {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              extracted$x2 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              extracted$x3 <- decimal_date(as.Date(tableAll[,1]))
+            } else if (server == "EOSTLS") {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- tableAll[,1]
+              extracted$x2 <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
+              extracted$x3 <- decimal_date(as.Date(tableAll[,1], origin = "1858-11-17"))
+            } else if (server == "EPOS") {
+              if (series == 1) { 
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              extracted$x2 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              extracted$x3 <- decimal_date(as.Date(tableAll[,1]))
+            } else { #plain ENU series
+              # ISO 8601 dates
+              if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[,1], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
+                if (series == 1) {
+                  info$tunits.known1 <- T
+                } else if (series == 2) {
+                  info$tunits.known2 <- T
+                }
+                extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                extracted$x2 <- mjd2week(extracted$x1)
+                extracted$x3 <- mjd2year(extracted$x1)
+              } else {
+                # assuming the time units set by the user are good
+                if (input$tunits == 1) {
+                  extracted$x1 <- tableAll[,1]
+                  extracted$x2 <- mjd2week(extracted$x1)
+                  extracted$x3 <- mjd2year(extracted$x1)
+                } else if (input$tunits == 2) {
+                  extracted$x2 <- tableAll[,1]
+                  extracted$x1 <- week2mjd(extracted$x2)
+                  extracted$x3 <- week2year(extracted$x2)
+                } else if (input$tunits == 3) {
+                  extracted$x3 <- tableAll[,1]
+                  extracted$x1 <- year2mjd(extracted$x3)
+                  extracted$x2 <- year2week(extracted$x3)
+                }
               }
             }
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
@@ -8671,33 +8734,33 @@ print(head(trans$y))
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
-        if (series == 1) info$tunitsKnown <- T
+        if (series == 1) {
+          info$tunits.known1 <- T
+        } else if (series == 2) {
+          info$tunits.known2 <- T
+        }
         if (isTruthy(swap)) {
           extracted <- tableAll[,c(16,17,18,19,20,21)]
         } else {
           extracted <- tableAll[,c(17,16,18,20,19,21)]
         }
         names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
-        if (input$tunits == 1) {
-          extracted$x <- tableAll[,3]
-        } else if (input$tunits == 2) {
-          extracted$x <- as.numeric(difftime(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"),strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-        } else if (input$tunits == 3) {
-          extracted$x <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
-        }
+        extracted$x1 <- tableAll[,3]
+        extracted$x2 <- as.numeric(difftime(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"),strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+        extracted$x3 <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
       }
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
       if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
-        if (series == 1) info$tunitsKnown <- T
-        if (input$tunits == 1) {
-          extracted <- data.frame( x = tableAll[,4])
-        } else if (input$tunits == 2) {
-          extracted <- data.frame( x = tableAll[,5] + tableAll[,6]/7 )
-        } else if (input$tunits == 3) {
-          extracted <- data.frame( x = tableAll[,3] )
+        if (series == 1) {
+          info$tunits.known1 <- T
+        } else if (series == 2) {
+          info$tunits.known2 <- T
         }
+        extracted <- data.frame(x1 = tableAll[,4])
+        extracted$x2 <- tableAll[,5] + tableAll[,6]/7
+        extracted$x3 <- tableAll[,3]
         if (isTruthy(swap)) {
           extracted$y2 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East
           extracted$y1 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
@@ -8719,8 +8782,33 @@ print(head(trans$y))
         if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
           columns <- dim(tableAll)[2]
           if (epoch <= columns && variable <= columns) {
-            extracted <- data.frame(x = tableAll[[epoch]])
-            extracted$y1 <- tableAll[[variable]]
+            extracted <- data.frame(y1 = tableAll[[variable]])
+            # ISO 8601 dates
+            if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[[epoch]], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[[epoch]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              extracted$x2 <- mjd2week(extracted$x1)
+              extracted$x3 <- mjd2year(extracted$x1)
+            } else {
+              # assuming the time units set by the user are good
+              if (input$tunits == 1) {
+                extracted$x1 <- tableAll[[epoch]]
+                extracted$x2 <- mjd2week(extracted$x1)
+                extracted$x3 <- mjd2year(extracted$x1)
+              } else if (input$tunits == 2) {
+                extracted$x2 <- tableAll[[epoch]]
+                extracted$x1 <- week2mjd(extracted$x2)
+                extracted$x3 <- week2year(extracted$x2)
+              } else if (input$tunits == 3) {
+                extracted$x3 <- tableAll[[epoch]]
+                extracted$x1 <- year2mjd(extracted$x3)
+                extracted$x2 <- year2week(extracted$x3)
+              }
+            }
             if (columns > 2) {
               if (input$sigmas == T) {
                 if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
@@ -8730,22 +8818,11 @@ print(head(trans$y))
                   req(info$stop)
                 }
               } else {
-                extracted$sy1 <- rep(1,length(extracted$x))
+                extracted$sy1 <- rep(1,length(extracted$y1))
               }
             } else {
-              extracted$sy1 <- rep(1,length(extracted$x))
+              extracted$sy1 <- rep(1,length(extracted$y1))
               info$errorbars <- F
-            }
-            # ISO 8601 dates
-            if (all(isTruthy(suppressWarnings(parse_date_time(extracted$x, c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
-              if (series == 1) info$tunitsKnown <- T
-              if (input$tunits == 1) {
-                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              } else if (input$tunits == 2) {
-                extracted$x <- as.numeric(difftime(ymd_hms(extracted$x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-              } else if (input$tunits == 3) {
-                extracted$x <- decimal_date(ymd_hms(extracted$x))
-              }
             }
             if (isTruthy(extracted)) {
               extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
@@ -8813,7 +8890,7 @@ print(head(trans$y))
       y_detrend <- NULL
       # * Linear model ####
       if ("Linear" %in% input$model) {
-        if (!is.na(inputs$trendRef)) {
+        if (isTruthy(info$trendRef)) {
           reft <- inputs$trendRef
         } else {
           if (input$fitType == 1) {
@@ -8824,6 +8901,7 @@ print(head(trans$y))
           }
           inputs$trendRef <- reft
           updateTextInput(session, "trendRef", value = sprintf("%.*f", info$decimalsx, reft))
+          info$trendRef <- T
           if (input$fitType == 1) {
             req(info$stop)
           }
@@ -8955,7 +9033,7 @@ print(head(trans$y))
         S0 <- unlist(strsplit(input$S0, split = ","))
         eS0 <- unlist(strsplit(input$eS0, split = ","))
         sigamp <- unlist(strsplit(input$SinusoidalDev, split = ","))
-        if (!is.na(inputs$periodRef)) {
+        if (isTruthy(info$periodRef)) {
           refs <- inputs$periodRef
         } else {
           if (input$fitType == 1) {
@@ -8966,6 +9044,7 @@ print(head(trans$y))
           }
           inputs$periodRef <- refs
           updateTextInput(session, "periodRef", value = refs)
+          info$periodRef <- T
           if (input$fitType == 1) {
             req(info$stop)
           }
@@ -9037,7 +9116,7 @@ print(head(trans$y))
             }
             if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
               if (f < 1/abs(info$rangex)) {
-                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
               label_sin <- paste0("S",i)
@@ -9172,7 +9251,7 @@ print(head(trans$y))
             }
             if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
               if (f < 1/abs(info$rangex)) {
-                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex,nsmall = info$decimalsx, digits = info$decimalsx, trim = F,scientific = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
               label_sin <- paste0("S", i)
@@ -9727,7 +9806,7 @@ print(head(trans$y))
           if (!is.na(inputs$PolyCoef) && inputs$PolyCoef > 1 && inputs$PolyCoef < 20) {
             P0 <- unlist(strsplit(input$P0, split = ","))
             eP0 <- unlist(strsplit(input$eP0, split = ","))
-            if (!is.na(inputs$PolyRef)) {
+            if (isTruthy(info$PolyRef)) {
               refp <- inputs$PolyRef
             } else {
               if ("Linear" %in% input$model) {
@@ -9741,8 +9820,12 @@ print(head(trans$y))
                 }
                 inputs$PolyRef <- refp
               }
+              info$PolyRef <- T
               inputs$PolyRef <- refp
               updateTextInput(session, "PolyRef", value = refp)
+              if (input$fitType == 1) {
+                req(info$stop)
+              }
             }
             text_rate <- refp
             i <- 0
@@ -10033,7 +10116,7 @@ print(head(trans$y))
   periodogram <- function(serie) {
     req(trans$fs)
     if (messages > 0) cat(file = stderr(), "Computing periodogram ", serie, "\n")
-    withProgress(message = 'Computing  periodogram',
+    withProgress(message = 'Computing  periodogram.',
                  detail = 'This may take a while ...', value = 0, {
                    incProgress(0.5)
                    if (input$spectrumOriginal && any("all" %in% serie || "original" %in% serie)) {
@@ -10944,13 +11027,13 @@ print(head(trans$y))
           sy3_ <- sy3[index]
         }
       } else {
-        y1_ <- y1[index & values$previous1 & !is.na(values$previous1)]
-        y2_ <- y2[index & values$previous2 & !is.na(values$previous2)]
-        y3_ <- y3[index & values$previous3 & !is.na(values$previous3)]
+        y1_ <- y1[index & db1$original$status1]
+        y2_ <- y2[index & db1$original$status2]
+        y3_ <- y3[index & db1$original$status3]
         if (sigmas) {
-          sy1_ <- sy1[index & values$previous1 & !is.na(values$previous1)]
-          sy2_ <- sy2[index & values$previous2 & !is.na(values$previous2)]
-          sy3_ <- sy3[index & values$previous3 & !is.na(values$previous3)]
+          sy1_ <- sy1[index & db1$original$status1]
+          sy2_ <- sy2[index & db1$original$status2]
+          sy3_ <- sy3[index & db1$original$status3]
         }
       }
     } else if (length(x[index]) > 1) {
@@ -10970,16 +11053,16 @@ print(head(trans$y))
         }
       } else {
         if (sigmas) {
-          y1_ <- weighted.mean(y1[index & values$previous1 & !is.na(values$previous1)], 1/(sy1[index & values$previous1 & !is.na(values$previous1)])^2)
-          y2_ <- weighted.mean(y2[index & values$previous2 & !is.na(values$previous2)], 1/(sy2[index & values$previous2 & !is.na(values$previous2)])^2)
-          y3_ <- weighted.mean(y3[index & values$previous3 & !is.na(values$previous3)], 1/(sy3[index & values$previous3 & !is.na(values$previous3)])^2)
-          sy1_ <- sqrt(1/sum(1/sy1[index & values$previous1 & !is.na(values$previous1)]^2))
-          sy2_ <- sqrt(1/sum(1/sy2[index & values$previous2 & !is.na(values$previous2)]^2))
-          sy3_ <- sqrt(1/sum(1/sy3[index & values$previous3 & !is.na(values$previous3)]^2))
+          y1_ <- weighted.mean(y1[index & db1$original$status1], 1/(sy1[index & db1$original$status1])^2)
+          y2_ <- weighted.mean(y2[index & db1$original$status2], 1/(sy2[index & db1$original$status2])^2)
+          y3_ <- weighted.mean(y3[index & db1$original$status3], 1/(sy3[index & db1$original$status3])^2)
+          sy1_ <- sqrt(1/sum(1/sy1[index & db1$original$status1]^2))
+          sy2_ <- sqrt(1/sum(1/sy2[index & db1$original$status2]^2))
+          sy3_ <- sqrt(1/sum(1/sy3[index & db1$original$status3]^2))
         } else {
-          y1_ <- mean(y1[index & values$previous1 & !is.na(values$previous1)])
-          y2_ <- mean(y2[index & values$previous2 & !is.na(values$previous2)])
-          y3_ <- mean(y3[index & values$previous3 & !is.na(values$previous3)])
+          y1_ <- mean(y1[index & db1$original$status1])
+          y2_ <- mean(y2[index & db1$original$status2])
+          y3_ <- mean(y3[index & db1$original$status3])
         }
       }
     }
@@ -11685,6 +11768,24 @@ print(head(trans$y))
       down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     }
     return(down)
+  }
+  mjd2week <- function(x) {
+    return((x - 44244)/7)
+  }
+  week2mjd <- function(x) {
+    return(x * 7 + 44244)
+  }
+  mjd2year <- function(x) {
+    return(decimal_date(as.Date(x, origin = as.Date("1858-11-17"))))
+  }
+  year2mjd <- function(x) {
+    return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+  }
+  week2year <- function(x) {
+    return(decimal_date(as.Date("1980-01-06") + x * 7))
+  }
+  year2week <- function(x) {
+    return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
   }
 }
 
