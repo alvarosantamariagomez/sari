@@ -8336,15 +8336,6 @@ server <- function(input,output,session) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
         }
       }
-      # Setting station IDs
-      if (!isTruthy(inputs$ids)) {
-        removes <- "^SPOTGINS_|^UGA_"
-        if (isTruthy(url$station)) {
-          file$id1 <- toupper(url$station)
-        } else {
-          file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
-        }
-      }
       # Setting plot limits
       if (input$tunits == 1) {
         x <- table$x1
@@ -8544,14 +8535,42 @@ server <- function(input,output,session) {
       } else {
         showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
       }
-      # Setting station IDs
+    }
+    # Setting station IDs
+    if (!isTruthy(inputs$ids)) {
       removes <- "^SPOTGINS_|^UGA_"
-      if (isTruthy(url$station2)) {
-        file$id2 <- toupper(url$station2)
+      if (isTruthy(url$station)) {
+        file$id1 <- toupper(url$station)
       } else {
-        file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
+        file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
+      }
+      if (length(file$secondary) > 0) {
+        if (isTruthy(url$station2)) {
+          file$id2 <- toupper(url$station2)
+        } else {
+          file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
+        }
       }
     }
+    # Updating station IDs
+    if (isTruthy(file$id1) && isTruthy(file$id2)) {
+      if (input$optionSecondary == 0) {
+        ids_info <- file$id1
+      } else if (input$optionSecondary == 1) {
+        ids_info <- paste(file$id1,file$id2, sep = " & ")
+      } else if (input$optionSecondary == 2) {
+        ids_info <- paste(file$id1,file$id2, sep = " - ")
+      } else if (input$optionSecondary == 3) {
+        ids_info <- paste(file$id1,file$id2, sep = " + ")
+      }
+    } else if (isTruthy(file$id1)) {
+      ids_info <- file$id1
+    } else {
+      ids_info <- ""
+      removeNotification(id = "ids_info", session = getDefaultReactiveDomain())
+      showNotification(HTML("Problem extracting the series ID from the file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
+    }
+    shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
   }
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
     tableAll <- NULL
