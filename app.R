@@ -6793,10 +6793,13 @@ server <- function(input,output,session) {
     file$primary <- isolate(input$series)
     if (grepl(".tenv3", file$primary$name)) {
       updateRadioButtons(inputId = "format", selected = 3)
+      updateRadioButtons(inputId = "sunits", selected = 1)
     } else if (grepl("pbo|.pos", file$primary$name)) {
       updateRadioButtons(inputId = "format", selected = 2)
+      updateRadioButtons(inputId = "sunits", selected = 1)
     } else {
       updateRadioButtons(inputId = "format", selected = 1)
+      updateRadioButtons(inputId = "sunits", selected = 0)
     }
     info$run <- NULL
     trans$x <- NULL
