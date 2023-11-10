@@ -2472,9 +2472,9 @@ server <- function(input,output,session) {
       trans$y0 <- as.numeric(table1$y1)
       if (isTruthy(trans$plate) && input$eulerType == 2) {
         if (input$format == 4) {
-          trans$y0 <- trans$y0 - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0[table1$status1])) - median(trans$y0, na.rm = T)
+          trans$y0 <- trans$y0 - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         } else {
-          trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1])) - median(trans$y0, na.rm = T)
+          trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         }
       }
       trans$sy0 <- as.numeric(table1$sy1)
