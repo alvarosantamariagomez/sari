@@ -1862,10 +1862,9 @@ server <- function(input,output,session) {
                            kf1 = NULL, kf2 = NULL, kf3 = NULL, kf_all = NULL)
   
   # 4. database:
-  #   1 = primary
-  #   2 = primary.resampled
-  #   3 = primary.corrected (series are first resampled and then corrected)
-  #   4 = primary.averaged
+  #   1 = original
+  #   2 = resampled
+  #   3 = corrected (series are first resampled and then corrected)
   
   db1 <- reactiveValues(original = NULL)
   db2 <- reactiveValues(original = NULL)
@@ -2448,12 +2447,11 @@ server <- function(input,output,session) {
     table1 <- db1[[info$db1]]
     table2 <- db2[[info$db2]]
     
-    # data$y    = all points read from input series
-    # trans$y0  = all points from input series (same as data$y)
-    # trans$y   = points valid
-    # trans$sy  = sigmas valid
-    # trans$ye  = points excluded
-    # trans$sye = sigmas excluded
+    # trans$y0  = all points from the original input series (including deleted with status NA)
+    # trans$y   = points with TRUE status
+    # trans$sy  = sigmas with TRUE status
+    # trans$ye  = points with FALSE status (excluded)
+    # trans$sye = sigmas with FALSE status (excluded)
     # trans$y2  = points from secondary series (independent)
     # trans$sy2 = sigmas from secondary series (independent)
 
@@ -2515,6 +2513,7 @@ server <- function(input,output,session) {
         kf <- table1$status3.kf
       }
     }
+    # getting data range including excluded points
     trans$x <- trans$xe <- trans$x0
     trans$x <- trans$x[status & !is.na(status)]
     trans$xe <- trans$xe[!status & !is.na(status)]
@@ -2539,6 +2538,7 @@ server <- function(input,output,session) {
     } else {
       ranges$y1 <- c(info$miny, info$maxy)
     }
+    # getting only valid points
     trans$y <- trans$y0[status & !is.na(status)]
     trans$ye <- trans$y0[!status & !is.na(status)]
     trans$sy <- trans$sy0[status & !is.na(status)]
@@ -2554,6 +2554,7 @@ server <- function(input,output,session) {
         ranges$y12 <- range(trans$y2, na.rm = T)
       }
     }
+    # getting data sampling
     info$points <- length(trans$x)
     info$sampling <- min(diff(trans$x,1))
     if (!isTruthy(info$step)) {
@@ -2575,6 +2576,7 @@ server <- function(input,output,session) {
     }
     trans$ordinate <- median(trans$y)
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
+    # dealing with the kalman filter series
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
       if (length(trans$mod0) > sum(kf[!is.na(kf)])) {
         trans$mod <- trans$mod0[kf & !is.na(kf)]
@@ -2601,12 +2603,14 @@ server <- function(input,output,session) {
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
     }
+    # setting sigmas to one if needed
     if (!isTruthy(input$sigmas)) {
       trans$sy <- rep(1, length(trans$sy))
       trans$sy0 <- rep(1, length(trans$sy0))
       trans$sye <- rep(1, length(trans$sye))
       trans$sy2 <- rep(1, length(trans$sy2))
     }
+    # removing wavelet data
     if (input$waveletType > 0) {
       updateRadioButtons(session, inputId = "waveletType", label = NULL,
                          choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5),
@@ -3544,17 +3548,12 @@ server <- function(input,output,session) {
           end.time <- Sys.time()
           time.taken <- end.time - start.time
           if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
-          if (isTruthy(input$remove3D)) {
-            values$kf_all <- rep(T, length(x))
-            values$kf1 <- values$kf2 <- values$kf3 <- values$kf_all
-          } else {
-            if (input$tab == 1 || is.null(input$tab)) {
-              values$kf1 <- rep(T, length(x))
-            } else if (input$tab == 2) {
-              values$kf2 <- rep(T, length(x))
-            } else if (input$tab == 3) {
-              values$kf3 <- rep(T, length(x))
-            }
+          if (input$tab == 1 || is.null(input$tab)) {
+            db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1
+          } else if (input$tab == 2) {
+            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status2
+          } else if (input$tab == 3) {
+            db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status3
           }
           if (isTruthy(inputs$waveformPeriod)) {
             save_value <- inputs$waveformPeriod
@@ -7466,7 +7465,7 @@ server <- function(input,output,session) {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              db1[[info$db1]]$kf_all <- xor(db1[[info$db1]]$kf_all, excluding_plotres_kf$selected_)
+              db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres_kf$selected_)
             }
             db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
             db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
