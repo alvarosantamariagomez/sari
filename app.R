@@ -2485,7 +2485,7 @@ server <- function(input,output,session) {
     } else if (input$tab == 2) {
       trans$y0 <- as.numeric(table1$y2)
       if (isTruthy(trans$plate) && input$eulerType == 2) {
-        trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2])) - median(trans$y0, na.rm = T)
+        trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2], na.rm = T)) - median(trans$y0, na.rm = T)
       }
       trans$sy0 <- as.numeric(table1$sy2)
       trans$y2 <- as.numeric(table2$y2) * inputs$scaleFactor
@@ -2500,7 +2500,7 @@ server <- function(input,output,session) {
     } else if (input$tab == 3) {
       trans$y0 <- as.numeric(table1$y3)
       if (isTruthy(trans$plate) && input$eulerType == 2) {
-        trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3])) - median(trans$y0, na.rm = T)
+        trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3], na.rm = T)) - median(trans$y0, na.rm = T)
       }
       trans$sy0 <- as.numeric(table1$sy3)
       trans$y2 <- as.numeric(table2$y3) * inputs$scaleFactor
@@ -6102,6 +6102,7 @@ server <- function(input,output,session) {
     info$product1 <- input$product1
     get_URL_info(input$server1,NULL,input$product1,1)
   })
+  ## station1 ####
   observeEvent(c(inputs$station1), {
     if (isTruthy(inputs$station1) && isTruthy(input$server1) && isTruthy(input$product1)) {
       removeNotification("bad_remote")
@@ -6169,6 +6170,7 @@ server <- function(input,output,session) {
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     get_URL_info(input$server2,NULL,input$product2,2)
   })
+  ## station2 ####
   observeEvent(c(inputs$station2), {
     req(db1[[info$db1]])
     if (input$station2 != "") {
@@ -6216,7 +6218,7 @@ server <- function(input,output,session) {
         if (secondary_files > 0) {
           shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
           if (length(file$secondary$name) > 1) {
-            filename2 <- paste(input$station2, paste(input$product2, collapse = "_"), sep = "_")
+            filename2 <- paste0(paste(input$station2, paste(input$product2, collapse = "_"), sep = "_"), ".enu")
             file$secondary$datapath <- as.matrix(file$secondary$datapath)
           } else {
             filename2 <- file$secondary$name
@@ -7258,6 +7260,14 @@ server <- function(input,output,session) {
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
     info$last_optionSecondary <- input$optionSecondary
+    # providing remote secondary series
+    output$fileSeries2 <- renderUI({
+      if (input$optionSecondary == 1 && isTruthy(url$station2) && isTruthy(file$secondary$newname)) {
+        tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
+      } else {
+        NULL
+      }
+    })
   }, priority = 6)
 
   # Observe ids ####
@@ -8110,7 +8120,8 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("unknown_components")
     removeNotification("time_shift")
-    if (series == 1) { # primary series
+    # primary series ####
+    if (series == 1) {
       if (messages > 0) cat(file = stderr(), "Reading primary series file", "\n")
       if (isTruthy(url$file)) {
         fileName <- file$primary$name
@@ -8393,7 +8404,8 @@ server <- function(input,output,session) {
       info$db1 <- "original"
       db1$original <- as.data.frame(table)
       db1$original$status1 <- db1$original$status2 <- db1$original$status3 <- rep(T, length(table$x1))
-    } else if (series == 2) { # secondary series
+    # secondary series ####
+    } else if (series == 2) {
       if (messages > 0) cat(file = stderr(), "Reading secondary series file", "\n")
       # Setting column separation
       if (input$separator2 == "1") {
@@ -8483,6 +8495,8 @@ server <- function(input,output,session) {
             if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
               if (delta != 0) {
                 table2$x1 <- table2$x1 + delta
+                table2$x2 <- mjd2week(table2$x1)
+                table2$x3 <- mjd2year(table2$x1)
                 showNotification(paste("The time axis of the", files$name[i], "series has been shifted by a constant",delta,info$tunits.label), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
               }
             } else {
@@ -8492,16 +8506,31 @@ server <- function(input,output,session) {
                 showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
               }
             }
-            table_stack <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
-              x2 <- ifelse(x2.y,x2.y,x2.x)
-              x3 <- ifelse(x3.y,x3.y,x3.x)
-              y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-              y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-              y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
-              sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
-              sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
-              sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
-            })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
+            if (server == "EOSTLS" || server == "EPOS") {
+              table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
+                x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
+                x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
+                y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+                y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+                y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                sy1 <- 1
+                sy2 <- 1
+                sy3 <- 1
+              })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
+            } else {
+              table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
+                x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
+                x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
+                y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+                y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+                y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
+                sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
+                sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
+              })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
+            }
+            table_stack <- na.omit(table_stack_tmp)
+            rm(table_stack_tmp)
           } else {
             table_stack <- table2
           }
@@ -8517,26 +8546,21 @@ server <- function(input,output,session) {
         }
         table2 <- table_stack
         if (!is.null(table2)) {
-          if (input$optionSecondary == 1) {
-            if (dim(as.matrix(files$datapath))[1] > 1) {
-              names(table_stack) <- c("# MJD", "East", "North", "Up")
-              suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 1, digits = 1, scientific = F)[,c(1,2,3,4)], file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
-            }
-            output$fileSeries2 <- renderUI({
-              if (isTruthy(url$station2)) {
-                tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = paste0(file$secondary$newname,".enu"))
-              } else {
-                NULL
-              }
-            })
-          } else {
-            output$fileSeries2 <- renderUI({
-              NULL
-            })
+          if (dim(as.matrix(files$datapath))[1] > 1) {
+            table_stack <- table_stack[,c("x1","y1","y2","y3")]
+            names(table_stack) <- c("# MJD", "East", "North", "Up")
+            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
           }
           rm(table_stack)
           info$db2 <- "original"
           db2$original <- as.data.frame(table2)
+          output$fileSeries2 <- renderUI({
+            if (input$optionSecondary == 1 && isTruthy(url$station2) && isTruthy(file$secondary$newname)) {
+              tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
+            } else {
+              NULL
+            }
+          })
         } else {
           showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         }
