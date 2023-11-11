@@ -8327,9 +8327,11 @@ server <- function(input,output,session) {
       }
       # Mapping the station position
       if (exists("leaflet", mode = "function") && isTruthy(lat) && isTruthy(lon)) {
+        boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
         lon <- ifelse(lon > 180, lon - 360, lon)
         map <- leaflet(options = leafletOptions(dragging = T)) %>%
           addTiles() %>%
+          addGeoJSON(boundaries, weight = 3, color = "red", fill = FALSE) %>%
           setView(lng = lon, lat = lat, zoom = 2) %>%
           addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
         output$myMap = renderLeaflet(map)
