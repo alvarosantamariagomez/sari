@@ -41,6 +41,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(strucchange, verbose = F, quietly = T) #v1.5-2
   library(tseries, verbose = F, quietly = T) #v0.10-48
   library(leaflet, verbose = F, quietly = T) #v2.1.2
+  library(geojsonio, verbose = F, quietly = T) #v0.11.3
   # library(parallel)
   # library(optimParallel)
 })))
@@ -1852,20 +1853,11 @@ server <- function(input,output,session) {
                          product1 = NULL,
                          db1 = "stop", db2 = "stop",
                          trendRef = F, PolyRef = F, periodRef = F)
-
-  # 4. point status: valid (T), excluded (F) or deleted (NA)
-  #   series: status of the primary series
-  #   previous: saving of the status of the primary series when merging with a secondary series or downsampling
-  #   kf: status of the fitted KF series
-  values <- reactiveValues(series1 = NULL, series2 = NULL, series3 = NULL, series_all = NULL,
-                           previous1 = NULL, previous2 = NULL, previous3 = NULL, previous_all = NULL,
-                           kf1 = NULL, kf2 = NULL, kf3 = NULL, kf_all = NULL)
   
   # 4. database:
   #   1 = original
   #   2 = resampled
   #   3 = corrected (series are first resampled and then corrected)
-  
   db1 <- reactiveValues(original = NULL)
   db2 <- reactiveValues(original = NULL)
 
@@ -5046,7 +5038,7 @@ server <- function(input,output,session) {
   
   # Search offsets ####
   observeEvent(input$search, {
-    req(file$primary)
+    req(db1$original)
     removeNotification("bad_search")
     removeNotification("no_search")
     if (length(trans$res) > 0) {
@@ -5180,9 +5172,8 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(input$remove3D, {
-    req(file$primary)
+    req(db1$original)
     if (messages > 0) cat(file = stderr(), "Removing from all series is", input$remove3D, "\n")
-    values$series1 <- values$series2 <- values$series3 <- values$series_all
   })
   observeEvent(input$permanent, {
     req(input$permanent)
@@ -5575,7 +5566,7 @@ server <- function(input,output,session) {
           }
           enable("wavelet")
           enable("waveletType")
-          if (sum(!is.na(values$series1)) == sum(!is.na(values$series2)) && sum(!is.na(values$series1)) == sum(!is.na(values$series3))) {
+          if (sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status2, na.rm = T) && sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status3, na.rm = T)) {
             enable("remove3D")
           } else {
             disable("remove3D")
@@ -6714,15 +6705,15 @@ server <- function(input,output,session) {
 
   # Observe ancillary files ####
   observeEvent(input$log, {
-    req(file$primary)
+    req(db1$original)
     file$sitelog <- isolate(input$log)
   }, priority = 8)
   observeEvent(input$soln, {
-    req(file$primary)
+    req(db1$original)
     file$soln <- isolate(input$soln)
   }, priority = 8)
   observeEvent(input$custom, {
-    req(file$primary)
+    req(db1$original)
     file$custom <- isolate(input$custom)
   }, priority = 8)
 
@@ -7053,7 +7044,7 @@ server <- function(input,output,session) {
 
   # Observe secondary series ####
   observeEvent(input$series2, {
-    req(file$primary)
+    req(db1$original)
     file$secondary <- isolate(input$series2)
     url$file2 <- url$server2 <- url$station2 <- NULL
     if (isTruthy(url$logfile2)) {
@@ -7272,7 +7263,7 @@ server <- function(input,output,session) {
 
   # Observe ids ####
   observeEvent(c(inputs$ids, input$optionSecondary), {
-    req(file$primary)
+    req(db1$original)
     update <- 0
     file$id1 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1]))
     if (!isTruthy(file$id1)) {
@@ -7684,7 +7675,7 @@ server <- function(input,output,session) {
 
   # Observe restore removed ####
   observeEvent(input$delete_excluded, {
-    req(file$primary)
+    req(db1$original)
     if (messages > 0) cat(file = stderr(), "Restoring points", "\n")
     if (isTruthy(input$remove3D)) {
       db1[[info$db1]]$status1[!db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)] <- T
@@ -7815,7 +7806,7 @@ server <- function(input,output,session) {
     info$log_years <- info$log
   }, priority = 1)
   observeEvent(c(input$printLog),{
-    req(file$primary)
+    req(db1$original)
     output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
       if (length(info$log[[1]]) > 0) {
         sprintf("Antenna changes from log file at\n%s",paste(unlist(info$log[[1]]), collapse = ", "))
@@ -7855,7 +7846,7 @@ server <- function(input,output,session) {
     reset("main-panel")
     updateCollapse(session, id = "menu", open = 1, close = c(2,3,4,5,6))
     db1[[info$db1]] <- NULL
-    db1[[info$db2]] <- NULL
+    db2[[info$db2]] <- NULL
     for (i in names(db1)) {
       db1[[i]] <- NULL
       db2[[i]] <- NULL
@@ -7896,10 +7887,6 @@ server <- function(input,output,session) {
     trans$verif <- NULL
     trans$pattern <- NULL
     trans$unc <- NULL
-    values$series1 <- NULL
-    values$series2 <- NULL
-    values$series3 <- NULL
-    values$series_all <- NULL
     info$points <- NULL
     info$log <- NULL
     info$rangex <- NULL
@@ -8326,12 +8313,30 @@ server <- function(input,output,session) {
         }
       }
       # Mapping the station position
-      if (exists("leaflet", mode = "function") && isTruthy(lat) && isTruthy(lon)) {
-        boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
+      if (exists("leaflet", mode = "function") && exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json") && isTruthy(lat) && isTruthy(lon)) {
+        plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
         lon <- ifelse(lon > 180, lon - 360, lon)
-        map <- leaflet(options = leafletOptions(dragging = T)) %>%
+        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
           addTiles() %>%
-          addGeoJSON(boundaries, weight = 3, color = "red", fill = FALSE) %>%
+          addPolygons(
+            fillColor = "white",
+            weight = 1,
+            opacity = 1,
+            color = "black",
+            dashArray = "1",
+            fillOpacity = 0,
+            highlightOptions = highlightOptions(
+              weight = 3,
+              color = "#DF536B",
+              dashArray = "",
+              fillOpacity = 0,
+              bringToFront = TRUE),
+            label = plates$PlateName,
+            labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")
+          ) %>%
           setView(lng = lon, lat = lat, zoom = 2) %>%
           addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
         output$myMap = renderLeaflet(map)
