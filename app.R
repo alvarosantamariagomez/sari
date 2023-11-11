@@ -2482,13 +2482,8 @@ server <- function(input,output,session) {
       trans$sy0 <- as.numeric(table1$sy2)
       trans$y2 <- as.numeric(table2$y2) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy2) * inputs$scaleFactor
-      if (isTruthy(input$remove3D)) {
-        status <- table1$status1
-        kf <- table1$status1.kf
-      } else {
-        status <- table1$status2
-        kf <- table1$status2.kf
-      }
+      status <- table1$status2
+      kf <- table1$status2.kf
     } else if (input$tab == 3) {
       trans$y0 <- as.numeric(table1$y3)
       if (isTruthy(trans$plate) && input$eulerType == 2) {
@@ -2497,13 +2492,8 @@ server <- function(input,output,session) {
       trans$sy0 <- as.numeric(table1$sy3)
       trans$y2 <- as.numeric(table2$y3) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy3) * inputs$scaleFactor
-      if (isTruthy(input$remove3D)) {
-        status <- table1$status1
-        kf <- table1$status1.kf
-      } else {
-        status <- table1$status3
-        kf <- table1$status3.kf
-      }
+      status <- table1$status3
+      kf <- table1$status3.kf
     }
     # getting data range including excluded points
     trans$x <- trans$xe <- trans$x0
@@ -7199,6 +7189,8 @@ server <- function(input,output,session) {
       if (nrow(table_common) > 0) {
         if (isTruthy(db1$merged)) {
           table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
+          table_common$status2 <- table_common$status2 + db1$merged$status2 > 1
+          table_common$status3 <- table_common$status3 + db1$merged$status3 > 1
         }
         db1$merged <- table_common
         info$db1 <- "merged"
@@ -7212,7 +7204,6 @@ server <- function(input,output,session) {
       } else {
         info$db1 <- "original"
       }
-      db1$merged <- NULL
     }
     # Updating plot ranges
     if (input$optionSecondary > 1 || (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1)) {
