@@ -933,14 +933,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         condition = "input.euler == true",
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("ITRF2014" = 1, "NNR-MORVEL56" = 2, "NNR-GSRM v.2.1" = 3), selected = 1, multiple = F, selectize = T),
+                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2014", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T),
                                                                                  div(style = "margin-top: -1em", uiOutput("pmm"))
                                                                           ),
                                                                           column(6,
-                                                                                 textInput(inputId = "plate", 
-                                                                                           div("Plate name",
-                                                                                               helpPopup("Name of the tectonic plate that will be searched for in the plate model file")),
-                                                                                           value = NULL),
+                                                                                 selectizeInput(inputId = "plate", label = "Plate name", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
                                                                           )
                                                                         ),
                                                                         fluidRow(
@@ -1852,7 +1849,8 @@ server <- function(input,output,session) {
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL,
                          db1 = "stop", db2 = "stop",
-                         trendRef = F, PolyRef = F, periodRef = F)
+                         trendRef = F, PolyRef = F, periodRef = F,
+                         plateFile = NULL)
   
   # 4. database:
   #   1 = original
@@ -1877,7 +1875,7 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
-                          model_old = NULL, plate = NULL, plateName = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
+                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL)
 
   # 7. output
@@ -2065,15 +2063,17 @@ server <- function(input,output,session) {
   outputOptions(output, "mobile", suspendWhenHidden = F)
 
   output$pmm <- renderUI({
-    if (input$plateModel == 1) {
-      model <- "ITRF2014_PMM.txt"
-    } else if (input$plateModel == 2) {
-      model <- "NNR-MORVEL56.txt"
-    } else if (input$plateModel == 3) {
-      model <- "NNR-GSRM_v2.1.txt"
+    if (isTruthy(input$plateModel)) {
+      if (input$plateModel == "ITRF2014") {
+        model <- "ITRF2014_PMM.txt"
+      } else if (input$plateModel == "NNR-MORVEL56") {
+        model <- "NNR-MORVEL56.txt"
+      } else if (input$plateModel == "NNR-GSRM") {
+        model <- "NNR-GSRM_v2.1.txt"
+      }
+      link <- a("Show the selected plate model", href = model, target = "_blank")
+      tagList(link)
     }
-    link <- a("Show the selected plate model", href = model, target = "_blank")
-    tagList(link)
   })
   outputOptions(output, "pmm", suspendWhenHidden = F)
 
@@ -2405,11 +2405,6 @@ server <- function(input,output,session) {
     } else {
       inputs$scaleFactor <- suppressWarnings(as.numeric(trimws(scaleFactor_d(), which = "both", whitespace = "[ \t\r\n]")))
     }
-  }, priority = 1000)
-  
-  plate_d <- reactive(input$plate) %>% debounce(1000, priority = 1000)
-  observeEvent(plate_d(), {
-    inputs$plate <- suppressWarnings(trimws(plate_d(), which = "both", whitespace = "[ \t\r\n]"))
   }, priority = 1000)
   
   station1_d <- reactive(input$station1) %>% debounce(1000, priority = 1000)
@@ -5431,7 +5426,7 @@ server <- function(input,output,session) {
           if (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) && ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
             enable("eulerType")
           } else {
-            updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+            # updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
             disable("eulerType")
           }
         }
@@ -6239,13 +6234,78 @@ server <- function(input,output,session) {
   })
 
   # Observe Euler ####
-  observeEvent(c(input$euler, input$eulerType, input$plateModel, inputs$plate, input$eulers, input$neuenu, input$tunits, input$sunits), {
-    req(db1[[info$db1]])
-    if (input$euler && input$eulerType > 0) {
+  observeEvent(c(input$plateModel), {
+    req(db1[[info$db1]], input$euler)
+    if (messages > 0) cat(file = stderr(), "Plate model:", input$plateModel, "\n")
+    if (input$plateModel == "ITRF2014") {
+      info$plateFile <- "www/ITRF2014_PMM.txt"
+      updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 5)$V5, selected = "")
+    } else if (input$plateModel == "NNR-MORVEL56") {
+      info$plateFile <- "www/NNR-MORVEL56.txt"
+      updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 5, sep = "\t", comment.char = "#")$V2, selected = "")
+    } else if (input$plateModel == "NNR-GSRM") {
+      info$plateFile <- "www/NNR-GSRM_V2.1.txt"
+      updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 2)$V1, selected = "")
+    }
+  })
+  observeEvent(c(input$plate), {
+    req(db1[[info$db1]], input$euler)
+    if (messages > 0) cat(file = stderr(), "Plate:", input$plate, "\n")
+    removeNotification("bad_plate")
+    if (isTruthy(input$plate)) {
+      record <- grep(input$plate, grep("^#", readLines(con = info$plateFile, n = -1L, ok = T, warn = F, skipNul = T), perl = T, value = T, invert = T), fixed = F, ignore.case = T, perl = F, value = T)
+      if (length(record) == 1) {
+        elements <- NULL
+        if (input$plateModel == "ITRF2014") {
+          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5,2)]
+          updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
+          updateTextInput(session, inputId = "pole_x", value = elements[1])
+          updateTextInput(session, inputId = "pole_y", value = elements[2])
+          updateTextInput(session, inputId = "pole_z", value = elements[3])
+          updateTextInput(session, inputId = "pole_lat", value = "")
+          updateTextInput(session, inputId = "pole_lon", value = "")
+          updateTextInput(session, inputId = "pole_rot", value = "")
+        } else if (input$plateModel == "NNR-MORVEL56") {
+          elements <- unlist(strsplit(record, "\\t+", fixed = F, perl = T, useBytes = F))[c(4,5,6,2)]
+          updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
+          updateTextInput(session, inputId = "pole_x", value = "")
+          updateTextInput(session, inputId = "pole_y", value = "")
+          updateTextInput(session, inputId = "pole_z", value = "")
+          updateTextInput(session, inputId = "pole_lat", value = elements[1])
+          updateTextInput(session, inputId = "pole_lon", value = elements[2])
+          updateTextInput(session, inputId = "pole_rot", value = elements[3])
+        } else if (input$plateModel == "NNR-GSRM") {
+          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(6,7,8,1)]
+          updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
+          updateTextInput(session, inputId = "pole_x", value = "")
+          updateTextInput(session, inputId = "pole_y", value = "")
+          updateTextInput(session, inputId = "pole_z", value = "")
+          updateTextInput(session, inputId = "pole_lat", value = elements[1])
+          updateTextInput(session, inputId = "pole_lon", value = elements[2])
+          updateTextInput(session, inputId = "pole_rot", value = elements[3])
+        }
+        inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
+      } else {
+        trans$plate <- NULL
+        showNotification(paste("Plate", input$plate, "not found in the", plateModel, "plate model file"), action = NULL, duration = 10, closeButton = T, id = "bad_plate", type = "error", session = getDefaultReactiveDomain())
+      }
+    # } else {
+    #   trans$plate <- NULL
+    }
+  })
+  observeEvent(c(input$eulerType, input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot), {
+    req(db1[[info$db1]], input$euler)
+print("rot")
+print(paste("xyz",inputs$pole_x,inputs$pole_y,inputs$pole_z))
+print(paste("llr",inputs$pole_lat,inputs$pole_lon,inputs$pole_rot))
+    if (input$eulerType > 0 && 
+        ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
+        ((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)))
+        ) {
       stationCartesian <- c()
       stationGeo <- c()
       poleCartesian <- c()
-      if (messages > 0) cat(file = stderr(), "Plate rotation", "\n")
+      if (messages > 0) cat(file = stderr(), "Compute plate rotation (", input$eulerType, ")\n")
       if (input$sunits == 1) {
         scaling <- 1
       } else if (input$sunits == 2) {
@@ -6285,10 +6345,10 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "sunits", selected = 1)
         }
       }
-      if (input$station_coordinates == 1 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+      if (input$station_coordinates == 1) {
         stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
         stationGeo <- do.call(xyz2llh,as.list(stationCartesian))
-      } else if (input$station_coordinates == 2 && isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+      } else if (input$station_coordinates == 2) {
         stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
         stationCartesian <- do.call(latlon2xyz,as.list(c(stationGeo,scaling)))
       }
@@ -6330,71 +6390,12 @@ server <- function(input,output,session) {
       } else {
         showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
         updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+        trans$plate <- NULL
       }
     } else {
       trans$plate <- NULL
     }
   }, priority = 4)
-  observeEvent(c(input$plateModel, inputs$plate), {
-    req(input$euler)
-    removeNotification("bad_plate")
-    elements <- NULL
-    if (isTruthy(inputs$plate)) {
-      if (input$plateModel == 1) {
-        plateModel <- "ITRF2014"
-        record <- grep(inputs$plate, grep("^#", readLines(con = "www/ITRF2014_PMM.txt", n = -1L, ok = T, warn = F, skipNul = T), perl = T, value = T, invert = T), fixed = F, ignore.case = T, perl = F, value = T)
-      } else if (input$plateModel == 2) {
-        plateModel <- "NNR-MORVEL56"
-        record <- grep(inputs$plate, grep("^#", readLines(con = "www/NNR-MORVEL56.txt", n = -1L, ok = T, warn = F, skipNul = T), perl = T, value = T, invert = T), fixed = F, ignore.case = T, perl = F, value = T)
-      } else if (input$plateModel == 3) {
-        plateModel <- "NNR-GSRM v2.1"
-        record <- grep(inputs$plate, grep("^#", readLines(con = "www/NNR-GSRM_V2.1.txt", n = -1L, ok = T, warn = F, skipNul = T), perl = T, value = T, invert = T), fixed = F, ignore.case = T, perl = F, value = T)
-      }
-      if (length(record) == 1) {
-        if (input$plateModel == 1) {
-          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5,2)]
-          updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
-          trans$plateName <- elements[4]
-          updateTextInput(session, inputId = "pole_x", value = elements[1])
-          updateTextInput(session, inputId = "pole_y", value = elements[2])
-          updateTextInput(session, inputId = "pole_z", value = elements[3])
-          updateTextInput(session, inputId = "pole_lat", value = "")
-          updateTextInput(session, inputId = "pole_lon", value = "")
-          updateTextInput(session, inputId = "pole_rot", value = "")
-        } else if (input$plateModel == 2) {
-          elements <- unlist(strsplit(record, "\\t+", fixed = F, perl = T, useBytes = F))[c(4,5,6,2)]
-          updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
-          trans$plateName <- elements[4]
-          updateTextInput(session, inputId = "pole_lat", value = elements[1])
-          updateTextInput(session, inputId = "pole_lon", value = elements[2])
-          updateTextInput(session, inputId = "pole_rot", value = elements[3])
-          updateTextInput(session, inputId = "pole_x", value = "")
-          updateTextInput(session, inputId = "pole_y", value = "")
-          updateTextInput(session, inputId = "pole_z", value = "")
-        } else if (input$plateModel == 3) {
-          elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(6,7,8,1)]
-          updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
-          trans$plateName <- elements[4]
-          updateTextInput(session, inputId = "pole_lat", value = elements[1])
-          updateTextInput(session, inputId = "pole_lon", value = elements[2])
-          updateTextInput(session, inputId = "pole_rot", value = elements[3])
-          updateTextInput(session, inputId = "pole_x", value = "")
-          updateTextInput(session, inputId = "pole_y", value = "")
-          updateTextInput(session, inputId = "pole_z", value = "")
-        }
-      } else {
-        showNotification(paste("Plate", inputs$plate, "not found in the", plateModel, "plate model file"), action = NULL, duration = 10, closeButton = T, id = "bad_plate", type = "error", session = getDefaultReactiveDomain())
-      }
-    }
-    if (!isTruthy(elements)) {
-        updateTextInput(session, inputId = "pole_x", value = "")
-        updateTextInput(session, inputId = "pole_y", value = "")
-        updateTextInput(session, inputId = "pole_z", value = "")
-        updateTextInput(session, inputId = "pole_lat", value = "")
-        updateTextInput(session, inputId = "pole_lon", value = "")
-        updateTextInput(session, inputId = "pole_rot", value = "")
-    }
-  }, priority = 200)
   observeEvent(c(input$eulers), {
     if (!is.null(file$id1)) {
       pattern <- paste0("^",file$id1)
@@ -10387,14 +10388,7 @@ server <- function(input,output,session) {
       cat(sprintf('# Averaged with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      if (input$plateModel == 1) {
-        plateModel <- "ITRF2014"
-      } else if (input$plateModel == 2) {
-        plateModel <- "NNR-MORVEL56"
-      } else if (input$plateModel == 3) {
-        plateModel <- "NNR-GSRM v2.1"
-      }
-      cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", plateModel, "and plate", trans$plateName), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", info$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
