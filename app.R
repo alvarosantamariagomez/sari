@@ -6245,6 +6245,9 @@ server <- function(input,output,session) {
     } else if (input$plateModel == "NNR-GSRM") {
       info$plateFile <- "www/NNR-GSRM_V2.1.txt"
       updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 2)$V1, selected = "")
+    } else {
+      info$plateFile <- NULL
+      updateSelectizeInput(session, inputId = "plate", choices = list(), selected = "")
     }
   })
   observeEvent(c(input$plate), {
@@ -6255,9 +6258,11 @@ server <- function(input,output,session) {
       record <- grep(input$plate, grep("^#", readLines(con = info$plateFile, n = -1L, ok = T, warn = F, skipNul = T), perl = T, value = T, invert = T), fixed = F, ignore.case = T, perl = F, value = T)
       if (length(record) == 1) {
         elements <- NULL
+        updateRadioButtons(session, inputId = "eulerType", selected = 1)
         if (input$plateModel == "ITRF2014") {
           elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5,2)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
+          inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
           updateTextInput(session, inputId = "pole_x", value = elements[1])
           updateTextInput(session, inputId = "pole_y", value = elements[2])
           updateTextInput(session, inputId = "pole_z", value = elements[3])
@@ -6267,36 +6272,32 @@ server <- function(input,output,session) {
         } else if (input$plateModel == "NNR-MORVEL56") {
           elements <- unlist(strsplit(record, "\\t+", fixed = F, perl = T, useBytes = F))[c(4,5,6,2)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
-          updateTextInput(session, inputId = "pole_x", value = "")
-          updateTextInput(session, inputId = "pole_y", value = "")
-          updateTextInput(session, inputId = "pole_z", value = "")
+          inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
           updateTextInput(session, inputId = "pole_lat", value = elements[1])
           updateTextInput(session, inputId = "pole_lon", value = elements[2])
           updateTextInput(session, inputId = "pole_rot", value = elements[3])
+          updateTextInput(session, inputId = "pole_x", value = "")
+          updateTextInput(session, inputId = "pole_y", value = "")
+          updateTextInput(session, inputId = "pole_z", value = "")
         } else if (input$plateModel == "NNR-GSRM") {
           elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(6,7,8,1)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
-          updateTextInput(session, inputId = "pole_x", value = "")
-          updateTextInput(session, inputId = "pole_y", value = "")
-          updateTextInput(session, inputId = "pole_z", value = "")
+          inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
           updateTextInput(session, inputId = "pole_lat", value = elements[1])
           updateTextInput(session, inputId = "pole_lon", value = elements[2])
           updateTextInput(session, inputId = "pole_rot", value = elements[3])
+          updateTextInput(session, inputId = "pole_x", value = "")
+          updateTextInput(session, inputId = "pole_y", value = "")
+          updateTextInput(session, inputId = "pole_z", value = "")
         }
-        inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
       } else {
         trans$plate <- NULL
         showNotification(paste("Plate", input$plate, "not found in the", plateModel, "plate model file"), action = NULL, duration = 10, closeButton = T, id = "bad_plate", type = "error", session = getDefaultReactiveDomain())
       }
-    # } else {
-    #   trans$plate <- NULL
     }
   })
   observeEvent(c(input$eulerType, input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot), {
     req(db1[[info$db1]], input$euler)
-print("rot")
-print(paste("xyz",inputs$pole_x,inputs$pole_y,inputs$pole_z))
-print(paste("llr",inputs$pole_lat,inputs$pole_lon,inputs$pole_rot))
     if (input$eulerType > 0 && 
         ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
         ((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)))
@@ -6399,46 +6400,57 @@ print(paste("llr",inputs$pole_lat,inputs$pole_lon,inputs$pole_rot))
     if (!is.null(file$id1)) {
       pattern <- paste0("^",file$id1)
       record <- grep(pattern, readLines(con = input$eulers$datapath, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
-      for (l in seq_len(length(record))) {
+      l <- length(record)
+      if (l > 0) {
         elements <- unlist(strsplit(record[[l]], "\\s+", fixed = F, perl = T, useBytes = F))
         if (length(elements) == 7) { # Cartesian
-          stationCartesian <- c(elements[2],elements[3],elements[4])
-          updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
-          updateTextInput(session, inputId = "station_x", value = stationCartesian[1])
-          updateTextInput(session, inputId = "station_y", value = stationCartesian[2])
-          updateTextInput(session, inputId = "station_z", value = stationCartesian[3])
+          if (!isTruthy(inputs$station_x) || !isTruthy(inputs$station_y) || !isTruthy(inputs$station_z)) {
+            stationCartesian <- c(elements[2],elements[3],elements[4])
+            updateRadioButtons(session, inputId = "station_coordinates", selected = 1)
+            updateTextInput(session, inputId = "station_x", value = stationCartesian[1])
+            updateTextInput(session, inputId = "station_y", value = stationCartesian[2])
+            updateTextInput(session, inputId = "station_z", value = stationCartesian[3])
+          }
           if (sqrt(as.numeric(elements[5])^2 + as.numeric(elements[6])^2 + as.numeric(elements[7])^2) > 2) { #Geographic
             polo_geo <- c(elements[5],elements[6],elements[7])
-            updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+            updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
+            inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- NULL
             updateTextInput(session, inputId = "pole_lat", value = polo_geo[1])
             updateTextInput(session, inputId = "pole_lon", value = polo_geo[2])
             updateTextInput(session, inputId = "pole_rot", value = polo_geo[3])
           } else { # Cartesian
             poleCartesian <- c(elements[5],elements[6],elements[7])
-            updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
+            updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
+            inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
             updateTextInput(session, inputId = "pole_x", value = poleCartesian[1])
             updateTextInput(session, inputId = "pole_y", value = poleCartesian[2])
             updateTextInput(session, inputId = "pole_z", value = poleCartesian[3])
           }
         } else if (length(elements) == 6) { #Geographic
-          stationGeo <- c(elements[2],elements[3])
-          updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
-          updateTextInput(session, inputId = "station_lat", value = stationGeo[1])
-          updateTextInput(session, inputId = "station_lon", value = stationGeo[2])
+          if (!isTruthy(inputs$station_lat) || !isTruthy(inputs$station_lon)) {
+            stationGeo <- c(elements[2],elements[3])
+            updateRadioButtons(session, inputId = "station_coordinates", selected = 2)
+            updateTextInput(session, inputId = "station_lat", value = stationGeo[1])
+            updateTextInput(session, inputId = "station_lon", value = stationGeo[2])
+          }
           if (sqrt(as.numeric(elements[4])^2 + as.numeric(elements[5])^2 + as.numeric(elements[6])^2) > 2) { #Geographic
             polo_geo <- c(elements[4],elements[5],elements[6])
-            updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T)
+            updateRadioButtons(session, inputId = "pole_coordinates", selected = 2)
+            inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- NULL
             updateTextInput(session, inputId = "pole_lat", value = polo_geo[1])
             updateTextInput(session, inputId = "pole_lon", value = polo_geo[2])
             updateTextInput(session, inputId = "pole_rot", value = polo_geo[3])
           } else { # Cartesian
             poleCartesian <- c(elements[4],elements[5],elements[6])
-            updateRadioButtons(session, inputId = "pole_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T)
+            updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
+            inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
             updateTextInput(session, inputId = "pole_x", value = poleCartesian[1])
             updateTextInput(session, inputId = "pole_y", value = poleCartesian[2])
             updateTextInput(session, inputId = "pole_z", value = poleCartesian[3])
           }
         }
+        updateSelectInput(inputId = "plateModel", selected = "")
+        updateRadioButtons(session, inputId = "eulerType", selected = 1)
       }
     }
   }, priority = 200)
