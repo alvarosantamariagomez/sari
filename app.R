@@ -3426,9 +3426,12 @@ server <- function(input,output,session) {
         }
         sigmaR <- NULL
         if (isTruthy(input$ObsError)) {
-          if (isTruthy(as.numeric(input$ObsError)) && as.numeric(input$ObsError) > 0) {
-            sigmaR <- as.numeric(input$ObsError)
+          if (isTruthy(inputs$ObsError) && inputs$ObsError > 0) {
+            sigmaR <- inputs$ObsError
           } else {
+            sigmaR <- info$noise/5
+            max_decimals <- signifdecimal(sigmaR, F) + 2
+            updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
             showNotification("The input measurement error is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_obserror", type = "error", session = getDefaultReactiveDomain())
           }
         } else {
