@@ -51,26 +51,27 @@ data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, n
 install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"))
 `
 
-4.3) The above two methods will either install package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
+4.3) The above two methods will either install the package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
 
 
 
-5) In addition, the package "mvcwt" can be installed as an option. If installed, this package allows computing wavelet transforms. This package can be downloaded from here:  
-https://cran.r-project.org/src/contrib/Archive/mvcwt/
+5) In addition, the following packages are optional and allow for extra analysis or visualization features:
 
-To install this package there are two options:
+5.1) The package "mvcwt" allows computing wavelet transforms. The source code of this package can be downloaded from here:  
+https://cran.r-project.org/src/contrib/Archive/mvcwt/  
+To install this package there are two options:  
+5.1.1) On Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file from your machine.
 
-5.1) On Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file from your machine.
-
-5.2) On the R/Rstudio console type:  
+5.1.2) On the R/Rstudio console type:  
 `
 install.packages("/path/to/the/mvcwt/tar.gz/file")
 `
 
-
-6) The package "leaflet" is also optional. If installed, this package allows adding an interactive location map when the GNSS station coordinates are known. This package can be installed like the others, but it requires installing the GDAL library first, at least in order to compile the package on a Linux system. For Windows, this can be avoided if installing the package binary file.  
+5.2) The package "leaflet" allows adding an interactive location map with the plate tectonic boundaries when the GNSS station coordinates are known. This package can be installed like the others, but it requires installing the GDAL library first, at least in order to compile the package on a Linux system. For Windows, this can be avoided if installing the package binary file.  
 More information on the GDAL library here:  
 https://gdal.org/download.html
+
+5.3) The package "geojsonio" allows adding the plate tectonic names on the location map. This package can be installed like the others, but it requires installing the leaflet package first (see the previous 5.2). Installing this package takes enough time to prepare and drink your favorite tea flavor.
 
 
 
@@ -113,6 +114,7 @@ dotCall64       v1.0-1
 dlm             v1.1-5
 data.table      v1.14.2
 shiny           v1.7.3
+geojsonio		v0.11.3
 
 If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to install this version from its github repo using:  
 `

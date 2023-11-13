@@ -5426,7 +5426,6 @@ server <- function(input,output,session) {
           if (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) && ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
             enable("eulerType")
           } else {
-            # updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
             disable("eulerType")
           }
         }
@@ -8305,32 +8304,41 @@ print(paste("llr",inputs$pole_lat,inputs$pole_lon,inputs$pole_rot))
         }
       }
       # Mapping the station position
-      if (exists("leaflet", mode = "function") && exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json") && isTruthy(lat) && isTruthy(lon)) {
-        plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
+      if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && isTruthy(lat) && isTruthy(lon)) {
         lon <- ifelse(lon > 180, lon - 360, lon)
-        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
-          addTiles() %>%
-          addPolygons(
-            fillColor = "white",
-            weight = 1,
-            opacity = 1,
-            color = "black",
-            dashArray = "1",
-            fillOpacity = 0,
-            highlightOptions = highlightOptions(
-              weight = 3,
-              color = "#DF536B",
-              dashArray = "",
+        if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
+          plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
+          map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+            addTiles() %>%
+            addPolygons(
+              fillColor = "white",
+              weight = 1,
+              opacity = 1,
+              color = "black",
+              dashArray = "1",
               fillOpacity = 0,
-              bringToFront = TRUE),
-            label = plates$PlateName,
-            labelOptions = labelOptions(
-              style = list("font-weight" = "normal", padding = "3px 8px"),
-              textsize = "15px",
-              direction = "auto")
-          ) %>%
-          setView(lng = lon, lat = lat, zoom = 2) %>%
-          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+              highlightOptions = highlightOptions(
+                weight = 3,
+                color = "#DF536B",
+                dashArray = "",
+                fillOpacity = 0,
+                bringToFront = TRUE),
+              label = plates$PlateName,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")
+            ) %>%
+            setView(lng = lon, lat = lat, zoom = 2) %>%
+            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+        } else {
+          boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
+          map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+            addTiles() %>%
+            addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
+            setView(lng = lon, lat = lat, zoom = 2) %>%
+            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+        }
         output$myMap = renderLeaflet(map)
         output$map <- renderUI({
           suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
