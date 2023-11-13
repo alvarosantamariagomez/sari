@@ -984,6 +984,40 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                           )
                                                                         ),
+                                                                        conditionalPanel(
+                                                                          condition = "output.series2",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div("Secondary station coordinates", helpPopup(HTML("Option 1: Cartesian coordinates in the same units as the series.<br>Option 2: geographic coordinates in decimal degrees")))
+                                                                            ),
+                                                                            column(6, align = "right",
+                                                                                   radioButtons(inputId = "station_coordinates2", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            conditionalPanel(
+                                                                              condition = "input.station_coordinates2 == 1",
+                                                                              column(4,
+                                                                                     textInput(inputId = "station_x2", label = "Station X", value = "")
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "station_y2", label = "Station Y", value = "")
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "station_z2", label = "Station Z", value = "")
+                                                                              )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.station_coordinates2 == 2",
+                                                                              column(4,
+                                                                                     textInput(inputId = "station_lat2", label = "Station latitude", value = "")
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "station_lon2", label = "Station longitude", value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        ),
                                                                         fluidRow(
                                                                           column(6,
                                                                                  div("Euler's pole", helpPopup(HTML("Option 1: Cartesian rotation rates in decimal degrees/Ma.<br>Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma")))
@@ -1993,7 +2027,7 @@ server <- function(input,output,session) {
   })
   
   output$location <- reactive({
-    return(exists("leaflet", mode = "function") && isTruthy(input$station_lat) & isTruthy(input$station_lon))
+    return(exists("leaflet", mode = "function") && (isTruthy(input$station_lat) && isTruthy(input$station_lon)) || (isTruthy(input$station_lat2) && isTruthy(input$station_lon2)))
   })
   outputOptions(output, "location", suspendWhenHidden = F)
   
@@ -2347,25 +2381,50 @@ server <- function(input,output,session) {
   observeEvent(station_x_d(), {
     inputs$station_x <- suppressWarnings(as.numeric(trimws(station_x_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
+  
+  station_x2_d <- reactive(input$station_x2) %>% debounce(1000, priority = 1000)
+  observeEvent(station_x2_d(), {
+    inputs$station_x2 <- suppressWarnings(as.numeric(trimws(station_x2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
   station_y_d <- reactive(input$station_y) %>% debounce(1000, priority = 1000)
   observeEvent(station_y_d(), {
     inputs$station_y <- suppressWarnings(as.numeric(trimws(station_y_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  station_y2_d <- reactive(input$station_y2) %>% debounce(1000, priority = 1000)
+  observeEvent(station_y2_d(), {
+    inputs$station_y2 <- suppressWarnings(as.numeric(trimws(station_y2_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
   station_z_d <- reactive(input$station_z) %>% debounce(1000, priority = 1000)
   observeEvent(station_z_d(), {
     inputs$station_z <- suppressWarnings(as.numeric(trimws(station_z_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
+  
+  station_z2_d <- reactive(input$station_z2) %>% debounce(1000, priority = 1000)
+  observeEvent(station_z2_d(), {
+    inputs$station_z2 <- suppressWarnings(as.numeric(trimws(station_z2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
   station_lat_d <- reactive(input$station_lat) %>% debounce(1000, priority = 1000)
   observeEvent(station_lat_d(), {
     inputs$station_lat <- suppressWarnings(as.numeric(trimws(station_lat_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
+  
+  station_lat2_d <- reactive(input$station_lat2) %>% debounce(1000, priority = 1000)
+  observeEvent(station_lat2_d(), {
+    inputs$station_lat2 <- suppressWarnings(as.numeric(trimws(station_lat2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
   station_lon_d <- reactive(input$station_lon) %>% debounce(1000, priority = 1000)
   observeEvent(station_lon_d(), {
     inputs$station_lon <- suppressWarnings(as.numeric(trimws(station_lon_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  station_lon2_d <- reactive(input$station_lon2) %>% debounce(1000, priority = 1000)
+  observeEvent(station_lon2_d(), {
+    inputs$station_lon2 <- suppressWarnings(as.numeric(trimws(station_lon2_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
   pole_x_d <- reactive(input$pole_x) %>% debounce(1000, priority = 1000)
@@ -5423,7 +5482,9 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
           updateTextInput(inputId = "plate", value = "")
         } else {
-          if (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) && ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
+          if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
+               ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)))) &&
+              ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
             enable("eulerType")
           } else {
             disable("eulerType")
@@ -6300,10 +6361,13 @@ server <- function(input,output,session) {
     req(db1[[info$db1]], input$euler)
     if (input$eulerType > 0 && 
         ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
-        ((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)))
+        (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
+         ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2))))
         ) {
       stationCartesian <- c()
+      stationCartesian2 <- c()
       stationGeo <- c()
+      stationGeo2 <- c()
       poleCartesian <- c()
       if (messages > 0) cat(file = stderr(), "Compute plate rotation (", input$eulerType, ")\n")
       if (input$sunits == 1) {
@@ -6347,9 +6411,11 @@ server <- function(input,output,session) {
       }
       if (input$station_coordinates == 1) {
         stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
+        stationCartesian2 <- c(inputs$station_x2,inputs$station_y2,inputs$station_z2)
         stationGeo <- do.call(xyz2llh,as.list(stationCartesian))
       } else if (input$station_coordinates == 2) {
         stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
+        stationGeo2 <- c(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180)
         stationCartesian <- do.call(latlon2xyz,as.list(c(stationGeo,scaling)))
       }
       if (input$pole_coordinates == 2) {
@@ -8113,6 +8179,7 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("unknown_components")
     removeNotification("time_shift")
+    lat <- lon <- lat2 <- lon2 <- NULL
     # primary series ####
     if (series == 1) {
       if (messages > 0) cat(file = stderr(), "Reading primary series file", "\n")
@@ -8205,160 +8272,16 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       # Extracting station coordinates
-      lat <- lon <- NULL
       spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
-      if (!isTruthy(inputs$station_x) && !isTruthy(inputs$station_y) && !isTruthy(inputs$station_z) && !isTruthy(inputs$station_lat) && !isTruthy(inputs$station_lon)) {
-        if (info$format == 1) {
-          if (isTruthy(url$server)) {
-            if (url$server == "FORMATER") {
-              coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
-              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-              lat <- stationGeo[1] * 180/pi
-              lon <- stationGeo[2] * 180/pi
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            } else if (url$server == "SONEL") {
-              coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
-              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-              lat <- stationGeo[1] * 180/pi
-              lon <- stationGeo[2] * 180/pi
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            } else if (url$server == "IGS") {
-              tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
-              shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
-              lat <- tableAll[1,5]
-              lon <- tableAll[1,6]
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            } else if (url$server == "JPL") {
-              coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
-              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-              lat <- stationGeo[1] * 180/pi
-              lon <- stationGeo[2] * 180/pi
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            } else if (url$server == "SIRGAS") {
-              tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein, warn = F), value = T, fixed = T)[1], comment.char = "#"), silent = T)
-              shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
-              lat <- tableAll[1,7]
-              lon <- tableAll[1,8]
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            } else if (url$server == "EPOS") {
-              stationsFromEPOS <- try(read.table(file = "www/EPOS_database.txt", header = T), silent = T)
-              tableAll <- stationsFromEPOS[grepl(url$station, stationsFromEPOS$id), c(2,3)]
-              shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
-              lat <- tableAll[1,1]
-              lon <- tableAll[1,2]
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            } else if (url$server == "EARTHSCOPE") {
-              tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = as.numeric(tableAll[6])))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = as.numeric(tableAll[8])))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = as.numeric(tableAll[10])))
-              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
-              lat <- stationGeo[1] * 180/pi
-              lon <- stationGeo[2] * 180/pi
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            }
-          } else {
-            if (isTruthy(spotgins)) {
-              info$product1 <- "SPOTGINS_POS"
-              coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
-              shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
-              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-              lat <- stationGeo[1] * 180/pi
-              lon <- stationGeo[2] * 180/pi
-              shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-              shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-            }
-          }
-        } else if (info$format == 2) {
-          ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
-          if (length(ref_pos) > 0) {
-            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T))
-            x <- unlist(strsplit(ref_pos, split = " +"))[5]
-            y <- unlist(strsplit(ref_pos, split = " +"))[6]
-            z <- unlist(strsplit(ref_pos, split = " +"))[7]
-            shinyjs::delay(100, updateTextInput(inputId = "station_x", value = x))
-            shinyjs::delay(100, updateTextInput(inputId = "station_y", value = y))
-            shinyjs::delay(100, updateTextInput(inputId = "station_z", value = z))
-            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
-            lat <- stationGeo[1] * 180/pi
-            lon <- stationGeo[2] * 180/pi
-            shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-            shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-          }
-        } else if (info$format == 3) {
-          skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
-          tableAll <- try(read.table(filein, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T))
-          lat <- tableAll[1,21]
-          lon <- tableAll[1,22] + 360
-          shinyjs::delay(100, updateTextInput(inputId = "station_lat", value = lat))
-          shinyjs::delay(100, updateTextInput(inputId = "station_lon", value = lon))
-        }
-      }
-      # Mapping the station position
-      if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && isTruthy(lat) && isTruthy(lon)) {
-        lon <- ifelse(lon > 180, lon - 360, lon)
-        if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
-          plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
-          map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
-            addTiles() %>%
-            addPolygons(
-              fillColor = "white",
-              weight = 1,
-              opacity = 1,
-              color = "black",
-              dashArray = "1",
-              fillOpacity = 0,
-              highlightOptions = highlightOptions(
-                weight = 3,
-                color = "#DF536B",
-                dashArray = "",
-                fillOpacity = 0,
-                bringToFront = TRUE),
-              label = plates$PlateName,
-              labelOptions = labelOptions(
-                style = list("font-weight" = "normal", padding = "3px 8px"),
-                textsize = "15px",
-                direction = "auto")
-            ) %>%
-            setView(lng = lon, lat = lat, zoom = 2) %>%
-            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
-        } else {
-          boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
-          map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
-            addTiles() %>%
-            addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
-            setView(lng = lon, lat = lat, zoom = 2) %>%
-            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
-        }
-        output$myMap = renderLeaflet(map)
-        output$map <- renderUI({
-          suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
-        })
-      }
+      if (isTruthy(spotgins)) info$product1 <- "SPOTGINS_POS"
+      coordinates <- extract_coordinates(filein,info$format,url$server,info$product1,skip,sep)
+      lat <- coordinates[4]
+      lon <- coordinates[5]
+      shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
+      shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
+      shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
+      shinyjs::delay(100, updateTextInput(session, inputId = "station_lat", value = coordinates[4]))
+      shinyjs::delay(100, updateTextInput(session, inputId = "station_lon", value = coordinates[5]))
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
         disable("neuenu")
@@ -8572,6 +8495,18 @@ server <- function(input,output,session) {
             table_stack <- table_stack[,c("x1","y1","y2","y3")]
             names(table_stack) <- c("# MJD", "East", "North", "Up")
             suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
+          } else {
+            # Extracting station coordinates
+            spotgins <- grepl("^# SPOTGINS ", readLines(files$datapath[i], n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
+            if (isTruthy(spotgins)) info$product2 <- "SPOTGINS_POS"
+            coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,skip,sep2)
+            lat2 <- as.numeric(coordinates[4])
+            lon2 <- as.numeric(coordinates[5])
+            shinyjs::delay(100, updateTextInput(session, inputId = "station_x2", value = coordinates[1]))
+            shinyjs::delay(100, updateTextInput(session, inputId = "station_y2", value = coordinates[2]))
+            shinyjs::delay(100, updateTextInput(session, inputId = "station_z2", value = coordinates[3]))
+            shinyjs::delay(100, updateTextInput(session, inputId = "station_lat2", value = coordinates[4]))
+            shinyjs::delay(100, updateTextInput(session, inputId = "station_lon2", value = coordinates[5]))
           }
           rm(table_stack)
           info$db2 <- "original"
@@ -8625,6 +8560,56 @@ server <- function(input,output,session) {
       showNotification(HTML("Problem extracting the series ID from the file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
     }
     shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
+    # Mapping the station positions
+    if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && ((isTruthy(lat) && isTruthy(lon)) || ((isTruthy(lat2) && isTruthy(lon2))))) {
+      if (isTruthy(lon)) {
+        lon <- ifelse(lon > 180, lon - 360, lon)
+      } else {
+        lat <- inputs$station_lat
+        lon <- inputs$station_lon
+      }
+      if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
+        plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
+        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+          addTiles() %>%
+          addPolygons(
+            fillColor = "white",
+            weight = 1,
+            opacity = 1,
+            color = "black",
+            dashArray = "1",
+            fillOpacity = 0,
+            highlightOptions = highlightOptions(
+              weight = 3,
+              color = "#DF536B",
+              dashArray = "",
+              fillOpacity = 0,
+              bringToFront = TRUE),
+            label = plates$PlateName,
+            labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")
+          ) %>%
+          setView(lng = lon, lat = lat, zoom = 2) %>%
+          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+      } else {
+        boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
+        map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+          addTiles() %>%
+          addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
+          setView(lng = lon, lat = lat, zoom = 2) %>%
+          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+      }
+      if (isTruthy(lon2)) {
+        lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
+        map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2)
+      }
+      output$myMap = renderLeaflet(map)
+      output$map <- renderUI({
+        suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
+      })
+    }
   }
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
     tableAll <- NULL
@@ -8911,6 +8896,90 @@ server <- function(input,output,session) {
     } else {
       showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
       NULL
+    }
+  }
+  extract_coordinates <- function(filein,format,server,product,skip,sep) {
+    if (format == 1) {
+      if (isTruthy(server)) {
+        if (server == "FORMATER") {
+          coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+          lat <- stationGeo[1] * 180/pi
+          lon <- stationGeo[2] * 180/pi
+          coordinates <- c(coordinates,lat,lon)
+        } else if (server == "SONEL") {
+          coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+          lat <- stationGeo[1] * 180/pi
+          lon <- stationGeo[2] * 180/pi
+          coordinates <- c(coordinates,lat,lon)
+        } else if (server == "IGS") {
+          tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
+          shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
+          lat <- tableAll[1,5]
+          lon <- tableAll[1,6]
+          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+          coordinates <- c(coordinates,lat,lon)
+        } else if (server == "JPL") {
+          coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+          lat <- stationGeo[1] * 180/pi
+          lon <- stationGeo[2] * 180/pi
+          coordinates <- c(coordinates,lat,lon)
+        } else if (server == "SIRGAS") {
+          tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein, warn = F), value = T, fixed = T)[1], comment.char = "#"), silent = T)
+          shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
+          lat <- tableAll[1,7]
+          lon <- tableAll[1,8]
+          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+          coordinates <- c(coordinates,lat,lon)
+        } else if (server == "EPOS") {
+          stationsFromEPOS <- try(read.table(file = "www/EPOS_database.txt", header = T), silent = T)
+          tableAll <- stationsFromEPOS[grepl(url$station, stationsFromEPOS$id), c(2,3)]
+          shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
+          lat <- tableAll[1,1]
+          lon <- tableAll[1,2]
+          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+          coordinates <- c(coordinates,lat,lon)
+        } else if (server == "EARTHSCOPE") {
+          tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
+          lat <- stationGeo[1] * 180/pi
+          lon <- stationGeo[2] * 180/pi
+          coordinates <- c(as.numeric(tableAll[6]),as.numeric(tableAll[8]),as.numeric(tableAll[10]),lat,lon)
+        }
+      } else if (product == "SPOTGINS_POS") {
+        coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
+        shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+        stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+        lat <- stationGeo[1] * 180/pi
+        lon <- stationGeo[2] * 180/pi
+        coordinates <- c(coordinates,lat,lon)
+      }
+    } else if (format == 2) {
+      ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+      if (length(ref_pos) > 0) {
+        shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T))
+        x <- unlist(strsplit(ref_pos, split = " +"))[5]
+        y <- unlist(strsplit(ref_pos, split = " +"))[6]
+        z <- unlist(strsplit(ref_pos, split = " +"))[7]
+        stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
+        lat <- stationGeo[1] * 180/pi
+        lon <- stationGeo[2] * 180/pi
+        coordinates <- c(x,y,z,lat,lon)
+      }
+    } else if (format == 3) {
+      skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
+      tableAll <- try(read.table(filein, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
+      shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T))
+      lat <- tableAll[1,21]
+      lon <- tableAll[1,22] + 360
+      coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+      coordinates <- c(coordinates,lat,lon)
     }
   }
   latlon2xyz <- function(lat,lon,scaling) {
