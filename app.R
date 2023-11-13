@@ -955,7 +955,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty"),
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 div("Station coordinates", helpPopup("Cartesian coordinates in the same units as the series. Geographic coordinates in decimal degrees"))
+                                                                                 div("Station coordinates", helpPopup(HTML("Option 1: Cartesian coordinates in the same units as the series.<br>Option 2: geographic coordinates in decimal degrees")))
                                                                           ),
                                                                           column(6, align = "right",
                                                                                  radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
@@ -986,7 +986,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ),
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 div("Euler's pole", helpPopup("Cartesian rotation rates in decimal degrees/Ma. Geographic position in decimal degrees and rotation rate in decimal degrees/Ma"))
+                                                                                 div("Euler's pole", helpPopup(HTML("Option 1: Cartesian rotation rates in decimal degrees/Ma.<br>Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma")))
                                                                           ),
                                                                           column(6, align = "right",
                                                                                  radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
