@@ -7896,6 +7896,9 @@ server <- function(input,output,session) {
     info$sampling <- NULL
     info$errorbars <- T
     info$last_optionSecondary <- NULL
+    info$trendRef <- NULL
+    info$PolyRef <- NULL
+    info$periodRef <- NULL
     url$station <- NULL
     url$file <- NULL
     updateTextInput(session, "waveformPeriod", value = "")
