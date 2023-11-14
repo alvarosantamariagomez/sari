@@ -14,37 +14,46 @@
 ### You should have received a copy of the GNU General Public License
 ### along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Loading packages
-suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-  library(data.table, verbose = F, quietly = T) #v1.14.0
-  library(dlm, verbose = F, quietly = T) #v1.1-5
-  library(fields, verbose = F, quietly = T) #v12.5
-  library(lubridate, verbose = F, quietly = T) #v1.7.10
-  library(magrittr, verbose = F, quietly = T) #v2.0.1
-  library(markdown, verbose = F, quietly = T) #v1.1
-  library(matrixStats, verbose = F, quietly = T) #v0.59.0
-  library(mnormt, verbose = F, quietly = T) #v2.0.2
-  library(mvcwt, verbose = F, quietly = T) #v1.3.1
-  library(numDeriv, verbose = F, quietly = T) #v2016.8-1.1
-  library(pracma, verbose = F, quietly = T) #v2.3.8
-  library(psych, verbose = F, quietly = T) #v2.1.6
-  library(RColorBrewer, verbose = F, quietly = T) #v1.1-2
-  library(RCurl, verbose = F, quietly = T) #v1.98-1.12
-  library(XML, verbose = F, quietly = T) #v3.99-0.14
-  library(jsonlite, verbose = F, quietly = T) #v1.8.0
-  library(shinyBS, verbose = F, quietly = T) #v0.61
-  library(shinycssloaders, verbose = F, quietly = T) #v1.0.0
-  library(shinyjs, verbose = F, quietly = T) #v2.0
-  library(shinythemes, verbose = F, quietly = T) #v1.2.0
-  library(shiny, verbose = F, quietly = T) #v1.6.0
-  library(spectral, verbose = F, quietly = T) #v2.0
-  library(strucchange, verbose = F, quietly = T) #v1.5-2
-  library(tseries, verbose = F, quietly = T) #v0.10-48
-  library(leaflet, verbose = F, quietly = T) #v2.1.2
-  library(geojsonio, verbose = F, quietly = T) #v0.11.3
-  # library(parallel)
-  # library(optimParallel)
-})))
+
+# Function to check and load packages if installed
+check_load <- function(packages) {
+  for (package in packages) {
+    if (package %in% rownames(installed.packages())) {
+      suppressPackageStartupMessages(suppressMessages(suppressWarnings(do.call('library', list(package = package, verbose = F, quietly = T)))))
+    }
+  } 
+}
+
+packages <- c(
+  "data.table",
+  "dlm",
+  "fields",
+  "lubridate",
+  "magrittr",
+  "markdown",
+  "matrixStats",
+  "mnormt",
+  "mvcwt",
+  "numDeriv",
+  "pracma",
+  "psych",
+  "RColorBrewer",
+  "RCurl",
+  "XML",
+  "jsonlite",
+  "shinyBS",
+  "shinycssloaders",
+  "shinyjs",
+  "shinythemes",
+  "shiny",
+  "spectral",
+  "strucchange",
+  "tseries",
+  "leaflet",
+  "geojsonio"
+)
+
+check_load(packages)
 
 devmode(TRUE)
 options(shiny.fullstacktrace = TRUE)
