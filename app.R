@@ -8286,7 +8286,7 @@ server <- function(input,output,session) {
       # Extracting station coordinates
       spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       if (isTruthy(spotgins)) info$product1 <- "SPOTGINS_POS"
-      coordinates <- extract_coordinates(filein,info$format,url$server,info$product1,skip,sep)
+      coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,skip,sep))
       lat <- coordinates[4]
       lon <- coordinates[5]
       shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
