@@ -2875,7 +2875,7 @@ server <- function(input,output,session) {
         paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
       }
     })
-}, width = reactive(info$width), type = "cairo-png")
+}, width = reactive(info$width))
 
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs), {
@@ -2966,7 +2966,7 @@ server <- function(input,output,session) {
     xfit <- seq(min(values),max(values),length = 40)
     yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
     lines(xfit, yfit, col = SARIcolors[2], lwd = 3)
-  }, width = reactive(info$width), type = "cairo-png")
+  }, width = reactive(info$width))
 
   # Offset verification ####
   observeEvent(input$runVerif, {
@@ -3507,7 +3507,7 @@ server <- function(input,output,session) {
               title(ylab = units)
               title(title, line = 3)
             }
-          }, width = reactive(info$width), type = "cairo-png")
+          }, width = reactive(info$width))
         }
       })
       })
@@ -3580,7 +3580,7 @@ server <- function(input,output,session) {
         lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
       }
     }
-  }, width = reactive(info$width), type = "cairo-png")
+  }, width = reactive(info$width))
 
   # Compute stats & histogram ####
   observeEvent(c(input$histogramType, trans$y, trans$res, trans$filter, ranges$x1, input$tab, inputs$epoch, inputs$variable, inputs$errorBar, input$sunits), {
@@ -3622,7 +3622,7 @@ server <- function(input,output,session) {
         xfit <- seq(min(values),max(values),length = 40)
         yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
         lines(xfit, yfit, col = SARIcolors[2], lwd = 3)
-      }, width = reactive(info$width), type = "cairo-png")
+      }, width = reactive(info$width))
       if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
       adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
       kpss <- suppressWarnings(kpss.test(values, null = "Level"))
@@ -3772,7 +3772,7 @@ server <- function(input,output,session) {
               waveform <- waveform[order(waveform$x),]
               plot(waveform$x,waveform$y, type = symbol, pch = 20, xlab = "Epoch of period", ylab = "Average value", main = title)
             }
-          }, width = reactive(info$width), type = "cairo-png")
+          }, width = reactive(info$width))
         } else {
           showNotification(HTML("The period of the waveform is not valid.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_waveform_period", type = "error", session = getDefaultReactiveDomain())
           if (length(trans$pattern) > 0) {
@@ -4193,7 +4193,7 @@ server <- function(input,output,session) {
         }
       })
     }
-  }, width = reactive(info$width), type = "cairo-png")
+  }, width = reactive(info$width))
 
   # Plot wavelet ####
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
@@ -4349,7 +4349,7 @@ server <- function(input,output,session) {
       inputs$max_wavelet <- ""
       info$run_wavelet <- T
     }
-  }, width = reactive(info$width), type = "cairo-png")
+  }, width = reactive(info$width))
 
   # Compute smoother ####
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
@@ -4473,7 +4473,7 @@ server <- function(input,output,session) {
         title(title, line = 3)
       }
     }
-  }, width = reactive(info$width), type = "cairo-png")
+  }, width = reactive(info$width))
 
   # Noise analysis ####
   observeEvent(input$runmle, {
