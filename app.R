@@ -1918,7 +1918,7 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
-                          model_old = NULL, plate = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
+                          model_old = NULL, plate = NULL, plate2 = NULL, offsetEpochs = NULL, x0_kf = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL)
 
   # 7. output
@@ -2489,7 +2489,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
-                 input$fullSeries, info$db1, info$db2, input$eulerType, trans$plate,
+                 input$fullSeries, info$db1, info$db2, input$eulerType, trans$plate, trans$plate2,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3), {
     req(db1[[info$db1]])
     if (input$tab == 4) {
@@ -2525,6 +2525,11 @@ server <- function(input,output,session) {
     # extract data for each component
     if ((input$tab == 1) || (input$format == 4)) {
       trans$y0 <- as.numeric(table1$y1)
+      trans$sy0 <- as.numeric(table1$sy1)
+      trans$y2 <- as.numeric(table2$y1) * inputs$scaleFactor
+      trans$sy2 <- as.numeric(table2$sy1) * inputs$scaleFactor
+      status <- table1$status1
+      kf <- table1$status1.kf
       if (isTruthy(trans$plate) && input$eulerType == 2) {
         if (input$format == 4) {
           trans$y0 <- trans$y0 - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
@@ -2532,31 +2537,39 @@ server <- function(input,output,session) {
           trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         }
       }
-      trans$sy0 <- as.numeric(table1$sy1)
-      trans$y2 <- as.numeric(table2$y1) * inputs$scaleFactor
-      trans$sy2 <- as.numeric(table2$sy1) * inputs$scaleFactor
-      status <- table1$status1
-      kf <- table1$status1.kf
+      if (isTruthy(trans$plate2) && input$eulerType == 2) {
+        if (input$format2 == 4) {
+          trans$y2 <- trans$y2 - trans$plate2[as.numeric(input$neu1D)]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+        } else {
+          trans$y2 <- trans$y2 - trans$plate2[1]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+        }
+      }
     } else if (input$tab == 2) {
       trans$y0 <- as.numeric(table1$y2)
-      if (isTruthy(trans$plate) && input$eulerType == 2) {
-        trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2], na.rm = T)) - median(trans$y0, na.rm = T)
-      }
       trans$sy0 <- as.numeric(table1$sy2)
       trans$y2 <- as.numeric(table2$y2) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy2) * inputs$scaleFactor
       status <- table1$status2
       kf <- table1$status2.kf
+      if (isTruthy(trans$plate) && input$eulerType == 2) {
+        trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2], na.rm = T)) - median(trans$y0, na.rm = T)
+      }
+      if (isTruthy(trans$plate2) && input$eulerType == 2) {
+        trans$y2 <- trans$y2 - trans$plate2[2]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+      }
     } else if (input$tab == 3) {
       trans$y0 <- as.numeric(table1$y3)
-      if (isTruthy(trans$plate) && input$eulerType == 2) {
-        trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3], na.rm = T)) - median(trans$y0, na.rm = T)
-      }
       trans$sy0 <- as.numeric(table1$sy3)
       trans$y2 <- as.numeric(table2$y3) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy3) * inputs$scaleFactor
       status <- table1$status3
       kf <- table1$status3.kf
+      if (isTruthy(trans$plate) && input$eulerType == 2) {
+        trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3], na.rm = T)) - median(trans$y0, na.rm = T)
+      }
+      if (isTruthy(trans$plate2) && input$eulerType == 2) {
+        trans$y2 <- trans$y2 - trans$plate2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+      }
     }
     # getting data range including excluded points
     trans$x <- trans$xe <- trans$x0
@@ -6365,17 +6378,17 @@ server <- function(input,output,session) {
         }
       } else {
         trans$plate <- NULL
+        trans$plate2 <- NULL
         showNotification(paste("Plate", input$plate, "not found in the", plateModel, "plate model file"), action = NULL, duration = 10, closeButton = T, id = "bad_plate", type = "error", session = getDefaultReactiveDomain())
       }
     }
   })
-  observeEvent(c(input$eulerType, input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot), {
+  observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_lon2), {
     req(db1[[info$db1]], input$euler)
-    if (input$eulerType > 0 && 
-        ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
+    if (((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
         (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
          ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2))))
-        ) {
+    ) {
       stationCartesian <- c()
       stationCartesian2 <- c()
       stationGeo <- c()
@@ -6421,15 +6434,8 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "sunits", selected = 1)
         }
       }
-      if (input$station_coordinates == 1) {
-        stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
-        stationCartesian2 <- c(inputs$station_x2,inputs$station_y2,inputs$station_z2)
-        stationGeo <- do.call(xyz2llh,as.list(stationCartesian))
-      } else if (input$station_coordinates == 2) {
-        stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
-        stationGeo2 <- c(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180)
-        stationCartesian <- do.call(latlon2xyz,as.list(c(stationGeo,scaling)))
-      }
+      stationCartesian <- c(inputs$station_x,inputs$station_y,inputs$station_z)
+      stationGeo <- c(inputs$station_lat*pi/180,inputs$station_lon*pi/180)
       if (input$pole_coordinates == 2) {
         poleCartesian <- inputs$pole_rot*degMa2radyr * c(cos(inputs$pole_lat*pi/180)*cos(inputs$pole_lon*pi/180),cos(inputs$pole_lat*pi/180)*sin(inputs$pole_lon*pi/180),sin(inputs$pole_lat*pi/180))
       } else {
@@ -6465,13 +6471,32 @@ server <- function(input,output,session) {
         } else if (input$tunits == 2) {
           trans$plate <- trans$plate*7/daysInYear
         }
+        if (isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2) && isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
+          stationCartesian2 <- c(inputs$station_x2,inputs$station_y2,inputs$station_z2)
+          stationGeo2 <- c(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180)
+          plateCartesian2 <- cross(poleCartesian,stationCartesian2)
+          rotation2 <- matrix(data = c(-1*sin(stationGeo2[2]),-1*sin(stationGeo2[1])*cos(stationGeo2[2]),-1*cos(stationGeo2[1])*cos(stationGeo2[2]),cos(stationGeo2[2]),-1*sin(stationGeo2[1])*sin(stationGeo2[2]),-1*cos(stationGeo2[1])*sin(stationGeo2[2]),0,cos(stationGeo2[1]),-1*sin(stationGeo2[1])), nrow = 3, ncol = 3) #ENU
+          plate_neu2 <- c(rotation2 %*% plateCartesian2)
+          if ((input$format2 == 1 && input$neuenu == 1) || input$format2 == 2 || input$format2 == 3 || input$format2 == 4) { #ENU
+            trans$plate2 <- plate_neu2
+          } else if ((input$format2 == 1 && input$neuenu == 2)) { #NEU
+            trans$plate2 <- c(plate_neu2[2],plate_neu2[1],plate_neu2[3])
+          }
+          if (input$tunits == 1) {
+            trans$plate2 <- trans$plate2/daysInYear
+          } else if (input$tunits == 2) {
+            trans$plate2 <- trans$plate2*7/daysInYear
+          }
+        }
       } else {
         showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
         updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
         trans$plate <- NULL
+        trans$plate2 <- NULL
       }
     } else {
       trans$plate <- NULL
+      trans$plate2 <- NULL
     }
   }, priority = 4)
   observeEvent(c(input$eulers), {
