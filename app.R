@@ -55,8 +55,9 @@ packages <- c(
 
 check_load(packages)
 
-devmode(TRUE)
-options(shiny.fullstacktrace = TRUE)
+# Shiny/R options
+options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
+options(shiny.autoreload = T, shiny.autoreload.pattern = glob2rx("app.R"))
 Sys.setlocale('LC_ALL','C')
 
 # version ####
@@ -593,16 +594,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 2,
                                                                       tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                       fluidRow(
-                                                                        column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
+                                                                        column(2, style = 'padding:0px 1px 0px 10px;', align = "left",
                                                                                actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
-                                                                        column(2, style = 'padding:0px 10px 0px 10px;', align = "left",
+                                                                        column(3, style = 'padding:0px 1px 0px 1px;', align = "left",
+                                                                               actionButton(inputId = "plotAll", label = "Overview", icon = icon("bars", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                        ),
+                                                                        column(2, style = 'padding:0px 1px 0px 1px;', align = "right",
                                                                                actionButton(inputId = "reset", label = "Reset", icon = icon("trash", class = NULL, lib = "font-awesome"), style = "font-size: small; color: #F5C710; font-weight: bold")
                                                                         ),
-                                                                        column(4, style = 'padding:0px 0px 0px 0px;', align = "right",
-                                                                               actionButton(inputId = "remove", label = "Toggle points", icon =  icon("ban", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                        column(2, style = 'padding:0px 1px 0px 1px;', align = "right",
+                                                                               actionButton(inputId = "remove", label = "Toggle", icon =  icon("ban", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
-                                                                        column(4, style = 'padding:0px 10px 0px 0px;', align = "right",
+                                                                        column(3, style = 'padding:0px 10px 0px 0px;', align = "right",
                                                                                actionButton(inputId = "delete_excluded", label = "Reset toggle", icon = icon("backward", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         )
                                                                       ),
@@ -1934,7 +1938,6 @@ server <- function(input,output,session) {
   
   # Constants ####
   # Some initial values and constants
-  options(shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
   SARIcolors <- c("black", "#DF536B", "#61D04F", "#2297E6", "#28E2E5", "#CD0BBC", "#F5C710", "gray62") # colorblind palette copied from the palette R4 for R versions < 4
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
@@ -2514,12 +2517,15 @@ server <- function(input,output,session) {
     if (input$tunits == 1) {
       trans$x0 <- table1$x1
       trans$x2 <- table2$x1
+      info$tunits.label <- "days"
     } else if (input$tunits == 2) {
       trans$x0 <- table1$x2
       trans$x2 <- table2$x2
+      info$tunits.label <- "weeks"
     } else if (input$tunits == 3) {
       trans$x0 <- table1$x3
       trans$x2 <- table2$x3
+      info$tunits.label <- "years"
     }
     
     # extract data for each component
@@ -5433,6 +5439,7 @@ server <- function(input,output,session) {
       disable("optionSecondary")
       disable("waveform")
       disable("plot")
+      disable("plotAll")
       disable("overflow")
       disable("add_excluded")
       disable("permanent")
@@ -5594,6 +5601,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(db1[[info$db1]])) {
           disable("plot")
+          enable("plotAll")
           disable("series")
           disable("format")
           enable("server2")
@@ -5829,6 +5837,7 @@ server <- function(input,output,session) {
           disable("spectrumFilter")
           disable("spectrumFilterRes")
           enable("plot")
+          disable("plotAll")
           enable("series")
           enable("format")
           disable("average")
@@ -6581,7 +6590,6 @@ server <- function(input,output,session) {
   observeEvent(input$tunits, {
     req(db1[[info$db1]])
     if (input$tunits == 1) {
-      info$tunits.label <- "days"
       x1 <- db1[[info$db1]]$x1
       x2 <- db2[[info$db2]]$x1
       if (info$tunits.last == 2) {
@@ -6592,7 +6600,6 @@ server <- function(input,output,session) {
         scale <- daysInYear
       }
     } else if (input$tunits == 2) {
-      info$tunits.label <- "weeks"
       x1 <- db1[[info$db1]]$x2
       x2 <- db2[[info$db2]]$x2
       if (info$tunits.last == 1) {
@@ -6603,7 +6610,6 @@ server <- function(input,output,session) {
         scale <- daysInYear/7
       }
     } else if (input$tunits == 3) {
-      info$tunits.label <- "years"
       x1 <- db1[[info$db1]]$x3
       x2 <- db2[[info$db2]]$x3
       if (info$tunits.last == 1) {
@@ -7522,6 +7528,220 @@ server <- function(input,output,session) {
     if (messages > 4) cat(file = stderr(), "From: observe plotting\n")
     digest(1)
   }, priority = 4)
+  observeEvent(input$plotAll, {
+    req(db1[[info$db1]])
+    if (input$format < 4) {
+      if (input$sunits == 1) {
+        unit <- "(m)"
+      } else if (input$sunits == 2) {
+        unit <- "(mm)"
+      } else {
+        unit <- ""
+      }
+      if (input$symbol == 0) {
+        symbol <- 'p'
+      } else if (input$symbol == 1) {
+        symbol <- 'l'
+      } else if (input$symbol == 2) {
+        symbol <- 'o'
+      }
+      if (input$tunits == 1) {
+        x <- db1[[info$db1]]$x1
+        x2 <- db2[[info$db2]]$x1
+      } else if (input$tunits == 2) {
+        x <- db1[[info$db1]]$x2
+        x2 <- db2[[info$db2]]$x2
+      } else if (input$tunits == 3) {
+        x <- db1[[info$db1]]$x3
+        x2 <- db2[[info$db2]]$x3
+      }
+      if (isTruthy(trans$plate) && input$eulerType == 2) {
+        y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
+        y12 <- db2[[info$db2]]$y1 - trans$plate[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
+        y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
+        y22 <- db2[[info$db2]]$y2 - trans$plate[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
+        y3 <- db1[[info$db1]]$y3 - trans$plate[3]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y3, na.rm = T)
+        y32 <- db2[[info$db2]]$y3 - trans$plate[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
+      } else {
+        y1 <- db1[[info$db1]]$y1
+        y12 <- db2[[info$db2]]$y1
+        y2 <- db1[[info$db1]]$y2
+        y22 <- db2[[info$db2]]$y2
+        y3 <- db1[[info$db1]]$y3
+        y32 <- db2[[info$db2]]$y3
+      }
+      sy1 <- db1[[info$db1]]$sy1
+      sy12 <- db2[[info$db2]]$sy1
+      sy2 <- db1[[info$db1]]$sy2
+      sy22 <- db2[[info$db2]]$sy2
+      sy3 <- db1[[info$db1]]$sy3
+      sy32 <- db2[[info$db2]]$sy3
+      fileout <- "www/SARIseries.png"
+      ragg::agg_png(filename = fileout, width = 800, height = 800, pointsize = 25)
+      par(mai = c(1, 2, 1, 1))
+      layout(mat = matrix(data = c(1,2,3), nrow = 3, ncol = 1))
+      # East
+      par(mai = c(0.3, 1.2, 0.3, 0.6))
+      y.range <- range(y1[db1[[info$db1]]$status1][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
+      if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
+        if (isTruthy(input$sameScale)) {
+          x2.common <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          y2.common <- y12[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          half <- abs(y.range[1] - mean(y.range))
+          middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
+          y2.range <- c(middle - half, middle + half)
+          if (length(x) == 0 || length(x2.common) == 0) {
+            # NA
+          } else if (x2.common[1] > ranges$x1[2]) {
+            # NA
+          } else if (ranges$x1[1] > x2.common[length(x2.common)]) {
+            # NA
+          } else {
+            tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
+            tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
+            tie1 <- tie1[1:min(length(tie1),length(tie2))]
+            tie2 <- tie2[1:min(length(tie1),length(tie2))]
+            pointsBias <- median(y1[db1[[info$db1]]$status1][tie1] - y2.common[tie2])
+            y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
+          }
+        } else if (isTruthy(input$same_axis)) {
+          y2.range <- y.range
+        } else {
+          y2.range <- range(y12[x2 >= ranges$x1[1] & x2 <= ranges$x1[2]])
+        }
+        plot(x2, y12, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = ranges$x1, ylim = y2.range)
+        if (isTruthy(input$sigmas)) {
+          color <- SARIcolors[3]
+          alfa <- 0.5
+          shade <- adjustcolor(color, alpha.f = alfa)
+          ba <- y12 + sy12
+          bb <- y12 - sy12
+          polygon(c(x2, rev(x2)), c(ba, rev(bb)), col = shade, border = NA)
+        }
+        axis(side = 1, labels = F, tick = F)
+        axis(side = 2, labels = F, tick = F)
+        axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
+        par(new = T)
+      }
+      plot(x[db1[[info$db1]]$status1], y1[db1[[info$db1]]$status1], type = symbol, pch = 20, xlab = NA, xaxt = "n", ylab = gsub("component","",paste(info$components[1], unit)), xlim = ranges$x1, ylim = y.range)
+      if (isTruthy(input$sigmas)) {
+        color <- SARIcolors[1]
+        alfa <- 0.2
+        shade <- adjustcolor(color, alpha.f = alfa)
+        ba <- y1 + sy1
+        bb <- y1 - sy1
+        polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+      }
+      axis(side = 1, labels = F, tick = T)
+      # North
+      par(mai = c(0.3, 1.2, 0.1, 0.6))
+      y.range <- range(y2[db1[[info$db1]]$status2][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
+      if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
+        if (isTruthy(input$sameScale)) {
+          x2.common <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          y2.common <- y22[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          half <- abs(y.range[1] - mean(y.range))
+          middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
+          y2.range <- c(middle - half, middle + half)
+          if (length(x) == 0 || length(x2.common) == 0) {
+            # NA
+          } else if (x2.common[1] > ranges$x1[2]) {
+            # NA
+          } else if (ranges$x1[1] > x2.common[length(x2.common)]) {
+            # NA
+          } else {
+            tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
+            tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
+            tie1 <- tie1[1:min(length(tie1),length(tie2))]
+            tie2 <- tie2[1:min(length(tie1),length(tie2))]
+            pointsBias <- median(y2[db1[[info$db1]]$status2][tie1] - y2.common[tie2])
+            y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
+          }
+        } else if (isTruthy(input$same_axis)) {
+          y2.range <- y.range
+        } else {
+          y2.range <- range(y22[x2 >= ranges$x1[1] & x2 <= ranges$x1[2]])
+        }
+        plot(x2, y22, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = ranges$x1, ylim = y2.range)
+        if (isTruthy(input$sigmas)) {
+          color <- SARIcolors[3]
+          alfa <- 0.5
+          shade <- adjustcolor(color, alpha.f = alfa)
+          ba <- y22 + sy22
+          bb <- y22 - sy22
+          polygon(c(x2, rev(x2)), c(ba, rev(bb)), col = shade, border = NA)
+        }
+        axis(side = 1, labels = F, tick = F)
+        axis(side = 2, labels = F, tick = F)
+        axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
+        par(new = T)
+      }
+      plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, lwd = 0.1, xlab = "", xaxt = "n", ylab = gsub("component","",paste(info$components[2], unit)), xlim = ranges$x1, ylim = y.range)
+      if (isTruthy(input$sigmas)) {
+        color <- SARIcolors[1]
+        alfa <- 0.2
+        shade <- adjustcolor(color, alpha.f = alfa)
+        ba <- y2 + sy2
+        bb <- y2 - sy2
+        polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+      }
+      axis(side = 1, labels = F, tick = T)
+      # Up
+      par(mai = c(1.2, 1.2, 0.1, 0.6))
+      y.range <- range(y3[db1[[info$db1]]$status3][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
+      if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
+        if (isTruthy(input$sameScale)) {
+          x2.common <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          y2.common <- y32[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          half <- abs(y.range[1] - mean(y.range))
+          middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
+          y2.range <- c(middle - half, middle + half)
+          if (length(x) == 0 || length(x2.common) == 0) {
+            # NA
+          } else if (x2.common[1] > ranges$x1[2]) {
+            # NA
+          } else if (ranges$x1[1] > x2.common[length(x2.common)]) {
+            # NA
+          } else {
+            tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
+            tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
+            tie1 <- tie1[1:min(length(tie1),length(tie2))]
+            tie2 <- tie2[1:min(length(tie1),length(tie2))]
+            pointsBias <- median(y3[db1[[info$db1]]$status3][tie1] - y2.common[tie2])
+            y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
+          }
+        } else if (isTruthy(input$same_axis)) {
+          y2.range <- y.range
+        } else {
+          y2.range <- range(y32[x2 >= ranges$x1[1] & x2 <= ranges$x1[2]])
+        }
+        plot(x2, y32, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = ranges$x1, ylim = y2.range)
+        if (isTruthy(input$sigmas)) {
+          color <- SARIcolors[3]
+          alfa <- 0.5
+          shade <- adjustcolor(color, alpha.f = alfa)
+          ba <- y32 + sy32
+          bb <- y32 - sy32
+          polygon(c(x2, rev(x2)), c(ba, rev(bb)), col = shade, border = NA)
+        }
+        axis(side = 1, labels = F, tick = F)
+        axis(side = 2, labels = F, tick = F)
+        axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
+        par(new = T)
+      }
+      plot(x[db1[[info$db1]]$status3], y3[db1[[info$db1]]$status3], type = symbol, pch = 20, xlab = info$tunits.label, ylab = gsub("component","",paste(info$components[3], unit)), xlim = ranges$x1, ylim = y.range)
+      if (isTruthy(input$sigmas)) {
+        color <- SARIcolors[1]
+        alfa <- 0.2
+        shade <- adjustcolor(color, alpha.f = alfa)
+        ba <- y3 + sy3
+        bb <- y3 - sy3
+        polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+      }
+      dev.off()
+      runjs("window.open('SARIseries.png', 'plotAll', 'popup=yes,width=800,height=800');")
+    }
+  })
 
   # Observe removing points manual ####
   observeEvent(input$remove, {
