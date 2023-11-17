@@ -10289,26 +10289,24 @@ server <- function(input,output,session) {
     if (length(antrec) > 0 && length(dates) > 0) {
       ante = c()
       rece = c()
-      if (length(dates) > 0) {
-        for (l in seq_len(length(dates))) {
-          if (!(grepl('CCYY',dates[[l]]))) {
-            f <- data.frame(strsplit(dates[[l]], " :"))[2,]
-            t <- strptime(f, format = '%Y-%m-%dT%H:%M', tz = "GMT")
-            if (is.na(t)) {
-              t <- strptime(f, format = '%Y-%m-%d', tz = "GMT")
-            }
-            if (input$tunits == 1) {
-              e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
-            } else if (input$tunits == 2) {
-              e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
-            } else if (input$tunits == 3) {
-              e <- decimal_date(t)
-            }
-            if (grepl('Antenna',antrec[[l]])) {
-              ante <- c(ante,e)
-            } else if (grepl('Receiver',antrec[[1]])) {
-              rece <- c(rece,e)
-            }
+      for (l in seq_len(length(dates))) {
+        if (!(grepl('CCYY',dates[[l]]))) {
+          f <- data.frame(strsplit(dates[[l]], " :"))[2,]
+          t <- strptime(f, format = '%Y-%m-%dT%H:%M', tz = "GMT")
+          if (is.na(t)) {
+            t <- strptime(f, format = '%Y-%m-%d', tz = "GMT")
+          }
+          if (input$tunits == 1) {
+            e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
+          } else if (input$tunits == 2) {
+            e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
+          } else if (input$tunits == 3) {
+            e <- decimal_date(t)
+          }
+          if (grepl('Antenna',antrec[[l]])) {
+            ante <- c(ante,e)
+          } else if (grepl('Receiver',antrec[[1]])) {
+            rece <- c(rece,e)
           }
         }
       }
