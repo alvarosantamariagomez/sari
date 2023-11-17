@@ -8230,8 +8230,14 @@ server <- function(input,output,session) {
     info$trendRef <- NULL
     info$PolyRef <- NULL
     info$periodRef <- NULL
-    url$station <- NULL
     url$file <- NULL
+    url$file2 <- NULL
+    url$logfile <- NULL
+    url$logfile2 <- NULL
+    url$server <- NULL
+    url$server2 <- NULL
+    url$station <- NULL
+    url$station2 <- NULL
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
