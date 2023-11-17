@@ -8133,7 +8133,11 @@ server <- function(input,output,session) {
     } else if (isTruthy(file$secondary$logfile)) {
       info$log <- ReadLog(file$secondary$logfile)
     }
-    info$log_years <- info$log
+    if (any(!sapply(info$log, is.null))) {
+      info$log_years <- info$log 
+    } else {
+      info$log <- NULL
+    }
   }, priority = 1)
   observeEvent(c(input$printLog),{
     req(db1$original)
