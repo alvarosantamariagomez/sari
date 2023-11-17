@@ -7631,7 +7631,25 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      plot(x[db1[[info$db1]]$status1], y1[db1[[info$db1]]$status1], type = symbol, pch = 20, xlab = NA, xaxt = "n", ylab = gsub("component","",paste(info$components[1], unit)), xlim = ranges$x1, ylim = y.range)
+      mini <- min(y1[db1[[info$db1]]$status1])
+      maxi <- max(y1[db1[[info$db1]]$status1])
+      if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
+        if (mini < 0) {
+          const <- as.integer(round(maxi))
+          ylab <- paste(gsub("component","",info$components[1]),intToUtf8(8210),abs(const),unit)
+        } else {
+          const <- as.integer(round(mini))
+          ylab <- paste(gsub("component","",info$components[1]),"+",abs(const),unit)
+        }
+      } else {
+        const <- 0
+        ylab <- gsub("component","",paste(info$components[1], unit))
+      }
+      plot(x[db1[[info$db1]]$status1], y1[db1[[info$db1]]$status1], type = symbol, pch = 20, xlab = NA, xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      p <- par("usr")[3:4]
+      pout <- pretty(p - const)
+      pin <- pout + const
+      axis(2, at = pin, labels = pout)
       if (isTruthy(input$sigmas)) {
         color <- SARIcolors[1]
         alfa <- 0.2
@@ -7684,7 +7702,25 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, lwd = 0.1, xlab = "", xaxt = "n", ylab = gsub("component","",paste(info$components[2], unit)), xlim = ranges$x1, ylim = y.range)
+      mini <- min(y2[db1[[info$db1]]$status2])
+      maxi <- max(y2[db1[[info$db1]]$status2])
+      if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
+        if (mini < 0) {
+          const <- as.integer(round(maxi))
+          ylab <- paste(gsub("component","",info$components[2]),intToUtf8(8210),abs(const),unit)
+        } else {
+          const <- as.integer(round(mini))
+          ylab <- paste(gsub("component","",info$components[2]),"+",abs(const),unit)
+        }
+      } else {
+        const <- 0
+        ylab <- gsub("component","",paste(info$components[2], unit))
+      }
+      plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, lwd = 0.1, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      p <- par("usr")[3:4]
+      pout <- pretty(p - const)
+      pin <- pout + const
+      axis(2, at = pin, labels = pout)
       if (isTruthy(input$sigmas)) {
         color <- SARIcolors[1]
         alfa <- 0.2
@@ -7737,7 +7773,25 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      plot(x[db1[[info$db1]]$status3], y3[db1[[info$db1]]$status3], type = symbol, pch = 20, xlab = info$tunits.label, ylab = gsub("component","",paste(info$components[3], unit)), xlim = ranges$x1, ylim = y.range)
+      mini <- min(y3[db1[[info$db1]]$status3])
+      maxi <- max(y3[db1[[info$db1]]$status3])
+      if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
+        if (mini < 0) {
+          const <- as.integer(round(maxi))
+          ylab <- paste(gsub("component","",info$components[3]),intToUtf8(8210),abs(const),unit)
+        } else {
+          const <- as.integer(round(mini))
+          ylab <- paste(gsub("component","",info$components[3]),"+",abs(const),unit)
+        }
+      } else {
+        const <- 0
+        ylab <- gsub("component","",paste(info$components[3], unit))
+      }
+      plot(x[db1[[info$db1]]$status3], y3[db1[[info$db1]]$status3], type = symbol, pch = 20, yaxt = "n", xlab = info$tunits.label, ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      p <- par("usr")[3:4]
+      pout <- pretty(p - const)
+      pin <- pout + const
+      axis(2, at = pin, labels = pout)
       if (isTruthy(input$sigmas)) {
         color <- SARIcolors[1]
         alfa <- 0.2
