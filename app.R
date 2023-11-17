@@ -670,7 +670,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 3,
                                                                       tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                       
-                                                                      # % SARI model ####
+                                                                      ## % SARI model ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
                                                                             column(6,
@@ -686,7 +686,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                       ),
                                                                       
-                                                                      # % sitelog ####
+                                                                      ## % sitelog ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
                                                                             column(6,
@@ -714,7 +714,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                       ),
                                                                       
-                                                                      # % station.info ####
+                                                                      ## % station.info ####
                                                                       div(style = "padding: 0px 0px; margin-top:-1em",
                                                                           fluidRow(
                                                                             column(6,
@@ -742,7 +742,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                       ),
                                                                       
-                                                                      # % soln ####
+                                                                      ## % soln ####
                                                                       div(style = "padding: 0px 0px; margin-top:-1em",
                                                                           fluidRow(
                                                                             column(6,
@@ -770,7 +770,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                       ),
                                                                       
-                                                                      # % Custom ####
+                                                                      ## % Custom ####
                                                                       div(style = "padding: 0px 0px; margin-top:-1em",
                                                                           fluidRow(
                                                                             column(6,
@@ -798,7 +798,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                       ),
                                                                       
-                                                                      # % Secondary series ####
+                                                                      ## % Secondary series ####
                                                                       div(style = "padding: 0px 0px; margin-top:-1em",
                                                                           fluidRow(
                                                                             column(8,
@@ -905,7 +905,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                       ),
                                                                       
-                                                                      # % Euler ####
+                                                                      ## % Euler ####
                                                                       fluidRow(
                                                                         column(6,
                                                                                checkboxInput(inputId = "euler",
@@ -1132,7 +1132,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             checkboxGroupInput(inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
                                                                         ),
                                                                         
-                                                                        # % Linear fit ####
+                                                                        ## % Linear fit ####
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Linear') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
@@ -1197,7 +1197,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         
-                                                                        # % Sinusoidal fit ####
+                                                                        ## % Sinusoidal fit ####
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Sinusoidal') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
@@ -1249,7 +1249,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         
-                                                                        # % Offset fit ####
+                                                                        ## % Offset fit ####
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Offset') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
@@ -1360,7 +1360,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         
-                                                                        # % Exponential fit ####
+                                                                        ## % Exponential fit ####
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Exponential') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
@@ -1403,7 +1403,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         
-                                                                        # % Logarithmic fit ####
+                                                                        ## % Logarithmic fit ####
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Logarithmic') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
@@ -1446,7 +1446,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         ),
                                                                         
-                                                                        # % Polynomial fit ####
+                                                                        ## % Polynomial fit ####
                                                                         conditionalPanel(
                                                                           condition = "input.model.indexOf('Polynomial') != -1",
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
@@ -1491,13 +1491,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 5,
                                                                       tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
                                                                       
-                                                                      # % MIDAS ####
+                                                                      ## % MIDAS ####
                                                                       checkboxInput(inputId = "midas",
                                                                                     div("MIDAS",
                                                                                         helpPopup("Median Interannual Difference Adjusted for Skewness")),
                                                                                     value = F),
                                                                       
-                                                                      # % Histogram ####
+                                                                      ## % Histogram ####
                                                                       fluidRow(
                                                                         column(12,
                                                                                checkboxInput(inputId = "histogram", label = "Histogram", value = F)
@@ -1511,7 +1511,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         )
                                                                       ),
                                                                       
-                                                                      # % Waveform ####
+                                                                      ## % Waveform ####
                                                                       fluidRow(
                                                                         column(6,
                                                                                checkboxInput(inputId = "waveform",
@@ -1546,7 +1546,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         )
                                                                       ),
                                                                       
-                                                                      # % Periodogram ####
+                                                                      ## % Periodogram ####
                                                                       fluidRow(
                                                                         column(5,
                                                                                checkboxInput(inputId = "spectrum",
@@ -1601,7 +1601,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         )
                                                                       ),
                                                                       
-                                                                      # % Wavelet ####
+                                                                      ## % Wavelet ####
                                                                       conditionalPanel(
                                                                         condition = "output.wavelet == true",
                                                                         div(style = "padding: 0px 0px; margin-top:0em",
@@ -1655,7 +1655,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         )
                                                                       ),
                                                                       
-                                                                      # % Vondrak ####
+                                                                      ## % Vondrak ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
                                                                             column(6,
@@ -1697,7 +1697,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                       ),
                                                                       
-                                                                      # % Noise ####
+                                                                      ## % Noise ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
                                                                             column(4,
@@ -4749,7 +4749,7 @@ server <- function(input,output,session) {
                          grad/-1
                        }
                        
-                       #* one noise variance with fixed spectral index, easy peasy ####
+                       ##* one noise variance with fixed spectral index, easy peasy ####
                        if (component == 1) {
                          if (isTruthy(info$white)) {
                            variance <- var(resS)
@@ -4887,7 +4887,7 @@ server <- function(input,output,session) {
                      })
       })
       
-      #* convergence ####
+      ##* convergence ####
       if (!is.na(convergence)) {
         if (convergence == 0) {
           end.time <- Sys.time()
@@ -7580,7 +7580,7 @@ server <- function(input,output,session) {
       ragg::agg_png(filename = fileout, width = 800, height = 800, pointsize = 25)
       par(mai = c(1, 2, 1, 1))
       layout(mat = matrix(data = c(1,2,3), nrow = 3, ncol = 1))
-      # East
+      ## East ####
       par(mai = c(0.3, 1.2, 0.3, 0.6))
       y.range <- range(y1[db1[[info$db1]]$status1][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
@@ -7633,7 +7633,7 @@ server <- function(input,output,session) {
         polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
       }
       axis(side = 1, labels = F, tick = T)
-      # North
+      # North ####
       par(mai = c(0.3, 1.2, 0.1, 0.6))
       y.range <- range(y2[db1[[info$db1]]$status2][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
@@ -7686,7 +7686,7 @@ server <- function(input,output,session) {
         polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
       }
       axis(side = 1, labels = F, tick = T)
-      # Up
+      # Up ####
       par(mai = c(1.2, 1.2, 0.1, 0.6))
       y.range <- range(y3[db1[[info$db1]]$status3][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
@@ -11502,7 +11502,7 @@ server <- function(input,output,session) {
     logfile <- NULL
     server <- toupper(server)
     product <- toupper(product)
-    # NGL ####
+    ## NGL ####
     if (server == "NGL") {
       format <- 3
       if (product == "FINAL") {
@@ -11551,7 +11551,7 @@ server <- function(input,output,session) {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # RENAG ####
+    ## RENAG ####
     } else if (server == "RENAG") {
       format <- 2
       if (product == "UGA") {
@@ -11586,7 +11586,7 @@ server <- function(input,output,session) {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # JPL ####
+    ## JPL ####
     } else if (server == "JPL") {
       format <- 1
       if (product == "REPRO2018A") {
@@ -11619,7 +11619,7 @@ server <- function(input,output,session) {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # IGS ####
+    ## IGS ####
     } else if (server == "IGS") {
       format <- 1
       if (product == "IGS20") {
@@ -11658,7 +11658,7 @@ server <- function(input,output,session) {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # SONEL ####
+    ## SONEL ####
     } else if (server == "SONEL") {
       format <- 1
       if (product == "ULR7A") {
@@ -11701,7 +11701,7 @@ server <- function(input,output,session) {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # UNAVCO ####
+    ## UNAVCO ####
     } else if (server == "EARTHSCOPE") {
       format <- 1
       if (isTruthy(product)) {
@@ -11737,7 +11737,7 @@ server <- function(input,output,session) {
       } else {
         return(NULL)
       }
-    # EUREF ####
+    ## EUREF ####
     } else if (server == "EUREF") {
       format <- 2
       if (product == "IGB14") {
@@ -11775,7 +11775,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # FORMATER ####
+    ## FORMATER ####
     } else if (server == "FORMATER") {
       if (product == "SPOTGINS_POS") {
         format <- 1
@@ -11837,7 +11837,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # EPOS ####
+    ## EPOS ####
     } else if (server == "EPOS") {
       format <- 1
       if (product == "INGV" || product == "SGO-EPND" || product == "UGA-CNRS" || product == "ROB-EUREF") {
@@ -11892,7 +11892,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # EOSTLS ####
+    ## EOSTLS ####
     } else if (server == "EOSTLS") {
       format <- 1
       pattern <- "_NEU."
@@ -11967,7 +11967,7 @@ server <- function(input,output,session) {
           return(NULL)
         })
       }
-    # SIRGAS ####
+    ## SIRGAS ####
     } else if (server == "SIRGAS") {
       if (product == "IGB14") {
         format <- 1
@@ -12024,7 +12024,7 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    # LOCAL ####
+    ## LOCAL ####
     } else if (server == "LOCAL") {
       if (product == "NEU" || product == "ENU") {
         format <- 1
