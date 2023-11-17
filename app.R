@@ -5515,7 +5515,7 @@ server <- function(input,output,session) {
         enable("printSoln")
         enable("printCustom")
         if (!isTruthy(input$euler)) {
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          updateRadioButtons(session, inputId = "eulerType", selected = 0)
           updateTextInput(inputId = "plate", value = "")
         } else {
           if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
@@ -6357,7 +6357,11 @@ server <- function(input,output,session) {
       record <- grep(input$plate, grep("^#", readLines(con = info$plateFile, n = -1L, ok = T, warn = F, skipNul = T), perl = T, value = T, invert = T), fixed = F, ignore.case = T, perl = F, value = T)
       if (length(record) == 1) {
         elements <- NULL
-        updateRadioButtons(session, inputId = "eulerType", selected = 1)
+        if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
+             ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2))))
+        ) {
+          updateRadioButtons(session, inputId = "eulerType", selected = 1)
+        }
         if (input$plateModel == "ITRF2014") {
           elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5,2)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
@@ -6457,17 +6461,17 @@ server <- function(input,output,session) {
       if (length(stationCartesian[!is.na(stationCartesian)]) == 3 && length(stationGeo[!is.na(stationGeo)]) == 2 && length(poleCartesian[!is.na(poleCartesian)]) == 3) {
         if (stationGeo[1] < -pi/2 || stationGeo[1] > pi/2 || stationGeo[2] > 2*pi || stationGeo[2] < -2*pi) {
           showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          updateRadioButtons(session, inputId = "eulerType", selected = 0)
           req(info$stop)
         }
         if (sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) < 6355000*scaling || sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) > 6385000*scaling) {
           showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          updateRadioButtons(session, inputId = "eulerType", selected = 0)
           req(info$stop)
         }
         if (sqrt(poleCartesian[1]^2 + poleCartesian[2]^2 + poleCartesian[3]^2) > 2) {
           showNotification(HTML("Euler pole parameters missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_pole", type = "error", session = getDefaultReactiveDomain())
-          updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+          updateRadioButtons(session, inputId = "eulerType", selected = 0)
           req(info$stop)
         }
         plateCartesian <- cross(poleCartesian,stationCartesian)
@@ -6503,7 +6507,7 @@ server <- function(input,output,session) {
         }
       } else {
         showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
-        updateRadioButtons(session, inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T)
+        updateRadioButtons(session, inputId = "eulerType", selected = 0)
         trans$plate <- NULL
         trans$plate2 <- NULL
       }
