@@ -9206,7 +9206,7 @@ server <- function(input,output,session) {
           shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
           lat <- tableAll[1,1]
           lon <- tableAll[1,2]
-          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1000)
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "EARTHSCOPE") {
           tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
