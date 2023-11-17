@@ -142,6 +142,9 @@ pointer-events: none;
 color: gray62 !important;
 }'
 
+# show plotAll popup
+seriesPopup <- "shinyjs.popup = function(width){window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no');}"
+
 # Update fileInput file names from URL (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
 update_series <- "
 Shiny.addCustomMessageHandler('filename', function(txt) {
@@ -337,6 +340,7 @@ tabContents <- function(tabNum) {
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
+                extendShinyjs(text = seriesPopup, functions = c("popup")),
                 div( style = "text-align: center; display: flex; flex-direction: column; justify-content: space-between; margin: auto",
                   id = "loading_page",
                   h1(style = "text-align: center; color: #333333; font-weight: bold", "SARI session established."),
@@ -7577,7 +7581,7 @@ server <- function(input,output,session) {
       sy3 <- db1[[info$db1]]$sy3
       sy32 <- db2[[info$db2]]$sy3
       fileout <- "www/SARIseries.png"
-      ragg::agg_png(filename = fileout, width = 800, height = 800, pointsize = 25)
+      ragg::agg_png(filename = fileout, width = info$width, height = 800, pointsize = 25)
       par(mai = c(1, 2, 1, 1))
       layout(mat = matrix(data = c(1,2,3), nrow = 3, ncol = 1))
       ## East ####
@@ -7739,7 +7743,7 @@ server <- function(input,output,session) {
         polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
       }
       dev.off()
-      runjs("window.open('SARIseries.png', 'plotAll', 'popup=yes,width=800,height=800');")
+      js$popup(info$width)
     }
   })
 
