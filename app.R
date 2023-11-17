@@ -8811,7 +8811,11 @@ server <- function(input,output,session) {
       if (isTruthy(url$station2)) {
         file$id2 <- toupper(url$station2)
       } else {
-        file$id2 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
+        file$id2 <- try(toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1]), silent = T)
+        if (inherits(file$id2,"try-error")) {
+          file$id2 <- NULL
+          showNotification(HTML("Problem extracting the series ID from the secondary file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
+        }
       }
     }
     # Updating station IDs
@@ -8835,7 +8839,7 @@ server <- function(input,output,session) {
     shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
     # Mapping the station positions
     # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
-    if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && ((isTruthy(lat) && isTruthy(lon)) || ((isTruthy(lat2) && isTruthy(lon2))))) {
+    if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && (isTruthy(lat) && isTruthy(lon))) {
       if (isTruthy(lon)) {
         lon <- ifelse(lon > 180, lon - 360, lon)
       } else {
@@ -8875,7 +8879,7 @@ server <- function(input,output,session) {
           setView(lng = lon, lat = lat, zoom = 2) %>%
           addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
       }
-      if (isTruthy(lon2)) {
+      if (isTruthy(lat2) && isTruthy(lon2)) {
         lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
         map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
       }
