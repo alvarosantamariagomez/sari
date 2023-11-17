@@ -6342,7 +6342,7 @@ server <- function(input,output,session) {
       info$plateFile <- "www/NNR-MORVEL56.txt"
       updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 5, sep = "\t", comment.char = "#")$V2, selected = "")
     } else if (input$plateModel == "NNR-GSRM") {
-      info$plateFile <- "www/NNR-GSRM_V2.1.txt"
+      info$plateFile <- "www/NNR-GSRM_v2.1.txt"
       updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 2)$V1, selected = "")
     } else {
       info$plateFile <- NULL
