@@ -6583,7 +6583,11 @@ server <- function(input,output,session) {
       num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
       time_needed <- ceiling(0.000588*num_scale*num_epochs/60)
       if (time_needed > 29) {
-        shinyjs::delay(500, showNotification(HTML(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min.<br><br>WARNING: the server may kill the connection before the wavelet finishes!")), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "error", session = getDefaultReactiveDomain()))
+        if (isTruthy(info$local)) {
+          shinyjs::delay(500, showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain()))
+        } else {
+          shinyjs::delay(500, showNotification(HTML(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min.<br><br>WARNING: the server may kill the connection before the wavelet finishes!")), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "error", session = getDefaultReactiveDomain()))
+        }
       } else {
         shinyjs::delay(500, showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain()))
       }
