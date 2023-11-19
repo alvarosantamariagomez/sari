@@ -821,10 +821,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                           ),
                                                                           fluidRow(
-                                                                            column(5,
+                                                                            column(4,
                                                                                    selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
                                                                             ),
-                                                                            column(3,
+                                                                            column(4,
                                                                                    selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
                                                                             ),
                                                                             column(4,
