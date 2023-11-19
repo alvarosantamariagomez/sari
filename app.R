@@ -57,7 +57,7 @@ check_load(packages)
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
-options(shiny.autoreload = T, shiny.autoreload.pattern = glob2rx("app.R"))
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
@@ -8634,6 +8634,8 @@ server <- function(input,output,session) {
       } else {
         if (isTruthy(spotgins)) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
+        } else {
+          showNotification(HTML("Unknown units of the series.<br>If necessary, the series units can be set on the left panel."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
       # Setting plot limits
