@@ -6122,7 +6122,7 @@ server <- function(input,output,session) {
     } else if (input$server1 == "JPL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server1 == "EOSTLS") {
-      updateSelectizeInput(session, inputId = "product1", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("ATMIB", "ATMIB(d)", "ATMMO(o)", "ECCO(o)", "ECCO2", "ERA5IB", "ERA5IB(d)", "ERA5TUGO", "ERA5TUGO(d)", "ERA5HYD", "ERA5HYD(d)", "GRACE", "GLDAS2", "GLDAS2(d)", "GLORYS(o)", "MERRA2ATM", "MERRA2ATM(d)", "MERRA2HYD", "MERRA2HYD(d)"), selected = "")
     } else if (input$server1 == "SONEL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server1 == "SIRGAS") {
@@ -6152,7 +6152,7 @@ server <- function(input,output,session) {
     } else if (input$server2 == "JPL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server2 == "EOSTLS") {
-      updateSelectizeInput(session, inputId = "product2", choices = list("ATMIB", "ATMMO", "ECCO", "ECCO2", "ERA5IB", "ERA5TUGO", "ERA5HYD", "ERAHYD", "ERAIN", "GRACE", "GLDAS", "GLDAS2", "GLORYS", "MERRA", "MERRA2ATM", "MERRA2HYD"), selected = "", options = list(maxItems = 16))
+      updateSelectizeInput(session, inputId = "product2", choices = list("ATMIB", "ATMIB(d)", "ATMMO(o)", "ECCO(o)", "ECCO2", "ERA5IB", "ERA5IB(d)", "ERA5TUGO", "ERA5TUGO(d)", "ERA5HYD", "ERA5HYD(d)", "GRACE", "GLDAS2", "GLDAS2(d)", "GLORYS(o)", "MERRA2ATM", "MERRA2ATM(d)", "MERRA2HYD", "MERRA2HYD(d)"), selected = "", options = list(maxItems = 12))
     } else if (input$server2 == "SONEL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server2 == "SIRGAS") {
@@ -6266,12 +6266,11 @@ server <- function(input,output,session) {
         secondary_files <- 0
         for (f in 1:length(url$file2)) {
           if (length(url$file2) > 1) {
-            showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
             file$secondary$datapath <- c(file$secondary$datapath, tempfile())
           } else {
-            showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
             file$secondary$datapath <- "www/fileSeries2.txt"
           }
+          showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = NULL, closeButton = T, id = paste0("parsing_url2_",f), type = "warning", session = getDefaultReactiveDomain())
           down <- download(url$server2, url$file2[f], file$secondary$datapath[f])
           if (file.exists(file$secondary$datapath[f])) {
             downloaded <- readLines(file$secondary$datapath[f], n = 2, warn = F)
@@ -6285,7 +6284,6 @@ server <- function(input,output,session) {
             if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2[f], " downloaded in ", file$secondary$datapath[f], "\n")
           } else {
             file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
-            removeNotification("parsing_url2")
             showNotification(HTML(paste0("File ",file$secondary$name[f]," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           }
         }
@@ -7563,21 +7561,27 @@ server <- function(input,output,session) {
         x <- db1[[info$db1]]$x3
         x2 <- db2[[info$db2]]$x3
       }
-      if (isTruthy(trans$plate) && input$eulerType == 2) {
+      if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
         y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
-        y12 <- db2[[info$db2]]$y1 - trans$plate[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
         y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
-        y22 <- db2[[info$db2]]$y2 - trans$plate[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
         y3 <- db1[[info$db1]]$y3 - trans$plate[3]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y3, na.rm = T)
-        y32 <- db2[[info$db2]]$y3 - trans$plate[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
       } else {
         y1 <- db1[[info$db1]]$y1
-        y12 <- db2[[info$db2]]$y1
         y2 <- db1[[info$db1]]$y2
-        y22 <- db2[[info$db2]]$y2
         y3 <- db1[[info$db1]]$y3
+      }
+      if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
+        y12 <- db2[[info$db2]]$y1 - trans$plate[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
+        y22 <- db2[[info$db2]]$y2 - trans$plate[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
+        y32 <- db2[[info$db2]]$y3 - trans$plate[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
+      } else {
+        y12 <- db2[[info$db2]]$y1
+        y22 <- db2[[info$db2]]$y2
         y32 <- db2[[info$db2]]$y3
       }
+      y12 <- y12 * inputs$scaleFactor
+      y22 <- y22 * inputs$scaleFactor
+      y32 <- y32 * inputs$scaleFactor
       sy1 <- db1[[info$db1]]$sy1
       sy12 <- db2[[info$db2]]$sy1
       sy2 <- db1[[info$db1]]$sy2
@@ -7631,8 +7635,8 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      mini <- min(y1[db1[[info$db1]]$status1])
-      maxi <- max(y1[db1[[info$db1]]$status1])
+      mini <- min(y1[db1[[info$db1]]$status1], na.rm = T)
+      maxi <- max(y1[db1[[info$db1]]$status1], na.rm = T)
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
@@ -7702,8 +7706,8 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      mini <- min(y2[db1[[info$db1]]$status2])
-      maxi <- max(y2[db1[[info$db1]]$status2])
+      mini <- min(y2[db1[[info$db1]]$status2], na.rm = T)
+      maxi <- max(y2[db1[[info$db1]]$status2], na.rm = T)
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
@@ -7773,8 +7777,8 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      mini <- min(y3[db1[[info$db1]]$status3])
-      maxi <- max(y3[db1[[info$db1]]$status3])
+      mini <- min(y3[db1[[info$db1]]$status3], na.rm = T)
+      maxi <- max(y3[db1[[info$db1]]$status3], na.rm = T)
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
@@ -8699,11 +8703,16 @@ server <- function(input,output,session) {
         server <- ""
       }
       table_stack <- NULL
-      for (i in 1:dim(as.matrix(files$datapath))[1]) {
+      num <- dim(as.matrix(files$datapath))[1]
+      if (server == "EOSTLS" && num > 1) {
+        showNotification(HTML("Stacking the secondary series into one series."), action = NULL, duration = NULL, closeButton = T, id = "stacking", type = "warning", session = getDefaultReactiveDomain())
+      }
+      for (i in 1:num) {
         table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
+        removeNotification(paste0("parsing_url2_",i))
         # starting EOSTSL series at epoch .0
-        if (server == "EOSTLS" && dim(as.matrix(files$datapath))[1] > 1) {
-          while (table2$x1[1] %% 1 > 0) { 
+        if (server == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
+          while (table2$x1[1] %% 1 > 0) {
             table2 <- table2[-1,]
           }
         }
@@ -8812,6 +8821,7 @@ server <- function(input,output,session) {
           showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
         }
       }
+      removeNotification("stacking")
       # create secondary series merged file
       if (!is.null(table_stack)) {
         if (anyNA(table_stack)) {
@@ -11970,48 +11980,63 @@ server <- function(input,output,session) {
     } else if (server == "EOSTLS") {
       format <- 1
       pattern <- "_NEU."
+      patternd <- "_NEU_daily."
       if (isTruthy(station)) {
         filepath <- c()
         name <- c()
         for (p in product) {
           naming <- paste0(toupper(station),pattern,tolower(p))
+          url <- "http://loading.u-strasbg.fr/ITRF/CF/"
           if (tolower(p) == "atmib") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMIB/"
+            url <- paste0(ulr, "ATMIB/")
+          } else if (tolower(p) == "atmib(d)") {
+            url <- paste0(ulr, "ATMIB_daily/")
+            naming <- paste0(toupper(station),patternd,"atmib")
           } else if (tolower(p) == "atmmo") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ATMMO/"
-          } else if (tolower(p) == "erain") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAin/"
-          } else if (tolower(p) == "erahyd") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERAhyd/"
+            url <- paste0(url, "ATMMO/")
+          } else if (tolower(p) == "ecco") {
+            url <- paste0(url, "ECCO/")
+          } else if (tolower(p) == "ecco2") {
+            url <- paste0(url, "ECCO2/")
           } else if (tolower(p) == "era5ib") {
-            naming <- paste0(toupper(station),"_NEU.era5")
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_IB/"
-          } else if (tolower(p) == "era5hyd") {
-            naming <- paste0(toupper(station),"_NEU.era5")
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_hydro/"
+            naming <- paste0(toupper(station),pattern,"era5")
+            url <- paste0(url, "ERA5_IB/")
+          } else if (tolower(p) == "era5ib(d)") {
+            naming <- paste0(toupper(station),patternd,"era5")
+            url <- paste0(url, "ERA5_IB_daily/")
           } else if (tolower(p) == "era5tugo") {
-            naming <- paste0(toupper(station),"_NEU.era5")
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ERA5_TUGO/"
-          } else if (tolower(p) == "gldas") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS/"
+            naming <- paste0(toupper(station),pattern,"era5")
+            url <- paste0(url, "ERA5_TUGO/")
+          } else if (tolower(p) == "era5tugo(d)") {
+            naming <- paste0(toupper(station),patternd,"era5")
+            url <- paste0(url, "ERA5_TUGO_daily/")
+          } else if (tolower(p) == "era5hyd") {
+            naming <- paste0(toupper(station),pattern,"era5")
+            url <- paste0(url, "ERA5_hydro/")
+          } else if (tolower(p) == "era5hyd(d)") {
+            naming <- paste0(toupper(station),patternd,"era5")
+            url <- paste0(url, "ERA5_hydro_daily/")
           } else if (tolower(p) == "gldas2") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/GLDAS2/"
-          } else if (tolower(p) == "merra") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA/"
+            url <- paste0(url, "GLDAS2/")
+          } else if (tolower(p) == "gldas2(d)") {
+            naming <- paste0(toupper(station),patternd,"gldas2")
+            url <- paste0(url, "GLDAS2_daily/")
+          } else if (tolower(p) == "glorys") {
+            url <- paste0(url, "GLORYS/")
+          } else if (tolower(p) == "grace") {
+            url <- paste0(url, "GRACE/")
           } else if (tolower(p) == "merra2atm") {
             naming <- paste0(toupper(station),"_NEU_ib.merra2")
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_atm/"
+            url <- paste0(url, "MERRA2_atm/")
+          } else if (tolower(p) == "merra2atm(d)") {
+            naming <- paste0(toupper(station),"_NEU_daily_ib.merra2")
+            url <- paste0(url, "MERRA2_atm_daily/")
           } else if (tolower(p) == "merra2hyd") {
-            naming <- paste0(toupper(station),"_NEU.merra2")
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/MERRA2_hyd/"
-          } else if (tolower(p) == "grace") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/GRACE/"
-          } else if (tolower(p) == "ecco") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO/"
-          } else if (tolower(p) == "ecco2") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/ECCO2/"
-          } else if (tolower(p) == "glorys") {
-            url <- "http://loading.u-strasbg.fr/ITRF/CF/GLORYS/"
+            naming <- paste0(toupper(station),pattern,"merra2")
+            url <- paste0(url, "MERRA2_hyd/")
+          } else if (tolower(p) == "merra2hyd(d)") {
+            naming <- paste0(toupper(station),patternd,"merra2")
+            url <- paste0(url, "MERRA2_hyd_daily/")
           } else {
             showNotification(paste0("Unknown product ",p,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
             return(NULL)
