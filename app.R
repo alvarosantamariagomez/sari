@@ -7720,7 +7720,7 @@ server <- function(input,output,session) {
         const <- 0
         ylab <- gsub("component","",paste(info$components[2], unit))
       }
-      plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, lwd = 0.1, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
       p <- par("usr")[3:4]
       pout <- pretty(p - const)
       pin <- pout + const
