@@ -3948,9 +3948,6 @@ server <- function(input,output,session) {
   # Computing spectrum ####
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
     req(db1[[info$db1]], input$spectrum)
-    # removeNotification("bad_long")
-    # removeNotification("bad_short")
-    # removeNotification("bad_oversampling")
     removeNotification("bad_periods")
     if (is.na(inputs$long_period) && input$long_period != "") {
       showNotification(HTML("The longest period is not a numeric value.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "error", session = getDefaultReactiveDomain())
@@ -3967,19 +3964,21 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), "Setting periodogram limits", "\n")
     trans$fs <- NULL
     trans$title <- c("Lomb-Scargle periodogram: ")
-    max_period <- info$rangex
-    intervals <- as.data.frame(table(diff(trans$x)))
+    # max_period <- as.numeric(sprintf("%.*f", info$decimalsx, info$rangex)) # full range
+    max_period <- trunc(info$rangex * 10^info$decimalsx) / 10^info$decimalsx # truncated range
+    intervals <- as.data.frame(table(diff(trans$x)), stringsAsFactors = F)
     # min_period <- 2*gcd(trans$x[-1]*10^info$decimalsx-trans$x[1]*10^info$decimalsx)/10^info$decimalsx #following Eyer and Bartholdi 1999
-    min_period <- 2*as.numeric(as.character(intervals$Var1[intervals$Freq/length(trans$x) >= 0.5][1])) #approximate the shortest period by twice the shortest interval repeating itself at least 50% of the time
+    min_period <- 2*as.numeric(sort(intervals$Var1[intervals$Freq/(length(trans$x) - 1) >= 0.5], decreasing = T)[1]) #approximate the shortest period by twice the shortest interval repeating itself at least 50% of the time
+    min_period <- as.numeric(sprintf("%.*f", info$decimalsx, min_period))
 
     if (!isTruthy(min_period)) {
-      min_period <- 2*min(abs(diff(trans$x)))
+      min_period <- as.numeric(sprintf("%.*f", info$decimalsx, 2*info$sampling_regular))
     }
     # Setting longest period
     if (isTruthy(inputs$long_period)) {
       if (inputs$long_period > max_period) {
         showNotification(HTML("The input longest period is out of bounds.<br>Using the longest valid value instead."), action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "warning", session = getDefaultReactiveDomain())
-        long_period <- max_period - 1/10^(info$decimalsx + 1)
+        long_period <- max_period
         inputs$long_period <- long_period
         updateTextInput(session, "long_period", value = sprintf("%.*f", info$decimalsx, long_period))
         trans$fs <- NULL
@@ -3988,7 +3987,7 @@ server <- function(input,output,session) {
         long_period <- inputs$long_period
       }
     } else {
-      long_period <- max_period - 1/10^(info$decimalsx + 1)
+      long_period <- max_period
       short_period <- min_period
       inputs$long_period <- long_period
       inputs$short_period <- short_period
@@ -4005,7 +4004,7 @@ server <- function(input,output,session) {
       }
       short_period <- inputs$short_period
     } else {
-      long_period <- max_period - 1/10^(info$decimalsx + 1)
+      long_period <- max_period
       short_period <- min_period
       inputs$long_period <- long_period
       inputs$short_period <- short_period
