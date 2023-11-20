@@ -10493,7 +10493,7 @@ server <- function(input,output,session) {
       showNotification("Unable to read the input custom discontinuity file.", action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
-    if (!is.na(cols[1]) && !is.na(cols[2])) {
+    if (!is.na(cols[1]) && !is.na(cols[2]) && cols[2] < 100) {
       if (cols[1] > 1) {
         col <- 2
       } else {
