@@ -5600,7 +5600,11 @@ server <- function(input,output,session) {
         }
         if (isTruthy(db1[[info$db1]])) {
           disable("plot")
-          enable("plotAll")
+          if (info$format < 4) {
+            enable("plotAll")
+          } else {
+            disable("plotAll")
+          }
           disable("series")
           disable("format")
           enable("server2")
