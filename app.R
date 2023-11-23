@@ -12081,9 +12081,11 @@ server <- function(input,output,session) {
           name <- c(name, naming)
           filepath <- c(filepath, paste0(url,naming))
         }
-        updateRadioButtons(session, inputId = "tunits", choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 1)
-        updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+        updateRadioButtons(session, inputId = "tunits", selected = 1)
         updateTextInput(session, inputId = "step2", value = "1")
+        if (input$sunits == 1) {
+          updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+        }
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/EOSTSL_database.txt")) {
