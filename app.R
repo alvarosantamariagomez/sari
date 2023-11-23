@@ -470,7 +470,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T)
                                                                         ),
                                                                         column(4,
                                                                                selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
@@ -822,7 +822,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS"), selected = "", multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "server2", label = "Secondary series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T)
                                                                             ),
                                                                             column(4,
                                                                                    selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
@@ -2913,7 +2913,7 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), "Plotting the series", "\n")
     title <- ""
     sigmas <- F
-    if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
+    if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
     if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
@@ -5982,10 +5982,10 @@ server <- function(input,output,session) {
               file$primary$file <- url$file
             } else {
               showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              file$primary$file <- tempfile()
+              file$primary$file <- "www/fileSeries1.txt"
               down <- download(url$server, url$file, file$primary$file)
               if (file.exists(file$primary$file)) {
-                downloaded <- readLines(file$primary$file, warn = F)
+                downloaded <- readLines(file$primary$file, n = 2, warn = F)
                 if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                     length(downloaded) < 2) {
                   down <- 1
@@ -5995,7 +5995,7 @@ server <- function(input,output,session) {
             if (isTruthy(down) && down == 0) {
               if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
               # update format for primary series
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format))
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
               # download associated logfile
               if (isTruthy(url$logfile)) {
                 showNotification(paste0("Downloading logfile for ",toupper(url$station),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
@@ -6074,10 +6074,12 @@ server <- function(input,output,session) {
                   }
                 }
               }
-              shinyjs::delay(1000, {
+              shinyjs::delay(1500, {
                 if (messages > 4) cat(file = stderr(), "From: observe url\n")
                 digest(1)
-                digest(2)
+                if (isTruthy(url$station2) && isTruthy(url$file2) && isTruthy(url$server2)) {
+                  digest(2)
+                }
                 if (url$server == "LOCAL") {
                   filename <- basename(url$file)
                 } else {
@@ -6128,6 +6130,8 @@ server <- function(input,output,session) {
       updateSelectizeInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server1 == "EARTHSCOPE") {
       updateSelectizeInput(session, inputId = "product1", choices = list("CWU", "PBO", "NMT"), selected = "")
+    } else if (input$server1 == "PSMSL") {
+      updateSelectizeInput(session, inputId = "product1", choices = list("RLR"), selected = "RLR")
     }
     output$station1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
@@ -6158,6 +6162,8 @@ server <- function(input,output,session) {
       updateSelectizeInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server2 == "EARTHSCOPE") {
       updateSelectizeInput(session, inputId = "product2", choices = list("CWU", "PBO", "NMT"), selected = "")
+    } else if (input$server2 == "PSMSL") {
+      updateSelectizeInput(session, inputId = "product2", choices = list("RLR"), selected = "RLR")
     }
     output$station2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
@@ -7238,11 +7244,15 @@ server <- function(input,output,session) {
           }
         }
       } else {
-        showNotification(HTML("The sampling of the primary and secondary series is larger than one day.<br>It is not possible to shift the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+        if (info$format != 4) {
+          showNotification(HTML("The sampling of the primary and secondary series is larger than one day.<br>It is not possible to shift the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+        }
       }
       if (input$optionSecondary == 2) {
         if (info$format == 4) {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
+            x2 <- x2.x
+            x3 <- x3.x
             y1 <- y1.x - y1.y * inputs$scaleFactor
             sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             status1 <- status1
@@ -8515,6 +8525,7 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("unknown_components")
     removeNotification("time_shift")
+    removeNotification("parsing_url1")
     lat <- lon <- lat2 <- lon2 <- NULL
     # primary series ####
     if (series == 1) {
@@ -8549,7 +8560,7 @@ server <- function(input,output,session) {
       } else {
         custom <- NULL
       }
-      if (messages > 0) cat(file = stderr(), "PLOT   file : ", fileName,"   Format: ",input$format,"   Component: ", input$tab,
+      if (messages > 0) cat(file = stderr(), "PLOT   file : ", fileName,"   Format: ",info$format,"   Component: ", input$tab,
                             "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
                             sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
                             custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, 
@@ -8668,7 +8679,7 @@ server <- function(input,output,session) {
         showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
         showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       } else if (info$format == 4) { #1D
-        output$tabName1 <- renderText({ "1D series" })
+        output$tabName1 <- renderText({ "Series" })
         hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
         hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       } else { #PBO & NGL
@@ -8679,7 +8690,7 @@ server <- function(input,output,session) {
         showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
         showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       }
-      if (info$components[1] != "East component") {
+      if (info$components[1] != "East component" && info$format != 4) {
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
       # all good
@@ -8715,6 +8726,7 @@ server <- function(input,output,session) {
       for (i in 1:num) {
         table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
         removeNotification(paste0("parsing_url2_",i))
+        removeNotification("parsing_url2")
         # starting EOSTSL series at epoch .0
         if (server == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
           while (table2$x1[1] %% 1 > 0) {
@@ -9184,10 +9196,16 @@ server <- function(input,output,session) {
       }
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
-        skip <- 0
-        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
-        if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
+        if (server == "PSMSL") {
+          tableAll <- try(read.table(file, sep = ";"), silent = T)
+          tableAll <- tableAll[tableAll$V2 != -99999,]
+          columns <- 2
+        } else {
+          skip <- 0
+          tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
           columns <- dim(tableAll)[2]
+        }
+        if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
           if (epoch <= columns && variable <= columns) {
             extracted <- data.frame(y1 = tableAll[[variable]])
             # ISO 8601 dates
@@ -9327,6 +9345,18 @@ server <- function(input,output,session) {
       lon <- tableAll[1,22] + 360
       coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
       coordinates <- c(coordinates,lat,lon)
+    } else if (format == 4) {
+      if (isTruthy(server)) {
+        if (server == "PSMSL") {
+          stationsFromPSMSL <- try(read.table(file = "www/PSMSL_database.txt", sep = ";"), silent = T)
+          tableAll <- stationsFromPSMSL[grepl(url$station, stationsFromPSMSL$V2), c(3,4)]
+          shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
+          lat <- as.numeric(tableAll[1,1])
+          lon <- as.numeric(tableAll[1,2])
+          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+          coordinates <- c(coordinates,lat,lon)
+        }
+      }
     }
   }
   latlon2xyz <- function(lat,lon,scaling) {
@@ -12127,6 +12157,48 @@ server <- function(input,output,session) {
       } else {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
+      }
+    ## PSMSL ####
+    } else if (server == "PSMSL") {
+      format <- 4
+      pattern <- ".rlrdata"
+      if (isTruthy(station)) {
+        url <- "https://psmsl.org/data/obtaining/rlr.monthly.data/"
+        if (grepl(":", station, fixed = T)) {
+          stationId <- trimws(unlist(strsplit(station, split = ":")))[1]
+          station <- trimws(unlist(strsplit(station, split = ":")))[2] 
+        } else {
+          stationId <- station
+          stationsFromPSMSL <- try(read.table(file = "www/PSMSL_database.txt", sep = ";"), silent = T)
+          station <- stationsFromPSMSL[stationsFromPSMSL$V1 == station,2]
+        }
+        name <- paste0(stationId,pattern)
+        filepath <- paste0(url,name)
+        if (series == 1) {
+          updateSelectInput(session, inputId = "separator", selected = 3)
+          updateCheckboxInput(session, inputId = "tunits", value = 2) 
+        } else if (series == 2) {
+          updateSelectInput(session, inputId = "separator2", selected = 3)
+        }
+        updateCheckboxInput(session, inputId = "sigmas", value = F)
+      } else {
+        withBusyIndicatorServer(variable, {
+          if (file.exists("www/PSMSL_database.txt")) {
+            stations_available <- do.call(paste, c(read.table("www/PSMSL_database.txt", sep = ";")[,c(1,2)], sep = ":"))
+            if (series == 1) {
+              output$station1 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })  
+            } else if (series == 2) {
+              output$station2 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })
+            }
+          } else {
+            showNotification(HTML("The list of PSMSL stations is not found.<br>It is not possible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+          }
+          return(NULL)
+        })
       }
     ## LOCAL ####
     } else if (server == "LOCAL") {

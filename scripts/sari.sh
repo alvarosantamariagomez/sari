@@ -78,6 +78,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         |            | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                |
         |            | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
         |            | MERRA2ATM, MERRA2HYD                 |         |                                                |
+        | PSMSL      | RLR                                  | number  | https://psmsl.org/                             |
         +------------+--------------------------------------+---------+------------------------------------------------+
 	* 1D products must have the eochs in the first column, the data in the second and the errorbars in the third
 
@@ -108,8 +109,8 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas eostls "
-products=" enu neu pbo ngl uga spotgins_pos ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd "
+servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas eostls psmsl "
+products=" enu neu pbo ngl uga spotgins_pos ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd rlr "
 products_local=" enu neu pbo ngl 1d "
 
 # Setting a trap to do a clean exit
@@ -220,10 +221,10 @@ if [[ ! -z $local || ! -z $docker ]]; then
 	echo "Logging the SARI session in $out"
 fi
 
-# Removing calls to png-cairo and deactivating devmode (problem with local session reload)
+# Removing devmode (problem with local session reload)
 if [[ ! -z $local ]]; then
 	if [[ ! -f $saridir/app_$now.R ]]; then
-		sed 's/, type = "cairo-png"//' $saridir/app.R | sed 's/devmode(TRUE)/devmode(FALSE)/' > $saridir/app_$now.R
+		sed 's/devmode(TRUE)/devmode(FALSE)/' $saridir/app.R > $saridir/app_$now.R
 	fi
 fi
 
@@ -266,11 +267,15 @@ contains() {
 }
 contains "$servers" $server1
 contains "$servers" $server2
-if [[ ! -z $local ]]; then
+echo "$server1 $local $product1"
+if [[ $server1 == local ]]; then
 	contains "$products_local" $product1
-	contains "$products_local" $product2
 else
 	contains "$products" $product1
+fi
+if [[ $server2 == local ]]; then
+	contains "$products_local" $product2
+else
 	contains "$products" $product2
 fi
 
