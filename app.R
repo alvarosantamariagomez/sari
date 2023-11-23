@@ -8648,7 +8648,7 @@ server <- function(input,output,session) {
       } else {
         if (isTruthy(spotgins)) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
-        } else {
+        } else if (input$sunits == 0) {
           showNotification(HTML("Unknown units of the series.<br>If necessary, the series units can be set on the left panel."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
