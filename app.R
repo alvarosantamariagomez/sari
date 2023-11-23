@@ -5242,11 +5242,7 @@ server <- function(input,output,session) {
       write.table(header, file = tmpfile, append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
       noquote(paste(readLines(con = tmpfile, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     } else {
-      if (isTruthy(url$file)) {
-        noquote(paste(readLines(con = file$primary$name, n = input$lines, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
-      } else {
-        noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
-      }
+      noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     }
   })
   observeEvent(input$remove3D, {
@@ -5979,13 +5975,13 @@ server <- function(input,output,session) {
               }
               showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
               down <- 0
-              file$primary$file <- url$file
+              file$primary$datapath <- url$file
             } else {
               showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              file$primary$file <- "www/fileSeries1.txt"
-              down <- download(url$server, url$file, file$primary$file)
-              if (file.exists(file$primary$file)) {
-                downloaded <- readLines(file$primary$file, n = 2, warn = F)
+              file$primary$datapath <- "www/fileSeries1.txt"
+              down <- download(url$server, url$file, file$primary$datapath)
+              if (file.exists(file$primary$datapath)) {
+                downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
                 if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                     length(downloaded) < 2) {
                   down <- 1
@@ -5993,7 +5989,7 @@ server <- function(input,output,session) {
               }
             }
             if (isTruthy(down) && down == 0) {
-              if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
+              if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$datapath, "\n")
               # update format for primary series
               shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
               # download associated logfile
@@ -6196,36 +6192,38 @@ server <- function(input,output,session) {
         info$format <- url_info[4]
         url$logfile <- url_info[5]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-        file$primary$file <- "www/fileSeries1.txt"
-        down <- download(url$server, url$file, file$primary$file)
-        if (file.exists(file$primary$file)) {
-          downloaded <- readLines(file$primary$file, n = 2, warn = F)
+        file$primary$datapath <- "www/fileSeries1.txt"
+        down <- download(url$server, url$file, file$primary$datapath)
+        if (file.exists(file$primary$datapath)) {
+          downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
           if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
               length(downloaded) < 2) {
             down <- 1
           }
         }
         if (isTruthy(down) && down == 0) {
-          if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$file, "\n")
-          if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
-          digest(1)
-          filename <- file$primary$name
-          session$sendCustomMessage("filename", filename)
-          updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
-          if (isTruthy(url$logfile)) {
-            showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-            file$primary$logfile <- tempfile()
-            down <- download("", url$logfile, file$primary$logfile)
-            if (down == 0) {
-              file$sitelog <- NULL
-              session$sendCustomMessage("log", basename(url$logfile))
-              updateCheckboxInput(inputId = "traceLog", value = T)
-            } else {
-              showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-              file$primary$logfile <- NULL
-              url$logfile <- NULL
+          shinyjs::delay(1500, {
+            if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$datapath, "\n")
+            if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
+            digest(1)
+            filename <- file$primary$name
+            session$sendCustomMessage("filename", filename)
+            updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
+            if (isTruthy(url$logfile)) {
+              showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+              file$primary$logfile <- tempfile()
+              down <- download("", url$logfile, file$primary$logfile)
+              if (down == 0) {
+                file$sitelog <- NULL
+                session$sendCustomMessage("log", basename(url$logfile))
+                updateCheckboxInput(inputId = "traceLog", value = T)
+              } else {
+                showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                file$primary$logfile <- NULL
+                url$logfile <- NULL
+              }
             }
-          }
+          })
         } else {
           removeNotification("parsing_url1")
           showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(input$server1),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
@@ -8533,7 +8531,7 @@ server <- function(input,output,session) {
       if (isTruthy(url$file)) {
         fileName <- file$primary$name
         output$fileSeries1 <- renderUI({
-          tags$a(href = basename(file$primary$file), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
+          tags$a(href = basename(file$primary$datapath), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
         })
       } else {
         fileName <- input$series$name
@@ -8579,7 +8577,7 @@ server <- function(input,output,session) {
       # Getting primary series
       table <- NULL
       if (isTruthy(url$file)) {
-        filein <- file$primary$file
+        filein <- file$primary$datapath
         table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
       } else {
         filein <- input$series$datapath
