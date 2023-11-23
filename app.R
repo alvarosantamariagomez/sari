@@ -3767,11 +3767,12 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "Plotting histogram", "\n")
       output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
         title <- paste("Histogram of the", label, units)
-        hist(values, breaks = "FD", freq = F, xlab = paste("Values",units), ylab = "Density per series unit", main = title, col = SARIcolors[5])
-        dnorm(values, mean = mean(values, na.rm = T), sd = sd(values), log = F)
-        xfit <- seq(min(values),max(values),length = 40)
-        yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
-        lines(xfit, yfit, col = SARIcolors[2], lwd = 3)
+        h <- hist(values, breaks = "FD", plot = F)
+        h$density <- 100*h$density/sum(h$density)
+        plot(h, col = SARIcolors[5], freq = F, xlab = paste("Values",units), ylab = "Frequency (%)", main = title)
+        xfit <- seq(min(values),max(values),length = 3*length(h$mids))
+        yfit <- dnorm(xfit, mean = mean(values, na.rm = T), sd = sd(values, na.rm = T))
+        lines(xfit, yfit*3*100/sum(yfit), col = SARIcolors[2], lwd = 3)
       }, width = reactive(info$width))
       if (messages > 0) cat(file = stderr(), "Computing statistics", "\n")
       adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
@@ -12081,8 +12082,15 @@ server <- function(input,output,session) {
           name <- c(name, naming)
           filepath <- c(filepath, paste0(url,naming))
         }
-        updateRadioButtons(session, inputId = "tunits", selected = 1)
-        updateTextInput(session, inputId = "step2", value = "1")
+        # updateRadioButtons(session, inputId = "tunits", selected = 1)
+        if (input$tunits == 1) {
+          step <- 1
+        } else if (input$tunits == 2) {
+          step <- 1/7
+        } else if (input$tunits == 3) {
+          step <- 1/daysInYear
+        }
+        updateTextInput(session, inputId = "step2", value = step)
         if (input$sunits == 1) {
           updateTextInput(session, inputId = "scaleFactor", value = "0.001")
         }
