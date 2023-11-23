@@ -2509,6 +2509,15 @@ server <- function(input,output,session) {
     table1 <- db1[[info$db1]]
     table2 <- db2[[info$db2]]
     
+    if (isTruthy(input$ne)) {
+      table2y_tmp <- table2$y2
+      table2sy_tmp <- table2$sy2
+      table2$y2 <- table2$y1
+      table2$sy2 <- table2$sy1
+      table2$y1 <- table2y_tmp
+      table2$sy1 <- table2sy_tmp
+    }
+    
     # trans$y0  = all points from the original input series (including deleted with status NA)
     # trans$y   = points with TRUE status
     # trans$sy  = sigmas with TRUE status
@@ -7302,7 +7311,7 @@ server <- function(input,output,session) {
     }
   }, priority = 6)
   
-  observeEvent(c(input$separator2, input$ne), {
+  observeEvent(c(input$separator2), {
     req(db2[[info$db2]])
     if (messages > 4) cat(file = stderr(), "From: observe secondary series (2)\n")
     digest(2)
