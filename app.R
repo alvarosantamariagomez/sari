@@ -699,7 +699,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   tags$a(href = "iraf00fra_20201021.log", "Show file example", target = "_blank")
+                                                                                   tags$a(href = "cralf00fra_20231110.log", "Show file example", target = "_blank")
                                                                             )
                                                                           ),
                                                                           fluidRow(

@@ -1,8 +1,8 @@
 # SPOTGINS SOLUTION [POSITION] v1
-# Creation 2023-10-24 at 08:18:24 (UTC)
+# Creation : 2023-10-24 at 08:18:24 (UTC)
 #------------------------------------
 # STATION          : CRAL00FRA
-# ANALYSIS_CENTRE  : OMP
+# ANALYSIS_CENTRE :  OMP
 # STRATEGY_SUMMARY : https://www.poleterresolide.fr/visualisation-gnss/#/solution/SPOTGINS
 # REF_FRAME        : IGS20
 # PRODUCTS         : G20/GRG
@@ -11,11 +11,11 @@
 # ELLIPSOID        : GRS80
 #------------------------------------
 # X_pos            : 4662596.379000
-# Y_pos            : 29882.438000
+# Y_pos            :   29882.438000
 # Z_pos            : 4338374.979000
-# Longitude        : +000.367203
-# Latitude         : +43.128400
-# Height           : +0658.300000
+# Longitude        :   0.367203
+# Latitude         :  43.128400
+# Height           : 658.300000
 #------------------------------------
 #jjjjj.jjjjjjjj         _____E         _____N         _____U         ____dE         ____dN         ____dU  yyyymmddHHMMSS  yyyy.yyyyyyy
  55236.49848380      -0.184095      -0.163221       0.008591       0.000452       0.000543       0.001789  20100209115748  2010.1082150

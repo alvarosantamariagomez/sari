@@ -1,72 +1,169 @@
-     IRAF00FRA Site Information Form (site log)
+     CRAL00FRA Site Information Form (site log)
      International GNSS Service
      See Instructions at:
-       https://files.igscb.org/pub/station/general/sitelog_instr.txt
+       https://files.igs.org/pub/station/general/sitelog_instr.txt
 
 
 0.   Form
 
-     Prepared by (full name)  : Alvaro Santamaría
-     Date Prepared            : 2020-10-21
-     Report Type              : NEW
+     Prepared by (full name)  : OMP GNSS team (gnss@obs-mip.fr)
+     Date Prepared            : 2023-11-10
+     Report Type              : UPDATE
      If Update:
-      Previous Site Log       : (ssssddsss_ccyymmdd.log)
-      Modified/Added Sections : (n.n,n.n,...)
+      Previous Site Log       : cral00fra_20231109.log
+      Modified/Added Sections : 3.9, 3.10, 3.11
 
 
 1.   Site Identification of the GNSS Monument
 
-     Site Name                : IRATY
-     Four Character ID        : IRAF
-     Monument Inscription     : 
-     IERS DOMES Number        : 18322M001
-     CDP Number               : (A4)
+     Site Name                : Lannemezan
+     Four Character ID        : CRAL
+     Monument Inscription     : None
+     IERS DOMES Number        : 19939M001
+     CDP Number               : NONE
      Monument Description     : STEEL MAST
-       Height of the Monument : 1.6 m
-       Monument Foundation    : CONCRETE BLOCK
+       Height of the Monument : 1.50 m
+       Monument Foundation    : ROOF
        Foundation Depth       : (m)
-     Marker Description       : self-centered top of mast
-     Date Installed           : 2020-09-16T10:00Z
-     Geologic Characteristic  : CONGLOMERATE
-       Bedrock Type           : METAMORPHIC
-       Bedrock Condition      : WEATHERED
-       Fracture Spacing       : (0 cm/1-10 cm/11-50 cm/51-200 cm/over 200 cm)
-       Fault zones nearby     : (YES/NO/Name of the zone)
-         Distance/activity    : (multiple lines)
-     Additional Information   : Self-centering antenna mount (SECO) on top of a 
-                              : 200 x 5 cm stainless steel mast introduced 40 cm
-                              : into a concrete slab of unknown depth (ancient 
-                              : telecom tower support). The mast is protected 
-                              : with 13 mm thermal-insulation rubber foam and a 
-                              : sealed UV-resistant PVC pipe.
+     Marker Description       : (CHISELLED CROSS/DIVOT/BRASS NAIL/etc)
+     Date Installed           : 2010-02-09T13:00Z
+     Geologic Characteristic  : MORAINIC FAN
+       Bedrock Type           : SEDIMENTARY
+       Bedrock Condition      : FRESH
+       Fracture Spacing       : 0 cm
+       Fault zones nearby     : YES/PYRENEES
+         Distance/activity    : 20 KM TO THE SOUTH - CONSTANT SEISMIC ACTIVITY
+     Additional Information   : (multiple lines)
 
 
 2.   Site Location Information
 
-     City or Town             : Larrau
-     State or Province        : Pyrénées-Atlantiques
+     City or Town             : Lannemezan
+     State or Province        : Hautes-Pyrénées
      Country                  : France
      Tectonic Plate           : EURASIAN
      Approximate Position (ITRF)
-       X coordinate (m)       : 4669718.471
-       Y coordinate (m)       : -84529.112
-       Z coordinate (m)       : 4331222.561
-       Latitude (N is +)      : +430200.64
-       Longitude (E is +)     : -0010213.30
-       Elevation (m,ellips.)  : 1463.7
-     Additional Information   : (multiple lines)
+       X coordinate (m)       : 4662596.379
+       Y coordinate (m)       : 29882.438
+       Z coordinate (m)       : 4338374.979
+       Latitude (N is +)      : +430742.32
+       Longitude (E is +)     : +0002201.93
+       Elevation (m,ellips.)  : 658.3
+     Additional Information   : located in the premises of
+                              : 'Centre de Recherche Atmosphérique'
 
 
 3.   GNSS Receiver Information
 
-3.1  Receiver Type            : TRIMBLE NETR9
-     Satellite System         : GPS+GLO+GAL
-     Serial Number            : 5816R50341
-     Firmware Version         : 5.44
+3.1  Receiver Type            : TRIMBLE NETRS
+     Satellite System         : GPS
+     Serial Number            : 4927175302
+     Firmware Version         : 1.2-5
      Elevation Cutoff Setting : 0 deg
-     Date Installed           : 2020-09-16T10:00Z
-     Date Removed             : CCYY-MM-DDThh:mmZ
+     Date Installed           : 2010-02-09T13:00Z
+     Date Removed             : 2014-10-29T13:00Z
      Temperature Stabiliz.    : none
+     Additional Information   : (multiple lines)
+
+3.2  Receiver Type            : TRIMBLE NETR5
+     Satellite System         : GPS+GLO
+     Serial Number            : 4937K63591
+     Firmware Version         : 4.17
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2014-10-29T13:32Z
+     Date Removed             : 2015-02-19T10:15Z
+     Temperature Stabiliz.    : none
+     Additional Information   : end of tracking:
+                              : 2014-02-05T17:00Z
+
+3.3  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO
+     Serial Number            : 5250K40736
+     Firmware Version         : 4.81
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2015-02-19T11:15Z
+     Date Removed             : 2015-04-13T06:40Z
+     Temperature Stabiliz.    : none
+     Additional Information   : (multiple lines)
+
+3.4  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO
+     Serial Number            : 5224K50003
+     Firmware Version         : 4.85
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2015-04-13T06:45Z
+     Date Removed             : 2015-06-23T11:20Z
+     Temperature Stabiliz.    : none
+     Additional Information   : (multiple lines)
+
+3.5  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO
+     Serial Number            : 5224K50003
+     Firmware Version         : 5.01
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2015-06-23T11:30Z
+     Date Removed             : 2016-12-16T13:10Z
+     Temperature Stabiliz.    : none
+     Additional Information   : (multiple lines)
+
+3.6  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5224K50003
+     Firmware Version         : 5.15
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2016-12-16T13:16Z
+     Date Removed             : 2017-04-06T13:30Z
+     Temperature Stabiliz.    : (deg C) +/- (deg C)
+     Additional Information   : (multiple lines)
+
+3.7  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5615R50028
+     Firmware Version         : 5.20
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2017-04-06T13:50Z
+     Date Removed             : 2017-08-01T10:10Z
+     Temperature Stabiliz.    : (deg C) +/- (deg C)
+     Additional Information   : (multiple lines)
+
+3.8  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5615R50028
+     Firmware Version         : 5.22
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2017-08-01T10:15Z
+     Date Removed             : 2018-02-20T11:00Z
+     Temperature Stabiliz.    : (deg C) +/- (deg C)
+     Additional Information   : (multiple lines)
+
+3.9  Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5615R50028
+     Firmware Version         : 5.30
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2018-02-20T11:10Z
+     Date Removed             : 2019-01-31T14:10Z
+     Temperature Stabiliz.    : (deg C) +/- (deg C)
+     Additional Information   : (multiple lines)
+
+3.10 Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5615R50028
+     Firmware Version         : 5.37
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2019-01-31T14:15Z
+     Date Removed             : 2023-11-08T11:51Z
+     Temperature Stabiliz.    : (deg C) +/- (deg C)
+     Additional Information   : (multiple lines)
+
+3.11 Receiver Type            : TRIMBLE NETR9
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 5615R50028
+     Firmware Version         : 5.44
+     Elevation Cutoff Setting : 3 deg
+     Date Installed           : 2023-11-08T11:51Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Temperature Stabiliz.    : (deg C) +/- (deg C)
      Additional Information   : (multiple lines)
 
 3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
@@ -82,22 +179,22 @@
 
 4.   GNSS Antenna Information
 
-4.1  Antenna Type             : TRM115000.00    NONE
-     Serial Number            : 1551000334
+4.1  Antenna Type             : TRM41249.00     NONE
+     Serial Number            : 60241615
      Antenna Reference Point  : BAM
-     Marker->ARP Up Ecc. (m)  :   0.0530
+     Marker->ARP Up Ecc. (m)  :   0.0000
      Marker->ARP North Ecc(m) :   0.0000
      Marker->ARP East Ecc(m)  :   0.0000
      Alignment from True N    : 0 deg
      Antenna Radome Type      : NONE
      Radome Serial Number     : 
-     Antenna Cable Type       : LRM-400
+     Antenna Cable Type       : Trimble LMR400
      Antenna Cable Length     : 30 m
-     Date Installed           : 2020-09-16T10:00Z
+     Date Installed           : 2010-02-09T13:00Z
      Date Removed             : CCYY-MM-DDThh:mmZ
-     Additional Information   : The SECO antenna mount is 7.65 cm height, but 
-                              : screws 2.35 cm on top of the steel mast (the 
-                              : marker)
+     Additional Information   : Wrong antenna type TRM55971.00 declared in
+                              : sitelog and on receiver from installation date
+                              : to 2017-10-17 11:58Z
 
 4.x  Antenna Type             : (A20, from rcvr_ant.tab; see instructions)
      Serial Number            : (A*, but note the first A5 is used in SINEX)
@@ -133,9 +230,9 @@
 
 6.   Frequency Standard
 
-6.1  Standard Type            : INTERNAL 
+6.1  Standard Type            : INTERNAL
        Input Frequency        : (if external)
-       Effective Dates        : 2020-09-16/CCYY-MM-DD
+       Effective Dates        : 2010-02-09/CCYY-MM-DD
        Notes                  : (multiple lines)
 
 6.x  Standard Type            : (INTERNAL or EXTERNAL H-MASER/CESIUM/etc)
@@ -228,18 +325,18 @@
                               : 31400 Toulouse
                               : France
      Primary Contact
-       Contact Name           : Alvaro Santamaría
+       Contact Name           : OMP GNSS team
        Telephone (primary)    : 
        Telephone (secondary)  : 
        Fax                    : 
-       E-mail                 : alvaro.santamaria@get.omp.eu
+       E-mail                 : gnss@obs-mip.fr
      Secondary Contact
        Contact Name           : 
        Telephone (primary)    : 
        Telephone (secondary)  : 
        Fax                    : 
        E-mail                 : 
-     Additional Information   : (multiple lines)
+     Additional Information   : http://www.get.obs-mip.fr
 
 
 
@@ -266,32 +363,25 @@
 
 13.  More Information
 
-     Primary Data Center      : IGN
-     Secondary Data Center    : 
-     URL for More Information : http://webrenag.unice.fr/
+     Primary Data Center      : RENAG
+     Secondary Data Center    : IGN
+     URL for More Information : http://rgp.ign.fr
      Hardcopy on File
-       Site Map               : (Y or URL)
+       Site Map               : http://rgp.ign.fr
        Site Diagram           : (Y or URL)
        Horizon Mask           : (Y or URL)
        Monument Description   : (Y or URL)
-       Site Pictures          : (Y or URL)
+       Site Pictures          : http://rgp.ign.fr
      Additional Information   : (multiple lines)
      Antenna Graphics with Dimensions
 
-TRM115000.00 NONE
+TRM41249.00
 
    / --------------------------------------------- \
   +                                                 +
    \ --------------------------------------------- /
-                   \       _       /
-                    \     | |     /
-                     \----|+|----/                        <--   0.0000  BAM=ARP
-                     |           |
-										 |           |
-										 | |-------| |                        <--  -0.0530  Marker
-										 | |       | |
-										 |--       --|
-										 |           |
-										 .           .
-										 .           .
-  <--                    0.3396                   -->
+                   \               /
+                    \             /
+                     \-----+-----/                        <--  0.0000  BAM=ARP
+
+  <--                    0.3396                   -->                  Notches
