@@ -2980,8 +2980,10 @@ server <- function(input,output,session) {
     plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T)
     points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
     if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-      centerx <- which(abs(trans$x - median(trans$x)) == min(abs(trans$x - median(trans$x))))[1]
-      centery <- which(abs(trans$y - median(trans$y)) == min(abs(trans$y - median(trans$y))))[1]
+      xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+      yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+      centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
+      centery <- which(abs(trans$y - yy) == min(abs(trans$y - yy)))[1]
       if (input$format == 4) {
         lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
       } else {
