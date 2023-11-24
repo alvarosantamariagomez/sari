@@ -6221,24 +6221,26 @@ server <- function(input,output,session) {
           shinyjs::delay(1500, {
             if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$datapath, "\n")
             if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
-            digest(1)
-            filename <- file$primary$name
-            session$sendCustomMessage("filename", filename)
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
-            if (isTruthy(url$logfile)) {
-              showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-              file$primary$logfile <- tempfile()
-              down <- download("", url$logfile, file$primary$logfile)
-              if (down == 0) {
-                file$sitelog <- NULL
-                session$sendCustomMessage("log", basename(url$logfile))
-                updateCheckboxInput(inputId = "traceLog", value = T)
-              } else {
-                showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                file$primary$logfile <- NULL
-                url$logfile <- NULL
+            shinyjs::delay(1500, {
+              digest(1)
+              filename <- file$primary$name
+              session$sendCustomMessage("filename", filename)
+              if (isTruthy(url$logfile)) {
+                showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+                file$primary$logfile <- tempfile()
+                down <- download("", url$logfile, file$primary$logfile)
+                if (down == 0) {
+                  file$sitelog <- NULL
+                  session$sendCustomMessage("log", basename(url$logfile))
+                  updateCheckboxInput(inputId = "traceLog", value = T)
+                } else {
+                  showNotification(HTML(paste0("Logfile not found in ",input$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                  file$primary$logfile <- NULL
+                  url$logfile <- NULL
+                }
               }
-            }
+            })
           })
         } else {
           removeNotification("parsing_url1")
@@ -6272,7 +6274,6 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
       removeNotification("bad_url")
-      # url_info <- unlist(get_URL_info(input$server2,inputs$station2,input$product2,2))
       url_info <- get_URL_info(input$server2,inputs$station2,input$product2,2)
       if (isTruthy(url_info)) {
         url$station2 <- url_info[[1]]
@@ -8770,15 +8771,15 @@ server <- function(input,output,session) {
       # Setting series units if known
       if (isTruthy(url$server)) {
         if (url$server == "EPOS" || url$server == "EOSTLS") {
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 2))
+          updateRadioButtons(session, inputId = "sunits", selected = 2)
         } else {
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
+          updateRadioButtons(session, inputId = "sunits", selected = 1)
         }
       } else if (info$format == 2 || info$format == 3) {
-        shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
+        updateRadioButtons(session, inputId = "sunits", selected = 1)
       } else {
         if (isTruthy(spotgins)) {
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "sunits", selected = 1))
+          updateRadioButtons(session, inputId = "sunits", selected = 1)
         } else if (input$sunits == 0) {
           showNotification(HTML("Unknown units of the series.<br>If necessary, the series units can be set on the left panel."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
@@ -12266,13 +12267,13 @@ server <- function(input,output,session) {
         }
         name <- paste0(stationId,pattern)
         filepath <- paste0(url,name)
+        updateCheckboxInput(session, inputId = "sigmas", value = F)
         if (series == 1) {
           updateSelectInput(session, inputId = "separator", selected = 3)
           updateCheckboxInput(session, inputId = "tunits", value = 2) 
         } else if (series == 2) {
           updateSelectInput(session, inputId = "separator2", selected = 3)
         }
-        updateCheckboxInput(session, inputId = "sigmas", value = F)
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/PSMSL_database.txt")) {
