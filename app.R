@@ -5619,6 +5619,7 @@ server <- function(input,output,session) {
           }
           disable("series")
           disable("format")
+          disable("separator")
           enable("server2")
           enable("average")
           enable("loadSARI")
