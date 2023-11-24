@@ -6303,6 +6303,7 @@ server <- function(input,output,session) {
             if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2[f], " downloaded in ", file$secondary$datapath[f], "\n")
           } else {
             file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
+            removeNotification(paste0("parsing_url2_",f))
             showNotification(HTML(paste0("File ",file$secondary$name[f]," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           }
         }
