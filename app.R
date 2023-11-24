@@ -7788,6 +7788,13 @@ server <- function(input,output,session) {
         polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
       }
       axis(side = 1, labels = F, tick = T)
+      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+        xx <- median(x[db1[[info$db1]]$status1][x[db1[[info$db1]]$status1] > ranges$x1[1] & x[db1[[info$db1]]$status1] < ranges$x1[2]], na.rm = T)
+        yy <- median(y1[db1[[info$db1]]$status1][x[db1[[info$db1]]$status1] > ranges$x1[1] & x[db1[[info$db1]]$status1] < ranges$x1[2]], na.rm = T)
+        centerx <- which(abs(x[db1[[info$db1]]$status1] - xx) == min(abs(x[db1[[info$db1]]$status1] - xx)))[1]
+        centery <- which(abs(y1[db1[[info$db1]]$status1] - yy) == min(abs(y1[db1[[info$db1]]$status1] - yy)))[1]
+        lines(c(x[db1[[info$db1]]$status1][1],x[db1[[info$db1]]$status1][length(x[db1[[info$db1]]$status1])]),c(y1[db1[[info$db1]]$status1][centery] + trans$plate[1]*(x[db1[[info$db1]]$status1][1] - x[db1[[info$db1]]$status1][centerx]), y1[db1[[info$db1]]$status1][centery] + trans$plate[1]*(x[db1[[info$db1]]$status1][length(x[db1[[info$db1]]$status1])] - x[db1[[info$db1]]$status1][centerx])), col = SARIcolors[4], lwd = 3)
+      }
       # North ####
       par(mai = c(0.3, 1.2, 0.1, 0.6))
       y.range <- range(y2[db1[[info$db1]]$status2][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
@@ -7859,6 +7866,13 @@ server <- function(input,output,session) {
         polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
       }
       axis(side = 1, labels = F, tick = T)
+      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+        xx <- median(x[db1[[info$db1]]$status2][x[db1[[info$db1]]$status2] > ranges$x1[1] & x[db1[[info$db1]]$status2] < ranges$x1[2]], na.rm = T)
+        yy <- median(y2[db1[[info$db1]]$status2][x[db1[[info$db1]]$status2] > ranges$x1[1] & x[db1[[info$db1]]$status2] < ranges$x1[2]], na.rm = T)
+        centerx <- which(abs(x[db1[[info$db1]]$status2] - xx) == min(abs(x[db1[[info$db1]]$status2] - xx)))[1]
+        centery <- which(abs(y2[db1[[info$db1]]$status2] - yy) == min(abs(y2[db1[[info$db1]]$status2] - yy)))[1]
+        lines(c(x[db1[[info$db1]]$status2][1],x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])]),c(y2[db1[[info$db1]]$status2][centery] + trans$plate[1]*(x[db1[[info$db1]]$status2][1] - x[db1[[info$db1]]$status2][centerx]), y2[db1[[info$db1]]$status2][centery] + trans$plate[1]*(x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])] - x[db1[[info$db1]]$status2][centerx])), col = SARIcolors[4], lwd = 3)
+      }
       # Up ####
       par(mai = c(1.2, 1.2, 0.1, 0.6))
       y.range <- range(y3[db1[[info$db1]]$status3][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
@@ -7928,6 +7942,13 @@ server <- function(input,output,session) {
         ba <- y3 + sy3
         bb <- y3 - sy3
         polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+      }
+      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+        xx <- median(x[db1[[info$db1]]$status3][x[db1[[info$db1]]$status3] > ranges$x1[1] & x[db1[[info$db1]]$status3] < ranges$x1[2]], na.rm = T)
+        yy <- median(y3[db1[[info$db1]]$status3][x[db1[[info$db1]]$status3] > ranges$x1[1] & x[db1[[info$db1]]$status3] < ranges$x1[2]], na.rm = T)
+        centerx <- which(abs(x[db1[[info$db1]]$status3] - xx) == min(abs(x[db1[[info$db1]]$status3] - xx)))[1]
+        centery <- which(abs(y3[db1[[info$db1]]$status3] - yy) == min(abs(y3[db1[[info$db1]]$status3] - yy)))[1]
+        lines(c(x[db1[[info$db1]]$status3][1],x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])]),c(y3[db1[[info$db1]]$status3][centery] + trans$plate[1]*(x[db1[[info$db1]]$status3][1] - x[db1[[info$db1]]$status3][centerx]), y3[db1[[info$db1]]$status3][centery] + trans$plate[1]*(x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])] - x[db1[[info$db1]]$status3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
       js$popup(info$width)
