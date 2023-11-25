@@ -9373,7 +9373,8 @@ server <- function(input,output,session) {
           coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "JPL") {
-          coordinates <- as.numeric(unlist(strsplit(grep(paste0("^", url$station, " POS "), readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5)])/1000
+          tableAll <- read.table("www/JPL_database.txt")
+          coordinates <- tableAll[tableAll$V1 == url$station, c(2,3,4)]
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
           lat <- stationGeo[1] * 180/pi
@@ -11801,9 +11802,15 @@ server <- function(input,output,session) {
           filepath <- paste0(url,name)
         } else {
           withBusyIndicatorServer(variable, {
-            dir_contents <- try(readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-              stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
+            listStations <- try(unlist(strsplit(grep(" POS ", suppressWarnings(readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F)), ignore.case = F, value = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(1,3,4,5)], silent = T)
+            if (isTruthy(listStations) && !inherits(listStations,"try-error")) {
+              writeLines(listStations, "www/JPL_database.txt", sep = "\n")
+            } else {
+              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              return(NULL)
+            }
+            if (file.exists("www/JPL_database.txt")) {
+              stations_available <- read.table("www/JPL_database.txt")$V1
               if (series == 1) {
                 output$station1 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -11813,8 +11820,6 @@ server <- function(input,output,session) {
                   suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
               }
-            } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
