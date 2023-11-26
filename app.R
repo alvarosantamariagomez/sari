@@ -60,7 +60,7 @@ optionalPackages <- c(
   "leaflet",
   "geojsonio"
 )
-check_load(packages)
+check_load(optionalPackages)
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
@@ -358,8 +358,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                 ),
                 
                 # HTTP meta and style header tags
-                tags$head(includeScript("matomo.js")),
-                # tags$head(includeScript("google-analytics.js")),
+                # tags$head(includeScript("matomo.js")),
                 # tags$head(includeHTML(("google-analytics.html"))),
                 
                 tags$style(css),
@@ -6443,6 +6442,7 @@ server <- function(input,output,session) {
       # Mapping the station positions
       # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
       if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) {
+        if (messages > 0) cat(file = stderr(), "Location map", "\n")
           lat <- inputs$station_lat
           lon <- inputs$station_lon
           lon <- ifelse(lon > 180, lon - 360, lon)
@@ -7673,6 +7673,7 @@ server <- function(input,output,session) {
   observeEvent(input$plotAll, {
     req(db1[[info$db1]])
     if (input$format < 4) {
+      if (messages > 0) cat(file = stderr(), "Overview plot", "\n")
       if (input$sunits == 1) {
         unit <- "(m)"
       } else if (input$sunits == 2) {
