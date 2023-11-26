@@ -116,7 +116,7 @@ withBusyIndicatorUI <- function(button) {
   )
 }
 
-# class for disabled tabs
+# HTML class for disabled tabs
 withBusyIndicatorCSS <- "
   .btn-loading-container {
     margin-left: 10px;
@@ -152,7 +152,7 @@ color: gray62 !important;
 # show plotAll popup
 seriesPopup <- "shinyjs.popup = function(width){window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no');}"
 
-# Update fileInput file names from URL (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
+# Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
 update_series <- "
 Shiny.addCustomMessageHandler('filename', function(txt) {
   var target = $('#series').parent().parent().parent().find('input[type=text]');
@@ -197,13 +197,14 @@ Shiny.addCustomMessageHandler('trendRef', function(txt) {
 # Confirmation when refreshing the page
 # askRefresh <- 'window.onbeforeunload = function() { return ""; };'
 
-# Hide loading page from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
+# Hide loading page, from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
   Sys.sleep(seconds)
   hide("loading_page")
   show("main_content")
 }
 
+# Setting the plots of the visualization panel
 tabContents <- function(tabNum) {
   if (tabNum == 1) {
     tabName <- uiOutput("tabName1")
@@ -1862,7 +1863,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   )
                 )
 )
-
 
 
 
@@ -5190,6 +5190,7 @@ server <- function(input,output,session) {
   })
 
   # Download results ####
+  ## Local directory ####
   output$localDirectory <- renderPrint({
     if (isTruthy(info$directory)) {
       cat(info$directory)
@@ -5210,6 +5211,7 @@ server <- function(input,output,session) {
       }
     })
   })
+  ## Save series ####
   output$download <- output$downloadAs <- downloadHandler(
     filename = function() {
       if (input$format != 4) {
@@ -5226,6 +5228,7 @@ server <- function(input,output,session) {
       collect(file)
     }
   )
+  ## Save spectrum ####
   output$downloadSpectrum1 <- output$downloadSpectrum2 <- output$downloadSpectrum3 <- downloadHandler(
     filename = function() {
       if (input$format != 4) {
@@ -5238,6 +5241,7 @@ server <- function(input,output,session) {
       collect_periodogram(file)
     }
   )
+  ## Save help file ####
   #Based on https://stackoverflow.com/questions/40420450/how-to-download-a-pdf-file-in-a-shiny-app
   output$print_out <- downloadHandler(
     filename = function() {
@@ -8672,7 +8676,7 @@ server <- function(input,output,session) {
     removeNotification("time_shift")
     removeNotification("parsing_url1")
     lat <- lon <- lat2 <- lon2 <- NULL
-    # primary series ####
+    ## primary series ####
     if (series == 1) {
       if (messages > 0) cat(file = stderr(), "Reading primary series file", "\n")
       if (isTruthy(url$file)) {
@@ -8843,7 +8847,7 @@ server <- function(input,output,session) {
       info$db1 <- "original"
       db1$original <- as.data.frame(table)
       db1$original$status1 <- db1$original$status2 <- db1$original$status3 <- rep(T, length(table$x1))
-    # secondary series ####
+    ## secondary series ####
     } else if (series == 2) {
       if (messages > 0) cat(file = stderr(), "Reading secondary series file", "\n")
       # Setting column separation
@@ -9064,6 +9068,7 @@ server <- function(input,output,session) {
     }
     shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
   }
+  #
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
     tableAll <- NULL
     extracted <- NULL
@@ -9357,6 +9362,7 @@ server <- function(input,output,session) {
       NULL
     }
   }
+  #
   extract_coordinates <- function(filein,format,server,product,skip,sep) {
     if (format == 1) {
       if (isTruthy(server)) {
@@ -9454,6 +9460,7 @@ server <- function(input,output,session) {
       }
     }
   }
+  #
   latlon2xyz <- function(lat,lon,scaling) {
     a <- 6378137
     b <- 6356752.314140347
@@ -9464,6 +9471,7 @@ server <- function(input,output,session) {
     z <- N * (1 - e2) * sin(lat)
     c(x,y,z) * scaling
   }
+  #
   xyz2llh <- function(x,y,z) {
     a <- 6378137
     b <- 6356752.314140347
@@ -9477,6 +9485,7 @@ server <- function(input,output,session) {
     }
     c(lat,lon)
   }
+  #
   model <- function(x,y) {
     removeNotification("bad_rate_noise")
     removeNotification("missing_rate_noise")
@@ -9999,7 +10008,7 @@ server <- function(input,output,session) {
             offsetEpochs <- offsetEpochs[-toremove]
             i <- 0
             for (p in offsetEpochs) {
-              p <- as.numeric(trimmer(p))
+              p <- as.numeric(trim(p))
               if (nchar(p) > 0 && !is.na(p)) {
                 if (trans$x[1] < p && p < trans$x[length(trans$x)]) {
                   trans$offsetEpochs <- c(trans$offsetEpochs, p)
@@ -10092,7 +10101,7 @@ server <- function(input,output,session) {
             update <- 1
           }
           for (refe in expos) {
-            refe <- trimmer(refe)
+            refe <- trim(refe)
             i <- i + 1
             if (nchar(refe) > 0 && !is.na(as.numeric(refe))) {
               if (identical(E0,character(0)) || identical(TE0,character(0)) || is.na(E0[i]) || is.na(TE0[i]) || E0[i] == "" || TE0[i] == "" || E0[i] == " " || TE0[i] == " ") {
@@ -10182,7 +10191,7 @@ server <- function(input,output,session) {
                 eTE0[i] <- sprintf("%.*f", max_decimals, as.numeric(eTE0[i]))
               }
             } else {
-              if (is.na(E0[i]) || trimmer(E0[i]) == "NA" || trimmer(E0[i]) == "") {
+              if (is.na(E0[i]) || trim(E0[i]) == "NA" || trim(E0[i]) == "") {
                 E0[i] <- NA
                 TE0[i] <- NA
               } else {
@@ -10257,7 +10266,7 @@ server <- function(input,output,session) {
             update <- 1
           }
           for (refl in logas) {
-            refl <- trimmer(refl)
+            refl <- trim(refl)
             i <- i + 1
             if (nchar(refl) > 0 && !is.na(as.numeric(refl))) {
               if (identical(L0,character(0)) || identical(TL0,character(0)) || is.na(L0[i]) || is.na(TL0[i]) || L0[i] == "" || TL0[i] == "" || L0[i] == " " || TL0[i] == " ") {
@@ -10357,7 +10366,7 @@ server <- function(input,output,session) {
                 eTL0[i] <- sprintf("%.*f", max_decimals, as.numeric(eTL0[i]))
               }
             } else {
-              if (is.na(L0[i]) || trimmer(L0[i]) == "NA" || trimmer(L0[i]) == "") {
+              if (is.na(L0[i]) || trim(L0[i]) == "NA" || trim(L0[i]) == "") {
                 L0[i] <- NA
                 TL0[i] <- NA
               } else {
@@ -10490,6 +10499,7 @@ server <- function(input,output,session) {
       }
     })
   }
+  #
   ReadLog <- function(x) {
     removeNotification("bad_sitelog")
     antrec <- grep("^[34].[x0-9]+ ",readLines(con = x, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
@@ -10524,6 +10534,7 @@ server <- function(input,output,session) {
       return(NULL)
     }
   }
+  #
   ReadInfo <- function(x,y,z) {
     antes = c()
     reces = c()
@@ -10588,6 +10599,7 @@ server <- function(input,output,session) {
     }
     return(list(antes,reces))
   }
+  #
   ReadSoln <- function(x,y,z) {
     req(x,z)
     changes <- c()
@@ -10609,6 +10621,7 @@ server <- function(input,output,session) {
     changes <- na.omit(changes)
     return(changes)
   }
+  #
   ReadCustom <- function(x,y,z) {
     req(x,z)
     removeNotification("bad_custom")
@@ -10663,6 +10676,7 @@ server <- function(input,output,session) {
     }
     return(changes)
   }
+  #
   plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol,unit) {
     options(digits = 10)
     if (symbol == 0) {
@@ -10727,6 +10741,7 @@ server <- function(input,output,session) {
       }
     }
   }
+  #
   periodogram <- function(serie) {
     req(trans$fs)
     if (messages > 0) cat(file = stderr(), "Computing periodogram ", serie, "\n")
@@ -10787,6 +10802,7 @@ server <- function(input,output,session) {
                    trans$spectra_old <- c(input$spectrumOriginal,input$spectrumModel,input$spectrumResiduals,input$spectrumFilter,input$spectrumFilterRes)
                  })
   }
+  #
   vondrak <- function(x,y,yp,p) {
     #code adapted from Sylvain Loyer's Fortran code and from Vondrak's 1969 paper
     removeNotification("bad_vondrak_period")
@@ -10903,7 +10919,9 @@ server <- function(input,output,session) {
     }
     return(yl)
   }
-  trimmer <- function(x) gsub("^\\s+|\\s+$", "", x)
+  #
+  trim    <- function(x) { gsub("^\\s+|\\s+$", "", x) }
+  #
   collect <- function(file_out) {
     if (messages > 0) cat(file = stderr(), "Downloading results", "\n")
     id <- showNotification("Preparing file to download ...", action = NULL, duration = NULL, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
@@ -11095,6 +11113,7 @@ server <- function(input,output,session) {
     suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
     shinyjs::delay(2000, removeNotification(id = id, session = getDefaultReactiveDomain()))
   }
+  #
   collect_periodogram <- function(file_out) {
     if (messages > 0) cat(file = stderr(), "Downloading periodogram", "\n")
     now <- paste0(" run on ",Sys.time()," ",Sys.timezone())
@@ -11269,6 +11288,7 @@ server <- function(input,output,session) {
     }
     return(ans)
   }
+  #
   UKFsmooth <- function(filterData, GGfunction) {
 
     mod <- filterData
@@ -11489,6 +11509,7 @@ server <- function(input,output,session) {
     class(ans) <- "dlmFiltered"
     return(ans)
   }
+  #
   dlmExtSmooth <- function(filterData) {
 
     big <- 1/sqrt(.Machine$double.eps)
@@ -11561,6 +11582,7 @@ server <- function(input,output,session) {
       value
     })
   }
+  #
   midas_vel <- function(m,t,disc,series) {
     setProgress(round(m/info$points, digits = 1))
     vel_f <- -999999
@@ -11601,6 +11623,7 @@ server <- function(input,output,session) {
       return(0)
     }
   }
+  #
   signifdecimal <- function(x, rounded) {
     if (abs(x) >= 1) {
       return(0)
@@ -11617,7 +11640,9 @@ server <- function(input,output,session) {
       }
     }
   }
-  trim <- function(x) gsub("^\\s+|\\s+$", "", x)
+  #
+  trim <- function(x) { gsub("^\\s+|\\s+$", "", x) }
+  #
   average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w,s,second,sigmas) {
     index <- x >= x[1] + (p - 1)*s - tol & x < x[1] + p*s - tol * 2/3
     x_ <- y1_ <- y2_ <- y3_ <- NULL
@@ -11705,6 +11730,7 @@ server <- function(input,output,session) {
     setProgress(round(p/w, digits = 1))
     return(out)
   }
+  #
   get_URL_info <- function(server,station,product,series) {
     if (isTruthy(series)) {
       if (series == 1) {
@@ -12333,6 +12359,7 @@ server <- function(input,output,session) {
     }
     return(list(station,filepath,name,format,logfile))
   }
+  #
   deg2m <- function(lat,lon,h,dlat,dlon) {
     #lat, lon, dlat, dlon in radians; h in m
     a <- 6378137
@@ -12343,6 +12370,7 @@ server <- function(input,output,session) {
     e <- N * dlon * cos(lat)
     return(n,e)
   }
+  #
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
     Delta <- 1 # Delta[1]
     a <- 0 # a[1]
@@ -12373,6 +12401,7 @@ server <- function(input,output,session) {
       return(list(tcrossprod(Z)))
     }
   }
+  #
   loglikelihood <- function(series,M,r) {
     if (r > 0) {
       return(-0.5*(length(series)*log(2*pi*r) + determinant(M)$modulus[[1]] + length(series)))
@@ -12385,6 +12414,7 @@ server <- function(input,output,session) {
       return(list(ll,Qinv,QinvR))
     }
   }
+  #
   pl_trend_unc <- function(amp,index) {
     v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
     beta <- (-1*index)/2 - 2
@@ -12395,6 +12425,7 @@ server <- function(input,output,session) {
     }
     return(sqrt(amp^2 * v * info$sampling^beta * info$points^gamma))
   }
+  #
   noise_var <- function(std,k) {
     if (input$tunits == 1) { #days
       f_scale <- 24*60*60
@@ -12408,6 +12439,7 @@ server <- function(input,output,session) {
     Dk <- 2*(2*pi)^k * f_scale^(k/2)
     return(std^2 * Dk / (fs_hz^(1 + (k/2)))) #from Williams 2003 (Eq. 10)
   }
+  #
   download <- function(server,remote,local) {
     removeNotification("no_cmd")
     # stream JSON file
@@ -12446,21 +12478,27 @@ server <- function(input,output,session) {
     }
     return(down)
   }
+  #
   mjd2week <- function(x) {
     return((x - 44244)/7)
   }
+  #
   week2mjd <- function(x) {
     return(x * 7 + 44244)
   }
+  #
   mjd2year <- function(x) {
     return(decimal_date(as.Date(x, origin = as.Date("1858-11-17"))))
   }
+  #
   year2mjd <- function(x) {
     return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
   }
+  #
   week2year <- function(x) {
     return(decimal_date(as.Date("1980-01-06") + x * 7))
   }
+  #
   year2week <- function(x) {
     return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
   }
