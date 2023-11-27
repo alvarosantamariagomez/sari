@@ -358,10 +358,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   )
                 ),
                 
-                # HTTP meta and style header tags
+                # tracker analytics
                 # tags$head(includeScript("matomo.js")),
                 # tags$head(includeHTML(("google-analytics.html"))),
                 
+                # Getting the input elements that change
+                tags$script(
+                  "$(document).on('shiny:inputchanged', function(event) {
+                      if (event.name !== 'changed') {
+                        Shiny.setInputValue('changed', event.name);
+                      }
+                    });"
+                ),
+                
+                # HTTP meta and style header tags
                 tags$style(css),
                 tags$head(
                   tags$script(src = "ddpcr.js"),
@@ -420,15 +430,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     Shiny.onInputChange("tactile", tactile);
                                 });
                             '),
-                  
-                  # Getting the elements that change
-                  tags$script(
-                    "$(document).on('shiny:inputchanged', function(event) {
-                      if (event.name != 'changed') {
-                        Shiny.setInputValue('changed', event.name);
-                      }
-                    });"
-                  ),
                   
                   # update fileInput file name from URL
                   tags$script(HTML(update_series)),
@@ -7523,30 +7524,30 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$ids, input$optionSecondary), {
     req(db1$original)
     update <- 0
-    file$id1 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][1]))
+    file$id1 <- toupper(trim(strsplit(as.character(inputs$ids), "-|\\&|\\+")[[1]][1]))
     if (!isTruthy(file$id1)) {
       if (isTruthy(url$station)) {
         if (url$server == "LOCAL") {
-          file$id1 <- toupper(strsplit(url$station, "\\.|_|\\s|-|\\(")[[1]][1])
+          file$id1 <- toupper(strsplit(as.character(url$station), "\\.|_|\\s|-|\\(")[[1]][1])
         } else {
           file$id1 <- toupper(url$station)
         }
       } else {
-        file$id1 <- toupper(strsplit(input$series$name, "\\.|_|\\s|-|\\(")[[1]][1])
+        file$id1 <- toupper(strsplit(as.character(input$series$name), "\\.|_|\\s|-|\\(")[[1]][1])
       }
       update <- 1
     }
     if (length(file$secondary) > 0) {
-      file$id2 <- toupper(trim(strsplit(inputs$ids, "-|\\&|\\+")[[1]][2]))
+      file$id2 <- toupper(trim(strsplit(as.character(inputs$ids), "-|\\&|\\+")[[1]][2]))
       if (!isTruthy(file$id2)) {
         if (isTruthy(url$station2)) {
           if (url$server2 == "LOCAL") {
-            toupper(file$id2 <- strsplit(url$station2, "\\.|_|\\s|-|\\(")[[1]][1])
+            file$id2 <- toupper(strsplit(as.character(url$station2), "\\.|_|\\s|-|\\(")[[1]][1])
           } else {
             file$id2 <- toupper(url$station2)
           }
         } else {
-          file$id2 <- toupper(strsplit(input$series2$name, "\\.|_|\\s|-|\\(")[[1]][1])
+          file$id2 <- toupper(strsplit(as.character(input$series2$name), "\\.|_|\\s|-|\\(")[[1]][1])
         }
         update <- 1
       }
@@ -8817,7 +8818,7 @@ server <- function(input,output,session) {
           output$tabName2 <<- renderText({ info$components[2] })
           output$tabName3 <<- renderText({ info$components[3] })
         } else {
-          extension <- tolower(rev(strsplit(file$primary$name, ".", fixed = T)[[1]])[1])
+          extension <- tolower(rev(strsplit(as.character(file$primary$name), ".", fixed = T)[[1]])[1])
           if (isTruthy(extension) && (extension == "neu" || extension == "enu")) {
             info$components <- c("East component", "North component", "Up component")
             output$tabName1 <<- renderText({ info$components[1] })
@@ -9127,7 +9128,7 @@ server <- function(input,output,session) {
       if (isTruthy(tableAll)) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
-          extension <- tolower(rev(strsplit(file, ".", fixed = T)[[1]])[1])
+          extension <- tolower(rev(strsplit(as.character(file), ".", fixed = T)[[1]])[1])
           if (server == "" && isTruthy(extension) && extension == "neu") {
             swap <- T
           }
