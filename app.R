@@ -8876,6 +8876,9 @@ server <- function(input,output,session) {
       num <- dim(as.matrix(files$datapath))[1]
       if (server == "EOSTLS" && num > 1) {
         showNotification(HTML("Stacking the secondary series into one series."), action = NULL, duration = NULL, closeButton = T, id = "stacking", type = "warning", session = getDefaultReactiveDomain())
+        if (any(grepl("ECCO", input$product2)) && any(grepl("TUGO", input$product2))) {
+          showNotification(HTML("WARNING: some forcings of the TUGO and ECCO models are the same and will be considered twice in the secondary series."), action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+        }
       }
       for (i in 1:num) {
         table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
