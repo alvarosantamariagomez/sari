@@ -6879,7 +6879,7 @@ server <- function(input,output,session) {
       updateTextInput(inputId = "low", value = inputs$low)
       updateTextInput(inputId = "high", value = inputs$high)
     }
-    if (length(info$custom) > 0) {
+    if (isTruthy(info$custom) && length(info$custom) > 0) {
       if (input$tunits == 1) {
         info$custom <- year2mjd(info$custom_years)
       } else if (input$tunits == 2) {
@@ -6888,7 +6888,7 @@ server <- function(input,output,session) {
         info$custom <- info$custom_years
       }
     }
-    if (length(info$soln) > 0) {
+    if (isTruthy(info$soln) && length(info$soln) > 0) {
       if (input$tunits == 1) {
         info$soln <- year2mjd(info$soln_years)
       } else if (input$tunits == 2) {
@@ -6898,27 +6898,31 @@ server <- function(input,output,session) {
       }
     }
     if (length(info$log) > 0) {
-      tmp_log <- list()
+      tmp_log <- info$log
       for (d in 1:length(info$log_years)) {
-        if (input$tunits == 1) {
-          tmp_log[[d]] <- year2mjd(info$log_years[[d]])
-        } else if (input$tunits == 2) {
-          tmp_log[[d]] <- year2week(info$log_years[[d]])
-        } else if (input$tunits == 3) {
-          tmp_log[[d]] <- info$log_years[[d]]
+        if (isTruthy(info$log_years[[d]])) {
+          if (input$tunits == 1) {
+            tmp_log[[d]] <- year2mjd(info$log_years[[d]])
+          } else if (input$tunits == 2) {
+            tmp_log[[d]] <- year2week(info$log_years[[d]])
+          } else if (input$tunits == 3) {
+            tmp_log[[d]] <- info$log_years[[d]]
+          } 
         }
       }
       info$log <- tmp_log
     }
     if (length(info$sinfo) > 0) {
-      tmp_sinfo <- list()
+      tmp_sinfo <- info$sinfo
       for (d in 1:length(info$sinfo_years)) {
-        if (input$tunits == 1) {
-          tmp_sinfo[[d]] <- year2mjd(info$sinfo_years[[d]])
-        } else if (input$tunits == 2) {
-          tmp_sinfo[[d]] <- year2week(info$sinfo_years[[d]])
-        } else if (input$tunits == 3) {
-          tmp_sinfo[[d]] <- info$sinfo_years[[d]]
+        if (isTruthy(info$sinfo_years[[d]])) {
+          if (input$tunits == 1) {
+            tmp_sinfo[[d]] <- year2mjd(info$sinfo_years[[d]])
+          } else if (input$tunits == 2) {
+            tmp_sinfo[[d]] <- year2week(info$sinfo_years[[d]])
+          } else if (input$tunits == 3) {
+            tmp_sinfo[[d]] <- info$sinfo_years[[d]]
+          }
         }
       }
       info$sinfo <- tmp_sinfo
