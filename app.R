@@ -50,17 +50,17 @@ check_load <- function(packages) {
   } 
 }
 
-# Shinyapps session
-# library(mvcwt, verbose = F, quietly = T) #v1.3.1
-# library(leaflet, verbose = F, quietly = T) #v2.1.2
-# library(geojsonio, verbose = F, quietly = T) #v0.11.3
-# Local session
-optionalPackages <- c(
-  "mvcwt",
-  "leaflet",
-  "geojsonio"
-)
-check_load(optionalPackages)
+# Shinyapps & local version
+library(mvcwt, verbose = F, quietly = T) #v1.3.1
+library(leaflet, verbose = F, quietly = T) #v2.1.2
+library(geojsonio, verbose = F, quietly = T) #v0.11.3
+# GitHub version
+# optionalPackages <- c(
+#   "mvcwt",
+#   "leaflet",
+#   "geojsonio"
+# )
+# check_load(optionalPackages)
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
@@ -2038,7 +2038,7 @@ server <- function(input,output,session) {
   }, priority = 2000)
 
   # GUI reactive flags ####
-  output$print_out <- reactive({}) # to avoid hidden() braking the downloadHandler()
+  output$print_out <- reactive({}) # to avoid hidden() breaking the downloadHandler()
   outputOptions(output, "print_out", suspendWhenHidden = F)
   
   output$about_file <- renderUI({
@@ -2505,7 +2505,7 @@ server <- function(input,output,session) {
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
                  input$fullSeries, info$db1, info$db2, input$eulerType, trans$plate, trans$plate2,
-                 db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3), {
+                 db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
     req(db1[[info$db1]])
     if (input$tab == 4) {
       req(info$stop)
