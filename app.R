@@ -814,13 +814,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ## % Secondary series ####
                                                                       div(style = "padding: 0px 0px; margin-top:-1em",
                                                                           fluidRow(
-                                                                            column(8,
-                                                                                   fileInput(inputId = "series2",
-                                                                                             div("Secondary series file",
-                                                                                                 helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
-                                                                                             multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                            column(7,
+                                                                                   div(style = "margin-right:0; padding-right:0",
+                                                                                       fileInput(inputId = "series2",
+                                                                                                 div("Secondary series file",
+                                                                                                     helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
+                                                                                                 multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                                   )
                                                                             ),
-                                                                            column(3, offset = 1,
+                                                                            column(2, align = "right",
+                                                                                   div(style = "padding: 0px 0px; margin-top:+1.9em",
+                                                                                       actionButton(inputId = "swap", label = "Swap", icon = icon("refresh", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                   )
+                                                                            ),
+                                                                            column(3,
                                                                                    div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.series2",
@@ -5497,6 +5504,7 @@ server <- function(input,output,session) {
       disable("server2")
       disable("station2")
       disable("product2")
+      disable("swap")
     } else {
       if (length(file$primary) > 0) {
         info$menu <- unique(c(info$menu, 2))
@@ -5605,9 +5613,11 @@ server <- function(input,output,session) {
             } else {
               enable("sameScale")
             }
+            enable("swap")
           } else {
             disable("sameScale")
             disable("same_axis")
+            disable("swap")
           }
         } else {
           disable("optionSecondary")
@@ -5621,6 +5631,7 @@ server <- function(input,output,session) {
           disable("epoch2")
           disable("variable2")
           disable("errorBar2")
+          disable("swap")
         }
         if (isTruthy(db1[[info$db1]])) {
           disable("plot")
@@ -5870,6 +5881,7 @@ server <- function(input,output,session) {
           enable("format")
           disable("average")
           disable("server2")
+          disable("swap")
         }
       } else {
         hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
@@ -5957,6 +5969,7 @@ server <- function(input,output,session) {
         disable("station2")
         disable("server2")
         disable("product2")
+        disable("swap")
       }
     }
   }, priority = 100)
@@ -7526,6 +7539,25 @@ server <- function(input,output,session) {
       }
     })
   }, priority = 6)
+  
+  observeEvent(input$swap, {
+    req(db1[[info$db1]], db2[[info$db2]])
+    if (messages > 0) cat(file = stderr(), "Swapping primary and secondary series", "\n")
+    info$db1 <- info$db2 <- NULL
+    info$db1 <- info$db2 <- "original"
+    db1_tmp <- db1[[info$db1]]
+    db2_tmp <- db2[[info$db2]]
+    db1[[info$db1]] <- db2_tmp
+    db2[[info$db1]] <- db1_tmp
+    rm(db1_tmp)
+    rm(db2_tmp)
+    if (!isTruthy(db1[[info$db1]]$status1)) {
+      db1[[info$db1]]$status1 <- rep(T, length(db1[[info$db1]]$x1))
+      db1[[info$db1]]$status2 <- rep(T, length(db1[[info$db1]]$x1))
+      db1[[info$db1]]$status3 <- rep(T, length(db1[[info$db1]]$x1))
+    }
+    ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]])
+  })
 
   # Observe ids ####
   observeEvent(c(inputs$ids, input$optionSecondary), {
