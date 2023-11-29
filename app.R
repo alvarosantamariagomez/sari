@@ -7467,6 +7467,9 @@ server <- function(input,output,session) {
         db1$merged <- table_common
         info$db1 <- "merged"
         rm(table_common,table1,table2)
+        if (input$eulerType > 1) {
+          updateRadioButtons(session, inputId = "eulerType", selected = 0)
+        }
       } else {
         updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
       }
