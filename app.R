@@ -9165,6 +9165,7 @@ server <- function(input,output,session) {
     removeNotification("bad_pole")
     removeNotification("no_rotation")
     removeNotification("no_values")
+    removeNotification("no_epos")
     if (format == 1) { #NEU/ENU
       skip <- 0
       a <- 6378137
@@ -9190,8 +9191,13 @@ server <- function(input,output,session) {
       }
       # extracting series from EPOS format into ENU format
       if (server == "EPOS") {
+        if (isTruthy(tableAll)) {
           tableAll$new <- paste(tableAll$V1, tableAll$V2)
           tableAll <- tableAll[, c("new", "V3", "V4", "V5")]
+        } else {
+          showNotification(HTML("The EPOS server is not accessible.<br>Try again a bit later, maybe?"), action = NULL, duration = 10, closeButton = T, id = "no_epos", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
       }
       # extracting series from SONEL format into ENU format
       if (server == "SONEL") {
