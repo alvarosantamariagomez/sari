@@ -7832,7 +7832,7 @@ server <- function(input,output,session) {
       }
       plot(x[db1[[info$db1]]$status1], y1[db1[[info$db1]]$status1], type = symbol, pch = 20, xlab = NA, xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
       p <- par("usr")[3:4]
-      pout <- pretty(p - const)
+      pout <- base::pretty(p - const)
       pin <- pout + const
       axis(2, at = pin, labels = pout)
       if (isTruthy(input$sigmas)) {
@@ -7910,7 +7910,7 @@ server <- function(input,output,session) {
       }
       plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
       p <- par("usr")[3:4]
-      pout <- pretty(p - const)
+      pout <- base::pretty(p - const)
       pin <- pout + const
       axis(2, at = pin, labels = pout)
       if (isTruthy(input$sigmas)) {
@@ -7988,7 +7988,7 @@ server <- function(input,output,session) {
       }
       plot(x[db1[[info$db1]]$status3], y3[db1[[info$db1]]$status3], type = symbol, pch = 20, yaxt = "n", xlab = info$tunits.label, ylab = ylab, xlim = ranges$x1, ylim = y.range)
       p <- par("usr")[3:4]
-      pout <- pretty(p - const)
+      pout <- base::pretty(p - const)
       pin <- pout + const
       axis(2, at = pin, labels = pout)
       if (isTruthy(input$sigmas)) {
@@ -10753,22 +10753,22 @@ server <- function(input,output,session) {
     }
     plot(x, y, type = s, pch = 20, lwd = 2, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
     p <- par("usr")[3:4] # min/max Y-axis values
-    pout <- pretty(p - const) # round new min/max Y-axis values
+    pout <- base::pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
     axis(2, at = pin, labels = pout)
     if (input$tunits == 1) {
       if (isTruthy(rangex)) {
-        ticks <- pretty(x[x > rangex[1] & x < rangex[2]])
+        ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
       } else {
-        ticks <- pretty(x)
+        ticks <- base::pretty(x)
       }
       labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks))
       axis(3, at = ticks, labels = labels_dyear)
     } else if (input$tunits == 2) {
       if (isTruthy(rangex)) {
-        ticks <- pretty(x[x > rangex[1] & x < rangex[2]])
+        ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
       } else {
-        ticks <- pretty(x)
+        ticks <- base::pretty(x)
       }
       labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1980-01-06") + ticks*7))
       axis(3, at = ticks, labels = labels_dyear)
