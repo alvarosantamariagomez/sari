@@ -6507,6 +6507,7 @@ server <- function(input,output,session) {
         output$map <- renderUI({
           suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
         })
+        shinyjs::delay(500, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
       }
     }
   }, priority = 5)
