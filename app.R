@@ -7543,6 +7543,7 @@ server <- function(input,output,session) {
   observeEvent(input$swap, {
     req(db1[[info$db1]], db2[[info$db2]])
     if (messages > 0) cat(file = stderr(), "Swapping primary and secondary series", "\n")
+    # data base
     info$db1 <- info$db2 <- NULL
     info$db1 <- info$db2 <- "original"
     db1_tmp <- db1[[info$db1]]
@@ -7556,7 +7557,49 @@ server <- function(input,output,session) {
       db1[[info$db1]]$status2 <- rep(T, length(db1[[info$db1]]$x1))
       db1[[info$db1]]$status3 <- rep(T, length(db1[[info$db1]]$x1))
     }
+    db2[[info$db1]]$status1 <- NULL
+    db2[[info$db1]]$status2 <- NULL
+    db2[[info$db1]]$status3 <- NULL
     ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]])
+    # file names
+    file1 <- file$primary
+    file2 <- file$secondary
+    file$primary <- file2
+    file$secondary <- file1
+    session$sendCustomMessage("filename", file$primary$name)
+    session$sendCustomMessage("filename2", file$secondary$name)
+    # station coordinates
+    if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) && (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) &&
+         ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) && (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2))))
+    ) {
+      x1 <- inputs$station_x
+      y1 <- inputs$station_y
+      z1 <- inputs$station_z
+      lat1 <- inputs$station_lat
+      lon1 <- inputs$station_lon
+      x2 <- inputs$station_x2
+      y2 <- inputs$station_y2
+      z2 <- inputs$station_z2
+      lat2 <- inputs$station_lat2
+      lon2 <- inputs$station_lon2
+      updateTextInput(session, inputId = "station_x", value = x2)
+      updateTextInput(session, inputId = "station_y", value = y2)
+      updateTextInput(session, inputId = "station_z", value = z2)
+      updateTextInput(session, inputId = "station_lat", value = lat2)
+      updateTextInput(session, inputId = "station_lon", value = lon2)
+      updateTextInput(session, inputId = "station_x2", value = x1)
+      updateTextInput(session, inputId = "station_y2", value = y1)
+      updateTextInput(session, inputId = "station_z2", value = z1)
+      updateTextInput(session, inputId = "station_lat2", value = lat1)
+      updateTextInput(session, inputId = "station_lon2", value = lon1)
+    }
+    # station IDs
+    if (isTruthy(file$id1) && isTruthy(file$id2)) {
+      id1 <- file$id1
+      id2 <- file$id2
+      ids_info <- paste(id2, id1, sep = " & ")
+      updateTextInput(session, inputId = "ids", value = ids_info)
+    }
   })
 
   # Observe ids ####
