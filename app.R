@@ -12241,9 +12241,9 @@ server <- function(input,output,session) {
           naming <- paste0(toupper(station),pattern,tolower(p))
           url <- "http://loading.u-strasbg.fr/ITRF/CF/"
           if (tolower(p) == "atmib") {
-            url <- paste0(ulr, "ATMIB/")
+            url <- paste0(url, "ATMIB/")
           } else if (tolower(p) == "atmib(d)") {
-            url <- paste0(ulr, "ATMIB_daily/")
+            url <- paste0(url, "ATMIB_daily/")
             naming <- paste0(toupper(station),patternd,"atmib")
           } else if (tolower(p) == "atmmo") {
             url <- paste0(url, "ATMMO/")
