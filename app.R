@@ -51,16 +51,16 @@ check_load <- function(packages) {
 }
 
 # Shinyapps & local version
-library(mvcwt, verbose = F, quietly = T) #v1.3.1
-library(leaflet, verbose = F, quietly = T) #v2.1.2
-library(geojsonio, verbose = F, quietly = T) #v0.11.3
+# library(mvcwt, verbose = F, quietly = T) #v1.3.1
+# library(leaflet, verbose = F, quietly = T) #v2.1.2
+# library(geojsonio, verbose = F, quietly = T) #v0.11.3
 # GitHub version
-# optionalPackages <- c(
-#   "mvcwt",
-#   "leaflet",
-#   "geojsonio"
-# )
-# check_load(optionalPackages)
+optionalPackages <- c(
+  "mvcwt",
+  "leaflet",
+  "geojsonio"
+)
+check_load(optionalPackages)
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
