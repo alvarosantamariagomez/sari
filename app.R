@@ -5527,10 +5527,12 @@ server <- function(input,output,session) {
         } else {
           enable("format2")
         }
-        if (input$format2 == 4) {
-          disable("ne")
-        } else {
-          enable("ne")
+        if (isTruthy(input$format2)) {
+          if (input$format2 == 4) {
+            disable("ne")
+          } else {
+            enable("ne")
+          }
         }
         enable("units")
         enable("log")
