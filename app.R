@@ -6467,7 +6467,7 @@ server <- function(input,output,session) {
       } else if (input$sunits == 2) {
         coordinates <- latlon2xyz(inputs$station_lat*pi/180,inputs$station_lon*pi/180,1000)
       }
-      if (length(coordinates) == 3) {
+      if (isTruthy(coordinates) && length(coordinates) == 3) {
         updateTextInput(session, inputId = "station_x", value = coordinates[1])
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
