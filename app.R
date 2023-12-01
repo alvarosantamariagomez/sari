@@ -7973,7 +7973,7 @@ server <- function(input,output,session) {
         yy <- median(y2[db1[[info$db1]]$status2][x[db1[[info$db1]]$status2] > ranges$x1[1] & x[db1[[info$db1]]$status2] < ranges$x1[2]], na.rm = T)
         centerx <- which(abs(x[db1[[info$db1]]$status2] - xx) == min(abs(x[db1[[info$db1]]$status2] - xx)))[1]
         centery <- which(abs(y2[db1[[info$db1]]$status2] - yy) == min(abs(y2[db1[[info$db1]]$status2] - yy)))[1]
-        lines(c(x[db1[[info$db1]]$status2][1],x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])]),c(y2[db1[[info$db1]]$status2][centery] + trans$plate[1]*(x[db1[[info$db1]]$status2][1] - x[db1[[info$db1]]$status2][centerx]), y2[db1[[info$db1]]$status2][centery] + trans$plate[1]*(x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])] - x[db1[[info$db1]]$status2][centerx])), col = SARIcolors[4], lwd = 3)
+        lines(c(x[db1[[info$db1]]$status2][1],x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])]),c(y2[db1[[info$db1]]$status2][centery] + trans$plate[2]*(x[db1[[info$db1]]$status2][1] - x[db1[[info$db1]]$status2][centerx]), y2[db1[[info$db1]]$status2][centery] + trans$plate[2]*(x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])] - x[db1[[info$db1]]$status2][centerx])), col = SARIcolors[4], lwd = 3)
       }
       # Up ####
       par(mai = c(1.2, 1.2, 0.1, 0.6))
@@ -8050,7 +8050,7 @@ server <- function(input,output,session) {
         yy <- median(y3[db1[[info$db1]]$status3][x[db1[[info$db1]]$status3] > ranges$x1[1] & x[db1[[info$db1]]$status3] < ranges$x1[2]], na.rm = T)
         centerx <- which(abs(x[db1[[info$db1]]$status3] - xx) == min(abs(x[db1[[info$db1]]$status3] - xx)))[1]
         centery <- which(abs(y3[db1[[info$db1]]$status3] - yy) == min(abs(y3[db1[[info$db1]]$status3] - yy)))[1]
-        lines(c(x[db1[[info$db1]]$status3][1],x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])]),c(y3[db1[[info$db1]]$status3][centery] + trans$plate[1]*(x[db1[[info$db1]]$status3][1] - x[db1[[info$db1]]$status3][centerx]), y3[db1[[info$db1]]$status3][centery] + trans$plate[1]*(x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])] - x[db1[[info$db1]]$status3][centerx])), col = SARIcolors[4], lwd = 3)
+        lines(c(x[db1[[info$db1]]$status3][1],x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])]),c(y3[db1[[info$db1]]$status3][centery] + trans$plate[3]*(x[db1[[info$db1]]$status3][1] - x[db1[[info$db1]]$status3][centerx]), y3[db1[[info$db1]]$status3][centery] + trans$plate[3]*(x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])] - x[db1[[info$db1]]$status3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
       js$popup(info$width)
