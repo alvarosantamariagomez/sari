@@ -6446,6 +6446,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(inputs$station_lat, inputs$station_lon), {
+    coordinates <- NULL
     if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
       if (input$sunits == 1) {
         coordinates <- latlon2xyz(inputs$station_lat*pi/180,inputs$station_lon*pi/180,1)
