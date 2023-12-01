@@ -9702,7 +9702,7 @@ server <- function(input,output,session) {
           y_detrend <- y - (x - reft) * ap_rate
           ap_intercept <- mean(y_detrend, na.rm = T)
           sigma_intercept <- sd(y_detrend/sqrt(length(y)), na.rm = T)
-          if (sigma_intercept <= 0) {
+          if (!isTruthy(sigma_intercept) || sigma_intercept <= 0) {
             sigma_intercept <- 1
           }
         } else if (input$fitType == 2) {
