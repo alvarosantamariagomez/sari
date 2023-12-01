@@ -3931,7 +3931,7 @@ server <- function(input,output,session) {
           if (uniques > 0) {
             showNotification(HTML(paste0(uniques," data epochs are not repeated in the series.<br>The waveform may be wrong at these epochs.")), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())
           }
-          average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2)), by = z])
+          average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2), std = sd(y)), by = z])
           result <- merge(serie,average, by = "z")
           result <- result[order(result$x0),]
           trans$pattern <- result$avg
@@ -3958,9 +3958,12 @@ server <- function(input,output,session) {
               } else if (input$symbol == 2) {
                 symbol <- 'o'
               }
-              waveform <- data.frame(x = result[toplot,]$x, y = result[toplot,]$avg)
+              waveform <- data.frame(x = result[toplot,]$x, y = result[toplot,]$avg, sy = result[toplot,]$std)
               waveform <- waveform[order(waveform$x),]
               plot(waveform$x,waveform$y, type = symbol, pch = 20, xlab = "Epoch of period", ylab = "Average value", main = title)
+              ba <- waveform$y + waveform$sy
+              bb <- waveform$y - waveform$sy
+              polygon(c(waveform$x, rev(waveform$x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
             }
           }, width = reactive(info$width))
         } else {
