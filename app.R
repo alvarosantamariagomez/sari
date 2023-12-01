@@ -7156,6 +7156,7 @@ server <- function(input,output,session) {
     trans$mle <- F
     trans$verif <- NULL
     trans$pattern <- NULL
+    updateCheckboxInput(session, inputId = "mle", value = F)
     updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
     updateTextInput(session, "short_period", value = "")
     updateTextInput(session, "ObsError", value = "")
