@@ -6395,7 +6395,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$plate), {
-    req(db1[[info$db1]], input$euler)
+    req(db1[[info$db1]], input$euler, info$plateFile)
     if (messages > 0) cat(file = stderr(), "Plate:", input$plate, "\n")
     removeNotification("bad_plate")
     if (isTruthy(input$plate)) {
