@@ -2742,25 +2742,36 @@ server <- function(input,output,session) {
             text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
             aprioris <- grep("^# A priori: ", comments, ignore.case = F, perl = T, value = T)
             process_noises <- grep("^# Process noise: ", comments, ignore.case = F, perl = T, value = T)
-            measurement_noise <- strsplit(grep("^# Measurement noise: ", comments, ignore.case = F, perl = T, value = T), ":")[[1]][2]
+            mn <- strsplit(grep("^# Measurement noise: ", comments, ignore.case = F, perl = T, value = T), ":")
+            if (isTruthy(mn) && length(mn) > 0) {
+              measurement_noise <- mn[[1]][2]
+              updateTextInput(session, inputId = "ObsError", value = measurement_noise)
+            }
             components <- c()
             # Extracting Intercept info
             if (grepl("Intercept", model, ignore.case = F, perl = T)) {
               index <- grep(" Intercept", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(aprioris[index], "=|\\+\\/-")[[1]]
-              updateTextInput(inputId = "Intercept0", value = values[2])
-              updateTextInput(inputId = "eIntercept0", value = values[3])
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              if (isTruthy(values) && length(values) > 0) {
+                values <- values[[1]]
+                updateTextInput(inputId = "Intercept0", value = values[2])
+                updateTextInput(inputId = "eIntercept0", value = values[3])
+              }
             }
             # Extracting Rate info
             if (grepl(" \\+ Rate", model, ignore.case = F, perl = T)) {
               updateTextInput(session, "trendRef", value = text[2])
               index <- grep(" Rate", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(aprioris[index], "=|\\+\\/-")[[1]]
-              updateTextInput(inputId = "Trend0", value = values[2])
-              updateTextInput(inputId = "eTrend0", value = values[3])
+              values <- strsplit(aprioris[index], "=|\\+\\/-")
+              if (isTruthy(values) && length(values) > 0) {
+                values <- values[[1]]
+                updateTextInput(inputId = "Trend0", value = values[2])
+                updateTextInput(inputId = "eTrend0", value = values[3])
+              }
               index <- grep(" Rate", process_noises, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(process_noises[index], "=")[[1]]
-              if (isTruthy(values)) {
+              values <- strsplit(process_noises[index], "=")
+              if (isTruthy(values) && length(values) > 0) {
+                values <- values[[1]]
                 updateTextInput(inputId = "TrendDev", value = values[2])
               } else {
                 updateTextInput(inputId = "TrendDev", value = "0.0")
@@ -2848,7 +2859,6 @@ server <- function(input,output,session) {
             } else if (grepl("^# Model UKF", model, ignore.case = F, perl = T)) {
               updateRadioButtons(session, inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T)
             }
-            updateTextInput(session, inputId = "ObsError", value = measurement_noise)
             info$menu <- unique(c(info$menu, 4))
             updateCollapse(session, id = "menu", open = info$menu)
           }
