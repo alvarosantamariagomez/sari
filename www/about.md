@@ -4,7 +4,7 @@ urlcolor: #2297E6
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version noviembre 2023'
+title: 'SARI documentation - version diciembre 2023'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -40,7 +40,7 @@ SARI allows you to visualize discrete time series data, analyze them individuall
 It has been developed in the [R programming language](https://www.r-project.org), under the interactive framework of the [Shiny R package](https://shiny.rstudio.com).  
 Currently tested in R version 4.1.0.
 
-The development of SARI started in 2017 to analyze GNSS position time series from the [RESIF/RENAG network](http://renag.resif.fr/en/) (<a href="#references" target="_self">RESIF 2017</a>) and it is oriented towards this kind of dataset, but any other type of series can be used as long as the series format is simple, consistent and does not have uncommented alphabetic characters.
+The development of SARI started in 2017 to analyze GNSS position time series from the [GNSS National Network (RENAG)](http://renag.resif.fr/en/) (<a href="#references" target="_self">RESIF 2017</a>) and it is oriented towards this kind of dataset, but any other type of series can be used as long as the series format is simple, consistent and does not have uncommented alphabetic characters.
 
 SARI is available on all platforms, except mobile devices, and can be accessed in three ways:
 
@@ -49,7 +49,7 @@ SARI is available on all platforms, except mobile devices, and can be accessed i
 * Offline, after installing the code available in [GitHub](https://github.com/alvarosantamariagomez/sari).
 
 Depending on the way SARI is accessed, there are several ways to run SARI: bookmark on web browser, weblink, Docker Desktop, RStudio, R console or a UNIX-like console. The only requirement is to use a desktop environnment where a web browser can run.  
-All the different ways to run SARI are implemented in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh). This script also allows to load series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with one click.
+All the different ways to run SARI are implemented in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh). This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click.
 
 This document describes the different options and functionalities implemented in the current version of SARI. Within this document:  
 * GUI options are given in this `red lettering`.  
@@ -65,7 +65,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *noviembre 2023*  --  "Within cells interlinked"
+Current SARI version: *diciembre 2023*  --  "Did you know hope and despair are nearly identical in code?"
 
 -----------------
 
@@ -86,16 +86,16 @@ This block allows uploading and setting the series format, if necessary, before 
 There are three different ways to upload a time series on SARI:
 
 1) The user can upload GNSS series from <ins>**local files**</ins> using the `Input series` option. GNSS series are allowed in the *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension *.pos*, version 1.1.0) and *NGL* (with extension *.tenv3*). For series that are not in *NEU/ENU*, *PBO* or *NGL* format, the user must use the *1D* option, then set the column separator (blanks, commas or semi-colons) and then set the column numbers containing the epochs, the variable and the error bars if available.  
-For *NEU/ENU* and *1D* series, the user must set the `Time units` (days, weeks or years) and the `Series units` (metres or millimetres) of the input series, which are otherwise unknown to SARI. Unless changed by the user, the defaul `Time units` are years. For the *PBO* and *NGL* series, different time units are available in these formats, so changing the `Time units` is optional. The latter also applies in case of a *NEU/ENU* series where the epochs are provided in ISO 8601 date and time format. Setting the `Time units` to days may be necessary in case the user wants to compute the difference between two series (see more details in the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
+For *NEU/ENU* and *1D* series, the user must set the `Time units` (days, weeks or years) and the `Series units` (metres or millimetres) of the input series, which are otherwise unknown to SARI. Unless changed by the user, the defaul `Time units` are years. For the *PBO* and *NGL* series, different time units are available in these formats, so changing the `Time units` is optional. The latter also applies in case of a *NEU/ENU* series where the epochs are provided in [ISO 8601 calendar date and time format](https://en.wikipedia.org/wiki/ISO_8601). Setting the `Time units` to days may be necessary in case the user wants to compute the difference between the primary and secondary series (see more details in the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. In case uncommented text is found, the behavior depends on the requested series format:  
 Any non-numeric value in a *NEU/ENU* or *1D* series will make the full line to be skipped.  
 For the *PBO* and *NGL* series, the headers are recognized and skipped, also the first two columns of the *NGL* files and the last column of the *PBO* files. However, any other non-numeric value in these files will stop the app.  
 Data records having a NA, NaN or Inf/inf entries will be treated as valid not-available or not-a-number numeric values and will be automatically skipped, but na, Na, nan, NAN or any other string will be considered as unwanted text.  
-When the format of the series is set, click the `Plot` button in the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block.  
 If the series does not contain error bars, or the user does not want to use them, it is possible to turn the error bars off in the processing using the `use error bars` option. By default, they are always on.  
-If the format of the input file is not known (content of columns, separation, etc.), it is possible to print on screen the first lines of the input series to assess the corresponding format before plotting using the `show series header` option.  After the series has been plotted, if it is not a *1D* series, this option will show the first lines of the coordinate component that has been extracted from the input file and is being used in the analysis.
+If the format of the input file is not known (content of columns, separation, etc.), it is possible to print on screen the first lines of the input series to assess the corresponding format before plotting using the `show series header` option.  After the series has been plotted, if it is not a *1D* series, this option will show the first lines of the coordinate component that has been extracted from the input file and is being used in the analysis.  
+When the format of the series is set, click the `Plot` button in the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block.
 
-2) The user can automatically download GNSS series available at specific <ins>**web servers**</ins>. This is done via the three options: `server`, `product` and `station`. To download a series, the user must first select the `server` from those available in the dropdown menu, and then select the `product` (if only one `product` is available for the selected `server`, it will be selected automatically). With the `server` and `product` selected, SARI will download the list of available stations. Depending on the lenght of the list of stations, the download may take up to a few seconds. Type in the first characters of the `station` name to filter the list of stations available. When a `station` is selected, the series will be downloaded and plotted automatically, i.e. there is no need to set the format and time units as these are already known. Similar options are available for downloading a secondary series (see an example below and the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block for further details).
+2) The user can automatically download GNSS series available at specific <ins>**web servers**</ins>. This is done via the three options: `server`, `product` and `station`. To download a series, the user must first select the `server` from those available in the dropdown menu, and then select the `product` (if only one `product` is available for the selected `server`, it will be selected automatically). With the `server` and `product` selected, SARI will download the list of available stations from the server. Depending on the lenght of the list of stations, the download may take up to a few seconds. Type in the first characters of the `station` name to filter the list of stations available. When a `station` is selected, the series will be downloaded and plotted automatically, i.e. there is no need to set the format and time units as these are already known. Similar options are available for downloading a secondary series (see an example below and the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block for further details).
 
 3) The values for the `server`, `product` and `station` parameters can also be provided in any order as a <ins>**query string**</ins> after the base SARI URL on the address bar of the browser. These three parameters can be defined for both the primary and secondary series at the same time. For example, adding this query string  
 <span style="color: red;">?product=SPOTGINS_POS&station=CRAL00FRA&server=FORMATER&server2=NGL&product2=FINAL&station2=CRAL</span>  
@@ -131,42 +131,42 @@ At this moment, the following servers and products are available:
   </tr>
   <tr>
    <td style="text-align:left;"><a href="http://renag.resif.fr/en/" target="_blank">RENAG</a></td>
-   <td style="text-align:left;"> </td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">UGA</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://en.poleterresolide.fr/" target="_blank">FORMATER</a></td>
-   <td style="text-align:left;"> </td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">9 characters (TLSE00FRA)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">SPOTGINS_POS, UGA_POS</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://www.epos-eu.org/" target="_blank">EPOS</a></td>
-   <td style="text-align:left;"> </td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">9 characters (TLSE00FRA)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">INGV, SGO-EPND, UGA-CNRS, ROB-EUREF</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://www.sonel.org/" target="_blank">SONEL</a></td>
-   <td style="text-align:left;"><sup></sup></td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">ULR7A</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://igs.org/products/" target="_blank">IGS</a></td>
-   <td style="text-align:left;"><sup></sup></td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">IGS20</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://epncb.eu/_organisation/about.php" target="_blank">EUREF</a></td>
-   <td style="text-align:left;"><sup></sup></td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">9 characters (TLSE00FRA)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">IGB14</td>
@@ -180,21 +180,21 @@ At this moment, the following servers and products are available:
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://sideshow.jpl.nasa.gov/post/series.html" target="_blank">JPL</a></td>
-   <td style="text-align:left;"><sup></sup></td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">REPRO2018A</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://www.earthscope.org/" target="_blank">EARTHSCOPE</a></td>
-   <td style="text-align:left;"><sup>3</sup></td>
+   <td style="text-align:center;"><sup>3</sup></td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">CWU, PBO, NMT</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://www.sirgas.org/en/" target="_blank">SIRGAS</a></td>
-   <td style="text-align:left;"><sup></sup></td>
+   <td style="text-align:center;"> </td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">IGB14</td>
@@ -204,7 +204,14 @@ At this moment, the following servers and products are available:
    <td style="text-align:center;"><sup>4</sup></td>
    <td style="text-align:left;">14 characters (TLSE_10003M009)</td>
    <td style="text-align:left;"> </td>
-   <td style="text-align:left;">ATMIB, ATMMO, ECCO, ECCO2, ERA5IB, ERA5TUGO, ERA5HYD, ERAHYD, ERAIN, GRACE, GLDAS, GLDAS2, GLORYS, MERRA, MERRA2ATM, MERRA2HYD</td>
+   <td style="text-align:left;">ATMIB, ATMIB(d), ATMMO(o), ECCO(o), ECCO2, ERA5IB, ERA5IB(d), ERA5TUGO, ERA5TUGO(d), ERA5HYD, ERA5HYD(d), GRACE, GLDAS2, GLDAS2(d), GLORYS(o), MERRA2ATM, MERRA2ATM(d), MERRA2HYD, MERRA2HYD(d)</td>
+  </tr>
+  <tr style="vertical-align: top">
+   <td style="text-align:left;"><a href="https://psmsl.org/" target="_blank">PSMSL</a></td>
+   <td style="text-align:center;"></td>
+   <td style="text-align:left;">Station number</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">RLR</td>
   </tr>
 </tbody>
 </table>
@@ -214,7 +221,7 @@ Notes:
 <sup>1</sup> The *LOCAL* server is used only to upload series from local files on a local SARI session (more details in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh)).  
 <sup>2</sup> The NGL series correspond to the *IGS14* solution.  
 <sup>3</sup> The EarthScope (UNAVCO) series correspond to the *IGS14* solution.  
-<sup>4</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected.  
+<sup>4</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with *(d)*, if they are available. Products marked with *(o)* represent old products that are no longer updated.  
 
 Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
 
@@ -223,6 +230,8 @@ When uploading a series from a remote server via the the `server`, `product` and
 Once uploaded and plotted (see the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block), the three coordinates components of the GNSS series will be shown in separate tabs on the top. In case the coordinate components are not known to SARI, the tabs will be labeled : 1st, 2nd and 3rd component, respectively. When plotting a primary and a secondary series with different formats, the option `N@E` can be activated to match the coordinate components North and East of the secondary series with respect to those of the primary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).
 
 For GNSS time series, the station ID is extracted from the first characters of the input file name and will be shown in the `series ID` box under the loaded series. The station ID can be modified by the user if necessary. For more information on the use of the station ID, see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block. For other type of series, this feature can be neglected.
+
+A summary of the contents of the uploaded series will be shown on the left pannel. If the station coordinates are known, the station location will be shown on a location map, together with the <a href="#references" target="_self">Bird (2003)</a> plate boundaries. The station ID and the plate name can be obtained by hoovering over the map.
   
 It is possible to average and reduce the sampling of the input series, for instance from daily values to weekly, by using the `reduce sampling` option. The user needs to provide the new sampling period in the same time units of the series. This option also accepts expressions identified by a starting *=* such as *=7/365.25* for transforming a daily series into weekly using year units.  
 If high-frequency data are not needed, averaging the series will save a lot of time when fitting models, finding discontinuities or when estimating the colored noise in the series (see the [<a href="#additional-fit" target="_self">Additional fit</a>](#v.-additional-fit) block).  
@@ -237,16 +246,17 @@ Also, if there is a secondary series being used with the `correct` or `average` 
 
 ### II. Plot controls
 
-Once the format of the series is set, this block allows plotting/resetting the time series and also removing outliers with the `Toggle points` option.  
-Outliers can also be `auto toggled` by setting a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided). They can also be selected and removed manually.  
+Once the format of the series is set, this block allows plotting/resetting the time series with the `Plot` button.  
+It is also possible to show an `Overview` of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction, etc.).  
+Selected outliers can be excluded from the analysis with the `Toggle` option. Outliers can also be `auto toggled` by setting a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).  
 See more details about removing/restoring points manually in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section.
 
 The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously, which is useful if one wants to join the results from each coordinate component into a single file afterwards (a NEU/ENU file for instance). This option works also when analyzing different columns using the 1D series format.
 
-The option `permanent` will permanently delete the next points that are going to be removed from the series (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section). Permanently here means these points cannot be restored back and they will not be shown again in the current session. This option is intended, for instance, to remove extreme outliers that do not allow visualizing a series correctly.  
-The original series file is not modified and can be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are removed in a single action, it will automatically deactivate itself so the next points to be removed will be available to be restored. When toggling points that were already removed, this option will delete them permanently as well, instead of restoring them.
+The option `permanent` will permanently delete the next points to be toggled from the series (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section). Permanently here means these points cannot be restored back and they will not be shown again in the current session. This option is intended, for instance, to remove extreme outliers that do not allow visualizing the series correctly.  
+The original series file is not modified and can be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are toggled in a single action, it will automatically deactivate itself so the next points to be toggled will be available to be restored. When toggling points that were already removed, this option will delete them permanently as well, instead of restoring them.
 
-The `include in file` option will keep the removed outliers in the downloaded results file as commented lines. No fitting values will be provided for these points.  
+The `include in file` option will keep the excluded outliers in the downloaded results file as commented lines. No fitting values will be provided for these points.  
 
 The `scrolling` option enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing/archiving a specific analysis, making reports or marking assignments. The quality of the full page screenshot may depend on the browser/extension used.  
 
@@ -284,22 +294,24 @@ This block allows for the uploading of files containing complementary informatio
 ##### **Notes on the secondary series**:
 
 1. The secondary series can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single secondary series. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single secondary series representing the total loading at the site.  
-2. Several loading products can be selected and uploaded via the EOSTSL server (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block). In this case, the series are automatically resampled to daily and then added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the reponsability of the user to verify that they have consistent time units and sampling.  
-3. When uploading a *secondary series*, both station IDs will be shown in the `series ID` box on the left panel, together with a "*&*" when using the option `show`, a "&ndash;" when using the option `correct`, or a "+" when using the option `average`.  
-4. If the `show` option is selected, the *secondary series* will be plotted in green on the right y-axis and will not be included in the processing. This means that the *secondary series* could have a different sampling than the primary series. In case the `correct` or the `average` option is selected, only the common epochs between the primary and the *secondary series* will be shown. In the latter case, the *secondary series* must have observations at common epochs with the primary series because the series are neither filled nor interpolated at common epochs.  
-5. GNSS series typically have daily sampling, however very often, even if the sampling period is constant, the epochs will not exactly match between the primary and secondary series, especially if the series are produced by different people. If the primary and secondary series have both a constant sampling of one day, but their epochs do not match, setting the `Time units` to *days* will allow SARI to compute the constant fraction of a day shift between both series and apply it to the secondary series to match the epochs of the primary series.  
-6. If the *secondary series* does not have the same sampling as the primary series, a warning will be shown on screen. The sampling of the *secondary series* can be reduced with the `averaging` option, which is equivalent to the `reduce sampling` option of the primary series (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block).  
-7. For NEU/ENU series, the *secondary series* must have the same format than the primary series. For 1D series, the user has the option to choose the column number and column separator for the *secondary series* independently of those already set for the primary series.  
-8. The units of the *secondary series* can be scaled using the `scale factor` option. Also the y-axis values of the *secondary series* are partially controlled by the `same scale` and `same axis` options with respect to the y-axis of the primary series.  
-9. If the format of either the primary or the secondary series is unknown, the `N@E` option will swap the North and East components of the *secondary series* to match the components of the primary series.  
-10. When the primary series is combined with a *secondary series* (using `correct` or `average`, but not `show`), the IDs from both series will be extracted from the *station.info*, *soln*, and *customized offset* files. Otherwise only the ID from the primary series will be used.
+2. Several loading products can be selected and uploaded directly from the EOSTSL server (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model [ERA5TUGO(d)] together with hydrology loading (soil moisture and snow) from the same ERA5 reanalysis [ERA5HYD(d)]. More details at the [EOSTLS server](http://loading.u-strasbg.fr).  
+3. If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the reponsability of the user to verify that they have consistent time units and sampling.  
+4. <b><span style="color: red;">NEW EXPERIMENTAL FEATURE:</span></b> the `Swap` button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling or plate motion corrections.  
+5. When uploading a *secondary series*, both station IDs will be shown in the `series ID` box on the left panel, together with a "*&*" when using the option `show`, a "&ndash;" when using the option `correct`, or a "+" when using the option `average`.  
+6. If the `show` option is selected, the *secondary series* will be plotted in green on the right y-axis and will not be included in the processing. This means that the *secondary series* could have a different sampling than the primary series. In case the `correct` or the `average` option is selected, only the common epochs between the primary and the *secondary series* will be shown. In the latter case, the *secondary series* must have observations at common epochs with the primary series because the series are neither filled nor interpolated at common epochs.  
+7. GNSS series typically have daily sampling, however very often, even if the sampling period is constant, the epochs will not exactly match between the primary and secondary series, especially if the series are produced by different people. If the primary and secondary series have both a constant sampling of one day, but their epochs do not match, setting the `Time units` to *days* will allow SARI to compute the constant fraction of a day shift between both series and apply it to the secondary series to match the epochs of the primary series.  
+8. If the *secondary series* does not have the same sampling as the primary series, a warning will be shown on screen. The sampling of the *secondary series* can be reduced with the `averaging` option, which is equivalent to the `reduce sampling` option of the primary series (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block).  
+9. For NEU/ENU series, the *secondary series* must have the same format than the primary series. For 1D series, the user has the option to choose the column number and column separator for the *secondary series* independently of those already set for the primary series.  
+10. The units of the *secondary series* can be scaled using the `scale factor` option. Also the y-axis values of the *secondary series* are partially controlled by the `same scale` and `same axis` options with respect to the y-axis of the primary series.  
+11. If the format of either the primary or the secondary series is unknown, the `N@E` option will swap the North and East components of the *secondary series* to match the components of the primary series.  
+12. When the primary series is combined with a *secondary series* (using `correct` or `average`, but not `show`), the IDs from both series will be extracted from the *station.info*, *soln*, and *customized offset* files. Otherwise only the ID from the primary series will be used.
 
 <h5 id="notes-on-the-plate-motion-model"></h5>
 
 ##### **Notes on the plate motion model**:
 
-1. In order to compute the *plate motion* for the series, SARI needs to know the station coordinates and the parameters of the Euler's pole. The station coordinates will be extracted automatically from *NGL*, *PBO* and some *ENU/NEU* series. For other series formats, the Cartesian (X,Y,Z) or geographic (latitude, longitude) coordinates of the station must be provided. The units of the Cartesian station coordinates must be the same as the time series units (i.e., meters, millimeters, etc). If geopraphic coordinates are provided, SARI will try to guess if the values of the GNSS series are in meters or millimeters and then transform the geographic coordinates into Cartesian coordinates with the correct units. This guess may fail if the series are ambiguous, so station Cartesian coordinates should be preferred as input.  
-2. The `Select a plate model` option allows to use any of the three *plate motion* models implemented in SARI: the ITRF2014 model (<a href="#references" target="_self">Altamimi et al. 2017</a>), the NNR-MORVEL56 model (<a href="#references" target="_self">Argus et al. 2011</a>) and the NNR-GSRM v2.1 model (<a href="#references" target="_self">Kreemer et al. 2014</a>). The parameters of the Euler's pole for each plate can be shown by clicking on the `Show the selected plate model`. The user needs to select a plate motion model and then enter the name of the tectonic plate, or part of it, that will be searched for in the model (case-insensitive).  
+1. In order to compute the *plate motion* for the series, SARI needs to know the station coordinates and the parameters of the Euler's pole. The station coordinates will be extracted automatically from *NGL*, *PBO* and some *ENU/NEU* series. For other series formats, the Cartesian (X,Y,Z) or geographic (latitude, longitude) coordinates of the station must be provided. The units of the Cartesian station coordinates must be the same as the time series units (i.e., meters or millimeters). If geopraphic coordinates are provided, SARI will try to guess if the values of the GNSS series are in meters or millimeters and then transform the geographic coordinates into Cartesian coordinates with the correct units. This guess may fail if the series are ambiguous, so either the series units must be set by the user or the station Cartesian coordinates should be preferred as input.  
+2. The `Select a plate model` option allows to use any of the three *plate motion* models implemented in SARI: the ITRF2014 model (<a href="#references" target="_self">Altamimi et al. 2017</a>), the NNR-MORVEL56 model (<a href="#references" target="_self">Argus et al. 2011</a>) and the NNR-GSRM v2.1 model (<a href="#references" target="_self">Kreemer et al. 2014</a>). The parameters of the Euler's pole for each plate can be shown by clicking on the `Show the selected plate model`. The user needs to select a plate motion model and then select one of the available tectonic plates.  
 3. Alternatively, the user can `Upload a custom plate model` that must have six or seven values per line corresponding to the station ID (first value), the station coordinates (two values: latitude & longitude; or three values: X,Y,Z), and the Euler's pole parameters (three values: latitude,longitude,rotation or X,Y,Z rotations). If a station ID is present in more than one line, only the last one will be used. The units of the plate model parameters are degrees for latitude & longitude and degrees/Ma for rotations. An example of the custom *plate motion* model can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/euler.txt)).  
 4. Once the *plate motion* model is read, the extracted values will be shown on the left panel. The user can check and modify these values manually. If no values are being shown, it means no values were found for either the selected plate (see point 2) or the current station ID (see point 3) that is shown in the `station ID` box of the left panel.  
 
@@ -358,6 +370,7 @@ Some of these components require additional parameters to be included in the mod
 4. If more than one model component is occurring simultaneously (e.g., a position offset with an exponential decay or an exponential decay with a logarithmic decay), the quality of the guessed a priori parameter values may be poor because they are obtained independently for each component.  
 5. If the a priori parameter values are not accurate enough, the fitting may provide unsatisfactory results or even fail. In this case, the a priori parameter values can be manually tuned on the left panel using an educated or an eyeball guess. For instance, the exponential/logarithmic asymptotic offset corresponds to the observed difference between the series value at the start of the decay and the asymptotic value (the asymptotic offset is positive if the series is decreasing for the exponential and increasing for the logarithmic). If the decay complies with the expected behavior in GNSS (see point 1), the decay rate should be positive. For the exponential, it is roughly the time taken to reduce the asymptotic offset to one-third of its value; for the logarithmic, the decay rate can be challenging to guess accurately.  
 6. If more than one decay (exponential, logarithmic or mixed) is being fitted, and the a priori values for one of them are changed (improved), it may cause the fitting to fail. This is because the a priori values left unchanged for the other decay may now be worse than before, i.e., with respect to what remains to be fitted.  
+7. Finally, bear in mind that even if the epoch of an Earthquake is precisely known, down to the minute or even second, very often a GNSS time series is computed out of constant daily batches. This means the discontinuity may appear in the series at the batch boundaries and not at the Earthquake epoch itself. If the discontinuity epoch is not correctly set with respect to the series, i.e. a slightly different epoch than the one from the true Earthquake, the fitting of the post-seismic relaxation may provide bad results or even fail.
 
 <h5 id="notes-on-the-discontinuity-detection"></h5>
 
@@ -509,28 +522,29 @@ This is how I usually estimate the linear trend in a GNSS position time series (
 
 1) Upload the series file from your computer using `browse file`, or from a web server using the `Station`, `Server` and `Product` options, or via a URL query, or from a Unix-like terminal using the [sari.sh script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
 2) Set the series format and time units if necessary and `Plot` the series with points (default), lines or points & lines.  
-3) If the series has daily sampling, reduce it to weekly sampling using the `reduce sampling` option with a period of *=7/365.25* years (or the equivalent 7 days or 1 week, depending on the series time unit).  
-4) Upload a previously unfinished fit or the fit from another series, if comparison is needed, with the `load SARI model` button.  
-5) Upload the *sitelog* and/or *station.info* and/or *soln* and/or *custom offset* files from your computer if available. The *station.info* and *custom offset* files are already loaded if you have done this and did not refresh the page.  
-6) Show the equipment changes by activating `plot changes` next to the input *sitelog*, *station.info*, *soln* and/or *custom* files.  
-7) Fit a low-pass `smoother` (a period of 0.1 years should be enough to fit seasonals) and remove the outliers from the filter residuals manually using the `toggle points` or automatically using a residual threshold and the `auto toggle`. Remember to activate `all components` before removing any outlier if you plan to merge the results of the three coordinate components into a single file later.  
-8) Remove the low-pass smoother and fit a linear trend using weighted LS.  
-9) Fit position discontinuities due to known equipment changes (dates are available by activating `list` changes next to the input *sitelog*, *station.info* and/or *custom* files) or due to unknown events (dates are available under the plot by zooming in and clicking where a discontinuity is needed).  
-10) Alternatively, if feeling lazy today, you can also try to `search discontinuities` automatically (this is very time-consuming, so do not forget to reduce the sampling to weekly).  
-11) Plot the `periodogram` (amplitude or power) of the model residuals and check for significant periodic lines.  
-12) Remove sinusoidal variations. The exact periods can be obtained by zooming in and clicking on the periodogram. Rise the oversampling factor after zooming in if necessary, but return to 1 before zooming out. If the periodic variations are not sinusoidal, use the generic `periodic waveform` instead of the LS sinusoidal fit. If the periodic variations are sinusoidal, but their amplitude and/or phase are changing smoothly, use a Kalman filter fit with appropriate process and measurement noise variances. Temporal changes of amplitude and frequency can be assessed using the `wavelet` analysis (this is very time-consuming, so you may need to reduce the period bounds and/or reduce the temporal/frequency resolution of the wavelet).  
-13) Add logarithmic and/or exponential terms to the fitted model if necessary.  
-14) Iterate the steps 9 to 13 while zooming in and out guided by the smoother, the known equipment changes, the other coordinate components, an independent deformation model or the series of a nearby station, which can be uploaded with the *secondary series* feature (`show` or `correct` options).  
-15) Check the significance of the fitted model parameters (bearing in mind that formal errors may be too optimistic) and remove unnecessary parameters from the model.  
-16) When the fit of the LS model is finished, run the `noise analysis` using a white + power-law noise model to get a better formal rate uncertainty (this can be very time-consuming, so do not forget to reduce the sampling to weekly).  
-17) Plot the power `periodogram` to check that the fitted noise model corresponds to the LS model residuals, or use the estimated log-likelihood to select the best noise model. The parameters of the fitted noise model will be used to estimate a more realistic formal uncertainty of the linear trend.  
-18) Use the estimated noise parameters to check the significance of the estimated offsets using the `offset verification` option and remove offsets from the LS model accordingly.  
-19) Plot the `histogram` if statistics of the model/filter residuals or a stationarity assessment are needed.  
-20) Run the MIDAS estimator for trend comparison.  
-21) Load the parameters of a `plate model` to check if the site is located where it should be and it is not moving away from its plate.  
-22) Save the results on your computer using the `save` icon at the top right corner. The periodogram data can be saved by clicking on the `get periodogram data` link below the periodogram.  
-23) Iterate through the different coordinate components and save each one of them. The same component can be saved multiple times, for instance if the model was improved.  
-24) `Reset` before starting a new series. Do not refresh the page.  
+3) Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.  
+4) If the series has daily sampling, reduce it to weekly sampling using the `reduce sampling` option with a period of *=7/365.25* years (or the equivalent 7 days or 1 week, depending on the series time unit).  
+5) Upload a previously unfinished fit or the fit from another series, if comparison is needed, with the `load SARI model` button.  
+6) Upload the *sitelog* and/or *station.info* and/or *soln* and/or *custom offset* files from your computer if available. The *station.info* and *custom offset* files are already loaded if you have done this and did not refresh the page.  
+7) Show the equipment changes by activating `plot changes` next to the input *sitelog*, *station.info*, *soln* and/or *custom* files.  
+8) Fit a low-pass `smoother` (a period of 0.1 years should be enough to fit seasonals) and remove the outliers from the filter residuals manually using the `toggle points` or automatically using a residual threshold and the `auto toggle`. Remember to activate `all components` before removing any outlier if you plan to merge the results of the three coordinate components into a single file later.  
+9) Remove the low-pass smoother and fit a linear trend using weighted LS.  
+10) Fit position discontinuities due to known equipment changes (dates are available by activating `list` changes next to the input *sitelog*, *station.info* and/or *custom* files) or due to unknown events (dates are available under the plot by zooming in and clicking where a discontinuity is needed).  
+11) Alternatively, if feeling lazy today, you can also try to `search discontinuities` automatically (this is very time-consuming, so do not forget to reduce the sampling to weekly).  
+12) Plot the `periodogram` (amplitude or power) of the model residuals and check for significant periodic lines.  
+13) Remove sinusoidal variations. The exact periods can be obtained by zooming in and clicking on the periodogram. Rise the oversampling factor after zooming in if necessary, but return to 1 before zooming out. If the periodic variations are not sinusoidal, use the generic `periodic waveform` instead of the LS sinusoidal fit. If the periodic variations are sinusoidal, but their amplitude and/or phase are changing smoothly, use a Kalman filter fit with appropriate process and measurement noise variances. Temporal changes of amplitude and frequency can be assessed using the `wavelet` analysis (this is very time-consuming, so you may need to reduce the period bounds and/or reduce the temporal/frequency resolution of the wavelet).  
+14) Add logarithmic and/or exponential terms to the fitted model if necessary.  
+15) Iterate the steps 9 to 13 while zooming in and out guided by the smoother, the known equipment changes, the other coordinate components, an independent deformation model or the series of a nearby station, which can be uploaded with the *secondary series* feature (if loading corrections were not already uploaded in step 3).  
+16) Check the significance of the fitted model parameters (bearing in mind that formal errors may be too optimistic) and remove unnecessary parameters from the model.  
+17) When the fit of the LS model is finished, run the `noise analysis` using a white + power-law noise model to get a better formal rate uncertainty (this can be very time-consuming, so do not forget to reduce the sampling to weekly).  
+18) Plot the power `periodogram` to check that the fitted noise model corresponds to the LS model residuals, or use the estimated log-likelihood to select the best noise model. The parameters of the fitted noise model will be used to estimate a more realistic formal uncertainty of the linear trend.  
+19) Use the estimated noise parameters to check the significance of the estimated offsets using the `offset verification` option and remove offsets from the LS model accordingly.  
+20) Plot the `histogram` if statistics of the model/filter residuals or a stationarity assessment are needed.  
+21) Run the MIDAS estimator for trend comparison.  
+22) Load the parameters of a `plate model` to check if the site is located where it should be and it is not moving away from its plate.  
+23) Save the results on your computer using the `save` icon at the top right corner. The periodogram data can be saved by clicking on the `get periodogram data` link below the periodogram.  
+24) Iterate through the different coordinate components and save each one of them. The same component can be saved multiple times, for instance if the model was improved.  
+25) `Reset` before starting a new series. Do not refresh the page.  
 
 -----------------
 
@@ -540,7 +554,7 @@ This is how I usually estimate the linear trend in a GNSS position time series (
 
 # Known issues
 
-There is a finite number of simultaneous connections that can be run by the online server at Shinyapps. That number depends on the user load. For standard user loads (i.e., excluding noise analysis with spectral index, automatic discontinuity search, and large wavelet analysis), up to 24 parallel users can be sustained, possibly a few more than that. However, it is not very clear how many simultaneous connections from the same IP address the Shinyapps server allows; that limit may be set somewhere between 10 and 15. If using SARI in a class with many people and connections start being refused, I suggest changing the outbound IP address (for instance, connecting through a smartphone hotspot) or using SARI from a local server (RStudio or Docker). Contact the [<a href="#author" target="_self">author</a>](#author) for further information.
+There is a finite number of simultaneous connections that can be run by the online server at Shinyapps. That number depends on the user load. For standard user loads (i.e., excluding noise analysis with spectral index, automatic discontinuity search, and large wavelet analysis), up to 24 parallel users can be sustained, possibly a few more than that. However, it is not very clear how many simultaneous connections the Shinyapps server allows from the same inbound IP address; that limit may be set somewhere between 10 and 15. If using SARI in a class with many people and connections start being refused, I suggest changing the outbound IP address (for instance, connecting through a smartphone hotspot) or using SARI from a local server (RStudio or Docker). Contact the [<a href="#author" target="_self">author</a>](#author) for further information.
 
 For the sake of simplicity of the model equation, SARI uses a common nonlinear LS function that most of the time converges in one iteration. On very rare occasions, the fit does not converge, even with very simplistic models that usually include a sinusoid. A *unable to fit the LS model. Change the model components* message is shown on the screen. To avoid this problem, changing slightly the reference epoch of one of the model parameters should be enough to reach convergence. Contact the [<a href="#author" target="_self">author</a>](#author) if you encounter this problem.
 
@@ -563,9 +577,9 @@ On the other hand, if running SARI on a local server (RStudio or Docker), there 
 
 I am thankful to these people that directly or indirectly contributed to improve this software:
 
-Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros.
+Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans.
 
-SARI is accessible from the Shinyapps.io server thanks to the support of the [RESIF-RENAG National Observing Service](http://renag.resif.fr/en/).
+SARI is accessible from the Shinyapps.io server thanks to the support of the [RENAG National Observing Service](http://renag.resif.fr/en/).
 
 -----------------
 
@@ -578,6 +592,8 @@ SARI is accessible from the Shinyapps.io server thanks to the support of the [RE
 Altamimi Z, Métivier L, Rebischung P, Rouby H, Collilieux X (2017) ITRF2014 plate motion model. Geophysical Journal International, 209, 3. doi: https://doi.org/10.1093/gji/ggx136
 
 Argus DF, Gordon RG, DeMets C (2011) Geologically current motion of 56 plates relative to the no-net-rotation reference frame. Geochemistry, Geophysics, Geosystems, 12, 11. doi: https://doi.org/10.1029/2011GC003751
+
+Bird P (2003) An updated digital model of plate boundaries. Geochemistry, Geophysics, Geosystems, 4, 3. doi: https://doi.org/10.1029/2001GC000252
 
 Blewitt G, Kreemer C, Hammond WC, Gazeaux J (2016) MIDAS robust trend estimator for accurate GPS station velocities without step detection. J Geophys Res Solid Earth 121(3):2054&#45;2068. doi: https://doi.org/10.1002/2015JB012552
 

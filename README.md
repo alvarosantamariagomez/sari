@@ -1,6 +1,6 @@
 ![twitter](https://img.shields.io/twitter/follow/timeserious?style=social)
 ![license](https://img.shields.io/github/license/alvarosantamariagomez/sari)
-![version](https://img.shields.io/badge/version-noviembre%202023-blue)
+![version](https://img.shields.io/badge/version-diciembre%202023-blue)
 ![github](https://img.shields.io/github/languages/code-size/alvarosantamariagomez/sari?color=g)
 ![docker](https://img.shields.io/docker/image-size/alvarosg/sari?color=g)
 
@@ -16,14 +16,14 @@ SARI has been developed in the R programming language, under the interactive fra
 Currently tested in R version 4.1.0.
 
 SARI can be run:  
-- remotelly from the shinyapps server at this link https://alvarosg.shinyapps.io/sari
+- remotelly on the shinyapps server at this link https://alvarosg.shinyapps.io/sari
 - locally on your machine using a prebuilt Docker image available at https://hub.docker.com/r/alvarosg/sari  
 - locally on your machine after installing R (optionally RStudio) and all the package dependencies given in the [INSTALL](INSTALL) file. Once all this is set up, then just clone, open and run the [source code](app.R) in RStudio or simply execute `library(shiny)` and then `runGitHub("sari","alvarosantamariagomez",launch.browser=T)`  
 
 The [SARI shell script](/scripts/sari.sh) can be used to launch SARI from the command line on Unix-like desktop environments. To add the script to the PATH environment variable of your system use this from the SARI Git directory:  
 `sudo ln -s $(realpath scripts/sari.sh) /usr/local/bin/.`
 
-The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers that can accessed via specific parameters on the interface or included in the URL. The latter option makes it possible to add weblinks in a series database to open and analyse them on a new tab with SARI. See for example [this page.](https://www.poleterresolide.fr/geodesy-plotter/#/station/ARUF00FRA/185)
+The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers that can accessed via specific parameters on the interface or included in the URL. The latter option makes it possible to include weblinks in a web server to open and analyse any time series on a new tab with SARI. See for example [this page.](https://www.poleterresolide.fr/geodesy-plotter/#/station/CRAL00FRA/130)
 
 The [help file](/www/about.pdf) contains detailed information on how to use SARI, including the description of all the implemented functionalities. This file is also accessible from the main web interface of SARI by clicking on the `Help` button.  
 

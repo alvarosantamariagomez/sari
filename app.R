@@ -68,7 +68,7 @@ options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI noviembre 2023"
+version <- "SARI diciembre 2023"
 
 # Some GUI functions
 

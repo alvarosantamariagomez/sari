@@ -1,5 +1,43 @@
 # **SARI changelog**
 
+# diciembre 2023 [2023.12]
+
+### Fixed
+- Checking for input non-numeric values of the KF measurement error
+- Correcting the scale factor of the station coordinates in mm for series from the EPOS server
+- Improving the a priori max/min periods of the periodogram
+- Correcting the units and label of the histogram
+- Updating the location of the predicted plate motion as the user zooms in on the series
+- Forcing the extracted station ID into a string to avoid numeric station IDs
+- Checking the information extracted from the sitelog and station.info files before changing the time units
+
+### Changed
+- Optimizing the processing of several secondary series from the EOSTLS remote server
+- Automatically setting the format of the secondary series based on the file name
+- New formatting of the downloaded periodogram file
+- Computing the plate model independently of the reading of the series file
+- New database system that keeps the original and resampled series for both primary and secondary
+- Updating the series units according to the name of the uploaded file
+- Allowing changes of the selected plate motion model and plate
+- Changing the trend, sinusoidal and polynomial reference epoch values when the series time units change
+- Removing the plate model also from the secondary series
+- Checking the validity of the information extracted from the sitelog
+- Updating the available loading models from the EOSTLS server
+- Removing the plate motion model when making the difference between the primary and secondary series
+- Skipping optional packages that were not installed (only for local sessions)
+
+### Added
+- New package dependencies: geojsonio, ragg
+- Links on the left panel for saving the files of the primary and secondary remote series
+- Support for epochs provided in ISO 8601 calendar date and time format
+- Interactive plate boundaries with their names on the location map (if the optional geojsonio package was installed)
+- Showing the station ID on the location map
+- New overview button to open a popup window with a plot of the current view of the three coordinate components together
+- New swap button to interchange the roles of the primary and secondary series
+- Warning on screen when the units of the series are unknown
+- Warning on screen when using both ECCO and TUGO loading models in the secondary series
+- Access to the series from the PSMSL server
+
 # noviembre 2023 [2023.11]
 
 ### Fixed
