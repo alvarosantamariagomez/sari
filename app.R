@@ -9622,7 +9622,7 @@ server <- function(input,output,session) {
       y_detrend <- NULL
       # * Linear model ####
       if ("Linear" %in% input$model) {
-        if (isTruthy(info$trendRef)) {
+        if (isTruthy(info$trendRef) && isTruthy(inputs$trendRef)) {
           reft <- inputs$trendRef
         } else {
           if (input$fitType == 1) {
