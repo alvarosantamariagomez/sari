@@ -51,16 +51,18 @@ check_load <- function(packages) {
 }
 
 # Shinyapps & local version
-# library(mvcwt, verbose = F, quietly = T) #v1.3.1
-# library(leaflet, verbose = F, quietly = T) #v2.1.2
-# library(geojsonio, verbose = F, quietly = T) #v0.11.3
+suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+  library(mvcwt, verbose = F, quietly = T) #v1.3.1
+  library(leaflet, verbose = F, quietly = T) #v2.1.2
+  library(geojsonio, verbose = F, quietly = T) #v0.11.3
+})))
 # GitHub version
-optionalPackages <- c(
-  "mvcwt",
-  "leaflet",
-  "geojsonio"
-)
-check_load(optionalPackages)
+# optionalPackages <- c(
+#   "mvcwt",
+#   "leaflet",
+#   "geojsonio"
+# )
+# check_load(optionalPackages)
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
@@ -1883,6 +1885,16 @@ server <- function(input,output,session) {
   reset("side-panel")
   reset("main-panel")
   cat(file = stderr(), "\n", "\n", "START", "\n")
+  
+  # Catch refreshed page
+  shinyjs::runjs("
+    const pageAccessedByReload = ( (window.performance.navigation && window.performance.navigation.type === 1) || window.performance
+        .getEntriesByType('navigation')
+        .map((nav) => nav.type)
+        .includes('reload'));
+    //alert(pageAccessedByReload);
+    Shiny.onInputChange('refreshed', pageAccessedByReload);
+  ")
 
   # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
   observeEvent(input$browser,{
@@ -2005,6 +2017,18 @@ server <- function(input,output,session) {
         # output$refresh <- renderUI({
         #   tags$script(HTML(askRefresh))    
         # })
+        shinyjs::delay(100, {
+          if (isTRUE(input$refreshed)) {
+            if (messages > 0) cat(file = stderr(), "Page refreshed", "\n")
+            showModal(modalDialog(
+              title = tags$h3("Dear SARI user"),
+              HTML("Your connection to the server has been refreshed.<br><br>If this was due to an error, please consider giving feedback to the author.<br><br>Otherwise, to start a new analysis, it is strongly recommended to use the RESET button on the left panel instead."),
+              size = "m",
+              easyClose = T,
+              fade = T
+            ))
+          }
+        })
         if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
         if (messages > 2) cat(file = stderr(), "Pixel ratio ", info$pixelratio, "\n")
         if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
