@@ -151,8 +151,9 @@ pointer-events: none;
 color: gray62 !important;
 }'
 
-# show plotAll popup
-seriesPopup <- "shinyjs.popup = function(width){window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no');}"
+# show & check plotAll popup
+showPopup <- "shinyjs.showPopup = function(width) { overview = window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
+checkPopup <- "shinyjs.checkPopup = function() { var status = !overview.closed; Shiny.onInputChange('overview', status);}"
 
 # Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
 update_series <- "
@@ -350,7 +351,8 @@ tabContents <- function(tabNum) {
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
-                extendShinyjs(text = seriesPopup, functions = c("popup")),
+                extendShinyjs(text = showPopup, functions = c("showPopup")),
+                extendShinyjs(text = checkPopup, functions = c("checkPopup")),
                 div( style = "text-align: center; display: flex; flex-direction: column; justify-content: space-between; margin: auto",
                   id = "loading_page",
                   h1(style = "text-align: center; color: #333333; font-weight: bold", "SARI session established."),
@@ -3081,6 +3083,10 @@ server <- function(input,output,session) {
       shinyjs::show(paste0("zoomin",input$tab))
     } else {
       shinyjs::hide(paste0("zoomin",input$tab))
+    }
+    js$checkPopup()
+    if (isTruthy(input$overview)) {
+      shinyjs::click("plotAll")
     }
     output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
       if (length(input$plot_1click$x) > 0) {
@@ -8118,7 +8124,7 @@ server <- function(input,output,session) {
         lines(c(x[db1[[info$db1]]$status3][1],x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])]),c(y3[db1[[info$db1]]$status3][centery] + trans$plate[3]*(x[db1[[info$db1]]$status3][1] - x[db1[[info$db1]]$status3][centerx]), y3[db1[[info$db1]]$status3][centery] + trans$plate[3]*(x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])] - x[db1[[info$db1]]$status3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
-      js$popup(info$width)
+      js$showPopup(info$width)
     }
   })
 
