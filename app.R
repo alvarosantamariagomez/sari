@@ -146,7 +146,7 @@ color: gray62 !important;
 # show & check plotAll popup
 showPopup <- "shinyjs.showPopup = function(width) { overview = window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
 renamePopup <- "shinyjs.renamePopup = function(title) { overview.document.title = title; }"
-checkPopup <- "shinyjs.checkPopup = function() { var status = !overview.closed; Shiny.onInputChange('overview', status);}"
+checkPopup <- "shinyjs.checkPopup = function() { var status = 'false'; if (typeof overview != 'undefined') { status = !overview.closed; } Shiny.onInputChange('overview', status);}"
 
 # Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
 update_series <- "
@@ -2026,7 +2026,7 @@ server <- function(input,output,session) {
             if (messages > 0) cat(file = stderr(), "Page refreshed", "\n")
             showModal(modalDialog(
               title = tags$h3("Dear SARI user"),
-              HTML("Your connection to the server has been refreshed.<br><br>If this was due to an error, please consider giving feedback to the author.<br><br>Otherwise, to start a new analysis, it is strongly recommended to use the RESET button on the left panel instead."),
+              HTML("The interface has been refreshed.<br><br>If this was due to an error, please consider giving feedback to the author.<br><br>Otherwise, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section)."),
               size = "m",
               easyClose = T,
               fade = T
@@ -3087,7 +3087,7 @@ server <- function(input,output,session) {
       shinyjs::hide(paste0("zoomin",input$tab))
     }
     js$checkPopup()
-    if (isTruthy(input$overview)) {
+    if (isTRUE(input$overview)) {
       shinyjs::click("plotAll")
     }
     output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
@@ -8653,6 +8653,7 @@ server <- function(input,output,session) {
     shinyjs::hide("zoomin2")
     shinyjs::hide("zoomin3")
     updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
+    runjs('overview.close();')
   })
 
   # Observe hide buttons ####
