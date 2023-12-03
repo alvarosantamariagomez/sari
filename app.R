@@ -64,15 +64,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 # )
 # check_load(optionalPackages)
 
-# Shiny/R options
-options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
-options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
-Sys.setlocale('LC_ALL','C')
-
-# version ####
-version <- "SARI diciembre 2023"
-
-# Some GUI functions
+# GUI addons ####
 
 # Help popup (based on https://github.com/daattali/ddpcr/blob/master/inst/shiny/ui/helpers.R)
 helpPopup <- function(content, title = NULL) {
@@ -153,6 +145,7 @@ color: gray62 !important;
 
 # show & check plotAll popup
 showPopup <- "shinyjs.showPopup = function(width) { overview = window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
+renamePopup <- "shinyjs.renamePopup = function(title) { overview.document.title = title; }"
 checkPopup <- "shinyjs.checkPopup = function() { var status = !overview.closed; Shiny.onInputChange('overview', status);}"
 
 # Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
@@ -347,12 +340,21 @@ tabContents <- function(tabNum) {
   )
 }
 
+# Shiny/R options
+options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+Sys.setlocale('LC_ALL','C')
+
+# version ####
+version <- "SARI diciembre 2023"
+
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
                 mobileDetect('isMobile'),
                 useShinyjs(),
                 extendShinyjs(text = showPopup, functions = c("showPopup")),
                 extendShinyjs(text = checkPopup, functions = c("checkPopup")),
+                extendShinyjs(text = renamePopup, functions = c("renamePopup")),
                 div( style = "text-align: center; display: flex; flex-direction: column; justify-content: space-between; margin: auto",
                   id = "loading_page",
                   h1(style = "text-align: center; color: #333333; font-weight: bold", "SARI session established."),
@@ -8125,6 +8127,9 @@ server <- function(input,output,session) {
       }
       dev.off()
       js$showPopup(info$width)
+      shinyjs::delay(300, {
+        js$renamePopup(file$primary$name)
+      })
     }
   })
 
