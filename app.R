@@ -8869,7 +8869,7 @@ server <- function(input,output,session) {
       # Extracting station coordinates
       spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
       if (isTruthy(spotgins)) info$product1 <- "SPOTGINS_POS"
-      coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,skip,sep))
+      coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,skip,sep))
       lat <- coordinates[4]
       lon <- coordinates[5]
       shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
@@ -9106,7 +9106,7 @@ server <- function(input,output,session) {
             # Extracting station coordinates
             spotgins <- grepl("^# SPOTGINS ", readLines(files$datapath[i], n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
             if (isTruthy(spotgins)) info$product2 <- "SPOTGINS_POS"
-            coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,skip,sep2)
+            coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,skip,sep2)
             lat2 <- as.numeric(coordinates[4])
             lon2 <- as.numeric(coordinates[5])
             shinyjs::delay(100, updateTextInput(session, inputId = "station_x2", value = coordinates[1]))
@@ -9471,7 +9471,7 @@ server <- function(input,output,session) {
     }
   }
   #
-  extract_coordinates <- function(filein,format,server,product,skip,sep) {
+  extract_coordinates <- function(filein,format,server,product,station,skip,sep) {
     if (format == 1) {
       if (isTruthy(server)) {
         if (server == "FORMATER") {
@@ -9497,7 +9497,7 @@ server <- function(input,output,session) {
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "JPL") {
           tableAll <- read.table("www/JPL_database.txt")
-          coordinates <- tableAll[tableAll$V1 == url$station, c(2,3,4)]
+          coordinates <- tableAll[tableAll$V1 == station, c(2,3,4)]
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
           lat <- stationGeo[1] * 180/pi
@@ -9512,7 +9512,7 @@ server <- function(input,output,session) {
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "EPOS") {
           stationsFromEPOS <- try(read.table(file = "www/EPOS_database.txt", header = T), silent = T)
-          tableAll <- stationsFromEPOS[grepl(url$station, stationsFromEPOS$id), c(2,3)]
+          tableAll <- stationsFromEPOS[grepl(station, stationsFromEPOS$id), c(2,3)]
           shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
           lat <- tableAll[1,1]
           lon <- tableAll[1,2]
@@ -9558,7 +9558,7 @@ server <- function(input,output,session) {
       if (isTruthy(server)) {
         if (server == "PSMSL") {
           stationsFromPSMSL <- try(read.table(file = "www/PSMSL_database.txt", sep = ";"), silent = T)
-          tableAll <- stationsFromPSMSL[grepl(url$station, stationsFromPSMSL$V2), c(3,4)]
+          tableAll <- stationsFromPSMSL[grepl(station, stationsFromPSMSL$V2), c(3,4)]
           shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
           lat <- as.numeric(tableAll[1,1])
           lon <- as.numeric(tableAll[1,2])
