@@ -11891,6 +11891,9 @@ server <- function(input,output,session) {
               output$station2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
+              if (input$sunits == 2) {
+                updateTextInput(session, inputId = "scaleFactor", value = "1000")
+              }
             }
             return(NULL)
           })
@@ -11923,6 +11926,9 @@ server <- function(input,output,session) {
                 output$station2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
+                if (input$sunits == 2) {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                }
               }
             } else {
               showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -11962,6 +11968,9 @@ server <- function(input,output,session) {
                 output$station2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
+                if (input$sunits == 2) {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                }
               }
             }
             return(NULL)
@@ -11999,6 +12008,9 @@ server <- function(input,output,session) {
                 output$station2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
+                if (input$sunits == 2) {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                }
               }
             } else {
               showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -12041,6 +12053,9 @@ server <- function(input,output,session) {
                   output$station2 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
+                  if (input$sunits == 2) {
+                    updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                  }
                 }
               }
             } else {
@@ -12082,6 +12097,9 @@ server <- function(input,output,session) {
               output$station2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
+              if (input$sunits == 2) {
+                updateTextInput(session, inputId = "scaleFactor", value = "1000")
+              }
             }
             return(NULL)
           })
@@ -12116,6 +12134,9 @@ server <- function(input,output,session) {
                 output$station2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
+                if (input$sunits == 2) {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                }
               }
             } else {
               showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -12175,6 +12196,9 @@ server <- function(input,output,session) {
                   output$station2 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
+                  if (input$sunits == 2) {
+                    updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                  }
                 }
               } else {
                 showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -12377,6 +12401,9 @@ server <- function(input,output,session) {
                 output$station2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
+                if (input$sunits == 2) {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                }
               }
             } else {
               dir_contents <- try(httr::GET(url2), silent = T)
