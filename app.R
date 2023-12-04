@@ -12417,6 +12417,7 @@ server <- function(input,output,session) {
         name <- paste0(stationId,pattern)
         filepath <- paste0(url,name)
         updateCheckboxInput(session, inputId = "sigmas", value = F)
+        disable("sigmas")
         if (series == 1) {
           updateSelectInput(session, inputId = "separator", selected = 3)
           updateCheckboxInput(session, inputId = "tunits", value = 2) 
