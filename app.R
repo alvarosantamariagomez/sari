@@ -7556,6 +7556,7 @@ server <- function(input,output,session) {
     })
   }, priority = 6)
   
+  # Observe swap ####
   observeEvent(input$swap, {
     req(db1[[info$db1]], db2[[info$db2]])
     if (messages > 0) cat(file = stderr(), "Swapping primary and secondary series", "\n")
@@ -7577,6 +7578,9 @@ server <- function(input,output,session) {
     db2[[info$db1]]$status2 <- NULL
     db2[[info$db1]]$status3 <- NULL
     ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]])
+    if (isTruthy(inputs$scaleFactor)) {
+      updateTextInput(session, inputId = "scaleFactor", value = 1/inputs$scaleFactor)
+    }
     # file names
     file1 <- file$primary
     file2 <- file$secondary
@@ -7584,6 +7588,10 @@ server <- function(input,output,session) {
     file$secondary <- file1
     session$sendCustomMessage("filename", file$primary$name)
     session$sendCustomMessage("filename2", file$secondary$name)
+    log1 <- url$logfile
+    log2 <- url$logfile2
+    url$logfile <- log2
+    url$logfile2 <- log1
     # station coordinates
     if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) && (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) &&
          ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) && (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2))))
