@@ -6507,58 +6507,6 @@ server <- function(input,output,session) {
         updateTextInput(session, inputId = "station_y", value = coordinates[2])
         updateTextInput(session, inputId = "station_z", value = coordinates[3])
       }
-      # Mapping the station positions
-      # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
-      if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) {
-        if (messages > 0) cat(file = stderr(), "Location map", "\n")
-          lat <- inputs$station_lat
-          lon <- inputs$station_lon
-          lon <- ifelse(lon > 180, lon - 360, lon)
-        if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
-          plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
-          map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
-            addTiles() %>%
-            addPolygons(
-              fillColor = "white",
-              weight = 1,
-              opacity = 1,
-              color = "black",
-              dashArray = "1",
-              fillOpacity = 0,
-              highlightOptions = highlightOptions(
-                weight = 3,
-                color = "#DF536B",
-                dashArray = "",
-                fillOpacity = 0,
-                bringToFront = TRUE),
-              label = plates$PlateName,
-              labelOptions = labelOptions(
-                style = list("font-weight" = "normal", padding = "3px 8px"),
-                textsize = "15px",
-                direction = "auto")
-            ) %>%
-            setView(lng = lon, lat = lat, zoom = 2) %>%
-            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
-        } else {
-          boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
-          map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
-            addTiles() %>%
-            addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
-            setView(lng = lon, lat = lat, zoom = 2) %>%
-            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
-        }
-        if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
-          lat2 <- inputs$station_lat2
-          lon2 <- inputs$station_lon2
-          lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
-          map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
-        }
-        output$myMap = renderLeaflet(map)
-        output$map <- renderUI({
-          suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
-        })
-        shinyjs::delay(500, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
-      }
     }
   }, priority = 5)
   observeEvent(c(inputs$station_x, inputs$station_y, inputs$station_z), {
@@ -6596,6 +6544,62 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 5)
+  observeEvent(c(inputs$station_lat, inputs$station_lon, inputs$station_lat2, inputs$station_lon2), {
+    # Mapping the station positions
+    # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
+    if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) {
+      if (messages > 0) cat(file = stderr(), "Location map", "\n")
+      lat <- inputs$station_lat
+      lon <- inputs$station_lon
+      lon <- ifelse(lon > 180, lon - 360, lon)
+      lon <- ifelse(lon < -180, lon + 360, lon)
+      if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
+        plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
+        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+          addTiles() %>%
+          addPolygons(
+            fillColor = "white",
+            weight = 1,
+            opacity = 1,
+            color = "black",
+            dashArray = "1",
+            fillOpacity = 0,
+            highlightOptions = highlightOptions(
+              weight = 3,
+              color = "#DF536B",
+              dashArray = "",
+              fillOpacity = 0,
+              bringToFront = TRUE),
+            label = plates$PlateName,
+            labelOptions = labelOptions(
+              style = list("font-weight" = "normal", padding = "3px 8px"),
+              textsize = "15px",
+              direction = "auto")
+          ) %>%
+          setView(lng = lon, lat = lat, zoom = 2) %>%
+          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
+      } else {
+        boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
+        map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+          addTiles() %>%
+          addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
+          setView(lng = lon, lat = lat, zoom = 2) %>%
+          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+      }
+      if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
+        lat2 <- inputs$station_lat2
+        lon2 <- inputs$station_lon2
+        lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
+        lon2 <- ifelse(lon2 < -180, lon2 + 360, lon2)
+        map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
+      }
+      output$myMap = renderLeaflet(map)
+      output$map <- renderUI({
+        suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
+      })
+      shinyjs::delay(500, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
+    }
+  }, priority = 3)
   observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_lon2), {
     req(db1[[info$db1]], input$euler)
     if (((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
