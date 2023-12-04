@@ -12236,6 +12236,9 @@ server <- function(input,output,session) {
               output$station2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
+              if (input$sunits == 1) {
+                updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+              }
             }
             return(NULL)
           })
@@ -12312,18 +12315,6 @@ server <- function(input,output,session) {
           name <- c(name, naming)
           filepath <- c(filepath, paste0(url,naming))
         }
-        # updateRadioButtons(session, inputId = "tunits", selected = 1)
-        if (input$tunits == 1) {
-          step <- 1
-        } else if (input$tunits == 2) {
-          step <- 1/7
-        } else if (input$tunits == 3) {
-          step <- 1/daysInYear
-        }
-        updateTextInput(session, inputId = "step2", value = step)
-        if (input$sunits == 1) {
-          updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-        }
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/EOSTSL_database.txt")) {
@@ -12336,6 +12327,17 @@ server <- function(input,output,session) {
               output$station2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
+              if (input$tunits == 1) {
+                step <- 1
+              } else if (input$tunits == 2) {
+                step <- 1/7
+              } else if (input$tunits == 3) {
+                step <- 1/daysInYear
+              }
+              updateTextInput(session, inputId = "step2", value = step)
+              if (input$sunits == 1) {
+                updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+              }
             }
           } else {
             showNotification(HTML("The list of EOSTSL stations is not found.<br>It is not possible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
