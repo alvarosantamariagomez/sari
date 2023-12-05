@@ -2659,7 +2659,7 @@ server <- function(input,output,session) {
     trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
     # Getting significant decimals from the primary series
     info$decimalsx <- decimalplaces(signif(info$sampling, digits = 2))
-    info$decimalsy <- max(decimalplaces(trans$y))
+    info$decimalsy <- max(decimalplaces(trans$y), na.rm = T)
     if (!isTruthy(info$decimalsy)) {
       info$decimalsy <- 4
     }
@@ -11734,7 +11734,7 @@ server <- function(input,output,session) {
   #Based on https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
   decimalplaces <- function(x) {
     if (any(abs(x - round(x)) > .Machine$double.eps^0.5)) {
-      max(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))))
+      max(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), na.rm = T)
     } else {
       return(0)
     }
