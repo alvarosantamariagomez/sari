@@ -2670,14 +2670,14 @@ server <- function(input,output,session) {
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     # dealing with the kalman filter series
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-      if (length(trans$mod0) > sum(kf[!is.na(kf)])) {
+      if (length(trans$mod0[!is.na(trans$mod0)]) > sum(kf[!is.na(kf)])) {
         trans$mod <- trans$mod0[kf & !is.na(kf)]
         trans$res <- trans$res0[kf & !is.na(kf)]
         trans$kalman <- trans$kalman0[kf & !is.na(kf),]
         trans$kalman_unc <- trans$kalman_unc0[kf & !is.na(kf),]
         showNotification(HTML("At least one point used in the KF fit was removed. The KF fit results are no longer valid.<br>Consider running it again."), action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
-      } else if (length(trans$mod0) < sum(kf[!is.na(kf)])) {
+      } else if (length(trans$mod0[!is.na(trans$mod0)]) < sum(kf[!is.na(kf)])) {
         info$run <- F
         trans$mod <- trans$mod0 <- NULL
         trans$res <- trans$res0 <- NULL
@@ -2694,8 +2694,8 @@ server <- function(input,output,session) {
       } else {
         trans$mod <- trans$mod0[kf & !is.na(kf)]
         trans$res <- trans$res0[kf & !is.na(kf)]
-        trans$kalman <- trans$kalman0[kf & !is.na(kf),]
-        trans$kalman_unc <- trans$kalman_unc0[kf & !is.na(kf),]
+        trans$kalman <- trans$kalman0[kf[kf],]
+        trans$kalman_unc <- trans$kalman_unc0[kf[kf],]
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
     }
@@ -3630,10 +3630,13 @@ server <- function(input,output,session) {
           info$run <- T
           e <- kfs$s[2:nrow(kfs$s),]
           if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-            trans$mod <- trans$mod0 <- sapply(1:length(x), function(k) if (k == 1) { e[1,1] } else { eval(parse(text = sub("+ e[k,2]*(x[k] - x[k-1])", "", model_kf, fixed = T))) })
+            trans$mod <- sapply(1:length(x), function(k) if (k == 1) { e[1,1] } else { eval(parse(text = sub("+ e[k,2]*(x[k] - x[k-1])", "", model_kf, fixed = T))) })
           } else {
-            trans$mod <- trans$mod0 <- sapply(1:length(x), function(k) eval(parse(text = model_kf)) )
+            trans$mod <- sapply(1:length(x), function(k) eval(parse(text = model_kf)) )
           }
+          trans$mod0 <- db1[[info$db1]][[paste0("status",input$tab)]]
+          trans$mod0[which(trans$mod0)] <- trans$mod
+          trans$mod0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
           trans$res <- trans$res0 <- y - trans$mod
           if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
             trans$mod <- trans$mod + trans$pattern
@@ -8119,7 +8122,7 @@ server <- function(input,output,session) {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+              db1[[info$db1]][[paste0("status",input$tab,".kf")]] <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
           }
           if (length(brush2) > 0) {
@@ -8130,11 +8133,11 @@ server <- function(input,output,session) {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
             }
             if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-              db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+              db1[[info$db1]][[paste0("status",input$tab,".kf")]] <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
             }
           }
           db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
-          db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
+          # db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
         } else {
           if (input$tab == 1 || is.null(input$tab)) {
             if (length(brush1) > 0) {
@@ -8295,8 +8298,8 @@ server <- function(input,output,session) {
           }
           db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-            db1[[info$db1]]$status1.kf <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
-            db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
+            db1[[info$db1]][[paste0("status",input$tab,".kf")]] <- db1[[info$db1]]$status1[(db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)) | trans$x0[!is.na(trans$y0)] %in% intersect(trans$x0[!is.na(trans$y0)],trans$x0_kf)]
+            # db1[[info$db1]]$status2.kf <- db1[[info$db1]]$status3.kf <- db1[[info$db1]]$status1.kf
           }
         } else {
           if (input$tab == 1 || is.null(input$tab)) {
