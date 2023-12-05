@@ -631,6 +631,25 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
                                                                           fluidRow(
+                                                                            column(3,
+                                                                                   checkboxInput(inputId = "cut",
+                                                                                                 div("Truncate", style = "font-weight: bold",
+                                                                                                     helpPopup("To limit the time axis of the series given the start and end epochs")),
+                                                                                                 value = F)
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.cut == true",
+                                                                              column(4,
+                                                                                     textInput(inputId = "cutStart", label = "Start", value = "")
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "cutEnd", label = "End", value = "")
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      div(style = "padding: 0px 0px; margin-top:1em",
+                                                                          fluidRow(
                                                                             column(4,
                                                                                    textInput(inputId = "thresholdRes",
                                                                                              div("Residual",
@@ -2533,6 +2552,16 @@ server <- function(input,output,session) {
   station2_d <- reactive(input$station2) %>% debounce(1000, priority = 1000)
   observeEvent(station2_d(), {
     inputs$station2 <- suppressWarnings(trimws(station2_d(), which = "both", whitespace = "[ \t\r\n]"))
+  }, priority = 1000)
+  
+  cutStart_d <- reactive(input$cutStart) %>% debounce(1000, priority = 1000)
+  observeEvent(cutStart_d(), {
+    inputs$cutStart <- suppressWarnings(as.numeric(trimws(cutStart_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  cutEnd_d <- reactive(input$cutEnd) %>% debounce(1000, priority = 1000)
+  observeEvent(cutEnd_d(), {
+    inputs$cutEnd <- suppressWarnings(as.numeric(trimws(cutEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
   # Update data ####
@@ -5476,6 +5505,7 @@ server <- function(input,output,session) {
       disable("autoDownload")
       disable("white")
       disable("reset")
+      disable("cut")
       disable("delete_excluded")
       disable("loadSARI")
       disable("ids")
@@ -5684,6 +5714,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(db1[[info$db1]])) {
           disable("plot")
+          enable("cut")
           if (info$format < 4) {
             enable("plotAll")
           } else {
@@ -5925,6 +5956,7 @@ server <- function(input,output,session) {
           disable("spectrumFilter")
           disable("spectrumFilterRes")
           enable("plot")
+          disable("cut")
           disable("plotAll")
           enable("series")
           enable("format")
@@ -8392,6 +8424,51 @@ server <- function(input,output,session) {
       showNotification(HTML("No point was selected to be removed automatically.<br>Check the input threshold."), action = NULL, duration = 10, closeButton = T, id = "no_point_auto", type = "warning", session = getDefaultReactiveDomain())
     }
   }, priority = 4)
+  
+  # Observe cut series ####
+  observeEvent(c(inputs$cutStart, inputs$cutEnd), {
+    req(db1[[info$db1]], input$cut)
+    removeNotification("bad_cut")
+    if (isTruthy(inputs$cutStart) || isTruthy(inputs$cutEnd)) {
+      if (messages > 0) cat(file = stderr(), "Cutting series", "\n")
+      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, trans$x0[1])
+      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, trans$x0[length(trans$x0)])
+      if (end < start) {
+        showNotification(HTML("The End epoch is smaller than the Start epoch.<br>Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain())
+        req(info$stop)
+      }
+      if (isTruthy(input$permanent)) {
+        if (isTruthy(input$remove3D)) {
+          db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- NA
+          db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- NA
+          db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- NA
+        } else {
+          if (input$tab == 1) {
+            db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- NA
+          } else if (input$tab == 2) {
+            db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- NA
+          } else if (input$tab == 3) {
+            db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- NA
+          }
+        }
+        updateCheckboxInput(session, inputId = "permanent", value = F)
+      } else {
+        if (isTruthy(input$remove3D)) {
+          db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- F
+          db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- F
+          db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- F
+        } else {
+          if (input$tab == 1) {
+            db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- F
+          } else if (input$tab == 2) {
+            db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- F
+          } else if (input$tab == 3) {
+            db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- F
+          }
+        }
+      }
+    }
+  })
 
   # Observe restore removed ####
   observeEvent(input$delete_excluded, {
@@ -8423,6 +8500,8 @@ server <- function(input,output,session) {
     }
     updateTextInput(session, "thresholdRes", value = "")
     updateTextInput(session, "thresholdResN", value = "")
+    updateTextInput(session, "cutStart", value = "")
+    updateTextInput(session, "cutEnd", value = "")
   }, priority = 4)
 
   # Observe station.info ####
