@@ -9682,7 +9682,11 @@ server <- function(input,output,session) {
         model_kf_mean <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k]-",text_rate,")"), sep = " ")
         j <- j + 2
         if (identical(input$Trend0,character(0)) || is.na(input$Trend0) || input$Trend0 == "" || input$Trend0 == " ") {
-          tenth <- ceiling(length(y)/10)
+          if (length(y) > 30) {
+            tenth <- ceiling(length(y)/10)  
+          } else {
+            tenth <- length(y)
+          }
           if (input$fitType == 1) {
             fastFit <- lm(y ~ x)
           } else {
