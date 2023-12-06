@@ -2694,8 +2694,8 @@ server <- function(input,output,session) {
       } else {
         trans$mod <- trans$mod0[kf & !is.na(kf)]
         trans$res <- trans$res0[kf & !is.na(kf)]
-        trans$kalman <- trans$kalman0[kf[kf],]
-        trans$kalman_unc <- trans$kalman_unc0[kf[kf],]
+        trans$kalman <- trans$kalman0[kf & !is.na(kf),]
+        trans$kalman_unc <- trans$kalman_unc0[kf & !is.na(kf),]
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
     }
