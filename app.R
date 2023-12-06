@@ -8599,6 +8599,7 @@ server <- function(input,output,session) {
     shinyjs::hide("zoomin1")
     shinyjs::hide("zoomin2")
     shinyjs::hide("zoomin3")
+    updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
   })
 
   # Observe hide buttons ####
