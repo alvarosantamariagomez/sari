@@ -4883,36 +4883,36 @@ server <- function(input,output,session) {
                          if (info$white) {
                            wh <- var(res)/sqrt(component)
                            apriori <- wh
-                           typsize <- 1 # typical WH variance in mm
+                           typsize <- 1 # sort of relative precision of the a priori noise value
                            if (isTruthy(info$flicker)) {
                              fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                              apriori <- c(apriori, fl)
-                             typsize <- c(typsize, 4) # typical FL variance in mm
+                             typsize <- c(typsize, 1)
                              if (isTruthy(info$randomw)) {
-                               rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e6
+                               rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
                                apriori <- c(apriori, rw)
-                               typsize <- c(typsize, 0.25) # typical RW variance in mm
+                               typsize <- c(typsize, 20)
                              }
                            } else if (isTruthy(info$randomw)) {
-                             rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e6
+                             rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
                              apriori <- c(apriori, rw)
-                             typsize <- c(typsize, 0.25) # typical RW variance in mm
+                             typsize <- c(typsize, 20)
                            } else if (isTruthy(info$powerl)) {
                              pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                              apriori <- c(apriori, pl)
-                             typsize <- c(typsize, 4) # typical PL variance in mm
+                             typsize <- c(typsize, 1)
                            }
                          } else if (info$flicker) {
                            fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                            apriori <- c(apriori, fl)
-                           typsize <- 4 # typical FL variance in mm
-                           rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e6
+                           typsize <- 1
+                           rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
                            apriori <- c(apriori, rw)
-                           typsize <- c(typsize, 0.25) # typical RW variance in mm
+                           typsize <- c(typsize, 20)
                          } else if (isTruthy(info$powerl)) {
                            pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                            apriori <- c(apriori, pl)
-                           typsize <- 4 # typical PL variance in mm
+                           typsize <- 1
                          }
                          setProgress(0.25)
                          apriori <- log(apriori*scaling^2)
