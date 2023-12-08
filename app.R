@@ -8428,6 +8428,8 @@ server <- function(input,output,session) {
           }
         }
       }
+      updateTextInput(session, inputId = "cutStart", value = "")
+      updateTextInput(session, inputId = "cutEnd", value = "")
     }
   })
 
