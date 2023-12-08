@@ -634,7 +634,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(3,
                                                                                    checkboxInput(inputId = "cut",
                                                                                                  div("Truncate", style = "font-weight: bold",
-                                                                                                     helpPopup("To limit the time axis of the series given the start and end epochs")),
+                                                                                                     helpPopup("To limit the time axis of the series given the start and/or end epochs")),
                                                                                                  value = F)
                                                                             ),
                                                                             conditionalPanel(
@@ -7664,7 +7664,7 @@ server <- function(input,output,session) {
     db2[[info$db1]]$status1 <- NULL
     db2[[info$db1]]$status2 <- NULL
     db2[[info$db1]]$status3 <- NULL
-    ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]])
+    ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]], na.rm = T)
     if (isTruthy(inputs$scaleFactor)) {
       updateTextInput(session, inputId = "scaleFactor", value = 1/inputs$scaleFactor)
     }
@@ -8204,6 +8204,17 @@ server <- function(input,output,session) {
           if (length(brush1) > 0) {
             if (isTruthy(input$permanent)) {
               db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
+              # setting new axis limits
+              if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+                # show all points from primary & secondary series
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+              } else {
+                # show all points from primary series only
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+              }
+              ranges$x1 <- c(info$minx, info$maxx)
               updateCheckboxInput(session, inputId = "permanent", value = F)
             } else {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
@@ -8212,6 +8223,17 @@ server <- function(input,output,session) {
           if (length(brush2) > 0) {
             if (isTruthy(input$permanent)) {
               db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
+              # setting new axis limits
+              if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+                # show all points from primary & secondary series
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+              } else {
+                # show all points from primary series only
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+              }
+              ranges$x1 <- c(info$minx, info$maxx)
               updateCheckboxInput(session, inputId = "permanent", value = F)
             } else {
               db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
@@ -8356,6 +8378,17 @@ server <- function(input,output,session) {
           db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding)
           if (isTruthy(input$permanent)) {
             db1[[info$db1]]$status1[excluding] <- NA
+            # setting new axis limits
+            if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+              # show all points from primary & secondary series
+              info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+              info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+            } else {
+              # show all points from primary series only
+              info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+              info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+            }
+            ranges$x1 <- c(info$minx, info$maxx)
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
@@ -8412,6 +8445,17 @@ server <- function(input,output,session) {
             db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- NA
           }
         }
+        # setting new axis limits
+        if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+          # show all points from primary & secondary series
+          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])], db2[[info$db2]][[paste0("x",input$tunits)]])
+          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])], db2[[info$db2]][[paste0("x",input$tunits)]])
+        } else {
+          # show all points from primary series only
+          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+        }
+        ranges$x1 <- c(info$minx, info$maxx)
         updateCheckboxInput(session, inputId = "permanent", value = F)
       } else {
         if (isTruthy(input$remove3D)) {
