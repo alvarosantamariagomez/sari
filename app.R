@@ -2664,14 +2664,14 @@ server <- function(input,output,session) {
     trans$x <- trans$x[status & !is.na(status)]
     trans$xe <- trans$xe[!status & !is.na(status)]
     trans$y <- trans$y0[!is.na(status)]
-    if (isTruthy(input$fullSeries)) {
+    if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
       # show all points from primary & secondary series
       info$minx <- min(trans$x, trans$xe, trans$x2, na.rm = T)
       info$maxx <- max(trans$x, trans$xe, trans$x2, na.rm = T)
     } else {
       # show all points from primary series only
-      info$minx <- min(c(trans$x, trans$xe), na.rm = T)
-      info$maxx <- max(c(trans$x, trans$xe), na.rm = T)
+      info$minx <- min(trans$x, trans$xe, na.rm = T)
+      info$maxx <- max(trans$x, trans$xe, na.rm = T)
     }
     info$miny <- min(trans$y, na.rm = T)
     info$maxy <- max(trans$y, na.rm = T)
@@ -5560,6 +5560,7 @@ server <- function(input,output,session) {
       disable("ne")
       disable("series2filter")
       disable("typeSecondary")
+      disable("fullSeries")
       disable("sigmas")
       disable("symbol")
       disable("sinfo")
@@ -5681,6 +5682,7 @@ server <- function(input,output,session) {
             disable("errorBar2")
           }
           if (input$optionSecondary == 1) {
+            enable("fullSeries")
             if (isTruthy(input$sameScale)) {
               disable("same_axis")
             } else {
@@ -5693,6 +5695,7 @@ server <- function(input,output,session) {
             }
             enable("swap")
           } else {
+            disable("fullSeries")
             disable("sameScale")
             disable("same_axis")
             disable("swap")
@@ -5706,6 +5709,7 @@ server <- function(input,output,session) {
           disable("sameScale")
           disable("same_axis")
           disable("separator2")
+          disable("fullSeries")
           disable("epoch2")
           disable("variable2")
           disable("errorBar2")
@@ -7600,26 +7604,9 @@ server <- function(input,output,session) {
     }
     # Updating plot ranges
     if (input$optionSecondary > 1 || (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1)) {
-      # Setting plot limits
-      if (input$tunits == 1) {
-        x1 <- db1[[info$db1]]$x1
-        x2 <- db2[[info$db2]]$x1
-      } else if (input$tunits == 2) {
-        x1 <- db1[[info$db1]]$x2
-        x2 <- db2[[info$db2]]$x2
-      } else if (input$tunits == 3) {
-        x1 <- db1[[info$db1]]$x3
-        x2 <- db2[[info$db2]]$x3
-      }
-      if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
-        # show all points from primary & secondary series
-        info$minx <- min(x1, x2, na.rm = T)
-        info$maxx <- max(x1, x2, na.rm = T)
-      } else {
-        # show all points from primary series only
-        info$minx <- min(x1, na.rm = T)
-        info$maxx <- max(x1, na.rm = T)
-      }
+      # setting new axis limits
+      info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+      info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
       ranges$x1 <- c(info$minx, info$maxx)
     }
     # Updating station IDs
