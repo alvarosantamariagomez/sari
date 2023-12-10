@@ -1997,7 +1997,7 @@ server <- function(input,output,session) {
   degMa2radyr <- pi/180000000 # geologic to geodetic conversion
   debug <- F # saving the environment (if it were really true ...)
   messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
-  info$components <- c("1st component", "2nd component", "3rd component")
+  info$components <- c("Visualization panel", "", "")
   output$tabName1 <- renderText({ info$components[1] })
   output$tabName2 <- renderText({ info$components[2] })
   output$tabName3 <- renderText({ info$components[3] })
@@ -8706,7 +8706,7 @@ server <- function(input,output,session) {
     })
     enable("neuenu")
     enable("server1")
-    info$components <- c("1st component", "2nd component", "3rd component")
+    info$components <- c("Visualization panel", "", "")
     output$tabName1 <<- renderText({ info$components[1] })
     output$tabName2 <<- renderText({ info$components[2] })
     output$tabName3 <<- renderText({ info$components[3] })
@@ -9072,6 +9072,7 @@ server <- function(input,output,session) {
         showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       }
       if (info$components[1] != "East component" && info$format != 4) {
+        info$components <- c("1st component", "2nd component", "3rd component")
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
       # all good
