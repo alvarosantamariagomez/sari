@@ -1846,7 +1846,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    textInput(inputId = "directory",
                                                                                              div("Select directory",
                                                                                                  helpPopup("Copy & paste or type in the complete path to the desired download directory")),
-                                                                                             value = NULL)
+                                                                                             value = "")
                                                                             ),
                                                                             column(4,
                                                                                    div(style = "padding: 0px 0px; margin-top:2em",
@@ -2004,7 +2004,7 @@ server <- function(input,output,session) {
 
   # Welcome ####
   observe({
-    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable", x, value = F))) == 0]
+    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
     if (length(inputChanged) > 0 && messages > 5) {
       cat(file = stderr(), paste("Latest input fired:", paste(input$changed, collapse = ", ")), "\n")
     }
@@ -3332,7 +3332,7 @@ server <- function(input,output,session) {
           if (length(trans$pattern) > 0) {
             y <- y - trans$pattern
           } else {
-            updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+            updateCheckboxInput(session, inputId = "correct_waveform", value = F)
             updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
           }
         }
@@ -5818,7 +5818,9 @@ server <- function(input,output,session) {
               disable("spectrumResiduals")
             }
           } else {
-            updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+            if (isTruthy(input$model)) {
+              updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+            }
             shinyjs::hide(id = "res", anim = T, animType = "fade", time = 0.5, selector = NULL)
             shinyjs::hide(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
             shinyjs::hide(id = "res2", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -5840,7 +5842,9 @@ server <- function(input,output,session) {
               }
             } else {
               updateTextInput(session, inputId = "waveformPeriod", value = "")
-              updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+              if (isTruthy(input$correct_waveform)) {
+                updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+              }
             }
             if (isTruthy(input$mle)) {
               enable("white")
@@ -5885,10 +5889,18 @@ server <- function(input,output,session) {
               disable("noise_unc")
               disable("est.mle")
               trans$mle <- F
-              updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-              updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-              updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-              updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+              if (isTruthy(input$white)) {
+                updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+              }
+              if (isTruthy(input$flicker)) {
+                updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+              }
+              if (isTruthy(input$randomw)) {
+                updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+              }
+              if (isTruthy(input$powerl)) {
+                updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+              }
               trans$noise <- NULL
             }
             enable("downloadAs")
@@ -7063,11 +7075,21 @@ server <- function(input,output,session) {
     trans$names <- NULL
     trans$noise <- NULL
     inputs$min_wavelet <- ""
-    updateTextInput(session, "ObsError", value = "")
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    if (nchar(input$ObsError) > 0) {
+      updateTextInput(session, "ObsError", value = "")
+    }
+    if (isTruthy(input$white)) {
+      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    }
+    if (isTruthy(input$flicker)) {
+      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    }
+    if (isTruthy(input$randomw)) {
+      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    }
+    if (isTruthy(input$powerl)) {
+      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    }
     if (input$waveletType > 0) {
       updateRadioButtons(session, inputId = "waveletType", label = NULL, selected = 0)
     }
@@ -7193,7 +7215,9 @@ server <- function(input,output,session) {
     updateTabsetPanel(session, inputId = "tab", selected = "1")
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
-    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+    if (isTruthy(input$correct_waveform)) {
+      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+    }
   }, priority = 6)
 
   # Observe format 1D ####
@@ -7228,10 +7252,18 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "Trend0", value = "")
       updateTextInput(session, inputId = "eTrend0", value = "")
     }
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    if (isTruthy(input$white)) {
+      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    }
+    if (isTruthy(input$flicker)) {
+      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    }
+    if (isTruthy(input$randomw)) {
+      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    }
+    if (isTruthy(input$powerl)) {
+      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    }
   }, priority = 6)
   observeEvent(c(inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2), {
     req(db2[[info$db2]])
@@ -7264,7 +7296,9 @@ server <- function(input,output,session) {
     trans$verif <- NULL
     trans$pattern <- NULL
     updateCheckboxInput(session, inputId = "mle", value = F)
-    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+    if (isTruthy(input$correct_waveform)) {
+      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+    }
     updateTextInput(session, "short_period", value = "")
     updateTextInput(session, "ObsError", value = "")
     if (nchar(input$step) > 0 && is.na(inputs$step)) {
@@ -7355,7 +7389,9 @@ server <- function(input,output,session) {
       trans$mle <- F
       trans$verif <- NULL
       trans$pattern <- NULL
-      updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+      if (isTruthy(input$correct_waveform)) {
+        updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+      }
       updateTextInput(session, "short_period", value = "")
       updateTextInput(session, "ObsError", value = "")
     }
@@ -7626,7 +7662,9 @@ server <- function(input,output,session) {
     }
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
-    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+    if (isTruthy(input$correct_waveform)) {
+      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+    }
     info$last_optionSecondary <- input$optionSecondary
     # providing remote secondary series
     output$fileSeries2 <- renderUI({
@@ -7778,15 +7816,27 @@ server <- function(input,output,session) {
     trans$spectra <- NULL
     updateTextInput(session, "ObsError", value = "")
     updateTextInput(session, "waveformPeriod", value = "")
-    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
-    updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+    if (isTruthy(input$correct_waveform)) {
+      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+    }
+    if (isTruthy(input$model)) {
+      updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+    }
     updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
     updateTextInput(session, "E0", value = "")
     updateTextInput(session, "L0", value = "")
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    if (isTruthy(input$white)) {
+      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    }
+    if (isTruthy(input$flicker)) {
+      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    }
+    if (isTruthy(input$randomw)) {
+      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    }
+    if (isTruthy(input$powerl)) {
+      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    }
   }, priority = 5)
 
   # Observe fit type ####
@@ -7802,12 +7852,22 @@ server <- function(input,output,session) {
     trans$mle <- F
     trans$verif <- NULL
     trans$pattern <- NULL
-    updateCheckboxInput(session, inputId = "correct_waveform", label = NULL, value = F)
+    if (isTruthy(input$correct_waveform)) {
+      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+    }
     updateTextInput(session, "ObsError", value = "")
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    if (isTruthy(input$white)) {
+      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    }
+    if (isTruthy(input$flicker)) {
+      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    }
+    if (isTruthy(input$randomw)) {
+      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    }
+    if (isTruthy(input$powerl)) {
+      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    }
     updateTextInput(session, "E0", value = "")
     updateTextInput(session, "TE0", value = "")
     updateTextInput(session, "L0", value = "")
@@ -7831,10 +7891,18 @@ server <- function(input,output,session) {
     }
     trans$mle <- F
     trans$verif <- NULL
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    if (isTruthy(input$white)) {
+      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    }
+    if (isTruthy(input$flicker)) {
+      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    }
+    if (isTruthy(input$randomw)) {
+      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    }
+    if (isTruthy(input$powerl)) {
+      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    }
   }, priority = 5)
 
   # Observe hide tabs ####
@@ -8700,10 +8768,18 @@ server <- function(input,output,session) {
     url$station2 <- NULL
     updateTextInput(session, "waveformPeriod", value = "")
     updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    if (isTruthy(input$white)) {
+      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+    }
+    if (isTruthy(input$flicker)) {
+      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+    }
+    if (isTruthy(input$randomw)) {
+      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+    }
+    if (isTruthy(input$powerl)) {
+      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+    }
     updateTextInput(session, "ObsError", value = "")
     updateTabsetPanel(session, inputId = "tab", selected = "1")
     updateSliderInput(session, inputId = "segmentLength", value = 10)
