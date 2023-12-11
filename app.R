@@ -5284,7 +5284,11 @@ server <- function(input,output,session) {
     withBusyIndicatorServer("autoDownload", {
       if (isTruthy(info$directory)) {
         if (input$format != 4) {
-          file_out <- paste0(info$directory, "\\", file$primary$name, "_", input$tab, ".sari")
+          if (any(grepl("East", info$components))) {
+            file_out <- paste0(info$directory, "\\", file$primary$name, "_", strsplit(info$components[as.numeric(input$tab)], " ")[[1]][1], ".sari")
+          } else {
+            file_out <- paste0(info$directory, "\\", file$primary$name, "_", input$tab, ".sari") 
+          }
         } else {
           file_out <- paste0(info$directory, "\\", file$primary$name, ".sari")
         }
