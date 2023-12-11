@@ -8287,7 +8287,7 @@ server <- function(input,output,session) {
       }
     }
     if (isTruthy(excluding) && sum(excluding) > 0) {
-      if (min(sum(db1[[info$db1]]$status1),sum(db1[[info$db1]]$status2),sum(db1[[info$db1]]$status3), na.rm = T) - sum(excluding, na.rm = T) < 2) {
+      if (min(sum(db1[[info$db1]]$status1, na.rm = T), sum(db1[[info$db1]]$status2, na.rm = T), sum(db1[[info$db1]]$status3, na.rm = T), na.rm = T) - sum(excluding, na.rm = T) < 2) {
         showNotification(HTML("The residual threshold will remove all data from the residual series.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())
       } else {
         if (isTruthy(input$remove3D)) {
