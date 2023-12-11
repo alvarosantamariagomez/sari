@@ -5895,7 +5895,9 @@ server <- function(input,output,session) {
             }
           } else {
             disable("waveform")
-            updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
+            if (isTruthy(input$waveform)) {
+              updateCheckboxInput(session, inputId = "waveform", label = NULL, value = F)
+            }
             disable("correct_waveform")
             disable("runmle")
             disable("downloadAs")
