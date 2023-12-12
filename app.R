@@ -4009,9 +4009,9 @@ server <- function(input,output,session) {
     intervals <- as.data.frame(table(diff(trans$x)), stringsAsFactors = F)
     # min_period <- 2*gcd(trans$x[-1]*10^info$decimalsx-trans$x[1]*10^info$decimalsx)/10^info$decimalsx #following Eyer and Bartholdi 1999
     min_period <- 2*as.numeric(sort(intervals$Var1[intervals$Freq/(length(trans$x) - 1) >= 0.5], decreasing = T)[1]) #approximate the shortest period by twice the shortest interval repeating itself at least 50% of the time
-    min_period <- as.numeric(sprintf("%.*f", info$decimalsx, min_period))
-
-    if (!isTruthy(min_period)) {
+    if (isTruthy(min_period)) {
+      min_period <- as.numeric(sprintf("%.*f", info$decimalsx, min_period))
+    } else {
       min_period <- as.numeric(sprintf("%.*f", info$decimalsx, 2*info$sampling_regular))
     }
     # Setting longest period
