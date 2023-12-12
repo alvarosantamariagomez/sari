@@ -11308,7 +11308,7 @@ server <- function(input,output,session) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
         max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
-        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', format(trans$LScoefs[i,1], nsmall = max_decimals, digits = max_decimals), '+/-', format(trans$LScoefs[i,2], nsmall = max_decimals, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', format(trans$LScoefs[i,1], nsmall = max_decimals, digits = 0), '+/-', format(trans$LScoefs[i,2], nsmall = max_decimals, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
@@ -11391,37 +11391,37 @@ server <- function(input,output,session) {
     }
     if ((input$fitType == 1 || input$fitType == 2) && length(input$model) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-        OutPut$df$Model <- format(trans$mod - trans$pattern,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F)
+        OutPut$df$Model <- format(trans$mod - trans$pattern,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
         OutPut$df$Residuals <- format(trans$res + trans$pattern,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
       } else {
-        OutPut$df$Model <- format(trans$mod,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F)
+        OutPut$df$Model <- format(trans$mod,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
         OutPut$df$Residuals <- format(trans$res,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
       }
     }
     if (input$fitType == 1 && length(input$model) > 0) {
       if (length(trans$moderror) > 0) {
-        OutPut$df$Sigma.Model <- format(trans$moderror,nsmall = info$decimalsy, digits = 1, trim = F,scientific = F)
+        OutPut$df$Sigma.Model <- format(trans$moderror,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
       }
       if (length(trans$reserror) > 0) {
-        OutPut$df$Sigma.Residuals <- format(trans$reserror,nsmall = info$decimalsy, digits = 1, trim = F,scientific = F)
+        OutPut$df$Sigma.Residuals <- format(trans$reserror,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
       }
     }
     if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
-        OutPut$df$Smooth <- format(trans$filter - trans$pattern, nsmall = info$decimalsy, digits = info$decimalsy, trim = F, scientific = F)
-        OutPut$df$Smooth.Residuals <- format(trans$filterRes + trans$pattern, nsmall = info$decimalsy, digits = info$decimalsy, trim = F, scientific = F)
+        OutPut$df$Smooth <- format(trans$filter - trans$pattern, nsmall = info$decimalsy, digits = 0, trim = F, scientific = F)
+        OutPut$df$Smooth.Residuals <- format(trans$filterRes + trans$pattern, nsmall = info$decimalsy, digits = 0, trim = F, scientific = F)
       } else {
-        OutPut$df$Smooth <- format(trans$filter, nsmall = info$decimalsy, digits = info$decimalsy, trim = F, scientific = F)
-        OutPut$df$Smooth.Residuals <- format(trans$filterRes, nsmall = info$decimalsy, digits = info$decimalsy, trim = F, scientific = F)
+        OutPut$df$Smooth <- format(trans$filter, nsmall = info$decimalsy, digits = 0, trim = F, scientific = F)
+        OutPut$df$Smooth.Residuals <- format(trans$filterRes, nsmall = info$decimalsy, digits = 0, trim = F, scientific = F)
       }
     }
     if (input$fitType == 2) {
-      OutPut$df <- cbind(OutPut$df,format(trans$kalman,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F))
+      OutPut$df <- cbind(OutPut$df,format(trans$kalman,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F))
       colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
-      OutPut$df <- cbind(OutPut$df,format(trans$kalman_unc,nsmall = info$decimalsy, digits = info$decimalsy, trim = F,scientific = F))
+      OutPut$df <- cbind(OutPut$df,format(trans$kalman_unc,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F))
     }
     if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-      OutPut$df$Waveform <- format(trans$pattern, nsmall = info$decimalsy, digits = info$decimalsy, trim = F, scientific = F)
+      OutPut$df$Waveform <- format(trans$pattern, nsmall = info$decimalsy, digits = 0, trim = F, scientific = F)
     }
     if (isTruthy(input$add_excluded)) {
       if (isTruthy(input$sigmas)) {
