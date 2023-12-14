@@ -7116,7 +7116,7 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   # Observe format 1D ####
-  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator), {
+  observeEvent(c(inputs$epoch, inputs$variable, inputs$errorBar, input$separator), {
     req(db1[[info$db1]])
     trans$x <- NULL
     trans$y <- NULL
@@ -7147,6 +7147,11 @@ server <- function(input,output,session) {
     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+  }, priority = 6)
+  observeEvent(c(inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2), {
+    req(db2[[info$db2]])
+    if (messages > 4) cat(file = stderr(), "From: observe format 1D secondary\n")
+    digest(2)
   }, priority = 6)
 
   # Observe averaging ####
@@ -7354,6 +7359,7 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "format2", selected = 1)
       info$format2 <- 1
     }
+    req(input$optionSecondary > 0)
     if (messages > 4) cat(file = stderr(), "From: observe secondary file\n")
     digest(2)
   }, priority = 8)
@@ -7372,6 +7378,11 @@ server <- function(input,output,session) {
   }, priority = 6)
   
   observeEvent(input$optionSecondary, {
+    req(db1[[info$db1]])
+    if (!isTruthy(db1[[info$db2]])) {
+      if (messages > 4) cat(file = stderr(), "From: observe secondary option (2)\n")
+      digest(2)
+    }
     req(db2[[info$db2]])
     removeNotification("in_common")
     if (messages > 0) {
