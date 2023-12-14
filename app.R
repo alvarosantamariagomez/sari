@@ -7121,6 +7121,10 @@ server <- function(input,output,session) {
     trans$x <- NULL
     trans$y <- NULL
     trans$sy <- NULL
+    if (isTruthy(inputs$long_period)) {
+      trans$fs <- NULL
+      updateTextInput(session, "long_period", value = "")
+    }
     if (messages > 4) cat(file = stderr(), "From: observe format 1D\n")
     digest(1)
     if (input$fitType == 2) {
