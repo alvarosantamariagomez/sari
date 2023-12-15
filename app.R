@@ -7383,7 +7383,7 @@ server <- function(input,output,session) {
   
   observeEvent(input$optionSecondary, {
     req(db1[[info$db1]])
-    if (!isTruthy(db1[[info$db2]])) {
+    if (!isTruthy(db2[[info$db2]])) {
       if (messages > 4) cat(file = stderr(), "From: observe secondary option (2)\n")
       digest(2)
     }
