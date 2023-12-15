@@ -4395,7 +4395,6 @@ server <- function(input,output,session) {
         } else {
           num_epochs <- 500
         }
-        num_epocs <-
         loc <- info$rangex/num_epochs
         if (loc < info$sampling) {
           loc <- info$sampling
