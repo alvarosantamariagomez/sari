@@ -7478,9 +7478,13 @@ server <- function(input,output,session) {
     } else if (grepl("pbo|.pos", file$secondary$name)) {
       updateRadioButtons(inputId = "format2", selected = 2)
       info$format2 <- 2
-    } else {
+    } else if (as.numeric(input$format) < 4) {
       updateRadioButtons(inputId = "format2", selected = 1)
       info$format2 <- 1
+    } else {
+      updateRadioButtons(inputId = "format2", selected = 4)
+      info$format2 <- 4
+      disable("format2")
     }
     req(input$optionSecondary > 0)
     if (messages > 4) cat(file = stderr(), "From: observe secondary file\n")
