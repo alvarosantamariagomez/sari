@@ -1911,11 +1911,13 @@ server <- function(input,output,session) {
   
   # Catch refreshed page
   shinyjs::runjs("
-    const pageAccessedByReload = ( (window.performance.navigation && window.performance.navigation.type === 1) || window.performance
-        .getEntriesByType('navigation')
-        .map((nav) => nav.type)
-        .includes('reload'));
-    //alert(pageAccessedByReload);
+    var pageAccessedByReload = 'false';
+    var startTime = 0;
+    pageAccessedByReload = window.performance.getEntriesByType('navigation')[0].type.includes('reload');
+    startTime = window.performance.getEntriesByType('navigation')[0].responseStart;
+    if (pageAccessedByReload === true && startTime > 2000) {
+      pageAccessedByReload = 'false';
+    }
     Shiny.onInputChange('refreshed', pageAccessedByReload);
   ")
 
@@ -2045,7 +2047,7 @@ server <- function(input,output,session) {
             if (messages > 0) cat(file = stderr(), "Page refreshed", "\n")
             showModal(modalDialog(
               title = tags$h3("Dear SARI user"),
-              HTML("The interface has been refreshed.<br><br>If this was due to an error, please consider giving feedback to the author.<br><br>Otherwise, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section)."),
+              HTML("The SARI webpage has been reloaded.<br><br>If this was due to an error, please consider giving feedback to the author.<br><br>Otherwise, if the session is still connected to the server, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section)."),
               size = "m",
               easyClose = T,
               fade = T
