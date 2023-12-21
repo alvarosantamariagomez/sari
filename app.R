@@ -9286,7 +9286,7 @@ server <- function(input,output,session) {
             info$errorbars <- F
           }
           # get different time units
-          if (isTruthy(extracted)) {
+          if (isTruthy(extracted) && all(is.numeric(extracted))) {
             if (server == "JPL") {
               if (series == 1) {
                 info$tunits.known1 <- T
