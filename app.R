@@ -9441,49 +9441,53 @@ server <- function(input,output,session) {
         if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
           if (epoch <= columns && variable <= columns) {
             extracted <- data.frame(y1 = tableAll[[variable]])
-            # ISO 8601 dates
-            if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[[epoch]], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
-              if (series == 1) {
-                info$tunits.known1 <- T
-              } else if (series == 2) {
-                info$tunits.known2 <- T
-              }
-              extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[[epoch]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              extracted$x2 <- mjd2week(extracted$x1)
-              extracted$x3 <- mjd2year(extracted$x1)
-            } else {
-              # assuming the time units set by the user are good
-              if (input$tunits == 1) {
-                extracted$x1 <- tableAll[[epoch]]
+            if (all(is.numeric(extracted))) {
+              # ISO 8601 dates
+              if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[[epoch]], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
+                if (series == 1) {
+                  info$tunits.known1 <- T
+                } else if (series == 2) {
+                  info$tunits.known2 <- T
+                }
+                extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[[epoch]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
-              } else if (input$tunits == 2) {
-                extracted$x2 <- tableAll[[epoch]]
-                extracted$x1 <- week2mjd(extracted$x2)
-                extracted$x3 <- week2year(extracted$x2)
-              } else if (input$tunits == 3) {
-                extracted$x3 <- tableAll[[epoch]]
-                extracted$x1 <- year2mjd(extracted$x3)
-                extracted$x2 <- year2week(extracted$x3)
+              } else {
+                # assuming the time units set by the user are good
+                if (input$tunits == 1) {
+                  extracted$x1 <- tableAll[[epoch]]
+                  extracted$x2 <- mjd2week(extracted$x1)
+                  extracted$x3 <- mjd2year(extracted$x1)
+                } else if (input$tunits == 2) {
+                  extracted$x2 <- tableAll[[epoch]]
+                  extracted$x1 <- week2mjd(extracted$x2)
+                  extracted$x3 <- week2year(extracted$x2)
+                } else if (input$tunits == 3) {
+                  extracted$x3 <- tableAll[[epoch]]
+                  extracted$x1 <- year2mjd(extracted$x3)
+                  extracted$x2 <- year2week(extracted$x3)
+                }
               }
-            }
-            if (columns > 2) {
-              if (input$sigmas == T) {
-                if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
-                  extracted$sy1 <- tableAll[[errorBar]]
+              if (columns > 2) {
+                if (input$sigmas == T) {
+                  if (!is.na(errorBar) && is.numeric(errorBar) && errorBar > 0 && errorBar <= columns && errorBar != epoch && errorBar != variable) {
+                    extracted$sy1 <- tableAll[[errorBar]]
+                  } else {
+                    showNotification(HTML("Invalid column number for the series error bars.<br>Provide a valid column number or uncheck the error bars option."), action = NULL, duration = 10, closeButton = T, id = "no_error_bars", type = "error", session = getDefaultReactiveDomain())
+                    req(info$stop)
+                  }
                 } else {
-                  showNotification(HTML("Invalid column number for the series error bars.<br>Provide a valid column number or uncheck the error bars option."), action = NULL, duration = 10, closeButton = T, id = "no_error_bars", type = "error", session = getDefaultReactiveDomain())
-                  req(info$stop)
+                  extracted$sy1 <- rep(1,length(extracted$y1))
                 }
               } else {
                 extracted$sy1 <- rep(1,length(extracted$y1))
+                info$errorbars <- F
+              }
+              if (isTruthy(extracted)) {
+                extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
               }
             } else {
-              extracted$sy1 <- rep(1,length(extracted$y1))
-              info$errorbars <- F
-            }
-            if (isTruthy(extracted)) {
-              extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+              extracted <- NULL
             }
           }
         }
