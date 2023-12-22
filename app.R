@@ -6135,7 +6135,7 @@ server <- function(input,output,session) {
               }
             }
             if (isTruthy(down) && down == 0) {
-              if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$datapath, "\n")
+              if (messages > 0) cat(file = stderr(), "Primary series downloaded in ", file$primary$datapath, "\n")
               # update format for primary series
               shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
               # download associated logfile
@@ -6187,7 +6187,7 @@ server <- function(input,output,session) {
                     }
                   }
                   if (isTruthy(down) && down == 0) {
-                    if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2, " downloaded in ", file$secondary$datapath, "\n")
+                    if (messages > 0) cat(file = stderr(), "Secondary series downloaded in ", file$secondary$datapath, "\n")
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
@@ -6349,7 +6349,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(down) && down == 0) {
           shinyjs::delay(1500, {
-            if (messages > 0) cat(file = stderr(), "Primary series ", url$file, " downloaded in ", file$primary$datapath, "\n")
+            if (messages > 0) cat(file = stderr(), "Primary series downloaded in ", file$primary$datapath, "\n")
             if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
             shinyjs::delay(1500, {
@@ -6431,7 +6431,7 @@ server <- function(input,output,session) {
           }
           if (isTruthy(down) && down == 0) {
             secondary_files <- secondary_files + 1
-            if (messages > 0) cat(file = stderr(), "Secondary series ", url$file2[f], " downloaded in ", file$secondary$datapath[f], "\n")
+            if (messages > 0) cat(file = stderr(), "Secondary series downloaded in ", file$secondary$datapath[f], "\n")
           } else {
             file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
             removeNotification(paste0("parsing_url2_",f))
@@ -7120,61 +7120,15 @@ server <- function(input,output,session) {
       info$tab <- input$tab
       info$format <- input$format
       info$format2 <- input$format2
-      if (isTruthy(file$sitelog)) {
-        sitelog <- file$sitelog$name
-      } else if (isTruthy(file$primary$logfile)) {
-        sitelog <- basename(url$logfile)
-      } else if (isTruthy(file$secondary$logfile)) {
-        sitelog <- basename(url$logfile2)
-      } else {
-        sitelog <- NULL
-      }
-      if (isTruthy(file$soln)) {
-        soln <- file$soln$name
-      } else {
-        soln <- NULL
-      }
-      if (isTruthy(file$custom)) {
-        custom <- file$custom$name
-      } else {
-        custom <- NULL
-      }
-      if (messages > 0) cat(file = stderr(), "CHANGE file : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
-                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                            custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
-                            "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
+      printInfo("CHANGE")
     }
   }, priority = 7)
-  observeEvent(c(input$tunits, input$sigmas, file$secondary, input$optionSecondary, input$log, input$sinfo, file$soln, file$custom, inputs$step), {
+  observeEvent(c(input$tunits, input$sunits, input$sigmas, file$secondary, input$optionSecondary, input$log, input$sinfo, file$soln, file$custom, inputs$step, input$separator, inputs$epoch, inputs$variable, inputs$errorBar, inputs$scaleFactor, inputs$step2, input$separator2, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$fullSeries, input$sameScale, input$same_axis, input$ne), {
     if (input$tab == "4") {
       if (messages > 0) cat(file = stderr(), "Showing help file", "\n")
     } else {
       req(db1[[info$db1]])
-      if (isTruthy(file$sitelog)) {
-        sitelog <- file$sitelog$name
-      } else if (isTruthy(file$primary$logfile)) {
-        sitelog <- basename(url$logfile)
-      } else if (isTruthy(file$secondary$logfile)) {
-        sitelog <- basename(url$logfile2)
-      } else {
-        sitelog <- NULL
-      }
-      if (isTruthy(file$soln)) {
-        soln <- file$soln$name
-      } else {
-        soln <- NULL
-      }
-      if (isTruthy(file$custom)) {
-        custom <- file$custom$name
-      } else {
-        custom <- NULL
-      }
-      if (messages > 0) cat(file = stderr(), "CHANGE file : ", file$primary$name,"   Format: ",input$format,"   Component: ", input$tab,
-                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                            custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary,
-                            "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
+      printInfo("CHANGE")
     }
   }, priority = 7)
 
@@ -9010,30 +8964,7 @@ server <- function(input,output,session) {
           NULL
         })
       }
-      if (isTruthy(file$sitelog)) {
-        sitelog <- file$sitelog$name
-      } else if (isTruthy(file$primary$logfile)) {
-        sitelog <- basename(url$logfile)
-      } else if (isTruthy(file$secondary$logfile)) {
-        sitelog <- basename(url$logfile2)
-      } else {
-        sitelog <- NULL
-      }
-      if (isTruthy(file$soln)) {
-        soln <- file$soln$name
-      } else {
-        soln <- NULL
-      }
-      if (isTruthy(file$custom)) {
-        custom <- file$custom$name
-      } else {
-        custom <- NULL
-      }
-      if (messages > 0) cat(file = stderr(), "PLOT   file : ", fileName,"   Format: ",info$format,"   Component: ", input$tab,
-                            "   Units: ", input$tunits,"   Sigmas: ",input$sigmas,"   Average: ", inputs$step,"   Sitelog: ",
-                            sitelog, "   station.info: ", input$sinfo$name,"   soln: ", soln,"   custom: ",
-                            custom, "   Secondary: ", file$secondary$name,"   Option: ", input$optionSecondary, 
-                            "   Scale: ", inputs$scaleFactor, "   Average: ", inputs$step2, "\n")
+      printInfo("PLOT  ")
       # Setting column separation
       if (input$separator == "1") {
         sep <- ""
@@ -12871,6 +12802,63 @@ server <- function(input,output,session) {
   #
   year2week <- function(x) {
     return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
+  }
+  #
+  printInfo <- function(label) {
+    if (isTruthy(file$sitelog) || isTruthy(file$primary$logfile) || isTruthy(file$secondary$logfile)) {
+      sitelog <- T
+    } else {
+      sitelog <- F
+    }
+    if (isTruthy(file$soln)) {
+      soln <- T
+    } else {
+      soln <- F
+    }
+    if (isTruthy(file$sinfo)) {
+      sinfo <- T
+    } else {
+      sinfo <- F
+    }
+    if (isTruthy(file$custom)) {
+      custom <- T
+    } else {
+      custom <- F
+    }
+    if (isTruthy(file$secondary$name)) {
+      secondary <- T
+    } else {
+      secondary <- F
+    }
+    if (messages > 0) cat(file = stderr(), label,
+                          "   Format:",info$format,
+                          "   Component:", input$tab,
+                          "   T.units:", input$tunits,
+                          "   S.units:", input$sunits,
+                          "   Sigmas:",input$sigmas,
+                          "   Average1:", inputs$step,
+                          "   Separator:", input$separator,
+                          "   Epoch:", input$epoch,
+                          "   Variable:", input$variable,
+                          "   ErrorBar:", input$errorBar,
+                          "   Sitelog:", sitelog,
+                          "   station.info:", sinfo,
+                          "   soln:", soln,
+                          "   custom:", custom,
+                          "   Secondary:", secondary,
+                          "   Format2:", input$format2,
+                          "   Option:", input$optionSecondary,
+                          "   Scale:", inputs$scaleFactor,
+                          "   Average2:", inputs$step2,
+                          "   Separator2:", input$separator2,
+                          "   Full series:", input$fullSeries,
+                          "   Same scale:", input$sameScale,
+                          "   Same axis:", input$same_axis,
+                          "   N/E:", input$ne,
+                          "   Epoch2:", input$epoch2,
+                          "   Variable2:", input$variable2,
+                          "   ErrorBar2:", input$errorBar2,
+                          "\n")
   }
 }
 
