@@ -9286,7 +9286,7 @@ server <- function(input,output,session) {
             info$errorbars <- F
           }
           # get different time units
-          if (isTruthy(extracted) && all(is.numeric(extracted))) {
+          if (isTruthy(extracted) && all(sapply(extracted, is.numeric))) {
             if (server == "JPL") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -9441,7 +9441,7 @@ server <- function(input,output,session) {
         if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
           if (epoch <= columns && variable <= columns) {
             extracted <- data.frame(y1 = tableAll[[variable]])
-            if (all(is.numeric(extracted))) {
+            if (all(sapply(extracted, is.numeric))) {
               # ISO 8601 dates
               if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[[epoch]], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
                 if (series == 1) {
