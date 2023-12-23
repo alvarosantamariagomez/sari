@@ -8569,6 +8569,7 @@ server <- function(input,output,session) {
     trans$verif <- NULL
     trans$pattern <- NULL
     trans$unc <- NULL
+    trans$spectra_old <- NULL
     info$points <- NULL
     info$log <- NULL
     info$rangex <- NULL
