@@ -4397,8 +4397,9 @@ server <- function(input,output,session) {
           #   text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[c])
           # }
           lombx <- c(inputs$long_period,inputs$short_period)
-          start <- median(tail(p, n = as.integer(length(p)/100)))
-          lomby_flicker <- c(start*(inputs$long_period/inputs$short_period),start)
+          longest <- ifelse(length(p) > 200, as.integer(length(p)/100), 10)
+          start <- median(head(p, n = longest))
+          lomby_flicker <- c(start,start/(inputs$long_period/inputs$short_period))
           lines(lombx,lomby_flicker, col = SARIcolors[6], lty = 2, lwd = 3)
           text(inputs$long_period/10,min(p),"Slope = -1",col = SARIcolors[6])
         }
@@ -4885,11 +4886,11 @@ server <- function(input,output,session) {
                          if (info$white) {
                            wh <- var(res)/sqrt(component)
                            apriori <- wh
-                           typsize <- 1 # sort of relative precision of the a priori noise value
+                           typsize <- 2 # sort of relative precision of the a priori noise value
                            if (isTruthy(info$flicker)) {
                              fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                              apriori <- c(apriori, fl)
-                             typsize <- c(typsize, 1)
+                             typsize <- c(typsize, 2)
                              if (isTruthy(info$randomw)) {
                                rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
                                apriori <- c(apriori, rw)
@@ -4917,9 +4918,10 @@ server <- function(input,output,session) {
                            typsize <- 1
                          }
                          setProgress(0.25)
-                         apriori <- log(apriori*scaling^2)
-                         upper <- apriori + log(4) # max expected variances for constrained method
+                         apriori <- apriori*scaling^2
+                         upper <- log(apriori + (20*scaling)^2) # max expected variances for constrained method
                          lower <- rep(-9,length(apriori)) # min expected variances for constrained method
+                         apriori <- log(apriori)
                          if (isTruthy(info$powerl)) {
                            apriori <- c(apriori, -4) # a priori spectral index (k - 3)
                            typsize <- c(typsize, 1) # typical spectral index (k - 3)
@@ -12679,23 +12681,20 @@ server <- function(input,output,session) {
       a[i] <- (-k/2 + i - 1 - 1)/(i - 1)
       Delta[i] <- Delta[i - 1] * a[i]
     }
-    # Z <- toeplitz(Delta[trans$gaps])
     Z <- toeplitz(Delta[gaps])
     Z[upper.tri(Z)] <- 0
-    # Z <- Z * info$sampling^(-k/4) # Variance scaling from Williams 2003, Gobron 2020 uses info$sampling^(-k/2)
-    Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003, Gobron 2020 uses info$sampling^(-k/2)
+    sampling <- 1 #no scaling
+    # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
+    # Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     if (deriv) {
       u <- 0 # u[1]
       for (i in 2:n) {
         u[i] <- -1/(2*(i - 1))*Delta[i - 1] + a[i]*u[i - 1]
         # u[i] <- -1/(2*i)*Delta[i - 1] + a[i]*u[i - 1]
       }
-      # U <- toeplitz(u[trans$gaps])
       U <- toeplitz(u[gaps])
       U[upper.tri(U)] <- 0
-      # derivZ <- info$sampling^(-k/2)*(-0.5*log(info$sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
       derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
-      # derivZ <- derivZ * info$sampling^(-k/4) # Variance scaling from Williams 2003
       derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
       return(list(tcrossprod(Z), derivZ))
     } else {
