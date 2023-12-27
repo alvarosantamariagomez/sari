@@ -4375,10 +4375,10 @@ server <- function(input,output,session) {
             crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
             type_crossover <- "Power-law / White"
           }
-          if (isTruthy(input$spectrumResiduals)) {
-            var <- var(trans$res)
-          } else if (isTruthy(input$spectrumFilterRes)) {
+          if (isTruthy(input$spectrumFilterRes)) {
             var <- var(trans$filterRes)
+          } else if (isTruthy(input$spectrumResiduals)) {
+            var <- var(trans$res)
           }
           psd <- psd*var/sum(psd)
           lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
@@ -4714,10 +4714,10 @@ server <- function(input,output,session) {
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
       if (messages > 0) cat(file = stderr(), "MLE fit start", "\n")
       trans$noise <- vector(length = 11)
-      if (length(trans$res) > 0) {
-        res <- trans$res
-      } else if (length(trans$filterRes) > 0) {
+      if (length(trans$filterRes) > 0) {
         res <- trans$filterRes
+      } else if (length(trans$res) > 0) {
+        res <- trans$res
       }
       vari <- var(res)
       n <- length(res)
