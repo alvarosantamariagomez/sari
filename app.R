@@ -342,7 +342,7 @@ tabContents <- function(tabNum) {
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
-options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+# options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
@@ -366,7 +366,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                 
                 # tracker analytics
                 # tags$head(includeScript("matomo.js")),
-                # tags$head(includeHTML(("google-analytics.html"))),
                 
                 # Getting the input elements that change
                 tags$script(
@@ -4376,7 +4375,12 @@ server <- function(input,output,session) {
             crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
             type_crossover <- "Power-law / White"
           }
-          psd <- psd*trans$var/sum(psd)
+          if (isTruthy(input$spectrumResiduals)) {
+            var <- var(trans$res)
+          } else if (isTruthy(input$spectrumFilterRes)) {
+            var <- var(trans$filterRes)
+          }
+          psd <- psd*var/sum(psd)
           lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
           output$crossover <- renderUI({
             if (!is.null(trans$noise) && length(crossover) > 0) {
