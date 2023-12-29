@@ -990,7 +990,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         condition = "input.euler == true",
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2014", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T),
+                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2020", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T),
                                                                                  div(style = "margin-top: -1em", uiOutput("pmm"))
                                                                           ),
                                                                           column(6,
@@ -2177,8 +2177,8 @@ server <- function(input,output,session) {
 
   output$pmm <- renderUI({
     if (isTruthy(input$plateModel)) {
-      if (input$plateModel == "ITRF2014") {
-        model <- "ITRF2014_PMM.txt"
+      if (input$plateModel == "ITRF2020") {
+        model <- "ITRF2020-PMM.dat"
       } else if (input$plateModel == "NNR-MORVEL56") {
         model <- "NNR-MORVEL56.txt"
       } else if (input$plateModel == "NNR-GSRM") {
@@ -6495,8 +6495,8 @@ server <- function(input,output,session) {
   observeEvent(c(input$plateModel), {
     req(db1[[info$db1]], input$euler)
     if (messages > 0) cat(file = stderr(), "Plate model:", input$plateModel, "\n")
-    if (input$plateModel == "ITRF2014") {
-      info$plateFile <- "www/ITRF2014_PMM.txt"
+    if (input$plateModel == "ITRF2020") {
+      info$plateFile <- "www/ITRF2020-PMM.dat"
       updateSelectizeInput(session, inputId = "plate", choices = read.table(file = info$plateFile, header = F, skip = 5)$V5, selected = "")
     } else if (input$plateModel == "NNR-MORVEL56") {
       info$plateFile <- "www/NNR-MORVEL56.txt"
@@ -6522,7 +6522,7 @@ server <- function(input,output,session) {
         ) {
           updateRadioButtons(session, inputId = "eulerType", selected = 1)
         }
-        if (input$plateModel == "ITRF2014") {
+        if (input$plateModel == "ITRF2020") {
           elements <- unlist(strsplit(record, "\\s+", fixed = F, perl = T, useBytes = F))[c(3,4,5,2)]
           updateRadioButtons(session, inputId = "pole_coordinates", selected = 1)
           inputs$pole_x <- inputs$pole_y <- inputs$pole_z <- inputs$pole_lat <- inputs$pole_lon <- inputs$pole_rot <- NULL
@@ -6741,6 +6741,10 @@ server <- function(input,output,session) {
           req(info$stop)
         }
         plateCartesian <- cross(poleCartesian,stationCartesian)
+        # Applying the ORB correction
+        if (input$plateModel == "ITRF2020") {
+          plateCartesian <- plateCartesian + c(0.37, 0.35, 0.74)*scaling/1000
+        }
         # rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #NEU
         rotation <- matrix(data = c(-1*sin(stationGeo[2]),-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),0,cos(stationGeo[1]),-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #ENU
         plate_neu <- c(rotation %*% plateCartesian)
@@ -6749,6 +6753,8 @@ server <- function(input,output,session) {
         } else if ((input$format == 1 && input$neuenu == 2)) { #NEU
           trans$plate <- c(plate_neu[2],plate_neu[1],plate_neu[3])
         }
+        # Forcing the Up velocity to zero, especially if an ORB was corrected
+        trans$plate[3] <- 0
         if (input$tunits == 1) {
           trans$plate <- trans$plate/daysInYear
         } else if (input$tunits == 2) {
@@ -6758,6 +6764,9 @@ server <- function(input,output,session) {
           stationCartesian2 <- c(inputs$station_x2,inputs$station_y2,inputs$station_z2)
           stationGeo2 <- c(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180)
           plateCartesian2 <- cross(poleCartesian,stationCartesian2)
+          if (input$plateModel == "ITRF2020") {
+            plateCartesian2 <- plateCartesian2 + c(0.37, 0.35, 0.74)*scaling/1000
+          }
           rotation2 <- matrix(data = c(-1*sin(stationGeo2[2]),-1*sin(stationGeo2[1])*cos(stationGeo2[2]),-1*cos(stationGeo2[1])*cos(stationGeo2[2]),cos(stationGeo2[2]),-1*sin(stationGeo2[1])*sin(stationGeo2[2]),-1*cos(stationGeo2[1])*sin(stationGeo2[2]),0,cos(stationGeo2[1]),-1*sin(stationGeo2[1])), nrow = 3, ncol = 3) #ENU
           plate_neu2 <- c(rotation2 %*% plateCartesian2)
           if ((input$format2 == 1 && input$neuenu == 1) || input$format2 == 2 || input$format2 == 3 || input$format2 == 4) { #ENU
@@ -6765,6 +6774,7 @@ server <- function(input,output,session) {
           } else if ((input$format2 == 1 && input$neuenu == 2)) { #NEU
             trans$plate2 <- c(plate_neu2[2],plate_neu2[1],plate_neu2[3])
           }
+          trans$plate2[3] <- 0
           if (input$tunits == 1) {
             trans$plate2 <- trans$plate2/daysInYear
           } else if (input$tunits == 2) {

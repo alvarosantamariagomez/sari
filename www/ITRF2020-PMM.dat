@@ -1,0 +1,24 @@
+Table S1: ITRF2020-PMM rotation pole cartesian components in DEG/My.
+--------------------------------------------------------------------
+   plate  omega_x   omega_y   omega_z
+          -----------DEG/My----------
+--------------------------------------------------------------------
+   AMUR   -0.0364    -0.1532     0.2325    "Amurian"
+   ANTA   -0.0746    -0.0866     0.1882    "Antarctica"
+   ARAB    0.3135    -0.0406     0.3994    "Arabia"
+   AUST    0.4132     0.3265     0.3398    "Australia"
+   CARB    0.0576    -0.3949     0.2017    "Caribbean"
+   EURA   -0.0237    -0.1442     0.2091    "Eurasia"
+   INDI    0.3159     0.0037     0.4010    "India"
+   NAZC   -0.0907    -0.4336     0.4459    "Nazca"
+   NOAM    0.0126    -0.1849    -0.0272    "North America"
+   NUBI    0.0250    -0.1625     0.1991    "Nubia"
+   PCFC   -0.1122     0.2836    -0.5984    "Pacific"
+   SOAM   -0.0725    -0.0784    -0.0437    "South America"
+   SOMA   -0.0225    -0.1997     0.2401    "Somalia"
+
+# ORB Components (mm/yr):
+# TX = 0.37
+# TY = 0.35
+# TZ = 0.74
+
