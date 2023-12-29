@@ -342,7 +342,7 @@ tabContents <- function(tabNum) {
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
-# options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
@@ -4858,6 +4858,7 @@ server <- function(input,output,session) {
                            grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
                            grad <- c(grad, 0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
                          }
+                         if (messages > 2) cat(file = stderr(), "Grads = ", grad/-1, "\n")
                          grad/-1
                        }
                        
@@ -4890,11 +4891,11 @@ server <- function(input,output,session) {
                          if (info$white) {
                            wh <- var(res)/sqrt(component)
                            apriori <- wh
-                           typsize <- 2 # sort of relative precision of the a priori noise value
+                           typsize <- 3 # scale applied to the step size defined in the optimization run (which should be 1)
                            if (isTruthy(info$flicker)) {
                              fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                              apriori <- c(apriori, fl)
-                             typsize <- c(typsize, 2)
+                             typsize <- c(typsize, 3)
                              if (isTruthy(info$randomw)) {
                                rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
                                apriori <- c(apriori, rw)
@@ -4907,30 +4908,29 @@ server <- function(input,output,session) {
                            } else if (isTruthy(info$powerl)) {
                              pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                              apriori <- c(apriori, pl)
-                             typsize <- c(typsize, 1)
+                             typsize <- c(typsize, 3)
                            }
                          } else if (info$flicker) {
                            fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                            apriori <- c(apriori, fl)
-                           typsize <- 1
+                           typsize <- 3
                            rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
                            apriori <- c(apriori, rw)
                            typsize <- c(typsize, 20)
                          } else if (isTruthy(info$powerl)) {
                            pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                            apriori <- c(apriori, pl)
-                           typsize <- 1
+                           typsize <- 3
                          }
                          setProgress(0.25)
-                         apriori <- apriori*scaling^2
-                         upper <- log(apriori + (20*scaling)^2) # max expected variances for constrained method
-                         lower <- rep(-9,length(apriori)) # min expected variances for constrained method
-                         apriori <- log(apriori)
+                         apriori <- log(apriori*scaling^2)
+                         upper <- apriori + log(3)
+                         lower <- apriori - log(10)
                          if (isTruthy(info$powerl)) {
-                           apriori <- c(apriori, -4) # a priori spectral index (k - 3)
-                           typsize <- c(typsize, 1) # typical spectral index (k - 3)
-                           upper <- c(upper, -3) # max expected spectral index (k - 3)
-                           lower <- c(lower, -6) # min expected spectral index (k - 3)
+                           apriori <- c(apriori, -4) # a priori spectral index (= k - 3)
+                           typsize <- c(typsize, 1)
+                           upper <- c(upper, -3) # max expected spectral index (= k - 3)
+                           lower <- c(lower, -6) # min expected spectral index (= k - 3)
                          }
                          # creating non reactive variables for running on a cluster
                          white <- info$white
@@ -4946,7 +4946,7 @@ server <- function(input,output,session) {
                          # }
                          if (isTruthy(cl)) {
                            # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
-                           method = "L-BFGS-B"
+                           method <- "L-BFGS-B"
                            fitmle <- optimParallel(par = apriori,
                                                    fn = loglik_global,
                                                    gr = grad_global,
@@ -4960,7 +4960,7 @@ server <- function(input,output,session) {
                            stopCluster(cl)
                          } else { # standard 1 proc run
                            # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
-                           # method = "L-BFGS-B"
+                           # method <- "L-BFGS-B"
                            # fitmle <- optim(par = apriori,
                            #                 fn = loglik_global,
                            #                 gr = grad_global,
@@ -4971,28 +4971,33 @@ server <- function(input,output,session) {
                            #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
                            # )
                            
-                           # Nelder and Mead (1965) method: provides better likelihoods, but is slow as duck! (around 5 times)
-                           # method = "Nelder & Mead"
-                           # fitmle <- optim(par = apriori,
-                           #                 fn = loglik_global,
-                           #                 hessian = hessian,
-                           #                 control = list(fnscale = 1, pgtol = 2e1, reltol = 1e-4)
-                           # )
+                           if (isTruthy(info$powerl)) {
+                             # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
+                             method <- "Nelder & Mead"
+                             fitmle <- optim(par = apriori,
+                                             fn = loglik_global,
+                                             hessian = hessian,
+                                             control = list(fnscale = 1, reltol = 1e-2)
+                             )
                            
-                           # Quasi-Newton method as in optim, but seems to run faster
-                           method = "NLM"
-                           fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                         fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
-                                         stepmax = 1e1, steptol = 1e-2, iterlim = 100, check.analyticals = F
-                           )
-                           setProgress(0.75)
-                           if (fitmle$code < 4) { # transforming nlm results into optim format
-                             fitmle$convergence <- 0
-                             fitmle$value <- fitmle$minimum
-                             fitmle$par <- fitmle$estimate
-                             convergence <- 0
+                           } else {
+                             # Quasi-Newton method as in optim, but seems to run faster
+                             method <- "NLM"
+                             fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
+                                           fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
+                                           stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
+                             )
+                             setProgress(0.75)
+                             if (fitmle$code < 4) { # transforming nlm results into optim format
+                               fitmle$convergence <- 0
+                               fitmle$value <- fitmle$minimum
+                               fitmle$par <- fitmle$estimate
+                             }
                            }
                            
+                           if (fitmle$convergence == 0) {
+                             convergence <- 0
+                           }
                          }
                        }
                        Sys.sleep(1)
@@ -12687,7 +12692,7 @@ server <- function(input,output,session) {
     }
     Z <- toeplitz(Delta[gaps])
     Z[upper.tri(Z)] <- 0
-    sampling <- 1 #no scaling
+    sampling <- 1 # no variance scaling
     # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
     # Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     if (deriv) {
