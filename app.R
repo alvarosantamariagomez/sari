@@ -6104,7 +6104,7 @@ server <- function(input,output,session) {
         removeNotification("parsing_url1")
         removeNotification("parsing_url2")
         removeNotification("no_local")
-        if (messages > 0) cat(file = stderr(), "Analyzing URL", "\n")
+        if (messages > 0) cat(file = stderr(), "Analyzing URL from", toupper(query[['server']]), "&", toupper(query[['product']]), "\n")
         info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # info$local needs to be set here too
         if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
           removeNotification("bad_url")
@@ -6166,6 +6166,7 @@ server <- function(input,output,session) {
               }
               # processing secondary series
               if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
+                if (messages > 0) cat(file = stderr(), "Analyzing secondary URL from", toupper(query[['server2']]), "&", toupper(query[['product2']]), "\n")
                 url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],2))
                 if (isTruthy(url_info)) {
                   url$station2 <- url_info[1]
@@ -6349,6 +6350,7 @@ server <- function(input,output,session) {
         info$format <- url_info[4]
         url$logfile <- url_info[5]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+        if (messages > 0) cat(file = stderr(), "Downloading series from", toupper(input$server1), "&", toupper(input$product1), "\n")
         file$primary$datapath <- "www/fileSeries1.txt"
         down <- download(url$server, url$file, file$primary$datapath)
         if (file.exists(file$primary$datapath)) {
@@ -6432,6 +6434,7 @@ server <- function(input,output,session) {
             file$secondary$datapath <- "www/fileSeries2.txt"
           }
           showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = NULL, closeButton = T, id = paste0("parsing_url2_",f), type = "warning", session = getDefaultReactiveDomain())
+          if (messages > 0) cat(file = stderr(), "Downloading secondary series from", toupper(input$server2), "&", toupper(input$product2), "\n")
           down <- download(url$server2, url$file2[f], file$secondary$datapath[f])
           if (file.exists(file$secondary$datapath[f])) {
             downloaded <- readLines(file$secondary$datapath[f], n = 2, warn = F)
