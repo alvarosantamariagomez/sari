@@ -9527,13 +9527,15 @@ server <- function(input,output,session) {
           coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "JPL") {
-          tableAll <- read.table("www/JPL_database.txt")
-          coordinates <- tableAll[tableAll$V1 == station, c(2,3,4)]
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-          lat <- stationGeo[1] * 180/pi
-          lon <- stationGeo[2] * 180/pi
-          coordinates <- c(coordinates,lat,lon)
+          if (isTruthy(station)) {
+            tableAll <- read.table("www/JPL_database.txt")
+            coordinates <- tableAll[tableAll$V1 == station, c(2,3,4)]
+            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+            lat <- stationGeo[1] * 180/pi
+            lon <- stationGeo[2] * 180/pi
+            coordinates <- c(coordinates,lat,lon)
+          }
         } else if (server == "SIRGAS") {
           tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein, warn = F), value = T, fixed = T)[1], comment.char = "#"), silent = T)
           shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
