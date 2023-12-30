@@ -4353,8 +4353,10 @@ server <- function(input,output,session) {
             fl <- noise_var(trans$noise[3],-1)
             pfl <- fl * f_hz^-1
             psd <- sqrt(psd^2 + pfl^2)
-            crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
-            type_crossover <- "Flicker / White"
+            if (wn > 0) {
+              crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
+              type_crossover <- "Flicker / White"
+            }
             if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
               rw <- noise_var(trans$noise[5],-2)
               prw <- rw * f_hz^-2
@@ -4366,14 +4368,18 @@ server <- function(input,output,session) {
             rw <- noise_var(trans$noise[5],-2)
             prw <- rw * f_hz^-2
             psd <- sqrt(psd^2 + prw^2)
-            crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
-            type_crossover <- "Random walk / White"
+            if (wn > 0) {
+              crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
+              type_crossover <- "Random walk / White"
+            }
           } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
             pl <- noise_var(trans$noise[7],trans$noise[9])
             ppl <- pl * f_hz^trans$noise[9]
             psd <- sqrt(psd^2 + ppl^2)
-            crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
-            type_crossover <- "Power-law / White"
+            if (wn > 0) {
+              crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
+              type_crossover <- "Power-law / White"
+            }
           }
           if (isTruthy(input$spectrumFilterRes)) {
             var <- var(trans$filterRes)
@@ -5222,7 +5228,7 @@ server <- function(input,output,session) {
           })
         } else {
           trans$mle <- NULL
-          showNotification(HTML("MLE optimization did not converge.<br>The model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+          showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
         }
       }
       if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
