@@ -1,5 +1,39 @@
 # **SARI changelog**
 
+# enero 2024 [2024.01]
+
+### Fixed
+- reading a KF model from very old SARI files
+- showing the process noise crossover period only when necessary
+- correcting the variance scale of the noise power spectrum when different spectra are computed
+- changing the secondary series shown when uploading new secondary series files
+- improving the warning on screen when the page is reloaded and a remote SARI instance is being initiated
+- updating the time axis of the series when the time units change or points are removed permanently
+- checking the series units before transforming lat/lon into XYZ coordinates
+- correcting the default number of epochs of the wavelet
+- removing the max/min periods of the periodogram when changing the column of the epochs in a 1D series
+
+### Changed
+- updating the ITRF plate model from ITRF2014 to ITRF2020
+- setting the priority of the model resiudals over the smoother residuals
+- correcting the number of decimals in some columns of the downloaded file
+- adding the coordinate component to the name of the downloaded file when using the local directory option
+- hidding the names of the coordinate component tabs till a file is loaded
+- improving the fullSeries option & the range of the time axis
+- extracting the station coordinates for the secondary remote series
+- updating the location map when the secondary series changes
+- changing the name of the popup window with the series name
+- updating the overview plot in the popup window when the series plot changes
+- closing the popup window with the reset button
+- adding errorbars to the periodic waveform
+- improving the swap button with the sitelog names and the scale factor of the secondary series
+- disabling the sigmas option when loading a remote PSMSL series
+
+### Added
+- popup message when the page is reloaded by the user on an active remote session
+- new option to truncate the time axis of the series (toogle or delete)
+- the downhill simplex method to improve the estimation of the spectral index of the PL noise model analysis 
+
 # diciembre 2023 [2023.12]
 
 ### Fixed
