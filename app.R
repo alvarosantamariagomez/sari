@@ -1907,6 +1907,7 @@ server <- function(input,output,session) {
   reset("side-panel")
   reset("main-panel")
   cat(file = stderr(), "\n", "\n", "START", "\n")
+  onStop(function() cat(file = stderr(), "Session stopped", "\n"))
   
   # Catch refreshed page
   shinyjs::runjs("
@@ -2012,9 +2013,9 @@ server <- function(input,output,session) {
     req(input$size, info$intro)
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
-      cat(file = stderr(), "Mobile connection ", "\n")
-      cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
-      cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+      cat(file = stderr(), "Mobile connection", "\n")
+      cat(file = stderr(), "Screen size", input$size[1], "x", input$size[2], "\n")
+      cat(file = stderr(), "Touchscreen", input$tactile, "\n")
       shinyjs::hide(id = "menu")
       shinyjs::hide(id = "localDir")
       shinyjs::hide(selector = "#tab li a[data-value=1]")
@@ -2053,16 +2054,16 @@ server <- function(input,output,session) {
             ))
           }
         })
-        if (messages > 2) cat(file = stderr(), "Screen size ", input$size[1], "x", input$size[2], "\n")
-        if (messages > 2) cat(file = stderr(), "Pixel ratio ", info$pixelratio, "\n")
-        if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+        if (messages > 2) cat(file = stderr(), "Screen size", input$size[1], "x", input$size[2], "\n")
+        if (messages > 2) cat(file = stderr(), "Pixel ratio", info$pixelratio, "\n")
+        if (messages > 2) cat(file = stderr(), "Touchscreen", input$tactile, "\n")
         shinyjs::hide("localDir")
         if (isTRUE(info$welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = "point_to_help", type = "message", session = getDefaultReactiveDomain())
           if (messages > 2) cat(file = stderr(), "Warning", "\n")
           if (isTruthy(input$tactile)) {
             if (input$tactile > 0) {
-              if (messages > 2) cat(file = stderr(), "Touchscreen ", input$tactile, "\n")
+              if (messages > 2) cat(file = stderr(), "Touchscreen", input$tactile, "\n")
               showModal(modalDialog(
                 title = tags$h3("Dear SARI user"),
                 HTML("It is strongly discouraged to use the touchscreen with SARI.<br>Please, consider using the mouse instead."),
@@ -3540,7 +3541,7 @@ server <- function(input,output,session) {
         }
         start.time <- Sys.time()
         llikss <- function(x, data) {
-          if (messages > 2) cat(file = stderr(), "This iteration = ", sqrt(exp(x[1])), "\n")
+          if (messages > 2) cat(file = stderr(), "This iteration =", sqrt(exp(x[1])), "\n")
           info$KFiter <- info$KFiter + 1
           showNotification(paste0("Running KF iteration ", info$KFiter), action = NULL, duration = NULL, closeButton = T, id = "KF_iter", type = "warning", session = getDefaultReactiveDomain())
           mod <- NULL
@@ -3728,7 +3729,7 @@ server <- function(input,output,session) {
           trans$equation <- sub("y ~","Model =",m$model)
           end.time <- Sys.time()
           time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
+          if (messages > 2) cat(file = stderr(), "Total time =", time.taken, "\n")
           db1[[info$db1]]$status.kf <- db1[[info$db1]][[paste0("status",input$tab)]]
           if (isTruthy(inputs$waveformPeriod)) {
             save_value <- inputs$waveformPeriod
@@ -3894,7 +3895,7 @@ server <- function(input,output,session) {
           showNotification(HTML("Unable to assess stationarity.<br>Check the input series."), action = NULL, duration = 10, closeButton = T, id = "no_stationarity", type = "error", session = getDefaultReactiveDomain())
         }
         if (input$sunits == 1) {
-          cat("Series units: m ", "\n\n")
+          cat("Series units: m", "\n\n")
         } else if (input$sunits == 2) {
           cat("Series units: mm", "\n\n")
         }
@@ -3915,7 +3916,7 @@ server <- function(input,output,session) {
       serie2 <- data.frame(x = trans$x2, y = trans$y2)
       common <- merge(serie1, serie2, by.x = "x", by.y = "x")
       if (length(common$x) > 30) {
-        cat("Pearson's correlation = ", sprintf("%.3f",cor(common$y.x,common$y.y)), "from ", length(common$x)," points at common epochs\n\n")
+        cat("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs\n\n")
       }
     }
     if (input$tunits == 1) {
@@ -3939,10 +3940,10 @@ server <- function(input,output,session) {
       cat("Parameter units:", unit, "&", units, "\n\n")
     }
     if (isTruthy(input$midas)) {
-      cat("MIDAS rate estimate ")
+      cat("MIDAS rate estimate")
       cat(trans$midas_vel, "+/-", trans$midas_sig, units, "\n\n")
       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
-        cat("MIDAS rate estimate (discontinuities skipped) ")
+        cat("MIDAS rate estimate (discontinuities skipped)")
         cat(trans$midas_vel2, "+/-", trans$midas_sig2, units, "\n\n")
       }
     }
@@ -4525,7 +4526,7 @@ server <- function(input,output,session) {
         })
         end.time <- Sys.time()
         time.taken <- difftime(end.time, start.time, units = "secs")
-        if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time = ", time.taken, " s\n")
+        if (messages > 2) cat(file = stderr(), start.time, end.time, "Total time =", time.taken, "s\n")
       }
       isolate({
         levels <- suppressWarnings(signif(sd(trans$wavelet$z), 4))
@@ -4632,7 +4633,7 @@ server <- function(input,output,session) {
             low <- high <- 0
           }
           if (low > 0) {
-            if (messages > 0) cat(file = stderr(), "Vondrak low ", low, "\n")
+            if (messages > 0) cat(file = stderr(), "Vondrak low", low, "\n")
             filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
             if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
               trans$vondrak[1] <- low
@@ -4643,7 +4644,7 @@ server <- function(input,output,session) {
             trans$vondrak[1] <- NA
           }
           if (high > 0) {
-            if (messages > 0) cat(file = stderr(), "Vondrak high ", high, "\n")
+            if (messages > 0) cat(file = stderr(), "Vondrak high", high, "\n")
             filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
             if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
               trans$vondrak[2] <- high
@@ -4831,7 +4832,7 @@ server <- function(input,output,session) {
                          if (method == "NLM") {
                            attr(ll, "gradient") <- grad_global(x)  
                          }
-                         if (messages > 2) cat(file = stderr(), "Std Dev noises = ", sqrt(exp(x))/scaling, " Index = ", k, " loglik = ", sprintf("%f",ll), "\n")
+                         if (messages > 2) cat(file = stderr(), "Std Dev noises =", sqrt(exp(x))/scaling, " Index =", k, " loglik =", sprintf("%f",ll), "\n")
                          ll/-1
                        }
                        grad_global <- function(x) {
@@ -4864,7 +4865,7 @@ server <- function(input,output,session) {
                            grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
                            grad <- c(grad, 0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
                          }
-                         if (messages > 2) cat(file = stderr(), "Grads = ", grad/-1, "\n")
+                         if (messages > 2) cat(file = stderr(), "Grads =", grad/-1, "\n")
                          grad/-1
                        }
                        
@@ -5017,7 +5018,7 @@ server <- function(input,output,session) {
           end.time <- Sys.time()
           if (messages > 2) print(paste0("Fin optimizacion ", end.time))
           time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), "Total time = ", time.taken, "\n")
+          if (messages > 2) cat(file = stderr(), "Total time =", time.taken, "\n")
           trans$mle <- 1
           sd_noises <- NA
           line3 <- NULL
@@ -6152,7 +6153,7 @@ server <- function(input,output,session) {
               }
             }
             if (isTruthy(down) && down == 0) {
-              if (messages > 0) cat(file = stderr(), "Primary series downloaded in ", file$primary$datapath, "\n")
+              if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
               # update format for primary series
               shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
               # download associated logfile
@@ -6205,7 +6206,7 @@ server <- function(input,output,session) {
                     }
                   }
                   if (isTruthy(down) && down == 0) {
-                    if (messages > 0) cat(file = stderr(), "Secondary series downloaded in ", file$secondary$datapath, "\n")
+                    if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath, "\n")
                     info$menu <- unique(c(info$menu, 3))
                     updateCollapse(session, id = "menu", open = info$menu)
                     shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
@@ -6368,7 +6369,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(down) && down == 0) {
           shinyjs::delay(1500, {
-            if (messages > 0) cat(file = stderr(), "Primary series downloaded in ", file$primary$datapath, "\n")
+            if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
             if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
             shinyjs::delay(1500, {
@@ -6451,7 +6452,7 @@ server <- function(input,output,session) {
           }
           if (isTruthy(down) && down == 0) {
             secondary_files <- secondary_files + 1
-            if (messages > 0) cat(file = stderr(), "Secondary series downloaded in ", file$secondary$datapath[f], "\n")
+            if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath[f], "\n")
           } else {
             file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
             removeNotification(paste0("parsing_url2_",f))
@@ -7912,7 +7913,7 @@ server <- function(input,output,session) {
     req(file$primary)
     removeNotification("no_component")
     if (input$tab < 1) {
-      if (messages > 0) cat(file = stderr(), "WARNING: tab number is ", input$tab, "\n")
+      if (messages > 0) cat(file = stderr(), "WARNING: tab number is", input$tab, "\n")
       showNotification("Please click on any component tab before plotting a coordiante series.", action = NULL, duration = 10, closeButton = T, id = "no_component", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
@@ -8395,7 +8396,7 @@ server <- function(input,output,session) {
     }
     if (nchar(input$thresholdResN) > 0 && length(joint$sy) > 0) {
       if (!is.na(inputs$thresholdResN)) {
-        if (messages > 0) cat(file = stderr(), "Limit normalized residual ", inputs$thresholdResN, "\n")
+        if (messages > 0) cat(file = stderr(), "Limit normalized residual", inputs$thresholdResN, "\n")
         if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
           excluding_plot_kf <- abs(joint_kf$res/joint_kf$sy) > abs(inputs$thresholdResN)
           excluding_kf <- excluding_plot_kf
@@ -8411,7 +8412,7 @@ server <- function(input,output,session) {
         if (abs(inputs$thresholdRes) < min(abs(residuals))) {
           showNotification(HTML("The residual threshold will remove all data from the residual series.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_threshold", type = "error", session = getDefaultReactiveDomain())
         } else {
-          if (messages > 0) cat(file = stderr(), "Limit absolute residual ", inputs$thresholdRes, "\n")
+          if (messages > 0) cat(file = stderr(), "Limit absolute residual", inputs$thresholdRes, "\n")
           if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
             excluding_res_kf <- abs(joint_kf$res) > abs(inputs$thresholdRes)
             excluding_kf <- excluding_kf + excluding_res_kf > 0
@@ -11045,7 +11046,7 @@ server <- function(input,output,session) {
   #
   periodogram <- function(serie) {
     req(trans$fs)
-    if (messages > 0) cat(file = stderr(), "Computing periodogram ", serie, "\n")
+    if (messages > 0) cat(file = stderr(), "Computing periodogram", serie, "\n")
     withProgress(message = 'Computing  periodogram.',
                  detail = 'This may take a while ...', value = 0, {
                    incProgress(0.5)
@@ -11263,10 +11264,10 @@ server <- function(input,output,session) {
       cat(paste('# Resampling:', inputs$step, periods), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
-      cat(sprintf('# Corrected with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Corrected with: %s',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 3) {
-      cat(sprintf('# Averaged with: %s ',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Averaged with: %s',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
       cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", info$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
@@ -11340,7 +11341,7 @@ server <- function(input,output,session) {
         cat(paste('# Noise: K',  trans$noise[9], '+/-', trans$noise[10]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[11])) {
-        cat(sprintf('# Noise: MLE %f ',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: MLE %f',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (isTruthy(input$sigmas)) {
