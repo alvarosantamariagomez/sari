@@ -267,7 +267,6 @@ contains() {
 }
 contains "$servers" $server1
 contains "$servers" $server2
-echo "$server1 $local $product1"
 if [[ $server1 == local ]]; then
 	contains "$products_local" $product1
 else
