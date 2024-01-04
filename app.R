@@ -5355,6 +5355,7 @@ server <- function(input,output,session) {
       paste0(gsub(" ", "_", version),".pdf")
     },
     content = function(file) {
+      if (messages > 0) cat(file = stderr(), "Downloading help file", "\n")
       file.copy("www/about.pdf", file)
     }
   )
