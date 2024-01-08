@@ -6688,7 +6688,7 @@ server <- function(input,output,session) {
       stationGeo <- c()
       stationGeo2 <- c()
       poleCartesian <- c()
-      if (messages > 0) cat(file = stderr(), "Compute plate rotation (", input$eulerType, ")\n")
+      if (messages > 0) cat(file = stderr(), paste0("Compute plate rotation (", input$eulerType, ")"), "\n")
       if (input$sunits == 1) {
         scaling <- 1
       } else if (input$sunits == 2) {
