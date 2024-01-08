@@ -7923,6 +7923,8 @@ server <- function(input,output,session) {
     if (messages > 4) cat(file = stderr(), "From: observe plotting\n")
     digest(1)
   }, priority = 4)
+  
+  # Observe overview ####
   observeEvent(input$plotAll, {
     req(db1[[info$db1]])
     if (input$format < 4) {
@@ -7978,40 +7980,48 @@ server <- function(input,output,session) {
       sy22 <- db2[[info$db2]]$sy2
       sy3 <- db1[[info$db1]]$sy3
       sy32 <- db2[[info$db2]]$sy3
+      valid1 <- db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)
+      valid2 <- db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)
+      valid3 <- db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)
       fileout <- "www/SARIseries.png"
+      if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
+        x.range <- ranges$x1
+      } else {
+        x.range <- c(min(x[valid1], x[valid2], x[valid3], na.rm = T), max(x[valid1], x[valid2], x[valid3], na.rm = T))
+      }
       ragg::agg_png(filename = fileout, width = info$width, height = 800, pointsize = 25)
       par(mai = c(1, 2, 1, 1))
       layout(mat = matrix(data = c(1,2,3), nrow = 3, ncol = 1))
       ## East ####
       par(mai = c(0.3, 1.2, 0.3, 0.6))
-      y.range <- range(y1[db1[[info$db1]]$status1][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
+      y.range <- range(y1[valid1][x[valid1] >= x.range[1] & x[valid1] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
-          x2.common <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
-          y2.common <- y12[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
+          y2.common <- y12[x2 > x.range[1] & x2 < x.range[2]]
           half <- abs(y.range[1] - mean(y.range))
           middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
           y2.range <- c(middle - half, middle + half)
           if (length(x) == 0 || length(x2.common) == 0) {
             # NA
-          } else if (x2.common[1] > ranges$x1[2]) {
+          } else if (x2.common[1] > x.range[2]) {
             # NA
-          } else if (ranges$x1[1] > x2.common[length(x2.common)]) {
+          } else if (x.range[1] > x2.common[length(x2.common)]) {
             # NA
           } else {
             tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
             tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y1[db1[[info$db1]]$status1][tie1] - y2.common[tie2])
+            pointsBias <- median(y1[valid1][tie1] - y2.common[tie2])
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
           y2.range <- y.range
         } else {
-          y2.range <- range(y12[x2 >= ranges$x1[1] & x2 <= ranges$x1[2]])
+          y2.range <- range(y12[x2 >= x.range[1] & x2 <= x.range[2]])
         }
-        plot(x2, y12, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = ranges$x1, ylim = y2.range)
+        plot(x2, y12, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
@@ -8025,8 +8035,8 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      mini <- min(y1[db1[[info$db1]]$status1], na.rm = T)
-      maxi <- max(y1[db1[[info$db1]]$status1], na.rm = T)
+      mini <- min(y1[valid1], na.rm = T)
+      maxi <- max(y1[valid1], na.rm = T)
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
@@ -8039,7 +8049,7 @@ server <- function(input,output,session) {
         const <- 0
         ylab <- gsub("component","",paste(info$components[1], unit))
       }
-      plot(x[db1[[info$db1]]$status1], y1[db1[[info$db1]]$status1], type = symbol, pch = 20, xlab = NA, xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      plot(x[valid1], y1[valid1], type = symbol, pch = 20, xlab = NA, xaxt = "n", yaxt = "n", ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
       pout <- base::pretty(p - const)
       pin <- pout + const
@@ -8050,46 +8060,46 @@ server <- function(input,output,session) {
         shade <- adjustcolor(color, alpha.f = alfa)
         ba <- y1 + sy1
         bb <- y1 - sy1
-        polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+        polygon(c(x[valid1], rev(x[valid1])), c(ba[valid1], rev(bb[valid1])), col = shade, border = NA)
       }
       axis(side = 1, labels = F, tick = T)
       if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-        xx <- median(x[db1[[info$db1]]$status1][x[db1[[info$db1]]$status1] > ranges$x1[1] & x[db1[[info$db1]]$status1] < ranges$x1[2]], na.rm = T)
-        yy <- median(y1[db1[[info$db1]]$status1][x[db1[[info$db1]]$status1] > ranges$x1[1] & x[db1[[info$db1]]$status1] < ranges$x1[2]], na.rm = T)
-        centerx <- which(abs(x[db1[[info$db1]]$status1] - xx) == min(abs(x[db1[[info$db1]]$status1] - xx)))[1]
-        centery <- which(abs(y1[db1[[info$db1]]$status1] - yy) == min(abs(y1[db1[[info$db1]]$status1] - yy)))[1]
-        lines(c(x[db1[[info$db1]]$status1][1],x[db1[[info$db1]]$status1][length(x[db1[[info$db1]]$status1])]),c(y1[db1[[info$db1]]$status1][centery] + trans$plate[1]*(x[db1[[info$db1]]$status1][1] - x[db1[[info$db1]]$status1][centerx]), y1[db1[[info$db1]]$status1][centery] + trans$plate[1]*(x[db1[[info$db1]]$status1][length(x[db1[[info$db1]]$status1])] - x[db1[[info$db1]]$status1][centerx])), col = SARIcolors[4], lwd = 3)
+        xx <- median(x[valid1][x[valid1] > x.range[1] & x[valid1] < x.range[2]], na.rm = T)
+        yy <- median(y1[valid1][x[valid1] > x.range[1] & x[valid1] < x.range[2]], na.rm = T)
+        centerx <- which(abs(x[valid1] - xx) == min(abs(x[valid1] - xx)))[1]
+        centery <- which(abs(y1[valid1] - yy) == min(abs(y1[valid1] - yy)))[1]
+        lines(c(x[valid1][1],x[valid1][length(x[valid1])]),c(y1[valid1][centery] + trans$plate[1]*(x[valid1][1] - x[valid1][centerx]), y1[valid1][centery] + trans$plate[1]*(x[valid1][length(x[valid1])] - x[valid1][centerx])), col = SARIcolors[4], lwd = 3)
       }
       # North ####
       par(mai = c(0.3, 1.2, 0.1, 0.6))
-      y.range <- range(y2[db1[[info$db1]]$status2][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
+      y.range <- range(y2[valid2][x[valid2] >= x.range[1] & x[valid2] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
-          x2.common <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
-          y2.common <- y22[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
+          y2.common <- y22[x2 > x.range[1] & x2 < x.range[2]]
           half <- abs(y.range[1] - mean(y.range))
           middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
           y2.range <- c(middle - half, middle + half)
           if (length(x) == 0 || length(x2.common) == 0) {
             # NA
-          } else if (x2.common[1] > ranges$x1[2]) {
+          } else if (x2.common[1] > x.range[2]) {
             # NA
-          } else if (ranges$x1[1] > x2.common[length(x2.common)]) {
+          } else if (x.range[1] > x2.common[length(x2.common)]) {
             # NA
           } else {
             tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
             tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y2[db1[[info$db1]]$status2][tie1] - y2.common[tie2])
+            pointsBias <- median(y2[valid2][tie1] - y2.common[tie2])
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
           y2.range <- y.range
         } else {
-          y2.range <- range(y22[x2 >= ranges$x1[1] & x2 <= ranges$x1[2]])
+          y2.range <- range(y22[x2 >= x.range[1] & x2 <= x.range[2]])
         }
-        plot(x2, y22, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = ranges$x1, ylim = y2.range)
+        plot(x2, y22, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
@@ -8103,8 +8113,8 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      mini <- min(y2[db1[[info$db1]]$status2], na.rm = T)
-      maxi <- max(y2[db1[[info$db1]]$status2], na.rm = T)
+      mini <- min(y2[valid2], na.rm = T)
+      maxi <- max(y2[valid2], na.rm = T)
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
@@ -8117,7 +8127,7 @@ server <- function(input,output,session) {
         const <- 0
         ylab <- gsub("component","",paste(info$components[2], unit))
       }
-      plot(x[db1[[info$db1]]$status2], y2[db1[[info$db1]]$status2], type = symbol, pch = 20, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      plot(x[valid2], y2[valid2], type = symbol, pch = 20, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
       pout <- base::pretty(p - const)
       pin <- pout + const
@@ -8128,46 +8138,46 @@ server <- function(input,output,session) {
         shade <- adjustcolor(color, alpha.f = alfa)
         ba <- y2 + sy2
         bb <- y2 - sy2
-        polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+        polygon(c(x[valid1], rev(x[valid1])), c(ba[valid1], rev(bb[valid1])), col = shade, border = NA)
       }
       axis(side = 1, labels = F, tick = T)
       if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-        xx <- median(x[db1[[info$db1]]$status2][x[db1[[info$db1]]$status2] > ranges$x1[1] & x[db1[[info$db1]]$status2] < ranges$x1[2]], na.rm = T)
-        yy <- median(y2[db1[[info$db1]]$status2][x[db1[[info$db1]]$status2] > ranges$x1[1] & x[db1[[info$db1]]$status2] < ranges$x1[2]], na.rm = T)
-        centerx <- which(abs(x[db1[[info$db1]]$status2] - xx) == min(abs(x[db1[[info$db1]]$status2] - xx)))[1]
-        centery <- which(abs(y2[db1[[info$db1]]$status2] - yy) == min(abs(y2[db1[[info$db1]]$status2] - yy)))[1]
-        lines(c(x[db1[[info$db1]]$status2][1],x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])]),c(y2[db1[[info$db1]]$status2][centery] + trans$plate[2]*(x[db1[[info$db1]]$status2][1] - x[db1[[info$db1]]$status2][centerx]), y2[db1[[info$db1]]$status2][centery] + trans$plate[2]*(x[db1[[info$db1]]$status2][length(x[db1[[info$db1]]$status2])] - x[db1[[info$db1]]$status2][centerx])), col = SARIcolors[4], lwd = 3)
+        xx <- median(x[valid2][x[valid2] > x.range[1] & x[valid2] < x.range[2]], na.rm = T)
+        yy <- median(y2[valid2][x[valid2] > x.range[1] & x[valid2] < x.range[2]], na.rm = T)
+        centerx <- which(abs(x[valid2] - xx) == min(abs(x[valid2] - xx)))[1]
+        centery <- which(abs(y2[valid2] - yy) == min(abs(y2[valid2] - yy)))[1]
+        lines(c(x[valid2][1],x[valid2][length(x[valid2])]),c(y2[valid2][centery] + trans$plate[2]*(x[valid2][1] - x[valid2][centerx]), y2[valid2][centery] + trans$plate[2]*(x[valid2][length(x[valid2])] - x[valid2][centerx])), col = SARIcolors[4], lwd = 3)
       }
       # Up ####
       par(mai = c(1.2, 1.2, 0.1, 0.6))
-      y.range <- range(y3[db1[[info$db1]]$status3][x >= ranges$x1[1] & x <= ranges$x1[2]], na.rm = T)
+      y.range <- range(y3[valid3][x[valid3] >= x.range[1] & x[valid3] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
-          x2.common <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
-          y2.common <- y32[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+          x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
+          y2.common <- y32[x2 > x.range[1] & x2 < x.range[2]]
           half <- abs(y.range[1] - mean(y.range))
           middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
           y2.range <- c(middle - half, middle + half)
           if (length(x) == 0 || length(x2.common) == 0) {
             # NA
-          } else if (x2.common[1] > ranges$x1[2]) {
+          } else if (x2.common[1] > x.range[2]) {
             # NA
-          } else if (ranges$x1[1] > x2.common[length(x2.common)]) {
+          } else if (x.range[1] > x2.common[length(x2.common)]) {
             # NA
           } else {
             tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
             tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y3[db1[[info$db1]]$status3][tie1] - y2.common[tie2])
+            pointsBias <- median(y3[valid3][tie1] - y2.common[tie2])
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
           y2.range <- y.range
         } else {
-          y2.range <- range(y32[x2 >= ranges$x1[1] & x2 <= ranges$x1[2]])
+          y2.range <- range(y32[x2 >= x.range[1] & x2 <= x.range[2]])
         }
-        plot(x2, y32, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = ranges$x1, ylim = y2.range)
+        plot(x2, y32, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
@@ -8181,8 +8191,8 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, outer = F)
         par(new = T)
       }
-      mini <- min(y3[db1[[info$db1]]$status3], na.rm = T)
-      maxi <- max(y3[db1[[info$db1]]$status3], na.rm = T)
+      mini <- min(y3[valid3], na.rm = T)
+      maxi <- max(y3[valid3], na.rm = T)
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
@@ -8195,7 +8205,7 @@ server <- function(input,output,session) {
         const <- 0
         ylab <- gsub("component","",paste(info$components[3], unit))
       }
-      plot(x[db1[[info$db1]]$status3], y3[db1[[info$db1]]$status3], type = symbol, pch = 20, yaxt = "n", xlab = info$tunits.label, ylab = ylab, xlim = ranges$x1, ylim = y.range)
+      plot(x[valid3], y3[valid3], type = symbol, pch = 20, yaxt = "n", xlab = info$tunits.label, ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
       pout <- base::pretty(p - const)
       pin <- pout + const
@@ -8206,14 +8216,14 @@ server <- function(input,output,session) {
         shade <- adjustcolor(color, alpha.f = alfa)
         ba <- y3 + sy3
         bb <- y3 - sy3
-        polygon(c(x, rev(x)), c(ba, rev(bb)), col = shade, border = NA)
+        polygon(c(x[valid1], rev(x[valid1])), c(ba[valid1], rev(bb[valid1])), col = shade, border = NA)
       }
       if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-        xx <- median(x[db1[[info$db1]]$status3][x[db1[[info$db1]]$status3] > ranges$x1[1] & x[db1[[info$db1]]$status3] < ranges$x1[2]], na.rm = T)
-        yy <- median(y3[db1[[info$db1]]$status3][x[db1[[info$db1]]$status3] > ranges$x1[1] & x[db1[[info$db1]]$status3] < ranges$x1[2]], na.rm = T)
-        centerx <- which(abs(x[db1[[info$db1]]$status3] - xx) == min(abs(x[db1[[info$db1]]$status3] - xx)))[1]
-        centery <- which(abs(y3[db1[[info$db1]]$status3] - yy) == min(abs(y3[db1[[info$db1]]$status3] - yy)))[1]
-        lines(c(x[db1[[info$db1]]$status3][1],x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])]),c(y3[db1[[info$db1]]$status3][centery] + trans$plate[3]*(x[db1[[info$db1]]$status3][1] - x[db1[[info$db1]]$status3][centerx]), y3[db1[[info$db1]]$status3][centery] + trans$plate[3]*(x[db1[[info$db1]]$status3][length(x[db1[[info$db1]]$status3])] - x[db1[[info$db1]]$status3][centerx])), col = SARIcolors[4], lwd = 3)
+        xx <- median(x[valid3][x[valid3] > x.range[1] & x[valid3] < x.range[2]], na.rm = T)
+        yy <- median(y3[valid3][x[valid3] > x.range[1] & x[valid3] < x.range[2]], na.rm = T)
+        centerx <- which(abs(x[valid3] - xx) == min(abs(x[valid3] - xx)))[1]
+        centery <- which(abs(y3[valid3] - yy) == min(abs(y3[valid3] - yy)))[1]
+        lines(c(x[valid3][1],x[valid3][length(x[valid3])]),c(y3[valid3][centery] + trans$plate[3]*(x[valid3][1] - x[valid3][centerx]), y3[valid3][centery] + trans$plate[3]*(x[valid3][length(x[valid3])] - x[valid3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
       js$showPopup(info$width)
