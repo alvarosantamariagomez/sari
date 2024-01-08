@@ -9060,8 +9060,10 @@ server <- function(input,output,session) {
           showNotification(HTML("The primary series contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
         }
       } else {
-        showNotification("The input series is empty or has wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
-        req(info$stop)
+        shinyjs::delay(500, {
+          showNotification("The input series is empty or has wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        })
       }
       if (is.null(table)) {
         showNotification("All records in the series were removed.<br> Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
