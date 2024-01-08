@@ -8489,14 +8489,21 @@ server <- function(input,output,session) {
     req(db1[[info$db1]], input$cut)
     removeNotification("bad_cut")
     if (isTruthy(inputs$cutStart) || isTruthy(inputs$cutEnd)) {
-      if (messages > 0) cat(file = stderr(), "Cutting series", "\n")
-      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, trans$x0[1])
-      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, trans$x0[length(trans$x0)])
-      if (end < start) {
-        showNotification(HTML("The End epoch is smaller than the Start epoch.<br>Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain())
+      if (messages > 0) cat(file = stderr(), "Cutting series:", inputs$cutStart, "-", inputs$cutEnd, "\n")
+      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, trans$x[1])
+      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, trans$x[length(trans$x)])
+      if (end <= start) {
+        shinyjs::delay(500, showNotification(HTML("The End epoch is equal or smaller than the Start epoch.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
       }
       if (isTruthy(input$permanent)) {
+        if (isTruthy(inputs$cutStart) && isTruthy(inputs$cutEnd)) {
+          # NA
+        } else if (isTruthy(inputs$cutStart)) {
+          end <- trans$x0[length(trans$x0)]
+        } else if (isTruthy(inputs$cutEnd)) {
+          start <- trans$x0
+        }
         if (isTruthy(input$remove3D)) {
           db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- NA
           db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- NA
