@@ -3435,9 +3435,11 @@ server <- function(input,output,session) {
             } else {
               info$noLS <- T
               if ("Sinusoidal" %in% input$model) {
-                updateTextInput(session, "periodRef", value = refs*1.0001)
+                updateTextInput(session, "periodRef", value = input$periodRef*1.0001)
               } else if ("Linear" %in% input$model) {
                 updateTextInput(session, "trendRef", value = input$trendRef*1.0001)
+              } else if ("Polynomial" %in% input$model) {
+                updateTextInput(session, "PolyRef", value = input$PolyRef*1.0001)
               }
             }
           }
