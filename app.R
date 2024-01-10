@@ -9385,6 +9385,7 @@ server <- function(input,output,session) {
     removeNotification("no_rotation")
     removeNotification("no_values")
     removeNotification("no_epos")
+    removeNotification("bad_sigmas")
     if (format == 1) { #NEU/ENU
       skip <- 0
       a <- 6378137
@@ -9672,6 +9673,12 @@ server <- function(input,output,session) {
       }
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
+      # checking the error bars
+      if (any(extracted[,grepl("sy", names(extracted))] <= 0)) {
+        extracted[,grepl("sy", names(extracted))] <- rep(1, length(extracted$y1))
+        info$errorbars <- F
+        showNotification(HTML("Negative or null error bars extracted from the input series.<br>The use of the error bars has been deactivated."), action = NULL, duration = 10, closeButton = T, id = "bad_sigmas", type = "error", session = getDefaultReactiveDomain())
+      }
       extracted
     } else {
       showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
