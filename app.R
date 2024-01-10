@@ -1953,7 +1953,7 @@ server <- function(input,output,session) {
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL,
                          db1 = "stop", db2 = "stop",
-                         trendRef = F, PolyRef = F, periodRef = F,
+                         trendRef = F, PolyRef = F, periodRef = F, noLS = F,
                          plateFile = NULL)
   
   # 4. database:
@@ -3358,6 +3358,7 @@ server <- function(input,output,session) {
           fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
           if (!inherits(fit,"try-error") && !is.null(fit)) {
             info$run <- T
+            info$noLS <- F
             jacobian <- fit$m$gradient()/sqrt(weights)
             synthesis <- summary(fit,correlation = T, signif.stars = T)
             synthesis$coefficients[1] <- coef(synthesis)[1] + trans$ordinate
@@ -3425,11 +3426,20 @@ server <- function(input,output,session) {
               updateTextInput(session, "waveformPeriod", value = save_value)
             }
           } else {
-            trans$results <- NULL
-            trans$unc <- NULL
-            trans$res <- NULL
-            trans$mod <- NULL
-            showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
+            if (isTruthy(info$noLS) || "Logarithmic" %in% input$model || "Exponential" %in% input$model) {
+              trans$results <- NULL
+              trans$unc <- NULL
+              trans$res <- NULL
+              trans$mod <- NULL
+              showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
+            } else {
+              info$noLS <- T
+              if ("Sinusoidal" %in% input$model) {
+                updateTextInput(session, "periodRef", value = refs*1.0001)
+              } else if ("Linear" %in% input$model) {
+                updateTextInput(session, "trendRef", value = input$trendRef*1.0001)
+              }
+            }
           }
         } else {
           trans$results <- NULL
@@ -8807,6 +8817,7 @@ server <- function(input,output,session) {
     info$trendRef <- NULL
     info$PolyRef <- NULL
     info$periodRef <- NULL
+    info$noLS <- F
     url$file <- NULL
     url$file2 <- NULL
     url$logfile <- NULL
