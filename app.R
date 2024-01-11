@@ -2039,15 +2039,12 @@ server <- function(input,output,session) {
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
       } else {
-        # output$refresh <- renderUI({
-        #   tags$script(HTML(askRefresh))    
-        # })
         shinyjs::delay(100, {
           if (isTRUE(input$refreshed)) {
             if (messages > 0) cat(file = stderr(), "Page refreshed", "\n")
             showModal(modalDialog(
               title = tags$h3("Dear SARI user"),
-              HTML("The SARI webpage has been reloaded.<br><br>If this was due to an error, please consider giving feedback to the author.<br><br>Otherwise, if the session is still connected to the server, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section)."),
+              HTML("<div style='padding: 0px 50px'>The SARI webpage has been reloaded.<br><br>If this was due to an error, please consider giving feedback to the author <a href='https://github.com/alvarosantamariagomez/sari' target='_blank'>here</a>.<br><br>Otherwise, if the session is still connected to the server, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section).</div>"),
               size = "m",
               easyClose = T,
               fade = T
