@@ -9617,6 +9617,13 @@ server <- function(input,output,session) {
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
           }
         }
+      } else {
+        errorInfo <- gsub("\n", "", gsub("(.|\\\\s)*?  ", "", tableAll[1]))
+        if (isTruthy(errorInfo)) {
+          errorInfo <- paste(errorInfo, "(skipping comment lines)")
+        }
+        showNotification(HTML(paste("Format error when reading the input NEU/ENU file.<br>", errorInfo)), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
       }
     } else if (format == 2) { #PBO
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
