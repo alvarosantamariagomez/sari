@@ -7513,6 +7513,14 @@ server <- function(input,output,session) {
     if (input$optionSecondary > 1) {
       table1 <- db1[[info$db1]]
       table2 <- db2[[info$db2]]
+      if (isTruthy(input$ne)) {
+        table2y_tmp <- table2$y2
+        table2sy_tmp <- table2$sy2
+        table2$y2 <- table2$y1
+        table2$sy2 <- table2$sy1
+        table2$y1 <- table2y_tmp
+        table2$sy1 <- table2sy_tmp
+      }
       if (min(diff(db1[[info$db1]]$x1)) <= 1 && min(diff(db2[[info$db2]]$x1)) <= 1) {
         delta <- as.numeric(names(sort(table(table1$x1 - floor(table1$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
         if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
