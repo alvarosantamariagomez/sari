@@ -6781,6 +6781,9 @@ server <- function(input,output,session) {
           } else if ((input$format2 == 1 && input$neuenu == 2)) { #NEU
             trans$plate2 <- c(plate_neu2[2],plate_neu2[1],plate_neu2[3])
           }
+          if (isTruthy(input$ne)) {
+            trans$plate2 <- c(plate_neu2[2],plate_neu2[1],plate_neu2[3])
+          }
           trans$plate2[3] <- 0
           if (input$tunits == 1) {
             trans$plate2 <- trans$plate2/daysInYear
