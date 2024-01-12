@@ -1947,7 +1947,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, tunits.label = NULL, tunits.known = F, tunits.last = NULL, run_wavelet = T, run_filter = T, pixelratio = NULL, welcome = F,
+                         run = F, tunits.label = NULL, tunits.known = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL,
@@ -4591,100 +4591,96 @@ server <- function(input,output,session) {
 
   # Compute smoother ####
   observeEvent(c(input$sigmas, inputs$low, inputs$high, input$filter, trans$y, input$series2filter, trans$res), {
-    req(trans$x, trans$sy, input$series2filter, input$filter)
+    req(trans$x, trans$y, trans$sy, input$series2filter)
     removeNotification("no_smooth")
     removeNotification("same_periods")
-    if (isTruthy(info$run_filter)) {
-      if (isTruthy(input$filter)) {
-        if (inputs$high == "" || is.na(inputs$high)) {
-          high <- 0
-        } else {
-          if (nchar(inputs$high) > 0 && !is.na(inputs$high)) {
-            high <- inputs$high
-          } else {
-            high <- 0
-          }
-        }
-        if (inputs$low == "" || is.na(inputs$low)) {
-          low <- 0
-        } else {
-          if (nchar(inputs$low) > 0 && !is.na(inputs$low)) {
-            low <- inputs$low
-          } else {
-            low <- 0
-          }
-        }
-        filter_low <- NULL
-        filter_high <- NULL
-        if (low != high) {
-          if (input$series2filter == 1) {
-            ordinate <- mean(trans$y)
-            y <- trans$y - ordinate
-            sy <- trans$sy
-          } else if (input$series2filter == 2 && length(trans$res) > 0) {
-            ordinate <- mean(trans$res)
-            y <- trans$res - ordinate
-            if (input$fitType == 1) {
-              sy <- trans$reserror
-            } else if (input$fitType == 2) {
-              sy <- trans$sy
-            }
-          } else {
-            low <- high <- 0
-          }
-          if (low > 0) {
-            if (messages > 0) cat(file = stderr(), "Vondrak low", low, "\n")
-            filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
-            if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
-              trans$vondrak[1] <- low
-            } else {
-              showNotification(HTML("Unable to smooth the series.<br>Change the filter parameters"), action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            trans$vondrak[1] <- NA
-          }
-          if (high > 0) {
-            if (messages > 0) cat(file = stderr(), "Vondrak high", high, "\n")
-            filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
-            if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
-              trans$vondrak[2] <- high
-            } else {
-              showNotification(HTML("Unable to smooth the series.<br>Change the filter parameters"), action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            trans$vondrak[2] <- NA
-          }
-          if (length(filter_low) > 0 && length(filter_high) > 0) {
-            if (high < low) {
-              trans$filter <- y - (filter_high - filter_low) + ordinate
-            } else if (high > low) {
-              trans$filter <- filter_low - filter_high + ordinate
-            }
-            trans$filterRes <- y - trans$filter + ordinate
-          } else if (length(filter_low) > 0) {
-            trans$filter <- filter_low + ordinate
-            trans$filterRes <- y - trans$filter + ordinate
-          } else if (length(filter_high) > 0) {
-            trans$filter <- y - filter_high + ordinate
-            trans$filterRes <- y - trans$filter + ordinate
-          } else {
-            trans$filter <- NULL
-            trans$filterRes <- NULL
-          }
-        } else if (low == 0) {
-          trans$filter <- NULL
-          trans$filterRes <- NULL
-        } else {
-          showNotification(HTML("Low-pass and high-pass periods are equal.<br>Unable to smooth the series.<br>Change the smoother parameters"), action = NULL, duration = 10, closeButton = T, id = "same_periods", type = "error", session = getDefaultReactiveDomain())
-          trans$filter <- NULL
-          trans$filterRes <- NULL
-        }
+    if (isTruthy(input$filter)) {
+      if (inputs$high == "" || is.na(inputs$high)) {
+        high <- 0
       } else {
+        if (nchar(inputs$high) > 0 && !is.na(inputs$high)) {
+          high <- inputs$high
+        } else {
+          high <- 0
+        }
+      }
+      if (inputs$low == "" || is.na(inputs$low)) {
+        low <- 0
+      } else {
+        if (nchar(inputs$low) > 0 && !is.na(inputs$low)) {
+          low <- inputs$low
+        } else {
+          low <- 0
+        }
+      }
+      filter_low <- NULL
+      filter_high <- NULL
+      if (low != high) {
+        if (input$series2filter == 1) {
+          ordinate <- mean(trans$y)
+          y <- trans$y - ordinate
+          sy <- trans$sy
+        } else if (input$series2filter == 2 && length(trans$res) > 0) {
+          ordinate <- mean(trans$res)
+          y <- trans$res - ordinate
+          if (input$fitType == 1) {
+            sy <- trans$reserror
+          } else if (input$fitType == 2) {
+            sy <- trans$sy
+          }
+        } else {
+          low <- high <- 0
+        }
+        if (low > 0) {
+          if (messages > 0) cat(file = stderr(), "Vondrak low", low, "\n")
+          filter_low <- try(vondrak(trans$x, y, sy, as.numeric(low)), silent = F)
+          if (!inherits(filter_low,"try-error") && !is.null(filter_low)) {
+            trans$vondrak[1] <- low
+          } else {
+            showNotification(HTML("Unable to smooth the series.<br>Change the filter parameters"), action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$vondrak[1] <- NA
+        }
+        if (high > 0) {
+          if (messages > 0) cat(file = stderr(), "Vondrak high", high, "\n")
+          filter_high <- try(vondrak(trans$x, y, sy, as.numeric(high)), silent = F)
+          if (!inherits(filter_high,"try-error") && !is.null(filter_high)) {
+            trans$vondrak[2] <- high
+          } else {
+            showNotification(HTML("Unable to smooth the series.<br>Change the filter parameters"), action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
+          }
+        } else {
+          trans$vondrak[2] <- NA
+        }
+        if (length(filter_low) > 0 && length(filter_high) > 0) {
+          if (high < low) {
+            trans$filter <- y - (filter_high - filter_low) + ordinate
+          } else if (high > low) {
+            trans$filter <- filter_low - filter_high + ordinate
+          }
+          trans$filterRes <- y - trans$filter + ordinate
+        } else if (length(filter_low) > 0) {
+          trans$filter <- filter_low + ordinate
+          trans$filterRes <- y - trans$filter + ordinate
+        } else if (length(filter_high) > 0) {
+          trans$filter <- y - filter_high + ordinate
+          trans$filterRes <- y - trans$filter + ordinate
+        } else {
+          trans$filter <- NULL
+          trans$filterRes <- NULL
+        }
+      } else if (low == 0) {
+        trans$filter <- NULL
+        trans$filterRes <- NULL
+      } else {
+        showNotification(HTML("Low-pass and high-pass periods are equal.<br>Unable to smooth the series.<br>Change the smoother parameters"), action = NULL, duration = 10, closeButton = T, id = "same_periods", type = "error", session = getDefaultReactiveDomain())
         trans$filter <- NULL
         trans$filterRes <- NULL
       }
     } else {
-      info$run_filter <- T
+      trans$filter <- NULL
+      trans$filterRes <- NULL
     }
   }, priority = 1)
 
