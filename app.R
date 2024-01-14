@@ -4717,7 +4717,6 @@ server <- function(input,output,session) {
     removeNotification("too_long")
     removeNotification("timeWillTake")
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
-      if (messages > 0) cat(file = stderr(), "MLE fit start", "\n")
       trans$noise <- vector(length = 11)
       if (length(trans$filterRes) > 0) {
         res <- trans$filterRes
@@ -4731,7 +4730,7 @@ server <- function(input,output,session) {
       convergence <- 1
       withBusyIndicatorServer("runmle", {
         start.time <- Sys.time()
-        if (messages > 2) print(paste0("Inicio optimizacion ",Sys.time()))
+        if (messages > 2) cat(file = stderr(), "MLE fit start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
         if (info$timeMLE < 15) {
           message <- ""
         } else if (info$timeMLE < 60) {
@@ -5014,9 +5013,9 @@ server <- function(input,output,session) {
       if (!is.na(convergence)) {
         if (convergence == 0) {
           end.time <- Sys.time()
-          if (messages > 2) print(paste0("Fin optimizacion ", end.time))
+          if (messages > 2) cat(file = stderr(), "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
           time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), "Total time =", time.taken, "\n")
+          if (messages > 2) cat(file = stderr(), "Total time =", time.taken, units(time.taken), "\n")
           trans$mle <- 1
           sd_noises <- NA
           line3 <- NULL
@@ -5245,7 +5244,6 @@ server <- function(input,output,session) {
           showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
         }
       }
-      if (messages > 0) cat(file = stderr(), "MLE fit end", "\n")
     }
   })
   
