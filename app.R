@@ -3217,12 +3217,13 @@ server <- function(input,output,session) {
   }, width = reactive(info$width))
 
   # Offset verification ####
-  observeEvent(input$runVerif, {
-    req(input$verif_offsets, trans$res, trans$x, trans$offsetEpochs)
-    if ((nchar(inputs$verif_white) > 0 && !is.na(inputs$verif_white) && inputs$verif_white > 0) ||
+  observeEvent(c(input$runVerif, input$verif_offsets), {
+    req(trans$res, trans$x, trans$offsetEpochs)
+    if (isTruthy(input$verif_offsets) &&
+        ((nchar(inputs$verif_white) > 0 && !is.na(inputs$verif_white) && inputs$verif_white > 0) ||
         (nchar(input$verif_pl) > 0 && nchar(input$verif_k) > 0 && !is.na(inputs$verif_pl) && !is.na(inputs$verif_k) && inputs$verif_pl > 0 && inputs$verif_k <= 0) ||
         (nchar(inputs$verif_fl) > 0 && !is.na(inputs$verif_fl) && inputs$verif_fl > 0) ||
-        (nchar(inputs$verif_rw) > 0 && !is.na(inputs$verif_rw) && inputs$verif_rw > 0)) {
+        (nchar(inputs$verif_rw) > 0 && !is.na(inputs$verif_rw) && inputs$verif_rw > 0))) {
       if (messages > 0) cat(file = stderr(), "Verifying offsets", "\n")
       n <- length(trans$res)
       n_all <- length(trans$gaps)
@@ -3278,13 +3279,6 @@ server <- function(input,output,session) {
                          if (isTruthy(Tq)) {
                            trans$verif <- T
                          }
-                         output$verif <- renderUI({
-                           if (isTruthy(trans$verif)) {
-                             HTML(paste0(paste(line,"<br/>")))
-                           } else {
-                             NULL
-                           }
-                         })
                        }
                      })
         end.time <- Sys.time()
@@ -3293,6 +3287,13 @@ server <- function(input,output,session) {
     } else {
       trans$verif <- F
     }
+    output$verif <- renderUI({
+      if (isTruthy(trans$verif)) {
+        HTML(paste0(paste(line,"<br/>")))
+      } else {
+        NULL
+      }
+    })
   })
 
   # LS fit ####
