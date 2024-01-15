@@ -4350,6 +4350,7 @@ server <- function(input,output,session) {
           pwn <- wn * f_hz^0
           psd <- pwn
           crossover <- NULL
+          type_crossover <- NULL
           if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
             fl <- noise_var(trans$noise[3],-1)
             pfl <- fl * f_hz^-1
