@@ -1945,7 +1945,8 @@ server <- function(input,output,session) {
   # 3. series info
   info <- reactiveValues(points = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
-                         decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, step = NULL, step2 = NULL, errorbars = T,
+                         decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, errorbars = T,
+                         step = NULL, step2 = NULL, stepUnit = NULL,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits.label = NULL, tunits.known = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
@@ -6993,6 +6994,9 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$periodRef)) {
       info$periodRef <- F
     }
+    if (info$sampling0 > 0) {
+      info$sampling0 <- info$sampling0*scale
+    }
     if (length(trans$offsetEpochs) > 0) {
       inputs$offsetEpoch <- paste(sapply(trans$offsetEpochs, fun), collapse = ", ")
       updateTextInput(inputId = "offsetEpoch", value = inputs$offsetEpoch)
@@ -7319,6 +7323,7 @@ server <- function(input,output,session) {
       if (inputs$step > info$sampling0 && inputs$step <= (max(x) - min(x))/2) {
         tolerance <- min(diff(x,1))/3
         info$step <- inputs$step
+        info$stepUnit <- input$tunits
         withProgress(message = 'Averaging the series.',
                      detail = 'This may take a while ...', value = 0, {
                        w <- as.integer((max(x) - min(x))/inputs$step)
@@ -7359,6 +7364,7 @@ server <- function(input,output,session) {
         info$db1 <- "original"
         updateTextInput(session, inputId = "step", value = "")
         info$step <- NULL
+        info$stepUnit <- NULL
         showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
       }
     } else {
@@ -11314,6 +11320,13 @@ server <- function(input,output,session) {
       period <- "year"
       periods <- "years"
     }
+    if (info$stepUnit == 1) {
+      stepUnit <- "days"
+    } else if (info$stepUnit == 2) {
+      stepUnit <- "weeks"
+    } else if (info$stepUnit == 3) {
+      stepUnit <- "years"
+    }
     if (input$sunits == 1) {
       unit <- "(m)"
       units <- paste0("(m/",period,")")
@@ -11326,7 +11339,7 @@ server <- function(input,output,session) {
     }
     cat(paste('# Series units:', paste0('(', periods, ')'), unit, units), file = file_out, sep = "\n", fill = F, append = T)
     if (isTruthy(inputs$step) && inputs$step > 0) {
-      cat(paste('# Resampling:', inputs$step, periods), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Resampling:', inputs$step, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
       cat(sprintf('# Corrected with: %s',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
