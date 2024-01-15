@@ -4731,12 +4731,13 @@ server <- function(input,output,session) {
       withBusyIndicatorServer("runmle", {
         start.time <- Sys.time()
         if (messages > 2) cat(file = stderr(), "MLE fit start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
-        if (info$timeMLE < 15) {
-          message <- ""
-        } else if (info$timeMLE < 60) {
-          message <- paste("This should take less than 1 min")
-        } else {
-          message <- paste("This may take about", ceiling(info$timeMLE/60), "min")
+        message <- ""
+        if (isTruthy(info$timeMLE)) {
+          if (info$timeMLE < 60) {
+            message <- paste("This should take less than 1 min")
+          } else {
+            message <- paste("This may take about", ceiling(info$timeMLE/60), "min")
+          }
         }
         withProgress(message = 'Fitting the noise model.',
                      detail = message, value = 0, {
@@ -7919,6 +7920,15 @@ server <- function(input,output,session) {
     if (isTruthy(input$powerl)) {
       updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
     }
+    output$est.white <- renderUI({ NULL })
+    output$est.flicker <- renderUI({ NULL })
+    output$est.randomw <- renderUI({ NULL })
+    output$est.powerl <- renderUI({ NULL })
+    output$est.index <- renderUI({ NULL })
+    output$est.mle <- renderUI({ NULL })
+    output$est.unc <- renderUI({ NULL })
+    trans$noise <- NULL
+    trans$mle <- 0
   }, priority = 5)
 
   # Observe hide tabs ####
@@ -8903,7 +8913,7 @@ server <- function(input,output,session) {
   })
 
   # Observe noise model ####
-  observeEvent(c(input$white, input$flicker, input$randomw, input$powerl, input$noise_unc), {
+  observeEvent(c(input$white, input$flicker, input$randomw, input$powerl, input$noise_unc, info$points), {
     removeNotification("no_mle")
     removeNotification("too_long")
     trans$noise <- NULL
@@ -8925,71 +8935,73 @@ server <- function(input,output,session) {
       }
     }
     # estimating MLE duration
-    info$timeMLE <- 0
-    if (isTruthy(info$points) && info$points > 0) {
-      if (input$white) {
-        if (input$flicker) {
-          if (input$randomw) { # WH + FN + RW
-            if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(3e-08*info$points^2.9261)
-            } else {
-              info$timeMLE <- ceiling(7e-08*info$points^2.7735)
+    if (isTruthy(input$mle)) {
+      info$timeMLE <- 0
+      if (isTruthy(info$points) && info$points > 0) {
+        if (input$white) {
+          if (input$flicker) {
+            if (input$randomw) { # WH + FN + RW
+              if (isTruthy(input$noise_unc)) {
+                info$timeMLE <- ceiling(3e-08*info$points^2.9261)
+              } else {
+                info$timeMLE <- ceiling(7e-08*info$points^2.7735)
+              }
+            } else {  # WH + FN
+              if (isTruthy(input$noise_unc)) {
+                info$timeMLE <- ceiling(7e-08*info$points^2.7297)
+              } else {
+                info$timeMLE <- ceiling(6e-08*info$points^2.6829)
+              }
             }
-          } else {  # WH + FN
+          } else if (input$randomw) { # WH + RW
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(7e-08*info$points^2.7297)
+              info$timeMLE <- ceiling(6e-10*info$points^3.3903)
             } else {
-              info$timeMLE <- ceiling(6e-08*info$points^2.6829)
+              info$timeMLE <- ceiling(2e-09*info$points^3.2207)
             }
+          } else if (input$powerl) { # WH + PL
+            if (isTruthy(input$noise_unc)) {
+              info$timeMLE <- ceiling(5e-08*info$points^2.9773)
+            } else {
+              info$timeMLE <- ceiling(4e-08*info$points^2.9191)
+            }
+            info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
+          } else { # WH
+            info$timeMLE <- 2
           }
-        } else if (input$randomw) { # WH + RW
-          if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(6e-10*info$points^3.3903)
-          } else {
-            info$timeMLE <- ceiling(2e-09*info$points^3.2207)
+        } else if (input$flicker) {
+          if (input$randomw) { # FN + RW
+            if (isTruthy(input$noise_unc)) {
+              info$timeMLE <- ceiling(3e-08*info$points^2.8560)
+            } else {
+              info$timeMLE <- ceiling(2e-08*info$points^2.8413)
+            }
+          } else { # FN
+            info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
           }
-        } else if (input$powerl) { # WH + PL
+        } else if (input$randomw) { # RW
+          info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
+        } else if (input$powerl) { # PL
           if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(5e-08*info$points^2.9773)
+            info$timeMLE <- ceiling(5e-08*info$points^2.9304)
           } else {
-            info$timeMLE <- ceiling(4e-08*info$points^2.9191)
+            info$timeMLE <- ceiling(1e-08*info$points^3.0321)
           }
           info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
-        } else { # WH
-          info$timeMLE <- 2
         }
-      } else if (input$flicker) {
-        if (input$randomw) { # FN + RW
-          if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(3e-08*info$points^2.8560)
-          } else {
-            info$timeMLE <- ceiling(2e-08*info$points^2.8413)
-          }
-        } else { # FN
-          info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
+        if (info$timeMLE < 0) {
+          info$timeMLE <- 10
         }
-      } else if (input$randomw) { # RW
-        info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
-      } else if (input$powerl) { # PL
-        if (isTruthy(input$noise_unc)) {
-          info$timeMLE <- ceiling(5e-08*info$points^2.9304)
+      }
+      if (info$timeMLE > 0) {
+        if (info$timeMLE < 60) {
+          showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE), " sec"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
         } else {
-          info$timeMLE <- ceiling(1e-08*info$points^3.0321)
+          showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE/60), " min"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
         }
-        info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
-      }
-      if (info$timeMLE < 0) {
-        info$timeMLE <- 10
-      }
-    }
-    if (info$timeMLE > 0) {
-      if (info$timeMLE < 60) {
-        showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE), " sec"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
-      } else {
-        showNotification(paste0("The noise model fit may take about ", ceiling(info$timeMLE/60), " min"), action = NULL, duration = 10, closeButton = T, id = "timeWillTake", type = "warning", session = getDefaultReactiveDomain())
-      }
-      if (info$timeMLE > 14*60 && !isTruthy(info$local)) {
-        showNotification(HTML("The noise model analysis will likely not finish before the server closes the session for lack of user activity.<br>Consider averaging the series for a faster analysis."), action = NULL, duration = 10, closeButton = T, id = "too_long", type = "error", session = getDefaultReactiveDomain())
+        if (info$timeMLE > 14*60 && !isTruthy(info$local)) {
+          showNotification(HTML("The noise model analysis will likely not finish before the server closes the session for lack of user activity.<br>Consider averaging the series for a faster analysis."), action = NULL, duration = 10, closeButton = T, id = "too_long", type = "error", session = getDefaultReactiveDomain())
+        }
       }
     }
   })
