@@ -11404,22 +11404,22 @@ server <- function(input,output,session) {
     }
     if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
       if (isTruthy(trans$noise[1])) {
-        cat(paste('# Noise: WH', trans$noise[1], '+/-', trans$noise[2], unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: WH', format(trans$noise[1], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[2], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[3])) {
-        cat(paste('# Noise: FL', trans$noise[3], '+/-', trans$noise[4], unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: FL', format(trans$noise[3], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[4], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[5])) {
-        cat(paste('# Noise: RW', trans$noise[5], '+/-', trans$noise[6], unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: RW', format(trans$noise[5], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[6], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[7])) {
-        cat(paste('# Noise: PL', trans$noise[7], '+/-', trans$noise[8], unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: PL', format(trans$noise[7], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[8], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[9])) {
-        cat(paste('# Noise: K',  trans$noise[9], '+/-', trans$noise[10]), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: K', format(trans$noise[9], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[10], nsmall = info$decimalsy, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[11])) {
-        cat(sprintf('# Noise: MLE %f',as.numeric(trans$noise[11])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: MLE %s', format(trans$noise[11], nsmall = 2, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (isTruthy(input$sigmas)) {
