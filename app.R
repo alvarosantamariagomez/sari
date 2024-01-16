@@ -10086,7 +10086,7 @@ server <- function(input,output,session) {
                 periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"d",sep = ""))
               }
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
-                trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
+                trans$periods <- c(trans$periods, trim(paste(format(as.numeric(f), nsmall = 6, digits = 0),"d",sep = "")))
                 if (input$tunits == 1) {
                   f <- 1/as.numeric(f)
                 } else if (input$tunits == 2) {
@@ -10103,7 +10103,7 @@ server <- function(input,output,session) {
                 periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"w",sep = ""))
               }
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
-                trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
+                trans$periods <- c(trans$periods, trim(paste(format(as.numeric(f), nsmall = 6, digits = 0),"w",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*7
                 } else if (input$tunits == 2) {
@@ -10120,7 +10120,7 @@ server <- function(input,output,session) {
                 periods2 <- c(periods2, paste(as.numeric(f)/seq(h)[-1],"y",sep = ""))
               }
               if (nchar(f) > 0  && !is.na(as.numeric(f))) {
-                trans$periods <- c(trans$periods, trim(paste(f,"y",sep = "")))
+                trans$periods <- c(trans$periods, trim(paste(format(as.numeric(f), nsmall = 6, digits = 0),"y",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*1/daysInYear
                 } else if (input$tunits == 2) {
@@ -10227,7 +10227,7 @@ server <- function(input,output,session) {
             if (grepl("d",p)) {
               f <- gsub("d", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
-                trans$periods <- c(trans$periods, trim(paste(f,"d",sep = "")))
+                trans$periods <- c(trans$periods, trim(paste(format(as.numeric(f), nsmall = 6, digits = 0),"d",sep = "")))
                 if (input$tunits == 1) {
                   f <- 1/as.numeric(f)
                 } else if (input$tunits == 2) {
@@ -10241,7 +10241,7 @@ server <- function(input,output,session) {
             } else if (grepl("w",p)) {
               f <- gsub("w", "", p)
               if (nchar(f) > 0 && !is.na(as.numeric(f))) {
-                trans$periods <- c(trans$periods, trim(paste(f,"w",sep = "")))
+                trans$periods <- c(trans$periods, trim(paste(format(as.numeric(f), nsmall = 6, digits = 0),"w",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*7
                 } else if (input$tunits == 2) {
@@ -10255,7 +10255,7 @@ server <- function(input,output,session) {
             } else if (grepl("y",p)) {
               f <- gsub("y", "", p)
               if (nchar(f) > 0  && !is.na(as.numeric(f))) {
-                trans$periods <- c(trans$periods, trim(paste(f,"y",sep = "")))
+                trans$periods <- c(trans$periods, trim(paste(format(as.numeric(f), nsmall = 6, digits = 0),"y",sep = "")))
                 if (input$tunits == 1) {
                   f <- (1/as.numeric(f))*1/daysInYear
                 } else if (input$tunits == 2) {
@@ -11340,13 +11340,6 @@ server <- function(input,output,session) {
       period <- "year"
       periods <- "years"
     }
-    if (info$stepUnit == 1) {
-      stepUnit <- "days"
-    } else if (info$stepUnit == 2) {
-      stepUnit <- "weeks"
-    } else if (info$stepUnit == 3) {
-      stepUnit <- "years"
-    }
     if (input$sunits == 1) {
       unit <- "(m)"
       units <- paste0("(m/",period,")")
@@ -11359,6 +11352,13 @@ server <- function(input,output,session) {
     }
     cat(paste('# Series units:', paste0('(', periods, ')'), unit, units), file = file_out, sep = "\n", fill = F, append = T)
     if (isTruthy(inputs$step) && inputs$step > 0) {
+      if (info$stepUnit == 1) {
+        stepUnit <- "days"
+      } else if (info$stepUnit == 2) {
+        stepUnit <- "weeks"
+      } else if (info$stepUnit == 3) {
+        stepUnit <- "years"
+      }
       cat(paste('# Resampling:', inputs$step, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
@@ -11374,11 +11374,11 @@ server <- function(input,output,session) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
         max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
-        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', format(trans$LScoefs[i,1], nsmall = max_decimals, digits = 0), '+/-', format(trans$LScoefs[i,2], nsmall = max_decimals, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Parameter: %s = % .*f +/- %.*f', dimnames(trans$LScoefs)[[1]][i], max_decimals, trans$LScoefs[i,1], max_decimals, trans$LScoefs[i,2]), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
-          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f %s    Phase %f +/- %f (rad)', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], unit, trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
+          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f %s    Phase % f +/- %f (rad)', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], unit, trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
         } 
       }
     } else if (input$fitType == 2 && length(trans$kalman) > 0) {
@@ -11439,7 +11439,7 @@ server <- function(input,output,session) {
         cat(paste('# Noise: K', format(trans$noise[9], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[10], nsmall = info$decimalsy, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[11])) {
-        cat(sprintf('# Noise: MLE %s', format(trans$noise[11], nsmall = 2, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(sprintf('# Noise: MLE %s', format(trans$noise[11]/-1, nsmall = 2, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (isTruthy(input$sigmas)) {
