@@ -11358,7 +11358,7 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
-          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f %s    Phase %f +/- %f (grad)', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], unit, trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
+          cat(sprintf('# Sinusoidal period %*s :   Amplitude %f +/- %f %s    Phase %f +/- %f (rad)', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1], trans$results$sinusoidales[i,2], trans$results$sinusoidales[i,3], unit, trans$results$sinusoidales[i,4], trans$results$sinusoidales[i,5]), file = file_out, sep = "\n", fill = F, append = T)
         } 
       }
     } else if (input$fitType == 2 && length(trans$kalman) > 0) {
