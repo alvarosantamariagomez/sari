@@ -4335,13 +4335,16 @@ server <- function(input,output,session) {
         if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
           if (input$tunits == 1) { #days
             f_scale <- 24*60*60
+            samplingScale <- daysInYear
           } else if (input$tunits == 2) { #weeks
             f_scale <- 7*24*60*60
+            samplingScale <- daysInYear/7
           } else if (input$tunits == 3) { #years
-            f_scale <- 365.25*24*60*60
+            f_scale <- daysInYear*24*60*60
+            samplingScale <- 1
           }
-          fs_hz <- 1/(info$sampling*f_scale)
-          f_hz <- trans$fs/f_scale
+          fs_hz <- 1/(info$sampling*f_scale/samplingScale)
+          f_hz <- trans$fs * samplingScale/f_scale
           if (isTruthy(info$white)) {
             wn <- noise_var(trans$noise[1],0)
           } else {
@@ -5186,24 +5189,39 @@ server <- function(input,output,session) {
             if ("Linear" %in% input$model && input$fitType == 1) {
               if (isTruthy(trans$mle)) {
                 unc_pl <- 0
+                unc_pl_s <- 0 # scaled to year sampling
+                if (input$tunits == 1) { #days
+                  samplingScale <- daysInYear
+                } else if (input$tunits == 2) { #weeks
+                  samplingScale <- daysInYear/7
+                } else if (input$tunits == 3) { #years
+                  samplingScale <- 1
+                }
                 if (isTruthy(sigmaFL)) {
-                  unc <- pl_trend_unc(sigmaFL,-1)
-                  unc_pl <- sqrt(unc_pl^2 + unc^2)
+                  # unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling) # general power-law trend uncertainty
+                  # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
+                  unc_pl <- sqrt( 9 * sigmaFL^2 / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                  unc_pl_s <- sqrt( 9 * sigmaFL^2 / (16 * (info$sampling / samplingScale)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
                 }
                 if (isTruthy(sigmaRW)) {
-                  unc <- pl_trend_unc(sigmaRW,-2)
+                  # unc <- pl_trend_unc(sigmaRW,-2,info$sampling) # general power-law trend uncertainty
+                  unc <- sqrt( sigmaRW^2 / ((info$points - 1) * info$sampling) ) # from Zhang et al. (1997)
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
+                  unc <- sqrt( sigmaRW^2 / ((info$points - 1) * info$sampling / samplingScale) ) # from Zhang et al. (1997)
+                  unc_pl_s <- sqrt(unc_pl_s^2 + unc^2)
                 }
                 if (isTruthy(sigmaPL)) {
-                  unc <- pl_trend_unc(sigmaPL,sigmaK)
+                  unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling) # general power-law trend uncertainty
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
+                  unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling/samplingScale) # general power-law trend uncertainty
+                  unc_pl_s <- sqrt(unc_pl_s^2 + unc^2)
                 }
-                unc_white <- sqrt( 12 * sd(trans$res)^2 * (info$points - 1) / (info$points * info$rangex^2 * (info$points + 1)) )
+                unc_white <- sqrt( 12 * sd(trans$res)^2 / (info$points * ((info$points - 1) * info$sampling / samplingScale)^2) )
                 if (isTruthy(trans$unc)) {
                   if (isTruthy(unc_pl) && unc_pl > 0) {
                     trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
                     trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
+                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl_s/unc_white)
                     HTML(line1)
                   } else {
                     NULL
@@ -8938,6 +8956,7 @@ server <- function(input,output,session) {
           } else {
             info$timeMLE <- ceiling(4e-08*info$points^2.9191)
           }
+          info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
         } else { # WH
           info$timeMLE <- 2
         }
@@ -8959,6 +8978,7 @@ server <- function(input,output,session) {
         } else {
           info$timeMLE <- ceiling(1e-08*info$points^3.0321)
         }
+        info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
       }
       if (info$timeMLE < 0) {
         info$timeMLE <- 10
@@ -12779,7 +12799,14 @@ server <- function(input,output,session) {
     }
   }
   #
-  pl_trend_unc <- function(amp,index) {
+  pl_trend_unc <- function(amp,index,sampling) {
+    if (input$tunits == 1) { #days
+      samplingScale <- daysInYear
+    } else if (input$tunits == 2) { #weeks
+      samplingScale <- daysInYear/7
+    } else if (input$tunits == 3) { #years
+      samplingScale <- 1
+    }
     v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
     beta <- (-1*index)/2 - 2
     if (index < -1.3) {
@@ -12787,19 +12814,33 @@ server <- function(input,output,session) {
     } else {
       gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
     }
-    return(sqrt(amp^2 * v * info$sampling^beta * info$points^gamma))
+    return(sqrt(amp^2 * v * sampling^beta * info$points^gamma))
   }
   #
   noise_var <- function(std,k) {
+    # if (input$tunits == 1) { #days
+    #   f_scale <- 24*60*60
+    # } else if (input$tunits == 2) { #weeks
+    #   f_scale <- 7*24*60*60
+    # } else if (input$tunits == 3) { #years
+    #   f_scale <- 365.25*24*60*60
+    # }
+    # fs_hz <- 1/(info$sampling*f_scale)
+    # f_hz <- trans$fs/f_scale
+    
     if (input$tunits == 1) { #days
       f_scale <- 24*60*60
+      samplingScale <- daysInYear
     } else if (input$tunits == 2) { #weeks
       f_scale <- 7*24*60*60
+      samplingScale <- daysInYear/7
     } else if (input$tunits == 3) { #years
       f_scale <- 365.25*24*60*60
+      samplingScale <- 1
     }
-    fs_hz <- 1/(info$sampling*f_scale)
-    f_hz <- trans$fs/f_scale
+    fs_hz <- 1/(info$sampling*f_scale/samplingScale)
+    f_hz <- trans$fs * samplingScale/f_scale
+    
     Dk <- 2*(2*pi)^k * f_scale^(k/2)
     return(std^2 * Dk / (fs_hz^(1 + (k/2)))) #from Williams 2003 (Eq. 10)
   }
