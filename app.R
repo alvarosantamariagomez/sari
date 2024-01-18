@@ -7791,7 +7791,9 @@ server <- function(input,output,session) {
             file$id2 <- toupper(url$station2)
           }
         } else {
-          file$id2 <- toupper(strsplit(as.character(input$series2$name), "\\.|_|\\s|-|\\(")[[1]][1])
+          if (isTruthy(input$series2$name)) {
+            file$id2 <- toupper(strsplit(as.character(input$series2$name), "\\.|_|\\s|-|\\(")[[1]][1])
+          }
         }
         update <- 1
       }
