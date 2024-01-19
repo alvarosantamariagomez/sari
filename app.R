@@ -9378,7 +9378,7 @@ server <- function(input,output,session) {
         file$id2 <- toupper(url$station2)
       } else {
         file$id2 <- try(toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1]), silent = T)
-        if (inherits(file$id2,"try-error")) {
+        if (inherits(file$id2,"try-error") || file$id2 == "") {
           file$id2 <- NULL
           showNotification(HTML("Problem extracting the series ID from the secondary file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
         }
