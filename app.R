@@ -4001,11 +4001,12 @@ server <- function(input,output,session) {
           serie$z <- floor(serie$x/info$sampling)
           table <- as.data.table(serie, keep.rownames = T)
           uniques <- sum(setDT(table)[, .N, z]$N ==  1)
-          if (uniques > 0) {
-            showNotification(HTML(paste0(uniques," data epochs are not repeated in the series.<br>The waveform may be wrong at these epochs.")), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())
-          }
           average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2), std = sd(y)), by = z])
           result <- merge(serie,average, by = "z")
+          if (uniques > 0) {
+            result$std[is.na(result$std)] <- result$sy[is.na(result$std)]
+            showNotification(HTML(paste0(uniques," data epochs are not repeated in the series.<br>The waveform may be wrong at these epochs.")), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())
+          }
           result <- result[order(result$x0),]
           trans$pattern <- result$avg
           if (messages > 0) cat(file = stderr(), "Computing periodic waveform", "\n")
