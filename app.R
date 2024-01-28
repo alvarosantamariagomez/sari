@@ -4398,15 +4398,16 @@ server <- function(input,output,session) {
               type_crossover <- "Power-law / White"
             }
           }
-          if (isTruthy(input$spectrumFilterRes)) {
+          var <- NULL
+          if (isTruthy(input$spectrumFilterRes) && isTruthy(trans$filterRes)) {
             var <- var(trans$filterRes)
-          } else if (isTruthy(input$spectrumResiduals)) {
+          } else if (isTruthy(input$spectrumResiduals) && isTruthy(trans$res)) {
             var <- var(trans$res)
           }
           psd <- psd*var/sum(psd)
           lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
           output$crossover <- renderUI({
-            if (!is.null(trans$noise) && length(crossover) > 0) {
+            if (!is.null(trans$noise) && length(crossover) > 0 && var > 0) {
               line <- sprintf("<br/>Crossover period %s = %.2f %s\n", type_crossover, crossover, period)
               HTML(line)
             } else {
@@ -5649,11 +5650,14 @@ server <- function(input,output,session) {
         enable("format")
         enable("tunits")
         enable("sunits")
+        enable("series2")
         if (input$format == 4) {
           updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
+          disable("server2")
           shinyjs::delay(100, disable("format2"))
         } else {
           enable("format2")
+          enable("server2")
         }
         if (isTruthy(input$format2)) {
           if (input$format2 == 4) {
@@ -5700,12 +5704,6 @@ server <- function(input,output,session) {
         }
         if (!isTruthy(input$average) && length(inputs$step) > 0) {
           updateTextInput(session, inputId = "step", value = "")
-        }
-        enable("series2")
-        if (input$format == 4) {
-          disable("server2")
-        } else {
-          enable("server2") 
         }
         if (isTruthy(input$server2)) {
           enable("product2")
@@ -5860,9 +5858,13 @@ server <- function(input,output,session) {
               shinyjs::hide(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::hide(id = "res2", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::hide(id = "res3", anim = T, animType = "fade", time = 0.5, selector = NULL)
+              updateCheckboxInput(session, inputId = "spectrumResiduals", value = F)
+              updateCheckboxInput(session, inputId = "spectrumModel", value = F)
+              info$run <- F
               disable("mle")
               disable("spectrumModel")
               disable("spectrumResiduals")
+              
             }
           } else {
             if (isTruthy(input$model)) {
@@ -5872,8 +5874,22 @@ server <- function(input,output,session) {
             shinyjs::hide(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
             shinyjs::hide(id = "res2", anim = T, animType = "fade", time = 0.5, selector = NULL)
             shinyjs::hide(id = "res3", anim = T, animType = "fade", time = 0.5, selector = NULL)
-            disable("mle")
+            updateCheckboxInput(session, inputId = "spectrumResiduals", value = F)
+            updateCheckboxInput(session, inputId = "spectrumModel", value = F)
             info$run <- F
+            disable("mle")
+            disable("spectrumModel")
+            disable("spectrumResiduals")
+            
+          }
+          if (length(trans$filter) > 0) {
+            enable("spectrumFilter")
+            enable("spectrumFilterRes")
+          } else {
+            updateCheckboxInput(session, inputId = "spectrumFilter", value = F)
+            updateCheckboxInput(session, inputId = "spectrumFilterRes", value = F)
+            disable("spectrumFilter")
+            disable("spectrumFilterRes")
           }
           if (input$series2filter == 2 && input$fitType == 0) {
             updateRadioButtons(session, inputId = "series2filter", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T)
