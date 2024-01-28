@@ -5366,7 +5366,11 @@ server <- function(input,output,session) {
   output$downloadSpectrum1 <- output$downloadSpectrum2 <- output$downloadSpectrum3 <- downloadHandler(
     filename = function() {
       if (input$format != 4) {
-        paste0(file$primary$name, "_", input$tab, ".periodogram.sari")
+        if (any(grepl("East", info$components))) {
+          paste0(file$primary$name, "_", strsplit(info$components[as.numeric(input$tab)], " ")[[1]][1], ".periodogram.sari")
+        } else {
+          paste0(file$primary$name, "_", input$tab, ".periodogram.sari")
+        }
       } else {
         paste0(file$primary$name, ".periodogram.sari")
       }
@@ -5864,7 +5868,6 @@ server <- function(input,output,session) {
               disable("mle")
               disable("spectrumModel")
               disable("spectrumResiduals")
-              
             }
           } else {
             if (isTruthy(input$model)) {
@@ -5880,7 +5883,6 @@ server <- function(input,output,session) {
             disable("mle")
             disable("spectrumModel")
             disable("spectrumResiduals")
-            
           }
           if (length(trans$filter) > 0) {
             enable("spectrumFilter")
