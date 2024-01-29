@@ -11351,16 +11351,16 @@ server <- function(input,output,session) {
       periods <- "years"
     }
     if (input$sunits == 1) {
-      unit <- "(m)"
-      units <- paste0("(m/",period,")")
+      unit <- "m"
+      units <- paste0("m/",period)
     } else if (input$sunits == 2) {
-      unit <- "(mm)"
-      units <- paste0("(mm/",period,")")
+      unit <- "mm"
+      units <- paste0("mm/",period)
     } else {
       unit <- ""
       units <- ""
     }
-    cat(paste('# Series units:', paste0('(', periods, ')'), unit, units), file = file_out, sep = "\n", fill = F, append = T)
+    cat(paste('# Series units:', paste0('(', periods, ')'), paste0('(', unit, ')'), paste0('(', units, ')')), file = file_out, sep = "\n", fill = F, append = T)
     if (isTruthy(inputs$step) && inputs$step > 0) {
       if (info$stepUnit == 1) {
         stepUnit <- "days"
@@ -11437,13 +11437,13 @@ server <- function(input,output,session) {
         cat(paste('# Noise: WH', format(trans$noise[1], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[2], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[3])) {
-        cat(paste('# Noise: FL', format(trans$noise[3], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[4], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: FL', format(trans$noise[3], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[4], nsmall = info$decimalsy, digits = 0), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[5])) {
-        cat(paste('# Noise: RW', format(trans$noise[5], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[6], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: RW', format(trans$noise[5], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[6], nsmall = info$decimalsy, digits = 0), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[7])) {
-        cat(paste('# Noise: PL', format(trans$noise[7], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[8], nsmall = info$decimalsy, digits = 0), unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: PL', format(trans$noise[7], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[8], nsmall = info$decimalsy, digits = 0), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[9])) {
         cat(paste('# Noise: K', format(trans$noise[9], nsmall = info$decimalsy, digits = 0), '+/-', format(trans$noise[10], nsmall = info$decimalsy, digits = 0)), file = file_out, sep = "\n", fill = F, append = T)
