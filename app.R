@@ -3215,7 +3215,7 @@ server <- function(input,output,session) {
   }, width = reactive(info$width))
 
   # Offset verification ####
-  observeEvent(c(input$runVerif, input$verif_offsets), {
+  observeEvent(c(input$runVerif), {
     req(trans$res, trans$x, trans$offsetEpochs)
     if (isTruthy(input$verif_offsets) &&
         ((nchar(inputs$verif_white) > 0 && !is.na(inputs$verif_white) && inputs$verif_white > 0) ||
