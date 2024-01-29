@@ -3306,12 +3306,16 @@ server <- function(input,output,session) {
     if (input$tab == 4) {
       req(info$stop)
     }
-    output$offsetFound <- renderUI({
-      NULL
-    })
-    output$est.unc <- renderUI({
-      NULL
-    })
+    output$offsetFound <- renderUI({ NULL })
+    output$est.white <- renderUI({ NULL })
+    output$est.flicker <- renderUI({ NULL })
+    output$est.randomw <- renderUI({ NULL })
+    output$est.powerl <- renderUI({ NULL })
+    output$est.index <- renderUI({ NULL })
+    output$est.mle <- renderUI({ NULL })
+    output$est.unc <- renderUI({ NULL })
+    trans$noise <- NULL
+    trans$mle <- 0
     if (length(input$model) > 0) {
       if (input$fitType == 1) {
         if (messages > 0) cat(file = stderr(), "LS fit", "\n")
@@ -3482,12 +3486,16 @@ server <- function(input,output,session) {
     removeNotification("bad_obserror")
     removeNotification("bad_sigmaPoints")
     updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
-    output$offsetFound <- renderUI({
-      NULL
-    })
-    output$est.unc <- renderUI({
-      NULL
-    })
+    output$offsetFound <- renderUI({ NULL })
+    output$est.white <- renderUI({ NULL })
+    output$est.flicker <- renderUI({ NULL })
+    output$est.randomw <- renderUI({ NULL })
+    output$est.powerl <- renderUI({ NULL })
+    output$est.index <- renderUI({ NULL })
+    output$est.mle <- renderUI({ NULL })
+    output$est.unc <- renderUI({ NULL })
+    trans$noise <- NULL
+    trans$mle <- 0
     if (input$fitType == 2) {
       trans$mle <- F
       trans$verif <- NULL
@@ -6705,7 +6713,7 @@ server <- function(input,output,session) {
         lon2 <- ifelse(lon2 < -180, lon2 + 360, lon2)
         map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
       }
-      output$myMap = renderLeaflet(map)
+      output$myMap <- renderLeaflet(map)
       output$map <- renderUI({
         suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
       })
