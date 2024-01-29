@@ -4347,15 +4347,12 @@ server <- function(input,output,session) {
         if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
           if (input$tunits == 1) { #days
             f_scale <- 24*60*60
-            samplingScale <- daysInYear
           } else if (input$tunits == 2) { #weeks
             f_scale <- 7*24*60*60
-            samplingScale <- daysInYear/7
           } else if (input$tunits == 3) { #years
             f_scale <- daysInYear*24*60*60
-            samplingScale <- 1
           }
-          fs_hz <- 1/(info$sampling*f_scale/samplingScale)
+          samplingScale <- sqrt(info$rangex*daysInYear/7)
           f_hz <- trans$fs * samplingScale/f_scale
           if (isTruthy(info$white)) {
             wn <- noise_var(trans$noise[1],0)
@@ -5202,39 +5199,33 @@ server <- function(input,output,session) {
             if ("Linear" %in% input$model && input$fitType == 1) {
               if (isTruthy(trans$mle)) {
                 unc_pl <- 0
-                unc_pl_s <- 0 # scaled to year sampling
                 if (input$tunits == 1) { #days
-                  samplingScale <- daysInYear
+                  samplingScale <- 1/daysInYear
                 } else if (input$tunits == 2) { #weeks
-                  samplingScale <- daysInYear/7
+                  samplingScale <- 1/7
                 } else if (input$tunits == 3) { #years
-                  samplingScale <- 1
+                  samplingScale <- daysInYear
                 }
                 if (isTruthy(sigmaFL)) {
                   # unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling) # general power-law trend uncertainty
                   # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
-                  unc_pl <- sqrt( 9 * sigmaFL^2 / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
-                  unc_pl_s <- sqrt( 9 * sigmaFL^2 / (16 * (info$sampling / samplingScale)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                  unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
                 }
                 if (isTruthy(sigmaRW)) {
                   # unc <- pl_trend_unc(sigmaRW,-2,info$sampling) # general power-law trend uncertainty
-                  unc <- sqrt( sigmaRW^2 / ((info$points - 1) * info$sampling) ) # from Zhang et al. (1997)
+                  unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
-                  unc <- sqrt( sigmaRW^2 / ((info$points - 1) * info$sampling / samplingScale) ) # from Zhang et al. (1997)
-                  unc_pl_s <- sqrt(unc_pl_s^2 + unc^2)
                 }
                 if (isTruthy(sigmaPL)) {
-                  unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling) # general power-law trend uncertainty
+                  unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
-                  unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling/samplingScale) # general power-law trend uncertainty
-                  unc_pl_s <- sqrt(unc_pl_s^2 + unc^2)
                 }
-                unc_white <- sqrt( 12 * sd(trans$res)^2 / (info$points * ((info$points - 1) * info$sampling / samplingScale)^2) )
+                unc_white <- sqrt( 12 * sd(trans$res)^2 / (info$points * ((info$points - 1) * info$sampling)^2) )
                 if (isTruthy(trans$unc)) {
                   if (isTruthy(unc_pl) && unc_pl > 0) {
                     trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
                     trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl_s/unc_white)
+                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
                     HTML(line1)
                   } else {
                     NULL
@@ -12829,9 +12820,8 @@ server <- function(input,output,session) {
     }
     Z <- toeplitz(Delta[gaps])
     Z[upper.tri(Z)] <- 0
-    sampling <- 1 # no variance scaling
     # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
-    # Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
+    Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     if (deriv) {
       u <- 0 # u[1]
       for (i in 2:n) {
