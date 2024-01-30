@@ -8820,6 +8820,7 @@ server <- function(input,output,session) {
     trans$equation <- NULL
     trans$ordinate <- NULL
     trans$offsetEpochs <- NULL
+    trans$model_old <- NULL
     info$tol <- NULL
     trans$midas_vel <- NULL
     trans$midas_all <- NULL
