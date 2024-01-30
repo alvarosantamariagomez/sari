@@ -11369,7 +11369,7 @@ server <- function(input,output,session) {
       unit <- ""
       units <- ""
     }
-    cat(paste('# Series units:', paste0('(', periods, ')'), paste0('(', unit, ')'), paste0('(', units, ')')), file = file_out, sep = "\n", fill = F, append = T)
+    cat(paste('# Series units:', unit, periods, units), file = file_out, sep = "\n", fill = F, append = T)
     if (isTruthy(inputs$step) && inputs$step > 0) {
       if (info$stepUnit == 1) {
         stepUnit <- "days"
