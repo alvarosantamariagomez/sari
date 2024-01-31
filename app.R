@@ -732,7 +732,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   tags$a(href = "cral00fra_20231110.log", "Show file example", target = "_blank")
+                                                                                   uiOutput("sitelog")
                                                                             )
                                                                           ),
                                                                           fluidRow(
@@ -760,7 +760,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   tags$a(href = "station.info", "Show file example", target = "_blank")
+                                                                                   uiOutput("station.info")
                                                                             )
                                                                           ),
                                                                           fluidRow(
@@ -788,7 +788,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   tags$a(href = "soln.snx", "Show file example", target = "_blank")
+                                                                                   uiOutput("solnFile")
                                                                             )
                                                                           ),
                                                                           fluidRow(
@@ -816,7 +816,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   tags$a(href = "steps.txt", "Show file example", target = "_blank")
+                                                                                   uiOutput("customFile")
                                                                             )
                                                                           ),
                                                                           fluidRow(
@@ -2086,6 +2086,18 @@ server <- function(input,output,session) {
       })
       output$fileSeries2 <- renderUI({
         NULL
+      })
+      output$sitelog <- renderUI({
+        tags$a(href = "cral00fra_20231110.log", "Show file example", target = "_blank")
+      })
+      output$station.info <- renderUI({
+        tags$a(href = "station.info", "Show file example", target = "_blank")
+      })
+      output$solnFile <- renderUI({
+        tags$a(href = "soln.snx", "Show file example", target = "_blank")
+      })
+      output$customFile <- renderUI({
+        tags$a(href = "steps.txt", "Show file example", target = "_blank")
       })
     }
     info$intro <- F
@@ -6203,7 +6215,7 @@ server <- function(input,output,session) {
               # download associated logfile
               if (isTruthy(url$logfile)) {
                 showNotification(paste0("Downloading logfile for ",toupper(url$station),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-                file$primary$logfile <- tempfile()
+                file$primary$logfile <- "www/fileLog.txt"
                 down <- download("", url$logfile, file$primary$logfile)
                 if (down == 0) {
                   file$sitelog <- NULL
@@ -6262,7 +6274,7 @@ server <- function(input,output,session) {
                     session$sendCustomMessage("filename2", filename2)
                     if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
                       showNotification(paste0("Downloading logfile for ",toupper(url$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-                      file$secondary$logfile <- tempfile()
+                      file$secondary$logfile <- "www/fileLog.txt"
                       down <- download("", url$logfile2, file$secondary$logfile)
                       if (down == 0) {
                         file$sitelog <- NULL
@@ -6422,7 +6434,7 @@ server <- function(input,output,session) {
               session$sendCustomMessage("filename", filename)
               if (isTruthy(url$logfile)) {
                 showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-                file$primary$logfile <- tempfile()
+                file$primary$logfile <- "www/fileLog.txt"
                 down <- download("", url$logfile, file$primary$logfile)
                 if (down == 0) {
                   file$sitelog <- NULL
@@ -6512,7 +6524,7 @@ server <- function(input,output,session) {
             filename2 <- file$secondary$name
             if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
               showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-              file$secondary$logfile <- tempfile()
+              file$secondary$logfile <- "www/fileLog.txt"
               down <- download("", url$logfile2, file$secondary$logfile)
               if (down == 0) {
                 file$sitelog <- NULL
@@ -7182,14 +7194,26 @@ server <- function(input,output,session) {
   observeEvent(input$log, {
     req(db1$original)
     file$sitelog <- isolate(input$log)
+    file.copy(input$log$datapath, "www/fileLog.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
+    file$sitelog$datapath <- "www/fileLog.txt"
+  }, priority = 8)
+  observeEvent(input$sinfo, {
+    req(db1$original)
+    file$sinfo <- isolate(input$sinfo)
+    file.copy(input$sinfo$datapath, "www/fileStationInfo.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
+    file$sinfo$datapath <- "www/fileStationInfo.txt"
   }, priority = 8)
   observeEvent(input$soln, {
     req(db1$original)
     file$soln <- isolate(input$soln)
+    file.copy(file$soln$datapath, "www/fileSoln.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
+    file$soln$datapath <- "www/fileSoln.txt"
   }, priority = 8)
   observeEvent(input$custom, {
     req(db1$original)
     file$custom <- isolate(input$custom)
+    file.copy(file$custom$datapath, "www/fileCustom.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
+    file$custom$datapath <- "www/fileCustom.txt"
   }, priority = 8)
 
   # Observe series info ####
@@ -8642,8 +8666,8 @@ server <- function(input,output,session) {
   }, priority = 4)
 
   # Observe station.info ####
-  observeEvent(c(input$sinfo, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
-    req(input$sinfo,file$id1)
+  observeEvent(c(file$sinfo, input$series, input$series2, input$optionSecondary, file$id1, file$id2), {
+    req(file$sinfo,file$id1)
     if (messages > 0) cat(file = stderr(), "Reading station.info", "\n")
     id1 <- file$id1
     if (length(file$secondary) > 0) {
@@ -8655,7 +8679,10 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$sinfo_years <- info$sinfo <- ReadInfo(id1,id2,input$sinfo)
+    info$sinfo_years <- info$sinfo <- ReadInfo(id1,id2,file$sinfo)
+    output$station.info <- renderUI({
+      tags$a(href = basename(file$sinfo$datapath), "Show station.info", title = "Open the station.info file in a new tab", target = "_blank")
+    })
   }, priority = 4)
   observeEvent(c(input$printSinfo),{
     req(file$primary, input$sinfo)
@@ -8690,6 +8717,9 @@ server <- function(input,output,session) {
       id2 <- NULL
     }
     info$soln_years <- info$soln <- ReadSoln(id1,id2,file$soln)
+    output$solnFile <- renderUI({
+      tags$a(href = basename(file$soln$datapath), "Show soln file", title = "Open the soln file in a new tab", target = "_blank")
+    })
   }, priority = 4)
   observeEvent(c(input$printSoln),{
     req(file$primary, file$soln)
@@ -8717,6 +8747,9 @@ server <- function(input,output,session) {
       id2 <- NULL
     }
     info$custom_years <- info$custom <- ReadCustom(id1,id2,file$custom)
+    output$customFile <- renderUI({
+      tags$a(href = basename(file$custom$datapath), "Show custom file", title = "Open the custom file in a new tab", target = "_blank")
+    })
   }, priority = 4)
   observeEvent(c(input$printCustom),{
     req(file$primary, file$custom)
@@ -8734,10 +8767,18 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), "Reading sitelog", "\n")
     if (isTruthy(file$sitelog)) {
       info$log <- ReadLog(file$sitelog$datapath)
+      datapath <- basename(file$sitelog$datapath)
     } else if (isTruthy(file$primary$logfile)) {
       info$log <- ReadLog(file$primary$logfile)
+      datapath <- basename(file$primary$logfile)
     } else if (isTruthy(file$secondary$logfile)) {
       info$log <- ReadLog(file$secondary$logfile)
+      datapath <- basename(file$secondary$logfile)
+    }
+    if (isTruthy(datapath)) {
+      output$sitelog <- renderUI({
+        tags$a(href = datapath, "Show log file", title = "Open the log file in a new tab", target = "_blank")
+      })
     }
     if (any(!sapply(info$log, is.null))) {
       info$log_years <- info$log 
@@ -8878,6 +8919,18 @@ server <- function(input,output,session) {
     })
     output$fileSeries2 <- renderUI({
       NULL
+    })
+    output$sitelog <- renderUI({
+      tags$a(href = "cral00fra_20231110.log", "Show file example", target = "_blank")
+    })
+    output$station.info <- renderUI({
+      tags$a(href = "station.info", "Show file example", target = "_blank")
+    })
+    output$customFile <- renderUI({
+      tags$a(href = "steps.txt", "Show file example", target = "_blank")
+    })
+    output$solnFile <- renderUI({
+      tags$a(href = "soln.snx", "Show file example", target = "_blank")
     })
     shinyjs::hide("zoomin1")
     shinyjs::hide("zoomin2")
