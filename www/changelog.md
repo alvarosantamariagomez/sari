@@ -1,5 +1,37 @@
 # **SARI changelog**
 
+# febrero 2024 [2024.02]
+
+### Fixed
+- fixing the noise crossover and the uncertainty ratio for the RW and PL models when the time units are not years
+- fixing the power law variance scaling (typo from 2023.12 version)
+- showing the crossover period between RW and FN when WN is not estimated
+- taking into account the N@E option when merging the secondary series
+- taking into account the N@E option when computing the plate motion model of the secondary series
+- checking the values of the error bars extracted from the input series file
+- taking into account the truncation of the series in the overview plot
+- taking into account the points already removed from the series when applyting the truncation
+- fixing the time units in the results file when the series are resampled and the time units of the series change
+- fixing the units of the sinusoidal phase estimates in the results file
+- fixing the undefined errorbars of the periodic waveform when there is only one sample per epoch
+- running the offset verification only when hitting the button
+- avoiding computing and then hiding the periodogram with a change of the coordinate component
+
+### Changed
+- adding the units of the estimated power-law noise amplitudes to the results file
+- updating the predicted duration of the MLE analysis with the Nelder & Mead method
+- removing the offset verification results when deactivating the option
+- removing the filter residuals when deactivating the Vondrak filter option
+- removing the noise analysis results when changing the fitted model
+- removing the periodogram plot when the corresponding model or smoother series are not valid
+- improving the format of the numeric values in the results file
+- new format of the series units in the results file
+- adding the coordinate component in the name of the downloaded periodogram file
+
+### Added
+- new links on the left panel to open the uploaded ancillary files on a new browser tab
+- more information on screen when reading a NEU/ENU series fails
+
 # enero 2024 [2024.01]
 
 ### Fixed
@@ -15,24 +47,24 @@
 
 ### Changed
 - updating the ITRF plate model from ITRF2014 to ITRF2020
-- setting the priority of the model resiudals over the smoother residuals
+- setting the priority of the model residuals over the smoother residuals
 - correcting the number of decimals in some columns of the downloaded file
 - adding the coordinate component to the name of the downloaded file when using the local directory option
-- hidding the names of the coordinate component tabs till a file is loaded
+- hiding the names of the coordinate component tabs till a file is loaded
 - improving the fullSeries option & the range of the time axis
 - extracting the station coordinates for the secondary remote series
 - updating the location map when the secondary series changes
 - changing the name of the popup window with the series name
 - updating the overview plot in the popup window when the series plot changes
 - closing the popup window with the reset button
-- adding errorbars to the periodic waveform
+- adding error bars to the periodic waveform
 - improving the swap button with the sitelog names and the scale factor of the secondary series
 - disabling the sigmas option when loading a remote PSMSL series
 
 ### Added
 - popup message when the page is reloaded by the user on an active remote session
-- new option to truncate the time axis of the series (toogle or delete)
-- the downhill simplex method to improve the estimation of the spectral index of the PL noise model analysis 
+- new option to truncate the time axis of the series (toggle or delete)
+- the downhill simplex method to improve the estimation of the spectral index of the PL noise model analysis
 
 # diciembre 2023 [2023.12]
 

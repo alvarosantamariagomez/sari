@@ -346,7 +346,7 @@ options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI enero 2024"
+version <- "SARI febrero 2024"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
@@ -12705,7 +12705,7 @@ server <- function(input,output,session) {
         }
       } else {
         withBusyIndicatorServer(variable, {
-          if (file.exists("www/EOSTSL_database.txt")) {
+          if (file.exists("www/EOSTLS_database.txt")) {
             stations_available <- readLines("www/EOSTSL_database.txt", warn = F)
             if (series == 1) {
               output$station1 <- renderUI({

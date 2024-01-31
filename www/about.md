@@ -4,7 +4,7 @@ urlcolor: #2297E6
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version enero 2024'
+title: 'SARI documentation - version febrero 2024'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -66,7 +66,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *enero 2024*  --  "What would a computer do with a lifetime supply of chocolate?"
+Current SARI version: *febrero 2024*  --  "Between a human being and a person? ... my money's on the computer"
 
 -----------------
 
@@ -224,7 +224,7 @@ Notes:
 <sup>3</sup> The EarthScope (UNAVCO) series correspond to the *IGS14* solution.  
 <sup>4</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with *(d)*, if they are available. Products marked with *(o)* represent old products that are no longer updated.  
 
-Contact the [<a href="#author" target="_self">author</a>](#author) to add more servers or products.
+Contact the [<a href="#author" target="_self">author</a>](#author) if more servers or products need to be added.
 
 When uploading a series from a remote server via the the `server`, `product` and `station` parameters, SARI will also upload the corresponding *sitelog*, *soln.snx* or *custom offset* files depending on the selected server if these files are available for the selected station (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 
@@ -272,7 +272,8 @@ Note: Unfortunately, at this moment, the values of the UI interface, including t
 
 ### III. Ancillary information
 
-This block allows for the uploading of files containing complementary information related to the analysis of GNSS position time series. The user can upload any of the following possibilities:
+This block allows for the uploading of files containing complementary information related to the analysis of GNSS position time series. When an ancillary file is uploaded, the file contents can be visualized in a new browser tab by clicking on the link at the right of each file.  
+The user can upload any of the following possibilities:
 
 * a file with the LS or KF model parameters from a previously saved SARI file
 * a GNSS *sitelog* file (an example of this file can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/iraf00fra_20201021.log))
@@ -290,7 +291,7 @@ This block allows for the uploading of files containing complementary informatio
 2. The dates from the *sitelog*, *station.info* and *soln* files will be transformed according to the time unit selected for the series. If the time unit is days, the dates will be transformed into [Modified Julian Days](https://en.wikipedia.org/wiki/Julian_day). If the time unit is weeks, the dates will be transformed into [GPS weeks](https://en.wikipedia.org/wiki/GPS_week_number_rollover).  
 3. The station ID (see the [<a href="#input-format" target="_self">Input data and format</a>](#i.-input-data-and-format) block) will be used to extract the information from the *station.info*, *soln*, *customized offset*, and *plate motion* files. The user is responsible for checking that the station(s) in these files actually correspond to the same station ID being used (many GNSS stations around the world share the same ID).  
 4. The *customized offset* file must contain one or two columns separated by spaces or tabulations. The first column contains the date in the same time units as the input series. The second column is optional and contains the station ID. If the second column is present, only the dates corresponding to the current station ID will be extracted. If the second column is missing, all the dates in the file will be used. A warning will be shown if the file contains more than two columns.  
-5. As an exception, the discontinuities file from [the Geodesy Plotter](https://geodesy-plotter.ipgp.fr/data/SPOTGINS/formater_offset.dat) and from the [Nevada Geodetic Laboratory](http://geodesy.unr.edu/NGLStationPages/steps.txt) can be uploaded directly as a *customized offset* file without changing its format.
+5. As an exception, the discontinuities file from [the Geodesy Plotter](https://geodesy-plotter.ipgp.fr/data/SPOTGINS/formater_offset.dat) and from the [Nevada Geodetic Laboratory](http://geodesy.unr.edu/NGLStationPages/steps.txt) can be uploaded directly as a *customized offset* file without changing their format.
 
 <h5 id="notes-on-the-secondary-series"></h5>
 
@@ -461,7 +462,7 @@ This block allows for additional time series fitting, including:
 
 1. The smoother acts as a [band-pass filter](https://en.wikipedia.org/wiki/Band-pass_filter) and accepts two input periods: a *low-pass* and a *high-pass* cut-off. To smooth the variability between these two periods, input the cut-off period values as $low\:pass > high\:pass$. On the other hand, to smooth everything outside a selected band, swap the cut-off values and set $high\:pass > low\:pass$.  
 2. If the *low-pass* or the *high-pass* period is left blank, the smoother will react as a high-pass or a low-pass filter, respectively.  
-3. The cutoff period of the smoother is only approximate and depends on the number of points in the series. An empirical scaling has been applied to the algorithm, but thre may still be a bias between the user input cut-off period and the smoother cut-off response. Fortunately, this bias is constant for each series. Therefore, the bias, if any, can be assessed and taken into account by the user by looking at the intersection between the periodograms of the filter series and the filter residual series.  
+3. The cutoff period of the smoother is only approximate and depends on the number of points in the series. An empirical scaling has been applied to the algorithm, but there may still be a bias between the user input cut-off period and the smoother cut-off response. Fortunately, this bias is constant for each series. Therefore, the bias, if any, can be assessed and taken into account by the user by looking at the intersection between the periodograms of the filter series and the filter residual series.  
 4. Since it is based on cubic splines, the quality of the Vondr&#225;k smoother may degrade very close to the data limits at the start and end of series, but also near long data gaps.  
 5. If the band to be smoothed is narrow, a significant amount of signal will remain in the series. This is due to the relatively slow "spectral response" of the smoother, which is slightly worse than a Hanning window (Sylvain Loyer, personal communication).  
 6. The effect of filtering the series inside/outside the specified band can be assessed by plotting the periodogram of the filter and the filter residuals, or by using the wavelet transform.  
@@ -475,13 +476,13 @@ This block allows for additional time series fitting, including:
 2. The covariance model can be created from the combination of four stochastic processes commonly seen in GNSS position time series: [white noise](https://en.wikipedia.org/wiki/White_noise), [flicker noise](https://en.wikipedia.org/wiki/Flicker_noise), [random walk noise](https://en.wikipedia.org/wiki/Brownian_noise) and [power-law noise](https://en.wikipedia.org/wiki/Colors_of_noise#Power-law_noise).  
 3. The power-law noise is a generalization of the other "colored" noise processes and, thus, it is not possible to estimate power-law with flicker or random walk, but it is compatible with white noise, though.  
 4. The user needs to select the components of the noise model among the four proposed and SARI will provide the more likely values of the parameters of those components (noise variances and spectral index). The estimated log-likelihood can be used to assess which noise model is more likely to fit the residual series better. The power spectrum of the residual series can also be used to visually assess whether the estimated noise model is a reasonable fit of the series variance.  
-5. The estimated standard deviation (in the same units as the input series) for each noise process, plus the spectral index of the power-law, if selected, are provided on the left panel together with their formal errors if the option `Noise unc` is active.  The formal errors of the noise parameters can also be used to assess whether a noise component was clearly detected in the optimization process.  
+5. After the MLE fit, the left panel will contain the estimated amplitude of each noise process, given in $s$ $t^{\frac{k}{4}}$ units, where $s$ ant $t$ are the series and time units, respectively, and $k$ is the spectral index: *0* for white noise, *-1* for flicker noise, *-2* for random walk noise. If the `Noise unc` option was selected, the estimated formal errors will also be shown. The formal errors of the noise parameters can be used to assess whether a noise component was clearly detected in the optimization process.  
 6. A priori values of the noise parameters are computed assuming they all contribute equally to the series variance, except for the a priori RW variance which is kept minimum. The a priori value of the spectral index for the power-law model is that of a flicker noise model.  
 7. Several optimization methods have been implemented, both constrained and unconstrained. At this moment, SARI only uses the unconstrained quasi-Newton method proposed by [<a href="#references" target="_self">Schnabel et al (1985)</a>](#references), which was found to be the fastest among those tested.  
 8. The processing time of the *noise analysis* grows considerably for long series with high sampling and complex noise models. An estimate of the expected processing time, based on the number of points in the series, will be shown on the screen. Note that the expected time is only approximate, as it depends on how well the series fits the requested noise model and on the CPU used for the computations. For instance, in an online SARI session, a WN+PL model fit to a nine-year-long daily series will take around 14 min. Using SARI on a local session should produce much faster noise analyses than the online sessions, where resources are shared among users, even CPU in case of many simultaneous users (see details in the [<a href="#known-issues" target="_self">Known issues</a>](#known-issues) section). There is still room for optimization of the code in future versions, but at this moment, for online SARI sessions, it is recommended to reduce the sampling of the series to the minimum necessary. For instance, the periodogram can be used to assess the period from which the power-law noise is expected and then adjust the sampling of the series to half that period (the white noise will be mostly averaged out). For GNSS position time series, a weekly sampling is a reasonable choice. In that case, even a WN+PL model fit (or PL only actually) to a 22-year-long weekly series on an online session should take less than 1 min to finish.  
 9. For noise models that include more than one component, the uncertainty of the estimated parameters is obtained from a numerical approximation of the [Hessian](https://en.wikipedia.org/wiki/Hessian_matrix) of the log-likelihood. If the series is very long, computing the Hessian numerically can take a significant amount of time, so if the uncertainties of the noise parameters are not needed, the option `Noise unc` can be used to skip this computation and speed the noise analysis up. For noise models with a single component, the Hessian of the likelihood can be obtained analytically and very quickly, so the `Noise unc` option will not be available (uncertainty of the noise component computed by default).  
 10. The LS model fit is not updated with the estimated covariance matrix of the residuals. However, if the fitted LS model includes a linear trend, an approximation of its formal uncertainty is provided by taking into account the estimated colored noise. This is done using the general formula for the uncertainty in the rate for a power-law noise from [<a href="#references" target="_self">Williams (2003)</a>](#references). The estimated rate uncertainty from the noise analysis is then included into the linear trend uncertainty.  
-11. The ratio of the linear trend uncertainty (colored vs. white estimates) is also displayed on the left panel. Note that the white noise uncertainty used in this ratio does not necessarily correspond to the LS trend uncertainty, which includes the effect of the fitted model and especially the offsets. In other words, if the fitted LS model has many offsets, the colored noise might not contribute significantly to the linear trend uncertainty.  
+11. The ratio of the linear trend uncertainty (colored vs. white estimates) is also displayed on the left panel. This parameter represents a rough estimate of the amount of colored noise accounted for by the fitted noise model and can be used to compare different noise models. Note that the white noise uncertainty used in this ratio does not necessarily correspond to the LS trend uncertainty, which includes the effect of the fitted model and especially the offsets. In other words, if the fitted LS model has many offsets, the colored noise might actually not contribute significantly to the linear trend uncertainty.  
 12. If the power spectrum of the model residual or filter residual series is plotted, the power spectrum of the fitted noise model will be drawn on top of it. The crossover periods between the different noise components (if there is more than one noise component) will be shown on the left panel.  
 14. The estimated noise parameters can be used automatically to assess the statistical significance of the estimated offsets in a LS fit (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block).
 
@@ -641,7 +642,11 @@ For any comments, suggestions, questions, bugs, unexpected crashes or missing fe
 
 &nbsp;
 
-![](get.jpg) ![](ups.jpg) ![](omp.jpg) ![](resif_renag.png)
+![](get.jpg) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+![](ups.jpg) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+![](omp.jpg) 
+
+![](eposfr-renag.png)
 
 -----------------
 
