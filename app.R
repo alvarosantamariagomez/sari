@@ -1943,7 +1943,7 @@ server <- function(input,output,session) {
   ranges <- reactiveValues(x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL)
 
   # 3. series info
-  info <- reactiveValues(points = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
+  info <- reactiveValues(points = NULL, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, decimalsx = NULL,
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, errorbars = T,
                          step = NULL, step2 = NULL, stepUnit = NULL,
@@ -2212,11 +2212,12 @@ server <- function(input,output,session) {
         units <- "years"
     }
     line1 <- sprintf("Number of points = %d",info$points)
-    line2 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
-    line3 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, trans$x[1],info$decimalsx,trans$x[length(trans$x)])
-    line4 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
-    line5 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    HTML(paste("", line1, line2, line3, line4, line5, sep = "<br/>"))
+    line2 <- sprintf("Number of points removed = %d",info$removed)
+    line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
+    line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, trans$x[1],info$decimalsx,trans$x[length(trans$x)])
+    line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
+    line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
+    HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
   })
 
   # Debouncers & checks for reactive typed inputs ####
@@ -2675,6 +2676,7 @@ server <- function(input,output,session) {
     trans$x <- trans$xe <- trans$x0
     trans$x <- trans$x[status & !is.na(status)]
     trans$xe <- trans$xe[!status & !is.na(status)]
+    info$removed <- length(trans$x[!status | is.na(status)])
     trans$y <- trans$y0[!is.na(status)]
     if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
       # show all points from primary & secondary series
