@@ -5439,7 +5439,7 @@ server <- function(input,output,session) {
     if (!is.null(brush) && isTruthy(trans$y0[trans$x0 >= brush$xmin & trans$x0 <= brush$xmax]) && !all(is.na(values_now[trans$x0[!is.na(trans$y0)] > brush$xmin & trans$x0[!is.na(trans$y0)] < brush$xmax]))) {
       ranges$x1 <- c(brush$xmin, brush$xmax)
       ids <- trans$x >= ranges$x1[1] & trans$x <= ranges$x1[2]
-      if (sum(trans$y[ids & trans$y >= brush$ymin & trans$y <= brush$ymax]) > 0) {
+      if (length(trans$y[ids & trans$y >= brush$ymin & trans$y <= brush$ymax]) > 0) {
         ranges$y1 <- c(brush$ymin, brush$ymax) 
       } else {
         ranges$y1 <- range(trans$y[ids], na.rm = T)
