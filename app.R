@@ -9197,7 +9197,7 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       # Extracting station coordinates
-      spotgins <- grepl("^# SPOTGINS ", readLines(filein, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
+      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(filein, n = 1, warn = F), fixed = T)
       if (isTruthy(spotgins)) info$product1 <- "SPOTGINS_POS"
       coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,skip,sep))
       lat <- coordinates[4]
@@ -9435,7 +9435,7 @@ server <- function(input,output,session) {
             suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
           } else {
             # Extracting station coordinates
-            spotgins <- grepl("^# SPOTGINS ", readLines(files$datapath[i], n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
+            spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(files$datapath[i], n = 1, warn = F), fixed = T)
             if (isTruthy(spotgins)) info$product2 <- "SPOTGINS_POS"
             coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,skip,sep2)
             lat2 <- as.numeric(coordinates[4])
@@ -9519,7 +9519,7 @@ server <- function(input,output,session) {
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
       tunitsKnown <- F
-      spotgins <- grepl("^# SPOTGINS SOLUTION [POSITION] v", readLines(file, n = 1, warn = F), ignore.case = F, fixed = F, perl = T)
+      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(file, n = 1, warn = F), fixed = T)
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
