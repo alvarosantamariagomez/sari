@@ -5640,13 +5640,16 @@ server <- function(input,output,session) {
       disable("units")
       disable("verif_offsets")
       disable("euler")
-      enable("server1")
+      disable("server1")
       disable("station1")
       disable("product1")
       disable("server2")
       disable("station2")
       disable("product2")
       disable("swap")
+      disable("step")
+      disable("step2")
+      disable("scaleFactor")
     } else {
       if (length(file$primary) > 0) {
         info$menu <- unique(c(info$menu, 2))
@@ -5659,51 +5662,11 @@ server <- function(input,output,session) {
         enable("symbol")
         enable("header")
         enable("separator")
-        enable("separator2")
         enable("format")
         enable("tunits")
         enable("sunits")
-        enable("series2")
-        if (input$format == 4) {
-          updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
-          disable("server2")
-          shinyjs::delay(100, disable("format2"))
-        } else {
-          enable("format2")
-          enable("server2")
-        }
-        if (isTruthy(input$format2)) {
-          if (input$format2 == 4) {
-            disable("ne")
-          } else {
-            enable("ne")
-          }
-        }
         enable("units")
-        enable("log")
-        enable("sinfo")
-        enable("soln")
-        enable("custom")
-        enable("printLog")
-        enable("printSinfo")
-        enable("printSoln")
-        enable("printCustom")
-        if (!isTruthy(input$euler)) {
-          updateRadioButtons(session, inputId = "eulerType", selected = 0)
-          updateTextInput(inputId = "plate", value = "")
-        } else {
-          if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
-               ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)))) &&
-              ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
-            enable("eulerType")
-          } else {
-            disable("eulerType")
-          }
-        }
         enable("plot")
-        enable("overflow")
-        enable("add_excluded")
-        enable("permanent")
         if (isTruthy(info$errorbars)) {
           enable("sigmas")
         } else {
@@ -5715,100 +5678,70 @@ server <- function(input,output,session) {
         } else {
           disable("errorBar")
         }
-        if (!isTruthy(input$average) && length(inputs$step) > 0) {
-          updateTextInput(session, inputId = "step", value = "")
-        }
-        if (isTruthy(input$server2)) {
-          enable("product2")
-          if (isTruthy(input$product2)) {
-            enable("station2")
-          } else {
-            disable("station2")
-          }
-        } else {
-          disable("station2")
-          disable("product2")
-        }
-        if (length(file$secondary) > 0) {
-          enable("ne")
-          enable("format2")
-          enable("scaleFactor")
-          enable("step2")
-          enable("optionSecondary")
-          enable("separator2")
-          enable("epoch2")
-          enable("variable2")
-          if (input$sigmas == T) {
-            enable("errorBar2")
-          } else {
-            disable("errorBar2")
-          }
-          if (input$optionSecondary == 1) {
-            enable("fullSeries")
-            if (isTruthy(input$sameScale)) {
-              disable("same_axis")
-            } else {
-              enable("same_axis")
-            }
-            if (isTruthy(input$same_axis)) {
-              disable("sameScale")
-            } else {
-              enable("sameScale")
-            }
-            enable("swap")
-          } else {
-            disable("fullSeries")
-            disable("sameScale")
-            disable("same_axis")
-            disable("swap")
-          }
-        } else {
-          disable("optionSecondary")
-          disable("ne")
-          disable("format2")
-          disable("scaleFactor")
-          disable("step2")
-          disable("sameScale")
-          disable("same_axis")
-          disable("separator2")
-          disable("fullSeries")
-          disable("epoch2")
-          disable("variable2")
-          disable("errorBar2")
-          disable("swap")
-        }
         if (isTruthy(db1[[info$db1]])) {
           disable("plot")
-          enable("cut")
-          if (info$format < 4) {
-            enable("plotAll")
-          } else {
-            disable("plotAll")
-          }
           disable("series")
           disable("format")
           disable("separator")
-          enable("server2")
-          enable("average")
+          enable("overflow")
+          enable("cut")
+          enable("log")
+          enable("sinfo")
+          enable("soln")
+          enable("custom")
+          enable("printLog")
+          enable("printSinfo")
+          enable("printSoln")
+          enable("printCustom")
+          enable("traceLog")
+          enable("traceSinfo")
+          enable("traceSoln")
+          enable("traceCustom")
+          enable("permanent")
           enable("loadSARI")
           enable("midas")
           enable("reset")
+          enable("average")
+          if (!isTruthy(input$average) && length(inputs$step) > 0) {
+            updateTextInput(session, inputId = "step", value = "")
+          }
           enable("euler")
-          enable("neuenu")
+          if (!isTruthy(input$euler)) {
+            enable("neuenu")
+            updateRadioButtons(session, inputId = "eulerType", selected = 0)
+            updateTextInput(inputId = "plate", value = "")
+          } else {
+            disable("neuenu")
+            if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
+                 ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)))) &&
+                ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
+              enable("eulerType")
+            } else {
+              disable("eulerType")
+            }
+          }
+          if (input$format == 4) {
+            disable("plotAll")
+          } else {
+            enable("plotAll")
+          }
           if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0) {
             enable("remove")
           } else {
             disable("remove")
           }
           if (isTruthy(trans$xe)) {
+            disable("add_excluded")
             enable("delete_excluded")
           } else {
+            disable("add_excluded")
             disable("delete_excluded")
           }
-          enable("traceLog")
-          enable("traceSinfo")
-          enable("traceSoln")
-          enable("traceCustom")
+          if (sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status2, na.rm = T) && sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status3, na.rm = T)) {
+            enable("remove3D")
+          } else {
+            disable("remove3D")
+          }
           enable("histogram")
           enable("histogramType")
           enable("filter")
@@ -5828,10 +5761,78 @@ server <- function(input,output,session) {
           }
           enable("wavelet")
           enable("waveletType")
-          if (sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status2, na.rm = T) && sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status3, na.rm = T)) {
-            enable("remove3D")
+          enable("series2")
+          enable("server2")
+          if (isTruthy(input$server2)) {
+            enable("product2")
+            if (isTruthy(input$product2)) {
+              enable("station2")
+            } else {
+              disable("station2")
+            }
           } else {
-            disable("remove3D")
+            disable("station2")
+            disable("product2")
+          }
+          if (length(file$secondary) > 0) {
+            enable("format2")
+            if (input$format == 4) {
+              updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
+              disable("server2")
+              shinyjs::delay(100, disable("format2"))
+            } else {
+              enable("format2")
+              enable("server2")
+            }
+            enable("scaleFactor")
+            enable("step2")
+            enable("optionSecondary")
+            enable("separator2")
+            enable("epoch2")
+            enable("variable2")
+            if (input$sigmas == T) {
+              enable("errorBar2")
+            } else {
+              disable("errorBar2")
+            }
+            if (input$optionSecondary > 0) {
+              enable("ne")
+            } else {
+              disable("ne")
+            }
+            if (input$optionSecondary == 1) {
+              enable("fullSeries")
+              if (isTruthy(input$sameScale)) {
+                disable("same_axis")
+              } else {
+                enable("same_axis")
+              }
+              if (isTruthy(input$same_axis)) {
+                disable("sameScale")
+              } else {
+                enable("sameScale")
+              }
+              enable("swap")
+            } else {
+              disable("fullSeries")
+              disable("sameScale")
+              disable("same_axis")
+              disable("swap")
+            }
+          } else {
+            disable("optionSecondary")
+            disable("ne")
+            disable("format2")
+            disable("scaleFactor")
+            disable("step2")
+            disable("sameScale")
+            disable("same_axis")
+            disable("separator2")
+            disable("fullSeries")
+            disable("epoch2")
+            disable("variable2")
+            disable("errorBar2")
+            disable("swap")
           }
           enable("fitType")
           enable("model")
@@ -6054,6 +6055,8 @@ server <- function(input,output,session) {
           disable("cut")
           disable("plotAll")
           enable("series")
+          disable("series2")
+          disable("separator2")
           enable("format")
           disable("average")
           disable("server2")
