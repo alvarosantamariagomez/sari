@@ -146,7 +146,7 @@ color: gray62 !important;
 # show & check plotAll popup
 showPopup <- "shinyjs.showPopup = function(width) { overview = window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
 renamePopup <- "shinyjs.renamePopup = function(title) { overview.document.title = title; }"
-checkPopup <- "shinyjs.checkPopup = function() { var status = 'false'; if (typeof overview != 'undefined') { status = !overview.closed; } Shiny.onInputChange('overview', status);}"
+checkPopup <- "shinyjs.checkPopup = function() { var status = 'FALSE'; if (typeof overview === 'object') { status = !overview.closed; } Shiny.onInputChange('overview', status);}"
 
 # Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
 update_series <- "
@@ -3127,9 +3127,11 @@ server <- function(input,output,session) {
       shinyjs::hide(paste0("zoomin",input$tab))
     }
     js$checkPopup()
-    if (isTRUE(input$overview)) {
-      shinyjs::click("plotAll")
-    }
+    shinyjs::delay(100, {
+      if (isTRUE(isolate(input$overview))) {
+        shinyjs::click("plotAll")
+      }
+    })
     output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
       if (length(input$plot_1click$x) > 0) {
         paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
