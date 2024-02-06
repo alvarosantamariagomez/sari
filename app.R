@@ -9312,7 +9312,7 @@ server <- function(input,output,session) {
         table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
         removeNotification(paste0("parsing_url2_",i))
         removeNotification("parsing_url2")
-        # starting EOSTSL series at epoch .0
+        # starting EOSTLS series at epoch .0
         if (server == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
           while (table2$x1[1] %% 1 > 0) {
             table2 <- table2[-1,]
@@ -12716,7 +12716,7 @@ server <- function(input,output,session) {
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/EOSTLS_database.txt")) {
-            stations_available <- readLines("www/EOSTSL_database.txt", warn = F)
+            stations_available <- readLines("www/EOSTLS_database.txt", warn = F)
             if (series == 1) {
               output$station1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -12738,7 +12738,7 @@ server <- function(input,output,session) {
               }
             }
           } else {
-            showNotification(HTML("The list of EOSTSL stations is not found.<br>It is not possible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+            showNotification(HTML("The list of EOSTLS stations is not found.<br>It is not possible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
           }
           return(NULL)
         })
