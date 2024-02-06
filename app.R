@@ -9592,7 +9592,9 @@ server <- function(input,output,session) {
             }
           } else {
             extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$y1))
-            info$errorbars <- F
+            if (server != "EOSTLS" || series != 2) {
+              info$errorbars <- F
+            }
           }
           # get different time units
           if (isTruthy(extracted) && all(sapply(extracted, is.numeric))) {
