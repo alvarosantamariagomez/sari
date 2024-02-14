@@ -6164,164 +6164,166 @@ server <- function(input,output,session) {
 
   # Observe URL ####
   observeEvent(c(session$clientData$url_search), {
-    if (!isTruthy(url$station)) {
-      query <- parseQueryString(session$clientData$url_search)
-      if (length(query) > 0) {
-        removeNotification("parsing_url1")
-        removeNotification("parsing_url2")
-        removeNotification("no_local")
-        if (messages > 0) cat(file = stderr(), "Analyzing URL from", toupper(query[['server']]), "&", toupper(query[['product']]), "\n")
-        info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # info$local needs to be set here too
-        if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
-          removeNotification("bad_url")
-          if (!isTruthy(info$local) && tolower(query[['server']]) == "local") {
-            showNotification(paste0("Local server is not available on remote connections."), action = NULL, duration = 10, closeButton = T, id = "no_local", type = "warning", session = getDefaultReactiveDomain())
-            url$station <- NULL
-            url$file <- NULL
-            req(info$stop)
-          }
-          url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']],1))
-          if (isTruthy(url_info)) {
-            url$station <- url_info[1]
-            url$file <- url_info[2]
-            url$server <- toupper(query[['server']])
-            file$primary$name <- url_info[3]
-            info$format <- url_info[4]
-            url$logfile <- url_info[5]
-            info$product1 <- toupper(query[['product']])
-            if (tolower(query[['server']]) == "local") {
-              if (!isTruthy(file.exists(url$file))) {
-                showNotification(paste0("Local file ",url$file," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                url$station <- NULL
-                url$file <- NULL
-                req(info$stop)
-              }
-              showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              down <- 0
-              file$primary$datapath <- url$file
-            } else {
-              showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-              file$primary$datapath <- "www/fileSeries1.txt"
-              down <- download(url$server, url$file, file$primary$datapath)
-              if (file.exists(file$primary$datapath)) {
-                downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
-                if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                    length(downloaded) < 2) {
-                  down <- 1
-                }
-              }
-            }
-            if (isTruthy(down) && down == 0) {
-              if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
-              # update format for primary series
-              shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
-              # download associated logfile
-              if (isTruthy(url$logfile)) {
-                showNotification(paste0("Downloading logfile for ",toupper(url$station),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-                file$primary$logfile <- "www/fileLog.txt"
-                down <- download("", url$logfile, file$primary$logfile)
-                if (down == 0) {
-                  file$sitelog <- NULL
-                  session$sendCustomMessage("log", basename(url$logfile))
-                  shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
-                } else {
-                  showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                  file$primary$logfile <- NULL
-                  url$logfile <- NULL
-                }
-              }
-              # processing secondary series
-              if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
-                if (messages > 0) cat(file = stderr(), "Analyzing secondary URL from", toupper(query[['server2']]), "&", toupper(query[['product2']]), "\n")
-                url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],2))
-                if (isTruthy(url_info)) {
-                  url$station2 <- url_info[1]
-                  url$file2 <- url_info[2]
-                  url$server2 <- toupper(query[['server2']])
-                  file$secondary$name <- url_info[3]
-                  info$format2 <- url_info[4]
-                  url$logfile2 <- url_info[5]
-                  shinyjs::delay(100, updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2))
-                  if (tolower(query[['server2']]) == "local") {
-                    if (!isTruthy(file.exists(url$file2))) {
-                      showNotification(paste0("Local file ",url$file2," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                      url$station2 <- NULL
-                      url$file2 <- NULL
-                      req(info$stop)
-                    }
-                    showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    down <- 0
-                    file$secondary$datapath <- url$file2
-                  } else {
-                    showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                    file$secondary$datapath <- tempfile()
-                    down <- download(url$server2, url$file2, file$secondary$datapath)
-                    if (file.exists(file$secondary$datapath)) {
-                      downloaded <- readLines(file$secondary$datapath, warn = F)
-                      if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                          length(downloaded) < 2) {
-                        down <- 1
-                      }
-                    }
-                  }
-                  if (isTruthy(down) && down == 0) {
-                    if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath, "\n")
-                    info$menu <- unique(c(info$menu, 3))
-                    updateCollapse(session, id = "menu", open = info$menu)
-                    shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
-                    if (url$server2 == "LOCAL") {
-                      filename2 <- basename(url$file2)
-                    } else {
-                      filename2 <- file$secondary$name
-                    }
-                    session$sendCustomMessage("filename2", filename2)
-                    if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
-                      showNotification(paste0("Downloading logfile for ",toupper(url$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-                      file$secondary$logfile <- "www/fileLog.txt"
-                      down <- download("", url$logfile2, file$secondary$logfile)
-                      if (down == 0) {
-                        file$sitelog <- NULL
-                        session$sendCustomMessage("log", basename(url$logfile2))
-                        shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
-                      } else {
-                        showNotification(HTML(paste0("Logfile not found in ", url$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                        file$secondary$logfile <- NULL
-                      }
-                    }
-                  } else {
-                    removeNotification("parsing_url2")
-                    showNotification(HTML(paste0("File ",file$secondary$name," not found in ",toupper(query[['server2']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-                  }
-                }
-              }
-              shinyjs::delay(1500, {
-                if (messages > 4) cat(file = stderr(), "From: observe url\n")
-                digest(1)
-                if (isTruthy(url$station2) && isTruthy(url$file2) && isTruthy(url$server2)) {
-                  digest(2)
-                }
-                if (url$server == "LOCAL") {
-                  filename <- basename(url$file)
-                } else {
-                  filename <- file$primary$name
-                }
-                session$sendCustomMessage("filename", filename)
-              })
-            } else {
-              removeNotification("parsing_url1")
-              showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(query[['server']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+    if (length(input$isMobile) > 0 && !isTruthy(input$isMobile)) {
+      if (!isTruthy(url$station)) {
+        query <- parseQueryString(session$clientData$url_search)
+        if (length(query) > 0) {
+          removeNotification("parsing_url1")
+          removeNotification("parsing_url2")
+          removeNotification("no_local")
+          if (messages > 0) cat(file = stderr(), "Analyzing URL from", toupper(query[['server']]), "&", toupper(query[['product']]), "\n")
+          info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # info$local needs to be set here too
+          if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
+            removeNotification("bad_url")
+            if (!isTruthy(info$local) && tolower(query[['server']]) == "local") {
+              showNotification(paste0("Local server is not available on remote connections."), action = NULL, duration = 10, closeButton = T, id = "no_local", type = "warning", session = getDefaultReactiveDomain())
               url$station <- NULL
               url$file <- NULL
+              req(info$stop)
             }
+            url_info <- unlist(get_URL_info(query[['server']],query[['station']],query[['product']],1))
+            if (isTruthy(url_info)) {
+              url$station <- url_info[1]
+              url$file <- url_info[2]
+              url$server <- toupper(query[['server']])
+              file$primary$name <- url_info[3]
+              info$format <- url_info[4]
+              url$logfile <- url_info[5]
+              info$product1 <- toupper(query[['product']])
+              if (tolower(query[['server']]) == "local") {
+                if (!isTruthy(file.exists(url$file))) {
+                  showNotification(paste0("Local file ",url$file," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                  url$station <- NULL
+                  url$file <- NULL
+                  req(info$stop)
+                }
+                showNotification(paste0("Uploading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+                down <- 0
+                file$primary$datapath <- url$file
+              } else {
+                showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
+                file$primary$datapath <- "www/fileSeries1.txt"
+                down <- download(url$server, url$file, file$primary$datapath)
+                if (file.exists(file$primary$datapath)) {
+                  downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
+                  if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                      length(downloaded) < 2) {
+                    down <- 1
+                  }
+                }
+              }
+              if (isTruthy(down) && down == 0) {
+                if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
+                # update format for primary series
+                shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
+                # download associated logfile
+                if (isTruthy(url$logfile)) {
+                  showNotification(paste0("Downloading logfile for ",toupper(url$station),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
+                  file$primary$logfile <- "www/fileLog.txt"
+                  down <- download("", url$logfile, file$primary$logfile)
+                  if (down == 0) {
+                    file$sitelog <- NULL
+                    session$sendCustomMessage("log", basename(url$logfile))
+                    shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
+                  } else {
+                    showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                    file$primary$logfile <- NULL
+                    url$logfile <- NULL
+                  }
+                }
+                # processing secondary series
+                if (!is.null(query[['server2']]) && !is.null(query[['station2']]) && !is.null(query[['product2']])) {
+                  if (messages > 0) cat(file = stderr(), "Analyzing secondary URL from", toupper(query[['server2']]), "&", toupper(query[['product2']]), "\n")
+                  url_info <- unlist(get_URL_info(query[['server2']],query[['station2']],query[['product2']],2))
+                  if (isTruthy(url_info)) {
+                    url$station2 <- url_info[1]
+                    url$file2 <- url_info[2]
+                    url$server2 <- toupper(query[['server2']])
+                    file$secondary$name <- url_info[3]
+                    info$format2 <- url_info[4]
+                    url$logfile2 <- url_info[5]
+                    shinyjs::delay(100, updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2))
+                    if (tolower(query[['server2']]) == "local") {
+                      if (!isTruthy(file.exists(url$file2))) {
+                        showNotification(paste0("Local file ",url$file2," not found."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                        url$station2 <- NULL
+                        url$file2 <- NULL
+                        req(info$stop)
+                      }
+                      showNotification(paste0("Uploading series file ",file$secondary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+                      down <- 0
+                      file$secondary$datapath <- url$file2
+                    } else {
+                      showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
+                      file$secondary$datapath <- tempfile()
+                      down <- download(url$server2, url$file2, file$secondary$datapath)
+                      if (file.exists(file$secondary$datapath)) {
+                        downloaded <- readLines(file$secondary$datapath, warn = F)
+                        if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                            length(downloaded) < 2) {
+                          down <- 1
+                        }
+                      }
+                    }
+                    if (isTruthy(down) && down == 0) {
+                      if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath, "\n")
+                      info$menu <- unique(c(info$menu, 3))
+                      updateCollapse(session, id = "menu", open = info$menu)
+                      shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
+                      if (url$server2 == "LOCAL") {
+                        filename2 <- basename(url$file2)
+                      } else {
+                        filename2 <- file$secondary$name
+                      }
+                      session$sendCustomMessage("filename2", filename2)
+                      if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
+                        showNotification(paste0("Downloading logfile for ",toupper(url$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
+                        file$secondary$logfile <- "www/fileLog.txt"
+                        down <- download("", url$logfile2, file$secondary$logfile)
+                        if (down == 0) {
+                          file$sitelog <- NULL
+                          session$sendCustomMessage("log", basename(url$logfile2))
+                          shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
+                        } else {
+                          showNotification(HTML(paste0("Logfile not found in ", url$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                          file$secondary$logfile <- NULL
+                        }
+                      }
+                    } else {
+                      removeNotification("parsing_url2")
+                      showNotification(HTML(paste0("File ",file$secondary$name," not found in ",toupper(query[['server2']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                    }
+                  }
+                }
+                shinyjs::delay(1500, {
+                  if (messages > 4) cat(file = stderr(), "From: observe url\n")
+                  digest(1)
+                  if (isTruthy(url$station2) && isTruthy(url$file2) && isTruthy(url$server2)) {
+                    digest(2)
+                  }
+                  if (url$server == "LOCAL") {
+                    filename <- basename(url$file)
+                  } else {
+                    filename <- file$primary$name
+                  }
+                  session$sendCustomMessage("filename", filename)
+                })
+              } else {
+                removeNotification("parsing_url1")
+                showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(query[['server']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                url$station <- NULL
+                url$file <- NULL
+              }
+            }
+          } else {
+            showNotification(HTML(paste0("At least one missing argument in the URL (station, server and product).<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+            url$station <- NULL
+            url$file <- NULL
           }
         } else {
-          showNotification(HTML(paste0("At least one missing argument in the URL (station, server and product).<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           url$station <- NULL
           url$file <- NULL
         }
-      } else {
-        url$station <- NULL
-        url$file <- NULL
       }
     }
   })
