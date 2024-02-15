@@ -39,6 +39,7 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(spectral, verbose = F, quietly = T) #v2.0
   library(strucchange, verbose = F, quietly = T) #v1.5-2
   library(tseries, verbose = F, quietly = T) #v0.10-48
+  library(vsgoftest, verbose = F, quietly = T) #v1.0-1
 })))
 
 # Function to check and load packages if installed
@@ -296,7 +297,7 @@ tabContents <- function(tabNum) {
              verbatimTextOutput(paste0("changes_ant",tabNum,"c"), placeholder = F)
            ),
            conditionalPanel(
-             condition = "input.model.length > 0 || input.midas == true || input.optionSecondary == 1",
+             condition = "input.model.length > 0 || input.midas == true || input.entropy == true || input.optionSecondary == 1",
              verbatimTextOutput(paste0("summary",tabNum), placeholder = F)
            ),
            conditionalPanel(
@@ -1540,7 +1541,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                     div("MIDAS",
                                                                                         helpPopup("Median Interannual Difference Adjusted for Skewness")),
                                                                                     value = F),
-                                               
+                                                                      
+                                                                      ## % Entropy ####
+                                                                      checkboxInput(inputId = "entropy",
+                                                                                    div("Minimum Shannon entropy",
+                                                                                        helpPopup("Linear rate estimate from the differential minimum Shannon entropy")),
+                                                                                    value = F),
+                                                                      
                                                                       ## % Histogram ####
                                                                       fluidRow(
                                                                         column(12,
@@ -1980,7 +1987,8 @@ server <- function(input,output,session) {
                           noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, plate = NULL, plate2 = NULL, offsetEpochs = NULL, periods = NULL,
-                          x_orig = NULL, gaps = NULL)
+                          x_orig = NULL, gaps = NULL,
+                          entropy_vel = NULL, entropy_sig = NULL)
 
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -3231,7 +3239,48 @@ server <- function(input,output,session) {
     yfit <- dnorm(xfit,mean = mean(values, na.rm = T),sd = sd(values))
     lines(xfit, yfit, col = SARIcolors[2], lwd = 3)
   }, width = reactive(info$width))
-
+  
+  # Minimum entropy ####
+  observeEvent(c(input$entropy, trans$y, trans$offsetEpochs, info$rangex), {
+    removeNotification("bad_entropy")
+    req(trans$x, trans$y)
+    if (isTruthy(input$entropy)) {
+      if (messages > 0) cat(file = stderr(), "Computing entropy", "\n")
+      ap <- try(unname(summary(lm(trans$y~trans$x))$coefficients)[2,1:2], silent = T)
+      if (!isTruthy(ap) || inherits(ap,"try-error")) {
+        ap <- c(0,1)
+      }
+      ap.1 <- ap[1] - ap[2]*100
+      ap.2 <- ap[1] + ap[2]*100
+      vel_samples <- 200
+      incr <- (ap.2 - ap.1)/vel_samples
+      aps <- seq(ap.1,ap.2,incr)
+      time <- ceiling(0.0009 * info$points)
+      withProgress(message = 'Optimizing min entropy.',
+                   detail = paste("This should take about", time, "s"), value = 0, {
+                     H <- sapply(aps, function(v) compute_entropy(v))
+                     setProgress(0.7) # just for progress bar lovers
+                     Sys.sleep(1)
+                     setProgress(1)
+                     Sys.sleep(1)
+                   })
+      minH <- which.min(H)
+      if (minH < 10 || minH > vel_samples - 10) {
+        showNotification(HTML("The minimim entropy value is not optimal.<br>The series may not be linear or some discontinuities may need to be removed."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "warning", session = getDefaultReactiveDomain())
+      }
+      trans$entropy_vel <- aps[minH]
+      n <- 0
+      breaks <- c(trans$x[1],sort(trans$offsetEpochs),trans$x[length(trans$x)])
+      for (i in seq_len(length(breaks) - 1)) {
+        segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
+        n <- ifelse(sum(segment) > n, sum(segment), n)
+      }
+      trans$entropy_sig <- 2^(min(H) - 2.0471) * 12 / (info$rangex * sqrt(n))
+    } else {
+      trans$entropy_vel <- trans$entropy_sig <- NULL
+    }
+  })
+  
   # Offset verification ####
   observeEvent(c(input$runVerif), {
     req(trans$res, trans$x, trans$offsetEpochs)
@@ -3977,12 +4026,16 @@ server <- function(input,output,session) {
       cat("Parameter units:", unit, "&", units, "\n\n")
     }
     if (isTruthy(input$midas)) {
-      cat("MIDAS rate estimate")
+      cat("MIDAS rate estimate","\n")
       cat(trans$midas_vel, "+/-", trans$midas_sig, units, "\n\n")
       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
-        cat("MIDAS rate estimate (discontinuities skipped)")
+        cat("MIDAS rate estimate (discontinuities skipped)","\n")
         cat(trans$midas_vel2, "+/-", trans$midas_sig2, units, "\n\n")
       }
+    }
+    if (isTruthy(input$entropy) && isTruthy(trans$entropy_vel) && isTruthy(trans$entropy_sig)) {
+      cat("Minimum entropy rate estimate","\n")
+      cat(trans$entropy_vel, "+/-", trans$entropy_sig, units, "\n\n")
     }
     if (isTruthy(info$run) && length(trans$results) > 0) {
       if (input$fitType == 2) {
@@ -11485,11 +11538,14 @@ server <- function(input,output,session) {
     }
     if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
       if (isTruthy(trans$midas_vel2)) {
-        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# MIDAS:', trans$midas_vel2, '+/-', trans$midas_sig2, units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste(sprintf('# MIDAS: %.*f +/- %.*f', info$decimalsy + 1, trans$midas_vel, info$decimalsy + 1, trans$midas_sig), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste(sprintf('# MIDAS: %.*f +/- %.*f', info$decimalsy + 1, trans$midas_vel2, info$decimalsy + 1, trans$midas_sig2), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
       } else {
-        cat(paste('# MIDAS:', trans$midas_vel, '+/-', trans$midas_sig, units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste(sprintf('# MIDAS: %.*f +/- %.*f', info$decimalsy + 1, trans$midas_vel, info$decimalsy + 1, trans$midas_sig), units), file = file_out, sep = "\n", fill = F, append = T)
       }
+    }
+    if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
+      cat(paste(sprintf('# Minimum entropy rate: %.*f +/- %.*f', info$decimalsy + 1, trans$entropy_vel, info$decimalsy + 1, trans$entropy_sig), units), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$waveform && inputs$waveformPeriod > 0) {
       cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
@@ -13087,6 +13143,21 @@ server <- function(input,output,session) {
                           "   Variable2:", input$variable2,
                           "   ErrorBar2:", input$errorBar2,
                           "\n")
+  }
+  #
+  compute_entropy <- function(vel) {
+    H <- 0
+    breaks <- c(trans$x[1],sort(trans$offsetEpochs),trans$x[length(trans$x)])
+    detrended <- trans$y - trans$x * vel
+    for (i in seq_len(length(breaks) - 1)) {
+      segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
+      series <- detrended[segment]
+      w <- max(table(series)) + 1
+      p <- length(series)/length(detrended)
+      h <- p * suppressWarnings(entropy.estimate(x = series, window = w))
+      H <- H + h
+    }
+    return(H)
   }
 }
 
