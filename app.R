@@ -39,7 +39,6 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(spectral, verbose = F, quietly = T) #v2.0
   library(strucchange, verbose = F, quietly = T) #v1.5-2
   library(tseries, verbose = F, quietly = T) #v0.10-48
-  library(vsgoftest, verbose = F, quietly = T) #v1.0-1
 })))
 
 # Function to check and load packages if installed
@@ -1547,6 +1546,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                     div("Minimum Shannon entropy",
                                                                                         helpPopup("Linear rate estimate from the differential minimum Shannon entropy")),
                                                                                     value = F),
+                                                                      conditionalPanel(
+                                                                        condition = "input.entropy == true",
+                                                                        textInput(inputId = "offsetEpoch.entropy",
+                                                                                  div("Offset epochs (entropy)",
+                                                                                      helpPopup("Comma-separated list")),
+                                                                                  value = "")
+                                                                      ),
                                                                       
                                                                       ## % Histogram ####
                                                                       fluidRow(
@@ -1988,7 +1994,7 @@ server <- function(input,output,session) {
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, plate = NULL, plate2 = NULL, offsetEpochs = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL,
-                          entropy_vel = NULL, entropy_sig = NULL)
+                          entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL)
 
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -2263,6 +2269,11 @@ server <- function(input,output,session) {
   offsetEpoch_d <- reactive(input$offsetEpoch) %>% debounce(1000, priority = 1000)
   observeEvent(offsetEpoch_d(), {
     inputs$offsetEpoch <- trimws(offsetEpoch_d(), which = "both", whitespace = "[ \t\r\n]")
+  }, priority = 1000)
+  
+  offsetEpoch.entropy_d <- reactive(input$offsetEpoch.entropy) %>% debounce(1000, priority = 1000)
+  observeEvent(offsetEpoch.entropy_d(), {
+    inputs$offsetEpoch.entropy <- trimws(offsetEpoch.entropy_d(), which = "both", whitespace = "[ \t\r\n]")
   }, priority = 1000)
 
   ExponenRef_d <- reactive(input$ExponenRef) %>% debounce(1000, priority = 1000)
@@ -3241,11 +3252,57 @@ server <- function(input,output,session) {
   }, width = reactive(info$width))
   
   # Minimum entropy ####
-  observeEvent(c(input$entropy, trans$y, trans$offsetEpochs, info$rangex), {
+  observeEvent(c(input$entropy, trans$y, trans$offsetEpochs, inputs$offsetEpoch.entropy, info$rangex), {
     removeNotification("bad_entropy")
     req(trans$x, trans$y)
     if (isTruthy(input$entropy)) {
+      # checking offset epochs provided for the entropy analysis
+      offsetEpoch.entropy <- NULL
+      if (isTruthy(inputs$offsetEpoch.entropy)) {
+        offsetEpoch.entropy <- trimws(unlist(strsplit(inputs$offsetEpoch.entropy, split = ",")))
+        offsetEpoch.entropy_all <- offsetEpoch.entropy
+        # check for valid numeric values
+        not_numeric <- suppressWarnings(which(is.na(as.numeric(offsetEpoch.entropy))))
+        if (length(not_numeric) > 0) {
+          offsetEpoch.entropy <- offsetEpoch.entropy[-not_numeric]
+          showNotification(HTML(paste("The epoch given for offset(s)", paste0("#",not_numeric, collapse = " "), "is not numeric.<br>These offsets were skipped.")), action = NULL, duration = 10, closeButton = T, id = "not_numeric_offset", type = "warning", session = getDefaultReactiveDomain())
+        }
+        offsetEpoch.entropy <- as.numeric(offsetEpoch.entropy)
+        if (length(offsetEpoch.entropy) > 0) {
+          # check for soln without observations
+          offsetEpoch.entropy_sorted <- suppressWarnings(sort(offsetEpoch.entropy, na.last = NA))
+          if (length(offsetEpoch.entropy_sorted) > 1) {
+            invalidSegment <- sapply(seq(length(offsetEpoch.entropy_sorted) - 1), function(x) length(trans$x[trans$x > offsetEpoch.entropy_sorted[x] & trans$x < offsetEpoch.entropy_sorted[x + 1]]) ) == 0
+            for (soln in which(invalidSegment)) {
+              uselessOffset_id <- which.min(abs(offsetEpoch.entropy - offsetEpoch.entropy_sorted[soln]))
+              uselessOffset_id1 <- which.min(abs(suppressWarnings(as.numeric(offsetEpoch.entropy_all) - offsetEpoch.entropy_sorted[soln])))
+              uselessOffset_id2 <- which.min(abs(suppressWarnings(as.numeric(offsetEpoch.entropy_all) - offsetEpoch.entropy_sorted[soln + 1])))
+              offsetEpoch.entropy <- offsetEpoch.entropy[-uselessOffset_id]
+              showNotification(HTML(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,".<br>The first offset was skipped")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
+          # check for offsets outside data limits
+          toremove <- 999999
+          for (i in seq_len(length(offsetEpoch.entropy))) {
+            if (offsetEpoch.entropy[i] > trans$x[length(trans$x)] || offsetEpoch.entropy[i] < trans$x[1]) {
+              uselessOffset_id <- which.min(abs(suppressWarnings(as.numeric(offsetEpoch.entropy_all) - offsetEpoch.entropy[i])))
+              toremove <- c(toremove, i)
+              showNotification(HTML(paste0("There are no observations before or after offset #", uselessOffset_id,".<br>This offset was skipped.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
+          offsetEpoch.entropy <- offsetEpoch.entropy[-toremove]
+        }
+      }
+      trans$offsetEpoch.entropy <- offsetEpoch.entropy
+      # updating the list of entropy offsets with the LS offsets
+      if (length(trans$offsetEpochs) > length(offsetEpoch.entropy)) {
+        breaks <- paste(unique(sort(c(trans$offsetEpochs,offsetEpoch.entropy))), collapse = ", ")
+        # shinyjs::delay(100, updateTextInput(session, inputId = "offsetEpoch.entropy", value = breaks))
+        updateTextInput(session, inputId = "offsetEpoch.entropy", value = breaks)
+        req(info$stop)
+      }
       if (messages > 0) cat(file = stderr(), "Computing entropy", "\n")
+      # getting velocity samples to be tested
       ap <- try(unname(summary(lm(trans$y~trans$x))$coefficients)[2,1:2], silent = T)
       if (!isTruthy(ap) || inherits(ap,"try-error")) {
         ap <- c(0,1)
@@ -3255,6 +3312,7 @@ server <- function(input,output,session) {
       vel_samples <- 200
       incr <- (ap.2 - ap.1)/vel_samples
       aps <- seq(ap.1,ap.2,incr)
+      # estimating the entropy for each velocity
       time <- ceiling(0.0009 * info$points)
       withProgress(message = 'Optimizing min entropy.',
                    detail = paste("This should take about", time, "s"), value = 0, {
@@ -3264,18 +3322,22 @@ server <- function(input,output,session) {
                      setProgress(1)
                      Sys.sleep(1)
                    })
+      # getting the velocity estimate from the minimum entropy
       minH <- which.min(H)
       if (minH < 10 || minH > vel_samples - 10) {
         showNotification(HTML("The minimim entropy value is not optimal.<br>The series may not be linear or some discontinuities may need to be removed."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "warning", session = getDefaultReactiveDomain())
       }
       trans$entropy_vel <- aps[minH]
+      # reduce the series length due to offsets
       n <- 0
-      breaks <- c(trans$x[1],sort(trans$offsetEpochs),trans$x[length(trans$x)])
+      breaks <- unique(sort(c(trans$x[1],trans$offsetEpochs,offsetEpoch.entropy,trans$x[length(trans$x)])))
       for (i in seq_len(length(breaks) - 1)) {
         segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
         n <- ifelse(sum(segment) > n, sum(segment), n)
       }
-      trans$entropy_sig <- 2^(min(H) - 2.0471) * 12 / (info$rangex * sqrt(n))
+      l <- n/length(trans$x)
+      # compute the velocity uncertainty
+      trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$rangex * l)
     } else {
       trans$entropy_vel <- trans$entropy_sig <- NULL
     }
@@ -13146,15 +13208,22 @@ server <- function(input,output,session) {
   }
   #
   compute_entropy <- function(vel) {
+    # based on the entropy.estimate function from the vsgoftest package but in log2
     H <- 0
-    breaks <- c(trans$x[1],sort(trans$offsetEpochs),trans$x[length(trans$x)])
+    breaks <- unique(sort(c(trans$x[1],trans$offsetEpochs,trans$offsetEpoch.entropy,trans$x[length(trans$x)])))
     detrended <- trans$y - trans$x * vel
     for (i in seq_len(length(breaks) - 1)) {
       segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
       series <- detrended[segment]
       w <- max(table(series)) + 1
       p <- length(series)/length(detrended)
-      h <- p * suppressWarnings(entropy.estimate(x = series, window = w))
+      n <- length(series)
+      xord <- sort(series)
+      S <- numeric(n)
+      S[1:w] <- log2(n*(xord[1:w + w] - xord[1])/(2*w))
+      S[(w + 1):(n - w - 1)] <- log2(n*(xord[(w + 1):(n - w - 1) + w] - xord[(w + 1):(n - w - 1) - w])/(2*w))
+      S[(n - w):n] <- log2(n*(xord[n] - xord[(n - w):n - w])/(2*w))
+      h <- p * mean(S)
       H <- H + h
     }
     return(H)
