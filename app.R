@@ -1540,7 +1540,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                     div("MIDAS",
                                                                                         helpPopup("Median Interannual Difference Adjusted for Skewness")),
                                                                                     value = F),
-                                                                      
+                                               
                                                                       ## % Histogram ####
                                                                       fluidRow(
                                                                         column(12,
@@ -9755,8 +9755,8 @@ server <- function(input,output,session) {
         }
         if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
           if (epoch <= columns && variable <= columns) {
-            extracted <- data.frame(y1 = tableAll[[variable]])
-            if (all(sapply(extracted, is.numeric))) {
+            if (all(sapply(tableAll[[variable]], is.numeric))) {
+              extracted <- data.frame(y1 = tableAll[[variable]])
               # ISO 8601 dates
               if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[[epoch]], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
                 if (series == 1) {
@@ -9769,18 +9769,23 @@ server <- function(input,output,session) {
                 extracted$x3 <- mjd2year(extracted$x1)
               } else {
                 # assuming the time units set by the user are good
-                if (input$tunits == 1) {
+                if (all(sapply(tableAll[[epoch]], is.numeric))) {
                   extracted$x1 <- tableAll[[epoch]]
-                  extracted$x2 <- mjd2week(extracted$x1)
-                  extracted$x3 <- mjd2year(extracted$x1)
-                } else if (input$tunits == 2) {
-                  extracted$x2 <- tableAll[[epoch]]
-                  extracted$x1 <- week2mjd(extracted$x2)
-                  extracted$x3 <- week2year(extracted$x2)
-                } else if (input$tunits == 3) {
-                  extracted$x3 <- tableAll[[epoch]]
-                  extracted$x1 <- year2mjd(extracted$x3)
-                  extracted$x2 <- year2week(extracted$x3)
+                  if (input$tunits == 1) {
+                    extracted$x2 <- mjd2week(extracted$x1)
+                    extracted$x3 <- mjd2year(extracted$x1)
+                  } else if (input$tunits == 2) {
+                    extracted$x2 <- extracted$x1
+                    extracted$x1 <- week2mjd(extracted$x2)
+                    extracted$x3 <- week2year(extracted$x2)
+                  } else if (input$tunits == 3) {
+                    extracted$x3 <- extracted$x1
+                    extracted$x1 <- year2mjd(extracted$x3)
+                    extracted$x2 <- year2week(extracted$x3)
+                  }
+                } else {
+                  showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
+                  return(NULL)
                 }
               }
               if (columns > 2) {
