@@ -9215,7 +9215,7 @@ server <- function(input,output,session) {
       }
       # Setting series units if known
       if (isTruthy(url$server)) {
-        if (url$server == "EPOS" || url$server == "EOSTLS") {
+        if (url$server == "EPOS" || url$server == "EOSTLS" || url$server == "PSMSL") {
           updateRadioButtons(session, inputId = "sunits", selected = 2)
         } else {
           updateRadioButtons(session, inputId = "sunits", selected = 1)
@@ -12822,7 +12822,6 @@ server <- function(input,output,session) {
         disable("sigmas")
         if (series == 1) {
           updateSelectInput(session, inputId = "separator", selected = 3)
-          updateCheckboxInput(session, inputId = "tunits", value = 2) 
         } else if (series == 2) {
           updateSelectInput(session, inputId = "separator2", selected = 3)
         }
