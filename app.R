@@ -367,6 +367,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                 # tracker analytics
                 # tags$head(includeScript("matomo.js")),
                 
+                # bugfix for unsolicited scrolling to top of page when clicking on a fileInput button
+                # from https://github.com/rstudio/shiny/issues/3327
+                tags$script(
+                  HTML(
+                    'setTimeout(() => $(".shiny-bound-input[type=\'file\']").css("all","unset").css("display", "none"), 750);'
+                  )
+                ),
+                
                 # Getting the input elements that change
                 tags$script(
                   "$(document).on('shiny:inputchanged', function(event) {
