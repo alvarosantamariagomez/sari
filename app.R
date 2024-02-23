@@ -5219,25 +5219,19 @@ server <- function(input,output,session) {
             if ("Linear" %in% input$model && input$fitType == 1) {
               if (isTruthy(trans$mle)) {
                 unc_pl <- 0
-                if (input$tunits == 1) { #days
-                  samplingScale <- 1/daysInYear
-                } else if (input$tunits == 2) { #weeks
-                  samplingScale <- 1/7
-                } else if (input$tunits == 3) { #years
-                  samplingScale <- daysInYear
-                }
                 if (isTruthy(sigmaFL)) {
-                  # unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling) # general power-law trend uncertainty
+                  unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling) # general power-law trend uncertainty
                   # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
-                  unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                  # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
                 }
                 if (isTruthy(sigmaRW)) {
-                  # unc <- pl_trend_unc(sigmaRW,-2,info$sampling) # general power-law trend uncertainty
-                  unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
+                  unc <- pl_trend_unc(sigmaRW,-2,info$sampling) # general power-law trend uncertainty
+                  # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
                 }
                 if (isTruthy(sigmaPL)) {
-                  unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
+                  # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
+                  unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling) # general power-law trend uncertainty
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
                 }
                 unc_white <- sqrt( 12 * sd(trans$res)^2 / (info$points * ((info$points - 1) * info$sampling)^2) )
@@ -12922,19 +12916,14 @@ server <- function(input,output,session) {
   }
   #
   pl_trend_unc <- function(amp,index,sampling) {
-    if (input$tunits == 1) { #days
-      samplingScale <- daysInYear
-    } else if (input$tunits == 2) { #weeks
-      samplingScale <- daysInYear/7
-    } else if (input$tunits == 3) { #years
-      samplingScale <- 1
-    }
     v <- -0.0237*index^9 - 0.3881*index^8 - 2.6610*index^7 - 9.8529*index^6 - 21.0922*index^5 - 25.1638*index^4 - 11.4275*index^3 + 10.7839*index^2 + 20.3377*index^1 + 11.9942*index^0
     beta <- (-1*index)/2 - 2
-    if (index < -1.3) {
-      gamma <- -3 - index
+    if (index > -1.5 && index < -0.5) {
+      gamma <- -3 - index + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
+    } else if (index < -2.5) {
+      gamma <- -3 - index - 0.52 * index^2 - 2.67 * index - 3.43
     } else {
-      gamma <- -3 + (-1*index) + 7.7435*exp(-10)*index^17 - (0.0144/(0.27*sqrt(2*pi)))*exp(-0.5*((index + 1.025)/0.27)^2)
+      gamma <- -3 - index
     }
     return(sqrt(amp^2 * v * sampling^beta * info$points^gamma))
   }
