@@ -10171,7 +10171,9 @@ server <- function(input,output,session) {
             tenth <- length(y)
           }
           if (input$fitType == 1) {
-            fastFit <- lm(y ~ x)
+            x1 <- x - x[1]
+            fastFit <- lm(y ~ x1)
+            rm(x1)
           } else {
             fastFit <- try(lm(y[1:tenth]~x[1:tenth]), silent = F)
           }
