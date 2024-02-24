@@ -11577,10 +11577,10 @@ server <- function(input,output,session) {
       cat(paste('# Resampling:', inputs$step, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
-      cat(sprintf('# Corrected with: %s',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Corrected with: %s',file$secondary$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 3) {
-      cat(sprintf('# Averaged with: %s',input$series2$name), file = file_out, sep = "\n", fill = F, append = T)
+      cat(sprintf('# Averaged with: %s',file$secondary$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
       cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", info$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
