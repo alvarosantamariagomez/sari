@@ -558,7 +558,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          radioButtons(inputId = "tunits",
                                                                                                       div("Time units",
                                                                                                           helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
-                                                                                                      choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = 3, inline = F)
+                                                                                                      choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = "", inline = F)
                                                                                      ),
                                                                                      div(
                                                                                        radioButtons(inputId = "sunits",
@@ -2639,7 +2639,11 @@ server <- function(input,output,session) {
     # trans$sy2 = sigmas from secondary series (independent)
 
     # set time axis
-    if (input$tunits == 1) {
+    if (!isTruthy(input$tunits) || input$tunits == 3) {
+      trans$x0 <- table1$x3
+      trans$x2 <- table2$x3
+      info$tunits.label <- "years"
+    } else if (input$tunits == 1) {
       trans$x0 <- table1$x1
       trans$x2 <- table2$x1
       info$tunits.label <- "days"
@@ -2647,10 +2651,6 @@ server <- function(input,output,session) {
       trans$x0 <- table1$x2
       trans$x2 <- table2$x2
       info$tunits.label <- "weeks"
-    } else if (input$tunits == 3) {
-      trans$x0 <- table1$x3
-      trans$x2 <- table2$x3
-      info$tunits.label <- "years"
     }
     
     # extract data for each component
@@ -7080,7 +7080,7 @@ server <- function(input,output,session) {
 
   # Observe time units ####
   observeEvent(input$tunits, {
-    req(db1[[info$db1]])
+    req(db1[[info$db1]], input$tunits != info$tunits.last)
     if (input$tunits == 1) {
       x1 <- db1[[info$db1]]$x1
       x2 <- db2[[info$db2]]$x1
@@ -9365,12 +9365,18 @@ server <- function(input,output,session) {
         }
       }
       # Setting plot limits
-      if (input$tunits == 1) {
-        x <- table$x1
-      } else if (input$tunits == 2) {
-        x <- table$x2
-      } else if (input$tunits == 3) {
+      if (!isTruthy(input$tunits) && isTruthy(info$tunits.known1)) {
         x <- table$x3
+        info$tunits.last <- 3
+      } else {
+        if (input$tunits == 1) {
+          x <- table$x1
+        } else if (input$tunits == 2) {
+          x <- table$x2
+        } else if (input$tunits == 3) {
+          x <- table$x3
+        }
+        info$tunits.last <- input$tunits
       }
       info$minx <- min(x, na.rm = T)
       info$maxx <- max(x, na.rm = T)
@@ -9410,7 +9416,6 @@ server <- function(input,output,session) {
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
       # all good
-      info$tunits.last <- input$tunits
       info$db1 <- "original"
       db1$original <- as.data.frame(table)
       db1$original$status1 <- db1$original$status2 <- db1$original$status3 <- rep(T, length(table$x1))
@@ -9650,6 +9655,7 @@ server <- function(input,output,session) {
     removeNotification("no_values")
     removeNotification("no_epos")
     removeNotification("bad_sigmas")
+    removeNotification("no_tunits")
     if (format == 1) { #NEU/ENU
       skip <- 0
       a <- 6378137
@@ -9808,6 +9814,10 @@ server <- function(input,output,session) {
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
               } else {
+                if (!isTruthy(input$tunits)) {
+                  showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
+                  return(NULL)
+                }
                 # assuming the time units set by the user are good
                 if (input$tunits == 1) {
                   extracted$x1 <- tableAll[,1]
@@ -9907,6 +9917,10 @@ server <- function(input,output,session) {
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
               } else {
+                if (!isTruthy(input$tunits)) {
+                  showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
+                  return(NULL)
+                }
                 # assuming the time units set by the user are good
                 if (all(sapply(tableAll[[epoch]], is.numeric))) {
                   extracted$x1 <- tableAll[[epoch]]
@@ -9950,6 +9964,14 @@ server <- function(input,output,session) {
             }
           }
         }
+      }
+    }
+    if (!isTruthy(input$tunits)) {
+      if (isTruthy(info$tunits.known1)) {
+        updateRadioButtons(session, inputId = "tunits", selected = 3)
+      } else {
+        showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
       }
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
@@ -11328,22 +11350,24 @@ server <- function(input,output,session) {
     pout <- base::pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
     axis(2, at = pin, labels = pout)
-    if (input$tunits == 1) {
-      if (isTruthy(rangex)) {
-        ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
-      } else {
-        ticks <- base::pretty(x)
+    if (isTruthy(input$tunits)) {
+      if (input$tunits == 1) {
+        if (isTruthy(rangex)) {
+          ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
+        } else {
+          ticks <- base::pretty(x)
+        }
+        labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks))
+        axis(3, at = ticks, labels = labels_dyear)
+      } else if (input$tunits == 2) {
+        if (isTruthy(rangex)) {
+          ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
+        } else {
+          ticks <- base::pretty(x)
+        }
+        labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1980-01-06") + ticks*7))
+        axis(3, at = ticks, labels = labels_dyear)
       }
-      labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks))
-      axis(3, at = ticks, labels = labels_dyear)
-    } else if (input$tunits == 2) {
-      if (isTruthy(rangex)) {
-        ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
-      } else {
-        ticks <- base::pretty(x)
-      }
-      labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1980-01-06") + ticks*7))
-      axis(3, at = ticks, labels = labels_dyear)
     }
     if (sigma == T) {
       if (length(y) == length(z)) {
