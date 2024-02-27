@@ -6815,7 +6815,7 @@ server <- function(input,output,session) {
       lon <- ifelse(lon < -180, lon + 360, lon)
       if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
         plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
-        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, doubleClickZoom = F, scrollWheelZoom = "center", minZoom = 1)) %>%
           addTiles() %>%
           addPolygons(
             fillColor = "white",
@@ -6836,15 +6836,15 @@ server <- function(input,output,session) {
               textsize = "15px",
               direction = "auto")
           ) %>%
-          setView(lng = lon, lat = lat, zoom = 2) %>%
+          setView(lng = lon, lat = lat, zoom = 10) %>%
           addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
       } else {
         boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
         map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
           addTiles() %>%
           addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
-          setView(lng = lon, lat = lat, zoom = 2) %>%
-          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat)
+          setView(lng = lon, lat = lat, zoom = 10) %>%
+          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
       }
       if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
         lat2 <- inputs$station_lat2
