@@ -1969,7 +1969,7 @@ server <- function(input,output,session) {
                          decimalsy = NULL, menu = c(1,2), sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, errorbars = T,
                          step = NULL, step2 = NULL, stepUnit = NULL,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
-                         run = F, tunits.label = NULL, tunits.known = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
+                         run = F, tunits.label = NULL, tunits.known1 = F, tunits.known2 = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL,
@@ -8967,6 +8967,7 @@ server <- function(input,output,session) {
       db1[[i]] <- NULL
       db2[[i]] <- NULL
     }
+    updateRadioButtons(session, inputId = "tunits", selected = character(0))
     ranges$x1 <- NULL
     ranges$y1 <- NULL
     ranges$y12 <- NULL
@@ -9015,6 +9016,8 @@ server <- function(input,output,session) {
     info$PolyRef <- NULL
     info$periodRef <- NULL
     info$noLS <- F
+    info$tunits.known1 <- F
+    info$tunits.known2 <- F
     url$file <- NULL
     url$file2 <- NULL
     url$logfile <- NULL
