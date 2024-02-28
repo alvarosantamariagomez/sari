@@ -3327,14 +3327,15 @@ server <- function(input,output,session) {
       incr <- (ap.2 - ap.1)/vel_samples
       aps <- seq(ap.1,ap.2,incr)
       # estimating the entropy for each velocity
-      time <- ceiling(0.0009 * info$points)
+      time <- ceiling(0.0009 * info$points) + 1
       withProgress(message = 'Optimizing min entropy.',
                    detail = paste("This should take about", time, "s"), value = 0, {
+                     setProgress(0.3) # just for progress bar lovers
                      H <- sapply(aps, function(v) compute_entropy(v))
-                     setProgress(0.7) # just for progress bar lovers
-                     Sys.sleep(1)
+                     setProgress(0.7)
+                     Sys.sleep(0.5)
                      setProgress(1)
-                     Sys.sleep(1)
+                     Sys.sleep(0.5)
                    })
       # getting the velocity estimate from the minimum entropy
       minH <- which.min(H)
@@ -3342,14 +3343,14 @@ server <- function(input,output,session) {
         showNotification(HTML("The minimim entropy value is not optimal.<br>The series may not be linear or some discontinuities may need to be removed."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "warning", session = getDefaultReactiveDomain())
       }
       trans$entropy_vel <- aps[minH]
-      # reduce the series length due to offsets
+      # reducing the series length due to offsets
       n <- 0
       breaks <- unique(sort(c(trans$x[1],trans$offsetEpochs,offsetEpoch.entropy,trans$x[length(trans$x)])))
       for (i in seq_len(length(breaks) - 1)) {
         segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
         n <- ifelse(sum(segment) > n, sum(segment), n)
       }
-      l <- n/length(trans$x)
+      l <- (n + 2*info$points) / (3*info$points) # longest segment counts 1/3 of total length
       # compute the velocity uncertainty
       trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$rangex * l)
     } else {
