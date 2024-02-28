@@ -3262,6 +3262,8 @@ server <- function(input,output,session) {
   # Minimum entropy ####
   observeEvent(c(input$entropy, trans$y, trans$offsetEpochs, inputs$offsetEpoch.entropy, info$rangex), {
     removeNotification("bad_entropy")
+    removeNotification("different_offsets")
+    removeNotification("bad_offset_epoch")
     req(trans$x, trans$y)
     if (isTruthy(input$entropy)) {
       # checking offset epochs provided for the entropy analysis
@@ -3286,7 +3288,7 @@ server <- function(input,output,session) {
               uselessOffset_id1 <- which.min(abs(suppressWarnings(as.numeric(offsetEpoch.entropy_all) - offsetEpoch.entropy_sorted[soln])))
               uselessOffset_id2 <- which.min(abs(suppressWarnings(as.numeric(offsetEpoch.entropy_all) - offsetEpoch.entropy_sorted[soln + 1])))
               offsetEpoch.entropy <- offsetEpoch.entropy[-uselessOffset_id]
-              showNotification(HTML(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,".<br>The first offset was skipped")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification(HTML(paste0("There are no observations between offsets #", uselessOffset_id1, " and #", uselessOffset_id2,".<br>The first offset was skipped")), action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "warning", session = getDefaultReactiveDomain())
             }
           }
           # check for offsets outside data limits
@@ -3295,7 +3297,7 @@ server <- function(input,output,session) {
             if (offsetEpoch.entropy[i] > trans$x[length(trans$x)] || offsetEpoch.entropy[i] < trans$x[1]) {
               uselessOffset_id <- which.min(abs(suppressWarnings(as.numeric(offsetEpoch.entropy_all) - offsetEpoch.entropy[i])))
               toremove <- c(toremove, i)
-              showNotification(HTML(paste0("There are no observations before or after offset #", uselessOffset_id,".<br>This offset was skipped.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+              showNotification(HTML(paste0("There are no observations before or after offset #", uselessOffset_id,".<br>This offset was skipped.")), action = NULL, duration = 10, closeButton = T, id = "bad_offset_epoch", type = "warning", session = getDefaultReactiveDomain())
             }
           }
           offsetEpoch.entropy <- offsetEpoch.entropy[-toremove]
@@ -3303,11 +3305,15 @@ server <- function(input,output,session) {
       }
       trans$offsetEpoch.entropy <- offsetEpoch.entropy
       # updating the list of entropy offsets with the LS offsets
-      if (length(trans$offsetEpochs) > length(offsetEpoch.entropy)) {
-        breaks <- paste(unique(sort(c(trans$offsetEpochs,offsetEpoch.entropy))), collapse = ", ")
-        # shinyjs::delay(100, updateTextInput(session, inputId = "offsetEpoch.entropy", value = breaks))
-        updateTextInput(session, inputId = "offsetEpoch.entropy", value = breaks)
-        req(info$stop)
+      if (isTruthy(input$model)) {
+        if (length(setdiff(trans$offsetEpochs,trans$offsetEpoch.entropy)) > 0) {
+          breaks <- paste(unique(sort(c(trans$offsetEpochs,offsetEpoch.entropy))), collapse = ", ")
+          updateTextInput(session, inputId = "offsetEpoch.entropy", value = breaks)
+          req(info$stop)
+        }
+        if (length(trans$offsetEpochs) < length(offsetEpoch.entropy)) {
+          showNotification(HTML("Warning: there are more offset epochs used in the entropy estimate than in the LS estimate.<br>Check all the offset epochs are correct for the entropy estimate."), action = NULL, duration = 10, closeButton = T, id = "different_offsets", type = "warning", session = getDefaultReactiveDomain())
+        }
       }
       if (messages > 0) cat(file = stderr(), "Computing entropy", "\n")
       # getting velocity samples to be tested
