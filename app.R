@@ -12468,26 +12468,32 @@ server <- function(input,output,session) {
           filepath <- paste0(url,name)
         } else {
           withBusyIndicatorServer(variable, {
-            listStations <- try(unlist(strsplit(grep(" POS ", suppressWarnings(readLines("https://sideshow.jpl.nasa.gov/post/tables/table1.html", warn = F)), ignore.case = F, value = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(1,3,4,5)], silent = T)
-            if (isTruthy(listStations) && !inherits(listStations,"try-error")) {
-              writeLines(listStations, "www/JPL_database.txt", sep = "\n")
-            } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-              return(NULL)
+            if (!file.exists("www/JPL_database.txt")) {
+              fullFile <- try(suppressWarnings(read.table("https://sideshow.jpl.nasa.gov/post/tables/table1.html", skip = 6, fill = T)), silent = T)
+              if (isTruthy(fullFile) && !inherits(fullFile,"try-error")) {
+                listStations <- fullFile[fullFile$V2 == "POS", c(1,3,4,5)]
+                rm(fullFile)
+                listStations$V3 <- as.numeric(listStations$V3) / 1000
+                listStations$V4 <- as.numeric(listStations$V4) / 1000
+                listStations$V5 <- as.numeric(listStations$V5) / 1000
+                write.table(listStations, "www/JPL_database.txt", append = F, quote = F, sep = " ", row.names = F, col.names = F)
+                rm(listStations)
+              } else {
+                showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                return(NULL)
+              }
             }
-            if (file.exists("www/JPL_database.txt")) {
-              stations_available <- read.table("www/JPL_database.txt")$V1
-              if (series == 1) {
-                output$station1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })  
-              } else if (series == 2) {
-                output$station2 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })
-                if (input$sunits == 2) {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
-                }
+            stations_available <- read.table("www/JPL_database.txt")$V1
+            if (series == 1) {
+              output$station1 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })  
+            } else if (series == 2) {
+              output$station2 <- renderUI({
+                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+              })
+              if (input$sunits == 2) {
+                updateTextInput(session, inputId = "scaleFactor", value = "1000")
               }
             }
             return(NULL)
