@@ -3189,6 +3189,8 @@ server <- function(input,output,session) {
                            showNotification("Not enough interannual differences to compute a reliable trend.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
                            updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
                          }
+                       } else {
+                         trans$midas_vel2 <- NULL
                        }
                      })
       } else {
