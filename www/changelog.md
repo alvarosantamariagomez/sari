@@ -1,5 +1,34 @@
 # **SARI changelog**
 
+# marzo 2024 [2024.03]
+
+### Fixed
+- improving the estimate of the linear trend uncertainty from a PL noise fit
+- improving the a priori linear trend value when the sampling is extremely small
+- checking the numeric values of the epoch's column in a 1D file
+- fixing the zoom on series with zero values
+- downloading the list of available JPL stations if the list is not available on disk
+- correcting the name of the secondary series in the downloaded file
+- avoiding processing the URL for mobile connections
+- correcting the print of the sinusoidal phase units
+- differentiating between position and tropo series from SPOTGINS
+- removing the second MIDAS trend estimate when there are no offsets left in the LS model
+
+### Changed
+- forcing the location of the map center to be closer to the mark location when zooming in and out
+- patching the scrolling behaviour when loading a file (shiny bug)
+- checking if the time units of the series are known or set before plotting
+- removing the flag of known time units when resetting the analysis
+- keeping the error bars active when loading a secondary series from EOSTLS
+- correcting EOSTSL by EOSTLS
+- correcting the series units from the PSMSL
+- checking the coordinates extracted from a SPOTGINS position series
+- reducing the screen width for mobile devices
+
+### Added
+- option to estimate the linear trend based on the Shannon entropy
+- showing the number of removed points in the series information block
+
 # febrero 2024 [2024.02]
 
 ### Fixed

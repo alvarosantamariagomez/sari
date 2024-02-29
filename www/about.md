@@ -4,7 +4,8 @@ urlcolor: #2297E6
 header-includes:
    - \usepackage{color}
    - \usepackage{courier}
-title: 'SARI documentation - version febrero 2024'
+   - \linespread{1.25}
+title: 'SARI documentation - version marzo 2024'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -66,7 +67,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *febrero 2024*  --  "Between a human being and a person? ... my money's on the computer"
+Current SARI version: *marzo 2024*  --  "How do you know if you want something yourself or if your upbringing programmed you to want it?"
 
 -----------------
 
@@ -87,7 +88,8 @@ This block allows uploading and setting the series format, if necessary, before 
 There are three different ways to upload a time series on SARI:
 
 1) The user can upload GNSS series from <ins>**local files**</ins> using the `Input series` option. GNSS series are allowed in the *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension *.pos*, version 1.1.0) and *NGL* (with extension *.tenv3*). For series that are not in *NEU/ENU*, *PBO* or *NGL* format, the user must use the *1D* option, then set the column separator (blanks, commas or semi-colons) and then set the column numbers containing the epochs, the variable and the error bars if available.  
-For *NEU/ENU* and *1D* series, the user must set the `Time units` (days, weeks or years) and the `Series units` (metres or millimetres) of the input series, which are otherwise unknown to SARI. Unless changed by the user, the defaul `Time units` are years. For the *PBO* and *NGL* series, different time units are available in these formats, so changing the `Time units` is optional. The latter also applies in case of a *NEU/ENU* series where the epochs are provided in [ISO 8601 calendar date and time format](https://en.wikipedia.org/wiki/ISO_8601). Setting the `Time units` to days may be necessary in case the user wants to compute the difference between the primary and secondary series (see more details in the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
+For *NEU/ENU* and *1D* series, the user may need to set the `Time units` (days, weeks or years) and the `Series units` (metres or millimetres) of the input series, which may be otherwise unknown to SARI. For the *PBO* and *NGL* series, different time units are available in these formats, so changing the `Time units` is optional. The latter also applies in case of a *NEU/ENU* series where the epochs are provided in [ISO 8601 calendar date and time format](https://en.wikipedia.org/wiki/ISO_8601).  
+The user must pay attention to the time units that are set when the series are loaded, as these units will define the sampling of the series. Changing the time units later when the series are already plotted will chage the units of the time axis, but not its sampling, i.e. it will change one point per day into one ponint per ~0.1429 weeks or ~0.0027 years.  
 The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. In case uncommented text is found, the behavior depends on the requested series format:  
 Any non-numeric value in a *NEU/ENU* or *1D* series will make the full line to be skipped.  
 For the *PBO* and *NGL* series, the headers are recognized and skipped, also the first two columns of the *NGL* files and the last column of the *PBO* files. However, any other non-numeric value in these files will stop the app.  
@@ -300,7 +302,7 @@ The user can upload any of the following possibilities:
 1. The secondary series can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single secondary series. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single secondary series representing the total loading at the site.  
 2. Several loading products can be selected and uploaded directly from the EOSTSL server (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model [ERA5TUGO(d)] together with hydrology loading (soil moisture and snow) from the same ERA5 reanalysis [ERA5HYD(d)]. More details at the [EOSTLS server](http://loading.u-strasbg.fr).  
 3. If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the reponsability of the user to verify that they have consistent time units and sampling.  
-4. <b><span style="color: red;">NEW EXPERIMENTAL FEATURE:</span></b> the `Swap` button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling or plate motion corrections.  
+4. <b><span style="color: red;">EXPERIMENTAL FEATURE:</span></b> the `Swap` button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling or plate motion corrections.  
 5. When uploading a *secondary series*, both station IDs will be shown in the `series ID` box on the left panel, together with a "*&*" when using the option `show`, a "&ndash;" when using the option `correct`, or a "+" when using the option `average`.  
 6. If the `show` option is selected, the *secondary series* will be plotted in green on the right y-axis and will not be included in the processing. This means that the *secondary series* could have a different sampling than the primary series. In case the `correct` or the `average` option is selected, only the common epochs between the primary and the *secondary series* will be shown. In the latter case, the *secondary series* must have observations at common epochs with the primary series because the series are neither filled nor interpolated at common epochs.  
 7. GNSS series typically have daily sampling, however very often, even if the sampling period is constant, the epochs will not exactly match between the primary and secondary series, especially if the series are produced by different people. If the primary and secondary series have both a constant sampling of one day, but their epochs do not match, setting the `Time units` to *days* will allow SARI to compute the constant fraction of a day shift between both series and apply it to the secondary series to match the epochs of the primary series.  
@@ -428,7 +430,7 @@ This block allows for additional time series fitting, including:
 
 ##### **Notes on the minimum entropy trend estimates**:
 
-1. The method searches for the linear trend that minimizes the [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)) of the residual series, i.e., the linear trend that maximizes the predictability of the series. The entropy is approximated with the non-parametric Vasicek estimator based on spacings defined by a window size.  
+1. The method searches for the linear trend that minimizes the [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)) of the detrended series, i.e., the linear trend that maximizes the predictability of the series. The entropy is approximated with the non-parametric Vasicek estimator based on sample-spacings defined by a window size.  
 2. The implemented algorithm is based on the one proposed by [<a href="#references" target="_self">Saleh et al. (2024)</a>](#references). The main deviations of the algorithm include an adaptive window size and the estimated velocity uncertainty that accounts for the number and location of the discontinuities.  
 3. The algorithm assumes long, near-stationary and [iid](https://en.wikipedia.org/wiki/Independent_and_identically_distributed_random_variables) residual series, which is rather difficult to satisfy with typical GNSS position series. Nevertheless, it seems to provide reasonable linear trend estimates with realistic uncertainties in the presence of unknown colored noise, as long as the noise remains near-stationary, which may be roughly assessed using the `histogram` and `periodogram` options.  
 4. The algorithm is robust against a few outliers and short-period oscillations. However, the epochs of the discontinuities, if any, must be indicated by the user. The algorithm estimates the weighted sum of the entropy for each segment between discontinuities.  
@@ -557,7 +559,7 @@ This is how I usually estimate the linear trend in a GNSS position time series (
 18) Plot the power `periodogram` to check that the fitted noise model corresponds to the LS model residuals, or use the estimated log-likelihood to select the best noise model. The parameters of the fitted noise model will be used to estimate a more realistic formal uncertainty of the linear trend.  
 19) Use the estimated noise parameters to check the significance of the estimated offsets using the `offset verification` option and remove offsets from the LS model accordingly.  
 20) Plot the `histogram` if statistics of the model/filter residuals or a stationarity assessment are needed.  
-21) Run the MIDAS estimator for trend comparison.  
+21) Run the MIDAS and the minimum entropy estimator for trend comparison.  
 22) Load the parameters of a `plate model` to check if the site is located where it should be and it is not moving away from its plate.  
 23) Save the results on your computer using the `save` icon at the top right corner. The periodogram data can be saved by clicking on the `get periodogram data` link below the periodogram.  
 24) Iterate through the different coordinate components and save each one of them. The same component can be saved multiple times, for instance if the model was improved.  
@@ -594,7 +596,7 @@ On the other hand, if running SARI on a local server (RStudio or Docker), there 
 
 I am thankful to these people that directly or indirectly contributed to improve this software:
 
-Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans.
+Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel.
 
 SARI is accessible from the Shinyapps.io server thanks to the support of the [RENAG National Observing Service](http://renag.resif.fr/en/).
 

@@ -44,11 +44,11 @@ sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontc
 4.1) On Rstudio, go to Tools -> Install Packages  
 Then copy&paste the following list of packages separated by spaces or commas:
 
-data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach, ragg, vsgoftest
+data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach, ragg
 
 4.2) On the R/RStudio console, the following command will install all the packages:  
 `
-install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg", "vsgoftest"))
+install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"))
 `
 
 4.3) The above two methods will either install the package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
@@ -115,7 +115,6 @@ dlm             v1.1-5
 data.table      v1.14.2
 shiny           v1.7.3
 geojsonio	v0.11.3
-vsgoftest	v1.0-1
 
 If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to install this version from its github repo using:  
 `
