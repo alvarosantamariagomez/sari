@@ -9750,6 +9750,15 @@ server <- function(input,output,session) {
               extracted$x1 <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
               extracted$x2 <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
               extracted$x3 <- tableAll[,1]
+            } else if (server == "SONEL") {
+              if (series == 1) {
+                info$tunits.known1 <- T
+              } else if (series == 2) {
+                info$tunits.known2 <- T
+              }
+              extracted$x1 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+              extracted$x2 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              extracted$x3 <- tableAll[,1]
             } else if (server == "SIRGAS") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -11154,12 +11163,12 @@ server <- function(input,output,session) {
           if (is.na(t)) {
             t <- strptime(f, format = '%Y-%m-%d', tz = "GMT")
           }
-          if (input$tunits == 1) {
+          if (!isTruthy(input$tunits) || input$tunits == 3) {
+            e <- decimal_date(t)
+          } else if (input$tunits == 1) {
             e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
           } else if (input$tunits == 2) {
             e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
-          } else if (input$tunits == 3) {
-            e <- decimal_date(t)
           }
           if (grepl('Antenna',antrec[[l]])) {
             ante <- c(ante,e)
@@ -11188,12 +11197,12 @@ server <- function(input,output,session) {
           if (length(record) > l) {
             elements2 <- unlist(strsplit(record[[l + 1]], "\\s+", fixed = F, perl = T, useBytes = F))
             t <- strptime(substr(record[[l + 1]],26,43), format = '%Y %j %H %M %S', tz = "GMT")
-            if (input$tunits == 1) {
+            if (!isTruthy(input$tunits) || input$tunits == 3) {
+              e <- decimal_date(t)
+            } else if (input$tunits == 1) {
               e <- time_length(ymd_hms("1858-11-17 00:00:00") %--% t, unit = "second")/86400  #mjd
             } else if (input$tunits == 2) {
               e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
-            } else if (input$tunits == 3) {
-              e <- decimal_date(t)
             }
             if (substr(record[[l]],98,168) != substr(record[[l + 1]],98,168)) {
               reces <- c(reces,e)
