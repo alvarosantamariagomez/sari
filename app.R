@@ -9928,6 +9928,15 @@ server <- function(input,output,session) {
                 extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[[epoch]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
+              } else if (server == "PSMSL") {
+                if (series == 1) {
+                  info$tunits.known1 <- T
+                } else if (series == 2) {
+                  info$tunits.known2 <- T
+                }
+                extracted$x1 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                extracted$x2 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                extracted$x3 <- tableAll[,1]
               } else {
                 if (!isTruthy(input$tunits)) {
                   showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
