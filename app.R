@@ -2225,7 +2225,7 @@ server <- function(input,output,session) {
 
   # Series summary ####
   output$information1 <- output$information2 <- renderUI({
-    
+    req(db1[[info$db1]])
     if (input$tunits == 1) {
       units <- "days"
     } else if (input$tunits == 2) {
