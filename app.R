@@ -12288,7 +12288,12 @@ server <- function(input,output,session) {
   #Based on https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
   decimalplaces <- function(x) {
     if (any(abs(x - round(x)) > .Machine$double.eps^0.5)) {
-      max(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), na.rm = T)
+      d <- max(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), na.rm = T)
+      if (isTruthy(d) && d > 0) {
+        return(d)
+      } else {
+        return(0)
+      }
     } else {
       return(0)
     }
