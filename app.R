@@ -14,7 +14,7 @@
 ### You should have received a copy of the GNU General Public License
 ### along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Loading packages
+# Loading packages ####
 suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(data.table, verbose = F, quietly = T) #v1.14.0
   library(dlm, verbose = F, quietly = T) #v1.1-5
@@ -190,9 +190,6 @@ Shiny.addCustomMessageHandler('trendRef', function(txt) {
   target.val(txt);
 }); "
 
-# Confirmation when refreshing the page
-# askRefresh <- 'window.onbeforeunload = function() { return ""; };'
-
 # Hide loading page, from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
   Sys.sleep(seconds)
@@ -342,6 +339,7 @@ tabContents <- function(tabNum) {
 
 # Shiny/R options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
+# options(shiny.trace = T)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
@@ -350,6 +348,12 @@ version <- "SARI marzo 2024"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
+                # trying to avoid connections from CLI
+                tags$script("
+                   if (typeof window === 'undefined') {
+                      window.close();
+                   };"
+                ),
                 mobileDetect('isMobile'),
                 useShinyjs(),
                 extendShinyjs(text = showPopup, functions = c("showPopup")),
