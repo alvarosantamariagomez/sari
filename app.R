@@ -348,12 +348,6 @@ version <- "SARI marzo 2024"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
-                # trying to avoid connections from CLI
-                tags$script("
-                   if (typeof window === 'undefined') {
-                      window.close();
-                   };"
-                ),
                 mobileDetect('isMobile'),
                 useShinyjs(),
                 extendShinyjs(text = showPopup, functions = c("showPopup")),
@@ -7739,7 +7733,7 @@ server <- function(input,output,session) {
         table2$y1 <- table2y_tmp
         table2$sy1 <- table2sy_tmp
       }
-      if (min(diff(db1[[info$db1]]$x1)) <= 1 && min(diff(db2[[info$db2]]$x1)) <= 1) {
+      if (min(diff(table1$x1)) <= 1 && min(diff(table2$x1)) <= 1) {
         delta <- as.numeric(names(sort(table(table1$x1 - floor(table1$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
         if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
           if (delta != 0) {
@@ -7747,15 +7741,15 @@ server <- function(input,output,session) {
             showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
-          if (info$sampling < info$sampling_regular) {
-            showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+          if (min(diff(table1$x1)) < min(diff(table2$x1))) {
+            showNotification(HTML("The sampling of the primary series is not regular.<br>Consider using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
           } else {
             showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
           }
         }
       } else {
         if (info$format != 4) {
-          showNotification(HTML("The sampling of the primary and secondary series is larger than one day.<br>It is not possible to shift the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+          showNotification(HTML("The sampling of the primary and/or secondary series is larger than one day.<br>It is not possible to shift the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
         }
       }
       if (input$optionSecondary == 2) {
@@ -9663,6 +9657,7 @@ server <- function(input,output,session) {
     removeNotification("no_epos")
     removeNotification("bad_sigmas")
     removeNotification("no_tunits")
+    # NEU/ENU ####
     if (format == 1) { #NEU/ENU
       skip <- 0
       a <- 6378137
@@ -9861,6 +9856,7 @@ server <- function(input,output,session) {
         showNotification(HTML(paste("Format error when reading the input NEU/ENU file.<br>", errorInfo)), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
+    # PBO ####
     } else if (format == 2) { #PBO
       skip <- which(grepl("YYYYMMDD HHMMSS JJJJJ.JJJJ", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
@@ -9880,6 +9876,7 @@ server <- function(input,output,session) {
         extracted$x2 <- as.numeric(difftime(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"),strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
         extracted$x3 <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
       }
+    ## NGL ####
     } else if (format == 3) { #NGL
       skip <- which(grepl("site YYMMMDD", readLines(file, warn = F)))
       tableAll <- try(read.table(file, comment.char = "#", sep = sep, skip = skip), silent = T)
@@ -9906,6 +9903,7 @@ server <- function(input,output,session) {
         extracted$y3 <- tableAll[,12] - tableAll[1,12] + tableAll[,13] #Up
         extracted$sy3 <- tableAll[,17]
       }
+      ## 1D ####
     } else if (format == 4) { #1D
       if (!is.na(epoch) && is.numeric(epoch) && epoch > 0 && !is.na(variable) && is.numeric(variable) && variable > 0 && epoch != variable) {
         if (server == "PSMSL") {
@@ -12604,7 +12602,7 @@ server <- function(input,output,session) {
       format <- 1
       if (product == "ULR7A") {
         if (isTruthy(station)) {
-          name <- paste0(toupper(station), ".enu")
+          name <- paste0(toupper(station), ".neu")
           filepath <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",station,"&format=neu&sampling=daily")
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
