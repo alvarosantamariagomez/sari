@@ -3877,14 +3877,16 @@ server <- function(input,output,session) {
             colnames(e) <- m$nouns
             colnames(kfs_unc) <- m$nouns
           # }
-            trans$kalman <- e
+          trans$kalman <- e
           trans$kalman0 <- matrix(db1[[info$db1]][[paste0("status", input$tab)]], nrow = length(db1[[info$db1]][[paste0("status", input$tab)]]), ncol = ncol(trans$kalman))
           trans$kalman0[which(trans$kalman0)] <- trans$kalman
           trans$kalman0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
+          colnames(trans$kalman0) <- colnames(trans$kalman)
           trans$kalman_unc <- sqrt(kfs_unc)
           trans$kalman_unc0 <- matrix(db1[[info$db1]][[paste0("status", input$tab)]], nrow = length(db1[[info$db1]][[paste0("status", input$tab)]]), ncol = ncol(trans$kalman_unc))
           trans$kalman_unc0[which(trans$kalman_unc0)] <- trans$kalman_unc
           trans$kalman_unc0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
+          colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
           trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
           trans$kalman_info <- m
           trans$equation <- sub("y ~","Model =",m$model)
