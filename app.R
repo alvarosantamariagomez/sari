@@ -10068,7 +10068,7 @@ server <- function(input,output,session) {
           lon <- stationGeo[2] * 180/pi
           coordinates <- c(as.numeric(tableAll[6]),as.numeric(tableAll[8]),as.numeric(tableAll[10]),lat,lon)
         }
-      } else if (isTruthy(product) && product == "SPOTGINS_POS") {
+      } else if (isTruthy(product) && isTruthy(station) && product == "SPOTGINS_POS") {
         coordinates <- unlist(strsplit(trim(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T)), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
         if (!any(is.na(suppressWarnings(as.numeric(coordinates))))) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
