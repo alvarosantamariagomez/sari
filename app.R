@@ -1116,6 +1116,50 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           )
                                                                         )
                                                                       ),
+                                                                      
+                                                                      ## % GIA ####
+                                                                      fluidRow(
+                                                                        column(4,
+                                                                               checkboxInput(inputId = "gia",
+                                                                                             div(style = "font-weight: bold", "GIA",
+                                                                                                 helpPopup("Shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location")),
+                                                                                             value = F)
+                                                                        )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.gia == true",
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 selectInput(inputId = "giaModel", label = "Select a GIA model", choices = list("", "Caron & Ivins", "ICE-6G-VM5a", "ICE-6G-ANU"), selected = "", multiple = F, selectize = T)
+                                                                          ),
+                                                                          column(6,
+                                                                                 conditionalPanel(
+                                                                                   condition = "input.gia == true",
+                                                                                   div(style = "margin-top: 2em",
+                                                                                       radioButtons(inputId = "giaType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                   )
+                                                                                 )
+                                                                          )
+                                                                        )
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "input.gia == true",
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 textInput(inputId = "giaTrend", 
+                                                                                           div(style = "font-weight: bold", "Vertical land motion trend",
+                                                                                               helpPopup("Vertical trend in the same units as the series")),
+                                                                                           value = "")
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "output.series2",
+                                                                            column(6,
+                                                                                   textInput(inputId = "giaTrend2", "Secondary", value = "")
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      ),
+                                                                      
                                                                       style = "primary"),
                                                       
                                                       # * Fit controls ####
@@ -1987,7 +2031,8 @@ server <- function(input,output,session) {
                            periodRef = NULL, offsetEpoch = NULL, ExponenRef = NULL, E0 = NULL, TE0 = NULL,
                            LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = "",
                            long_period = "", short_period = "", low = NULL, high = NULL, scaleFactor = 1,
-                           step = NULL, step2 = NULL)
+                           step = NULL, step2 = NULL,
+                           giaTrend = NULL, giaTrend2 = NULL)
   obs <- reactiveVal()
 
   # 6. computed values
@@ -1998,8 +2043,9 @@ server <- function(input,output,session) {
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
-                          model_old = NULL, plate = NULL, plate2 = NULL, offsetEpochs = NULL, periods = NULL,
+                          model_old = NULL, offsetEpochs = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL,
+                          plate = NULL, plate2 = NULL, gia = NULL, gia2 = NULL,
                           entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL)
 
   # 7. output
@@ -2601,12 +2647,23 @@ server <- function(input,output,session) {
   observeEvent(cutEnd_d(), {
     inputs$cutEnd <- suppressWarnings(as.numeric(trimws(cutEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
+  
+  giaTrend_d <- reactive(input$giaTrend) %>% debounce(1000, priority = 1000)
+  observeEvent(giaTrend_d(), {
+    inputs$giaTrend <- suppressWarnings(as.numeric(trimws(giaTrend_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  giaTrend2_d <- reactive(input$giaTrend2) %>% debounce(1000, priority = 1000)
+  observeEvent(giaTrend2_d(), {
+    inputs$giaTrend2 <- suppressWarnings(as.numeric(trimws(giaTrend2_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
 
   # Update data ####
   observeEvent(c(input$plot, input$sigmas, input$tab, input$format, input$tunits,
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
-                 input$fullSeries, info$db1, info$db2, input$eulerType, trans$plate, trans$plate2,
+                 input$fullSeries, info$db1, info$db2,
+                 input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
     req(db1[[info$db1]])
     if (input$tab == 4) {
@@ -2665,12 +2722,18 @@ server <- function(input,output,session) {
           trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         }
       }
+      if (input$format == 4 && isTruthy(trans$gia) && input$giaType == 2) {
+        trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
+      }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         if (input$format2 == 4) {
           trans$y2 <- trans$y2 - trans$plate2[as.numeric(input$neu1D)]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
         } else {
           trans$y2 <- trans$y2 - trans$plate2[1]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
         }
+      }
+      if (input$format2 == 4 && isTruthy(trans$gia2) && input$giaType == 2) {
+        trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
       }
     } else if (input$tab == 2) {
       trans$y0 <- as.numeric(table1$y2)
@@ -2693,8 +2756,14 @@ server <- function(input,output,session) {
       if (isTruthy(trans$plate) && input$eulerType == 2) {
         trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3], na.rm = T)) - median(trans$y0, na.rm = T)
       }
+      if (isTruthy(trans$gia) && input$giaType == 2) {
+        trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
+      }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         trans$y2 <- trans$y2 - trans$plate2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+      }
+      if (isTruthy(trans$gia2) && input$giaType == 2) {
+        trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
       }
     }
     # getting data range including excluded points
@@ -3097,22 +3166,22 @@ server <- function(input,output,session) {
     }
     plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T)
     points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
-    if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-      xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
-      yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
-      centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
-      centery <- which(abs(trans$y - yy) == min(abs(trans$y - yy)))[1]
-      if (input$format == 4) {
-        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[as.numeric(isolate(input$neu1D))]*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
-      } else {
-        if (input$tab == 1) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[1]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[1]*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
-        } else if (input$tab == 2) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[2]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[2]*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
-        } else if (input$tab == 3) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + trans$plate[3]*(trans$x[1] - trans$x[centerx]),trans$y[centery] + trans$plate[3]*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
-        }
+    xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+    yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+    centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
+    centery <- which(abs(trans$y - yy) == min(abs(trans$y - yy)))[1]
+    if (input$tab == 1 || input$tab == 2) {
+      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+        rate <- trans$plate[as.numeric(input$tab)]
       }
+      if (input$format == 4 && isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+        rate <- ifelse(exists("rate") && is.numeric(rate), yes = rate + trans$gia[3], no = trans$gia[3])
+      }
+    } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+      rate <- trans$gia[3]
+    }
+    if (exists("rate") && is.numeric(rate)) {
+      lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + rate*(trans$x[1] - trans$x[centerx]),trans$y[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
     }
     if (input$traceLog && length(info$log) > 0) {
       for (r in info$log[[2]]) {
@@ -5772,6 +5841,7 @@ server <- function(input,output,session) {
       disable("units")
       disable("verif_offsets")
       disable("euler")
+      disable("gia")
       disable("server1")
       disable("station1")
       disable("product1")
@@ -5836,6 +5906,19 @@ server <- function(input,output,session) {
           enable("average")
           if (!isTruthy(input$average) && length(inputs$step) > 0) {
             updateTextInput(session, inputId = "step", value = "")
+          }
+          enable("gia")
+          if (!isTruthy(input$gia)) {
+            updateRadioButtons(session, inputId = "giaType", selected = 0)
+            updateTextInput(session, inputId = "giaTrend", value = "")
+            updateSelectInput(session, inputId = "giaModel", selected = "")
+            disable("giaType")
+          } else {
+            if (isTruthy(is.numeric(inputs$giaTrend))) {
+              enable("giaType")
+            } else {
+              disable("giaType")
+            }
           }
           enable("euler")
           if (!isTruthy(input$euler)) {
@@ -6255,6 +6338,7 @@ server <- function(input,output,session) {
         disable("separator")
         disable("separator2")
         disable("euler")
+        disable("gia")
         disable("series2filter")
         disable("typeSecondary")
         disable("sigmas")
@@ -7054,6 +7138,107 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 200)
+  
+  # Observe GIA ####
+  observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2), {
+    req(db1[[info$db1]])
+    removeNotification("bad_coordinates")
+    z1 <- z2 <- NULL
+    if (input$tunits == 1) {
+      scaling <- 1/daysInYear
+    } else if (input$tunits == 2) {
+      scaling <- 7/daysInYear
+    } else {
+      scaling <- 1
+    }
+    if (input$sunits == 1) {
+      scaling <- scaling/1000
+    } else if (input$sunits == 2) {
+      scaling <- scaling
+    } else { #guessing the series units
+      if (input$tunits == 1) {
+        period <- 365.25
+      } else if (input$tunits == 2) {
+        period <- 365.25/7
+      } else if (input$tunits == 3) {
+        period <- 1
+      }
+      if (input$format == 4) { 
+        selected <- db1[[info$db1]]$y1 # current series
+      } else {
+        selected <- db1[[info$db1]]$y3 # up series
+      }
+      if (diff(range(db1[[info$db1]]$x3))/period < 1 || length(db1[[info$db1]]$x3) < 6) {
+        rate <- (mean(selected[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(selected[1:as.integer(length(db1[[info$db1]]$x3*0.1))])) / (mean(db1[[info$db1]]$x3[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(db1[[info$db1]]$x3[1:as.integer(length(db1[[info$db1]]$x3*0.1))]))
+      } else {
+        withProgress(message = 'Series units not defined.',
+                     detail = 'Trying to guess the units ...', value = 0, {
+                       setProgress(0)
+                       vel <- sapply(1:length(db1[[info$db1]]$x3), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                       vel <- c(vel[1,],vel[2,])
+                       vel <- vel[vel > -999999]
+                       vel_sig <- 1.4826*mad(vel, na.rm = T)
+                       vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
+                       rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                     })
+      }
+      if (abs(rate) > 0.05 && sd(selected - rate*(db1[[info$db1]]$x3 - mean(db1[[info$db1]]$x3))) > 0.05) {
+        scaling <- 1000 # series units are mm most likely
+        updateRadioButtons(session, inputId = "sunits", selected = 2)
+      } else {
+        scaling <- 1 # series units are m most likely
+        updateRadioButtons(session, inputId = "sunits", selected = 1)
+      }
+    }
+    withBusyIndicatorServer("giaModel", {
+    if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+      if (inputs$station_lon < 0) {
+        x1 <- inputs$station_lon + 360 
+      } else {
+        x1 <- inputs$station_lon
+      }
+      y1 <- inputs$station_lat
+      z1 <- interpolateGIA(x1,y1,1)
+      if (isTruthy(z1)) {
+        z1 <- z1 * scaling
+      }
+    }
+    if (isTruthy(z1)) {
+      updateTextInput(session, inputId = "giaTrend", value = sprintf('%.6f', z1))
+    }
+    if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
+      if (inputs$station_lon2 < 0) {
+        x2 <- inputs$station_lon2 + 360 
+      } else {
+        x2 <- inputs$station_lon2
+      }
+      y2 <- inputs$station_lat2
+      z2 <- interpolateGIA(x2,y2,2)
+      if (isTruthy(z2)) {
+        z2 <- z2 * scaling * inputs$scaleFactor
+      }
+    }
+    if (isTruthy(z2)) {
+      updateTextInput(session, inputId = "giaTrend2", value = sprintf('%.6f', z2))
+    }
+    })
+  })
+  observeEvent(inputs$giaTrend, {
+    req(db1[[info$db1]])
+    if (isTruthy(inputs$giaTrend)) {
+      trans$gia <- c(0,0,inputs$giaTrend)
+    } else {
+      trans$gia <- NULL
+    }
+  })
+  observeEvent(inputs$giaTrend2, {
+    req(db2[[info$db2]])
+    if (isTruthy(inputs$giaTrend2)) {
+      trans$gia2 <- c(0,0,inputs$giaTrend2)
+    } else {
+      trans$gia2 <- NULL
+    }
+  })
 
   # Observe wavelet ####
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
@@ -8191,6 +8376,11 @@ server <- function(input,output,session) {
         y2 <- db1[[info$db1]]$y2
         y3 <- db1[[info$db1]]$y3
       }
+      if (isTruthy(trans$gia) && input$giaType == 2) {
+        y1 <- y1 - trans$gia[1]*(x - median(x, na.rm = T)) - median(y1, na.rm = T)
+        y2 <- y2 - trans$gia[2]*(x - median(x, na.rm = T)) - median(y2, na.rm = T)
+        y3 <- y3 - trans$gia[3]*(x - median(x, na.rm = T)) - median(y3, na.rm = T)
+      }
       if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
         y12 <- db2[[info$db2]]$y1 - trans$plate[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
         y22 <- db2[[info$db2]]$y2 - trans$plate[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
@@ -8199,6 +8389,11 @@ server <- function(input,output,session) {
         y12 <- db2[[info$db2]]$y1
         y22 <- db2[[info$db2]]$y2
         y32 <- db2[[info$db2]]$y3
+      }
+      if (isTruthy(trans$gia2) && input$giaType == 2) {
+        y12 <- y12 - trans$gia2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
+        y22 <- y22 - trans$gia2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
+        y32 <- y32 - trans$gia2[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
       }
       y12 <- y12 * inputs$scaleFactor
       y22 <- y22 * inputs$scaleFactor
@@ -8447,12 +8642,12 @@ server <- function(input,output,session) {
         bb <- y3 - sy3
         polygon(c(x[valid1], rev(x[valid1])), c(ba[valid1], rev(bb[valid1])), col = shade, border = NA)
       }
-      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+      if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
         xx <- median(x[valid3][x[valid3] > x.range[1] & x[valid3] < x.range[2]], na.rm = T)
         yy <- median(y3[valid3][x[valid3] > x.range[1] & x[valid3] < x.range[2]], na.rm = T)
         centerx <- which(abs(x[valid3] - xx) == min(abs(x[valid3] - xx)))[1]
         centery <- which(abs(y3[valid3] - yy) == min(abs(y3[valid3] - yy)))[1]
-        lines(c(x[valid3][1],x[valid3][length(x[valid3])]),c(y3[valid3][centery] + trans$plate[3]*(x[valid3][1] - x[valid3][centerx]), y3[valid3][centery] + trans$plate[3]*(x[valid3][length(x[valid3])] - x[valid3][centerx])), col = SARIcolors[4], lwd = 3)
+        lines(c(x[valid3][1],x[valid3][length(x[valid3])]),c(y3[valid3][centery] + trans$gia[3]*(x[valid3][1] - x[valid3][centerx]), y3[valid3][centery] + trans$gia[3]*(x[valid3][length(x[valid3])] - x[valid3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
       js$showPopup(info$width)
@@ -9006,6 +9201,8 @@ server <- function(input,output,session) {
     trans$pattern <- NULL
     trans$unc <- NULL
     trans$spectra_old <- NULL
+    trans$plate <- NULL
+    trans$gia <- NULL
     info$points <- NULL
     info$log <- NULL
     info$rangex <- NULL
@@ -13306,6 +13503,58 @@ server <- function(input,output,session) {
       H <- H + h
     }
     return(H)
+  }
+  #
+  interpolateGIA <- function(x,y,series) {
+    z <- NULL
+    if (series == 1) {
+      variable <- "giaTrend"
+      secondary <- ""
+    } else if (series == 2) {
+      variable <- "giaTrend2"
+      secondary <- "secondary"
+    } else {
+      req(info$stop)
+    }
+    if (!(x >= 0 & x <= 360) || !(y >= -90 & y <= 90)) {
+      showNotification(HTML(paste("The", secondary, "station coordinates are out of bounds.<br>Check the input values.")), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
+    }
+    withProgress(message = 'Interpolating GIA grid',
+                 detail = paste("from", input$giaModel), value = 0, {
+                   withBusyIndicatorServer(variable, {
+                     if (input$giaModel == "ICE-6G-VM5a") {
+                       gia <- read.table("www/drad.12mgrid_512.txt", comment.char = "#")
+                     } else if (input$giaModel == "ICE-6G-ANU") {
+                       gia <- read.table("www/ICE6G_ANU.txt")
+                       names(gia) <- c("V2","V1","V3")
+                     } else if (input$giaModel == "Caron & Ivins") {
+                       gia <- read.table("www/GIA_maps_Caron_Ivins_2019.txt", comment.char = "%")[,c(1,2,3)]
+                       y <- 90 - y
+                     } else {
+                       return(z)
+                     }
+                     setProgress(0.9)
+                     lat <- unique(gia$V1)
+                     lon <- unique(gia$V2)
+                     xs <- lon[abs(lon - x) %in% sort(abs(lon - x), partial = 1:2)[1:2]]
+                     ys <- lat[abs(lat - y) %in% sort(abs(lat - y), partial = 1:2)[1:2]]
+                     q11 <- gia$V3[gia$V1 == ys[1] & gia$V2 == xs[1]]
+                     q12 <- gia$V3[gia$V1 == ys[2] & gia$V2 == xs[1]]
+                     q21 <- gia$V3[gia$V1 == ys[1] & gia$V2 == xs[2]]
+                     q22 <- gia$V3[gia$V1 == ys[2] & gia$V2 == xs[2]]
+                     if ( abs(diff(xs)) > 0 && abs(diff(ys)) > 0 ) {
+                       z <- (1/((xs[2] - xs[1])*(ys[2] - ys[1]))) * matrix(c(xs[2] - x, x - xs[1]), nrow = 1, ncol = 2) %*% matrix(c(q11,q21,q12,q22), nrow = 2, ncol = 2) %*% matrix(c(ys[2] - y, y - ys[1]), nrow = 2, ncol = 1)
+                     } else if ( abs(diff(ys)) > 0 ) {
+                       z <- q11*(ys[2] - y)/(ys[2] - ys[1]) + q12*(y - ys[1])/(ys[2] - ys[1])
+                     } else if ( abs(diff(xs)) > 0 ) {
+                       z <- q11*(xs[2] - x)/(xs[2] - xs[1]) + q21*(x - xs[1])/(xs[2] - xs[1])
+                     } else {
+                       z <- gia$V3[gia$V1 == ys[1] & gia$V2 == xs[1]]
+                     }
+                   })
+                 })
+    return(z)
   }
 }
 

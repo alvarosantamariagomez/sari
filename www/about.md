@@ -9,6 +9,7 @@ title: 'SARI documentation - version marzo 2024'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
+
 <base target="_blank">
 <h3 id="contents"></h3>
 
@@ -81,7 +82,7 @@ The SARI interface is divided into two panels with separate vertical scrolling: 
 The processing options on the left panel are grouped into five blocks that can be expanded and collapsed with a single click on their header.  
 Note that some OS and some web browsers apply a display scaling to all web pages by default. It is recommended to adjust the browser zoom (usually ctrl + mouse wheel) so that all the controls, buttons, plots, etc. on both panels fit comfortably on the screen.
 
-### I. Input data and format
+## I. Input data and format
 
 This block allows uploading and setting the series format, if necessary, before plotting. The input series file must be a text file with standard encoding (ASCII, UTF-8) and organized in columns generally corresponding to the epochs, the observed variables and, optionally, their error bars. The series does not need to be evenly sampled, but only one point per epoch is allowed. While the following instructions are provided mostly for GNSS position time series, they should also work for any type of time series, provided the file format matches the specifications given below.
 
@@ -247,7 +248,7 @@ Also, if there is a secondary series being used with the `correct` or `average` 
 
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)
 
-### II. Plot controls
+## II. Plot controls
 
 Once the format of the series is set, this block allows plotting/resetting the time series with the `plot` button.  
 The button `overview` opens a new browser window containing a plot of the three coordinate components that takes into account the current state of the series (zoom, removed points, plate motion correction, etc.).  
@@ -272,7 +273,7 @@ Note: Unfortunately, at this moment, the values of the UI interface, including t
 
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  
 
-### III. Ancillary information
+## III. Ancillary information
 
 This block allows for the uploading of files containing complementary information related to the analysis of GNSS position time series. When an ancillary file is uploaded, the file contents can be visualized in a new browser tab by clicking on the link at the right of each file.  
 The user can upload any of the following possibilities:
@@ -283,7 +284,8 @@ The user can upload any of the following possibilities:
 * an IGS-like soln discontinuity file (an example of this file can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/soln.snx))
 * a customized offset file to plot specific dates (for instance, earthquakes)
 * a secondary series that can be `shown` next to the primary series in green color for comparison purposes and detection of common features, or used to either `correct` the primary series to analyze the difference or `average` both the primary and secondary series values. For instance, a model can be subtracted a posteriori from the series (loading, post-seismic, etc.) or even the series of a nearby station in order to remove the spatially correlated signal/noise and better detect the individual equipment changes, relative motion or common variations (see the [<a href="#notes-on-the-secondary-series" target="_self">notes</a>](#notes-on-the-secondary-series) below).
-* a plate motion model to be `shown` on top of the series or `removed` from the series. The user needs to select a plate motion model from the dropdown menu and enter the name of a tectonic plate, or provide a custom plate motion model for the current series, or provide the parameters of the [Euler's pole](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) manually (see the [<a href="#notes-on-the-plate-motion-model" target="_self">notes</a>](#notes-on-the-plate-motion-model) below).  
+* a plate motion model to be `shown` on top of the horizontal component series or `removed` from the series. The user needs to select a plate motion model from the dropdown menu and enter the name of a tectonic plate, or provide a custom plate motion model for the current series, or provide the parameters of the [Euler's pole](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) manually (see the [<a href="#notes-on-the-plate-motion-model" target="_self">notes</a>](#notes-on-the-plate-motion-model) below).
+* a vertical land motion prediction from a [GIA]() model to be `shown` on top of the vertical component series or `removed` from the series (see the [<a href="#notes-on-the-gia-model" target="_self">notes</a>](#notes-on-the-gia-model) below).  
 
 <h5 id="notes-on-the-equipment-change-logs"></h5>
 
@@ -321,11 +323,20 @@ The user can upload any of the following possibilities:
 3. Alternatively, the user can `Upload a custom plate model` that must have six or seven values per line corresponding to the station ID (first value), the station coordinates (two values: latitude & longitude; or three values: X,Y,Z), and the Euler's pole parameters (three values: latitude,longitude,rotation or X,Y,Z rotations). If a station ID is present in more than one line, only the last one will be used. The units of the plate model parameters are degrees for latitude & longitude and degrees/Ma for rotations. An example of the custom *plate motion* model can be found [here](https://github.com/alvarosantamariagomez/sari/blob/main/www/euler.txt)).  
 4. Once the *plate motion* model is read, the extracted values will be shown on the left panel. The user can check and modify these values manually. If no values are being shown, it means no values were found for either the selected plate (see point 2) or the current station ID (see point 3) that is shown in the `station ID` box of the left panel.  
 
+<h5 id="notes-on-the-gia-model"></h5>
+
+##### **Notes on the GIA model**:
+
+1. The VLM linear trend value is extracted by bilinear interpolation of the station location (also for the secondary series) on the model grid.
+2. The available GIA VLM grids are obtained from the [<a href="#references" target="_self">Caron and Ivins, 2019</a>](#references) model with resolution 1°x1° (using the total mass sources), the ICE-6G-VM5a model with resolution 0.2°x0.2° (version D, [<a href="#references" target="_self">Peltier et al., 2018</a>](#references)) and the ICE-6G-ANU model with resolution 1°x1° ([<a href="#references" target="_self">Purcell et al., 2016</a>](#references)).
+3. The station coordinates must be provided in the plate motion model section (see the [<a href="#notes-on-the-plate-motion-model" target="_self">notes</a>](#notes-on-the-plate-motion-model) above).
+4. The extracted VLM value can be modified manually to change the sign (if correcting the VLM of a TG series) or to use a different VLM value (estimated from a GNSS series).  
+
 <h3 id="fit-controls"></h3>
 
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  
 
-### IV. Fit controls
+## IV. Fit controls
 
 This block allows fitting a model to the time series using
 
@@ -402,7 +413,7 @@ Some of these components require additional parameters to be included in the mod
 
 [<a href="#contents" target="_self">Go to top of document</a>](#contents)  
 
-### V. Additional fit
+## V. Additional fit
 
 This block allows for additional time series fitting, including:
 
@@ -608,7 +619,7 @@ SARI is accessible from the Shinyapps.io server thanks to the support of the [RE
 
 # References
 
-Altamimi, Z, Métivier L, Rebischung P, Collilieux X, Chanard K, Barnéoud J (2023) ITRF2020 plate motion model. Geophysical Research Letters, 50. doi: https://doi.org/10.1029/2023GL106373
+Altamimi Z, Métivier L, Rebischung P, Collilieux X, Chanard K, Barnéoud J (2023) ITRF2020 plate motion model. Geophysical Research Letters, 50. doi: https://doi.org/10.1029/2023GL106373
 
 Argus DF, Gordon RG, DeMets C (2011) Geologically current motion of 56 plates relative to the no-net-rotation reference frame. Geochemistry, Geophysics, Geosystems, 12, 11. doi: https://doi.org/10.1029/2011GC003751
 
@@ -617,6 +628,8 @@ Bird P (2003) An updated digital model of plate boundaries. Geochemistry, Geophy
 Blewitt G, Kreemer C, Hammond WC, Gazeaux J (2016) MIDAS robust trend estimator for accurate GPS station velocities without step detection. J Geophys Res Solid Earth 121(3):2054&#45;2068. doi: https://doi.org/10.1002/2015JB012552
 
 Brent RP (1971) An algorithm with guaranteed convergence for finding a zero of a function. Comput J 14(4):422&#45;425. doi: https://doi.org/10.1093/comjnl/14.4.422
+
+Caron L, Ivins ER (2019) A baseline Antarctic GIA correction for space gravimetry. Earth and Planetary Science Letters, 115957. doi: https://doi.org/10.1016/j.epsl.2019.115957
 
 Eyer L, Bartholdi P (1999) Variable stars: Which Nyquist frequency? Astron Astrophys Suppl Ser 135, 1–3. doi: https://doi.org/10.1051/aas:1999102
 
@@ -627,6 +640,10 @@ Keitt TH (2008) Coherent ecological dynamics induced by large-scale disturbance.
 Kreemer C, Blewitt G, Klein EC (2014) A Geodetic Plate Motion and Global Strain Rate Model. Geochemistry, Geophysics, Geosystems, 15, 10. doi: https://doi.org/10.1002/2014GC005407
 
 RESIF (2017) RESIF-RENAG French National Geodetic Network. RESIF - R&#233;seau Sismologique et g&#233;od&#233;sique Fran&#231;ais. doi: https://doi.org//10.15778/resif.rg
+
+Peltier WR, Argus DF, Drummond R (2018) Comment on “An assessment of the ICE-6G_C (VM5a) glacial isostatic adjustment model” by Purcell et al. J Geophys Res Solid Earth, 123. doi:https://doi.org/10.1002/2016JB013844
+
+Purcell A, Tregoning P, Dehecq A (2016) An assessment of the ICE6G_C(VM5a) glacial isostatic adjustment model. J. Geophys. Res. Solid Earth, 121. doi:https://doi.org/10.1002/2015JB012742
 
 Saleh J, Bennett RA, Williams SDP (2024) Minimum-entropy velocity estimation from GPS position time series. J Geod 98:11. doi: https://doi.org/10.1007/s00190-023-01820-3
 
