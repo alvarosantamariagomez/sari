@@ -2837,7 +2837,7 @@ server <- function(input,output,session) {
             process_noises <- grep("^# Process noise: ", comments, ignore.case = F, perl = T, value = T)
             mn <- strsplit(grep("^# Measurement noise: ", comments, ignore.case = F, perl = T, value = T), ":")
             if (isTruthy(mn) && length(mn) > 0) {
-              measurement_noise <- mn[[1]][2]
+              measurement_noise <- gsub("[a-zA-Z]", "", mn[[1]][2])
               updateTextInput(session, inputId = "ObsError", value = measurement_noise)
             }
             components <- c()
