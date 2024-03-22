@@ -1,4 +1,4 @@
-### Copyright (C) 2017-2023  Alvaro Santamaria-Gomez, 12 May 2017
+### Copyright (C) 2017-2024  Alvaro Santamaria-Gomez, 12 May 2017
 ### alvaro.santamaria@get.omp.eu
 ###
 ### This program is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
 ### GNU General Public License for more details.
 ###
 ### You should have received a copy of the GNU General Public License
-### along with this program.  If not, see <https://www.gnu.org/licenses/>.
+### along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 # Loading packages ####
 suppressPackageStartupMessages(suppressMessages(suppressWarnings({
@@ -6854,17 +6854,21 @@ server <- function(input,output,session) {
         coordinates <- latlon2xyz(inputs$station_lat*pi/180,inputs$station_lon*pi/180,1000)
       }
       if (isTruthy(coordinates) && length(coordinates) == 3) {
-        updateTextInput(session, inputId = "station_x", value = coordinates[1])
-        updateTextInput(session, inputId = "station_y", value = coordinates[2])
-        updateTextInput(session, inputId = "station_z", value = coordinates[3])
+
+        if (!isTruthy(inputs$station_x) || !isTruthy(inputs$station_y) || !isTruthy(inputs$station_z)) {
+          updateTextInput(session, inputId = "station_x", value = coordinates[1])
+          updateTextInput(session, inputId = "station_y", value = coordinates[2])
+          updateTextInput(session, inputId = "station_z", value = coordinates[3])
+        }
+
       }
     }
   }, priority = 5)
   observeEvent(c(inputs$station_x, inputs$station_y, inputs$station_z), {
-    if (isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+    if (isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z) && (!isTruthy(inputs$station_lat) || !isTruthy(inputs$station_lon))) {
       stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(inputs$station_x,inputs$station_y,inputs$station_z))))
       coordinates <- c(stationGeo[1] * 180/pi, stationGeo[2] * 180/pi)
-      if (length(coordinates) == 2) {
+      if (length(coordinates) == 2 && (!isTruthy(inputs$station_lat) || !isTruthy(inputs$station_lon))) {
         updateTextInput(session, inputId = "station_lat", value = coordinates[1])
         updateTextInput(session, inputId = "station_lon", value = coordinates[2])
       }
@@ -6896,59 +6900,61 @@ server <- function(input,output,session) {
     }
   }, priority = 5)
   observeEvent(c(inputs$station_lat, inputs$station_lon, inputs$station_lat2, inputs$station_lon2), {
-    # Mapping the station positions
-    # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
-    if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json") && (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) {
-      if (messages > 0) cat(file = stderr(), "Location map", "\n")
-      lat <- inputs$station_lat
-      lon <- inputs$station_lon
-      lon <- ifelse(lon > 180, lon - 360, lon)
-      lon <- ifelse(lon < -180, lon + 360, lon)
-      if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
-        plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
-        map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, doubleClickZoom = F, scrollWheelZoom = "center", minZoom = 1)) %>%
-          addTiles() %>%
-          addPolygons(
-            fillColor = "white",
-            weight = 1,
-            opacity = 1,
-            color = "black",
-            dashArray = "1",
-            fillOpacity = 0,
-            highlightOptions = highlightOptions(
-              weight = 3,
-              color = "#DF536B",
-              dashArray = "",
+    if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+      # Mapping the station positions
+      # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
+      if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json")) {
+        if (messages > 0) cat(file = stderr(), "Location map", "\n")
+        lat <- inputs$station_lat
+        lon <- inputs$station_lon
+        lon <- ifelse(lon > 180, lon - 360, lon)
+        lon <- ifelse(lon < -180, lon + 360, lon)
+        if (exists("geojson_read", mode = "function") && file.exists("www/PB2002_plates.json")) {
+          plates <- geojsonio::geojson_read("www/PB2002_plates.json", what = "sp")
+          map <- leaflet(plates, options = leafletOptions(dragging = F, zoomControl = F, doubleClickZoom = F, scrollWheelZoom = "center", minZoom = 1)) %>%
+            addTiles() %>%
+            addPolygons(
+              fillColor = "white",
+              weight = 1,
+              opacity = 1,
+              color = "black",
+              dashArray = "1",
               fillOpacity = 0,
-              bringToFront = TRUE),
-            label = plates$PlateName,
-            labelOptions = labelOptions(
-              style = list("font-weight" = "normal", padding = "3px 8px"),
-              textsize = "15px",
-              direction = "auto")
-          ) %>%
-          setView(lng = lon, lat = lat, zoom = 10) %>%
-          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
-      } else {
-        boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
-        map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
-          addTiles() %>%
-          addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
-          setView(lng = lon, lat = lat, zoom = 10) %>%
-          addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
+              highlightOptions = highlightOptions(
+                weight = 3,
+                color = "#DF536B",
+                dashArray = "",
+                fillOpacity = 0,
+                bringToFront = TRUE),
+              label = plates$PlateName,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")
+            ) %>%
+            setView(lng = lon, lat = lat, zoom = 10) %>%
+            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
+        } else {
+          boundaries <- readLines("www/PB2002_boundaries.json") %>% paste(collapse = "\n")
+          map <- leaflet(options = leafletOptions(dragging = F, zoomControl = F, scrollWheelZoom = "center")) %>%
+            addTiles() %>%
+            addGeoJSON(boundaries, weight = 3, color = "#DF536B", fill = FALSE) %>%
+            setView(lng = lon, lat = lat, zoom = 10) %>%
+            addMarkers(icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(50,50)), lng = lon, lat = lat, label = file$id1)
+        }
+        if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
+          lat2 <- inputs$station_lat2
+          lon2 <- inputs$station_lon2
+          lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
+          lon2 <- ifelse(lon2 < -180, lon2 + 360, lon2)
+          map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
+        }
+        output$myMap <- renderLeaflet(map)
+        output$map <- renderUI({
+          suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
+        })
+        shinyjs::delay(500, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
       }
-      if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
-        lat2 <- inputs$station_lat2
-        lon2 <- inputs$station_lon2
-        lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
-        lon2 <- ifelse(lon2 < -180, lon2 + 360, lon2)
-        map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
-      }
-      output$myMap <- renderLeaflet(map)
-      output$map <- renderUI({
-        suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
-      })
-      shinyjs::delay(500, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
     }
   }, priority = 3)
   observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_lon2), {
@@ -7142,91 +7148,94 @@ server <- function(input,output,session) {
   # Observe GIA ####
   observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2), {
     req(db1[[info$db1]])
-    removeNotification("bad_coordinates")
-    z1 <- z2 <- NULL
-    if (input$tunits == 1) {
-      scaling <- 1/daysInYear
-    } else if (input$tunits == 2) {
-      scaling <- 7/daysInYear
-    } else {
-      scaling <- 1
-    }
-    if (input$sunits == 1) {
-      scaling <- scaling/1000
-    } else if (input$sunits == 2) {
-      scaling <- scaling
-    } else { #guessing the series units
+    if (isTruthy(input$gia) || isTruthy(trans$gia)) {
+      removeNotification("bad_coordinates")
+      z1 <- z2 <- NULL
       if (input$tunits == 1) {
-        period <- 365.25
+        scaling <- 1/daysInYear
       } else if (input$tunits == 2) {
-        period <- 365.25/7
-      } else if (input$tunits == 3) {
-        period <- 1
-      }
-      if (input$format == 4) { 
-        selected <- db1[[info$db1]]$y1 # current series
+        scaling <- 7/daysInYear
       } else {
-        selected <- db1[[info$db1]]$y3 # up series
+        scaling <- 1
       }
-      if (diff(range(db1[[info$db1]]$x3))/period < 1 || length(db1[[info$db1]]$x3) < 6) {
-        rate <- (mean(selected[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(selected[1:as.integer(length(db1[[info$db1]]$x3*0.1))])) / (mean(db1[[info$db1]]$x3[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(db1[[info$db1]]$x3[1:as.integer(length(db1[[info$db1]]$x3*0.1))]))
-      } else {
-        withProgress(message = 'Series units not defined.',
-                     detail = 'Trying to guess the units ...', value = 0, {
-                       setProgress(0)
-                       vel <- sapply(1:length(db1[[info$db1]]$x3), function(x) midas_vel(m = x, t = period, disc = 0, selected))
-                       vel <- c(vel[1,],vel[2,])
-                       vel <- vel[vel > -999999]
-                       vel_sig <- 1.4826*mad(vel, na.rm = T)
-                       vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
-                       rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
-                     })
+      if (input$sunits == 1) {
+        scaling <- scaling/1000
+      } else if (input$sunits == 2) {
+        scaling <- scaling
+      } else { #guessing the series units
+        if (input$tunits == 1) {
+          period <- 365.25
+        } else if (input$tunits == 2) {
+          period <- 365.25/7
+        } else if (input$tunits == 3) {
+          period <- 1
+        }
+        if (input$format == 4) { 
+          selected <- db1[[info$db1]]$y1 # current series
+        } else {
+          selected <- db1[[info$db1]]$y3 # up series
+        }
+        if (diff(range(db1[[info$db1]]$x3))/period < 1 || length(db1[[info$db1]]$x3) < 6) {
+          rate <- (mean(selected[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(selected[1:as.integer(length(db1[[info$db1]]$x3*0.1))])) / (mean(db1[[info$db1]]$x3[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(db1[[info$db1]]$x3[1:as.integer(length(db1[[info$db1]]$x3*0.1))]))
+        } else {
+          withProgress(message = 'Series units not defined.',
+                       detail = 'Trying to guess the units ...', value = 0, {
+                         setProgress(0)
+                         vel <- sapply(1:length(db1[[info$db1]]$x3), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                         vel <- c(vel[1,],vel[2,])
+                         vel <- vel[vel > -999999]
+                         vel_sig <- 1.4826*mad(vel, na.rm = T)
+                         vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
+                         rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                       })
+        }
+        if (abs(rate) > 0.05 && sd(selected - rate*(db1[[info$db1]]$x3 - mean(db1[[info$db1]]$x3))) > 0.05) {
+          scaling <- 1000 # series units are mm most likely
+          updateRadioButtons(session, inputId = "sunits", selected = 2)
+        } else {
+          scaling <- 1 # series units are m most likely
+          updateRadioButtons(session, inputId = "sunits", selected = 1)
+        }
       }
-      if (abs(rate) > 0.05 && sd(selected - rate*(db1[[info$db1]]$x3 - mean(db1[[info$db1]]$x3))) > 0.05) {
-        scaling <- 1000 # series units are mm most likely
-        updateRadioButtons(session, inputId = "sunits", selected = 2)
-      } else {
-        scaling <- 1 # series units are m most likely
-        updateRadioButtons(session, inputId = "sunits", selected = 1)
-      }
+      withBusyIndicatorServer("giaModel", {
+        if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+          if (inputs$station_lon < 0) {
+            x1 <- inputs$station_lon + 360 
+          } else {
+            x1 <- inputs$station_lon
+          }
+          y1 <- inputs$station_lat
+          z1 <- interpolateGIA(x1,y1,1)
+          if (isTruthy(z1)) {
+            z1 <- z1 * scaling
+          }
+        }
+        if (isTruthy(z1)) {
+          updateTextInput(session, inputId = "giaTrend", value = sprintf('%.6f', z1))
+        }
+        if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
+          if (inputs$station_lon2 < 0) {
+            x2 <- inputs$station_lon2 + 360 
+          } else {
+            x2 <- inputs$station_lon2
+          }
+          y2 <- inputs$station_lat2
+          z2 <- interpolateGIA(x2,y2,2)
+          if (isTruthy(z2)) {
+            z2 <- z2 * scaling * inputs$scaleFactor
+          }
+        }
+        if (isTruthy(z2)) {
+          updateTextInput(session, inputId = "giaTrend2", value = sprintf('%.6f', z2))
+        }
+      })
     }
-    withBusyIndicatorServer("giaModel", {
-    if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
-      if (inputs$station_lon < 0) {
-        x1 <- inputs$station_lon + 360 
-      } else {
-        x1 <- inputs$station_lon
-      }
-      y1 <- inputs$station_lat
-      z1 <- interpolateGIA(x1,y1,1)
-      if (isTruthy(z1)) {
-        z1 <- z1 * scaling
-      }
-    }
-    if (isTruthy(z1)) {
-      updateTextInput(session, inputId = "giaTrend", value = sprintf('%.6f', z1))
-    }
-    if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
-      if (inputs$station_lon2 < 0) {
-        x2 <- inputs$station_lon2 + 360 
-      } else {
-        x2 <- inputs$station_lon2
-      }
-      y2 <- inputs$station_lat2
-      z2 <- interpolateGIA(x2,y2,2)
-      if (isTruthy(z2)) {
-        z2 <- z2 * scaling * inputs$scaleFactor
-      }
-    }
-    if (isTruthy(z2)) {
-      updateTextInput(session, inputId = "giaTrend2", value = sprintf('%.6f', z2))
-    }
-    })
   })
   observeEvent(inputs$giaTrend, {
     req(db1[[info$db1]])
     if (isTruthy(inputs$giaTrend)) {
       trans$gia <- c(0,0,inputs$giaTrend)
+      updateRadioButtons(session, inputId = "giaType", selected = 1)
     } else {
       trans$gia <- NULL
     }
@@ -10296,7 +10305,7 @@ server <- function(input,output,session) {
       tableAll <- try(read.table(filein, comment.char = "#", sep = sep, skip = skip)[1,], silent = T)
       shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 2, inline = T))
       lat <- tableAll[1,21]
-      lon <- tableAll[1,22] + 360
+      lon <- ifelse(tableAll[1,22] < -180, yes = tableAll[1,22] + 360, no = tableAll[1,22])
       coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
       coordinates <- c(coordinates,lat,lon)
     } else if (format == 4) {
