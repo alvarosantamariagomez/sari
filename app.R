@@ -82,6 +82,21 @@ helpPopup <- function(content, title = NULL) {
     icon("circle-question")
   )
 }
+helpPopupHeader <- function(content, title = NULL) {
+  a(#href = "#",
+    class = "popover-link",
+    `data-toggle` = "popover",
+    `data-title` = title,
+    `data-content` = content,
+    `data-html` = "true",
+    `data-trigger` = "hover",
+    `data-placement` = "auto right",
+    `data-container` = "body",
+    `data-animation` = "true",
+    `data-delay` = "show: 100, hide: 500",
+    icon("circle-question", class = "headerIcon")
+  )
+}
 # Working spinner (based on https://github.com/daattali/advanced-shiny/blob/master/busy-indicator/helpers.R)
 withBusyIndicatorUI <- function(button) {
   id <- button[['attribs']][['id']]
@@ -394,7 +409,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),
                   tags$html(lang = "en"),
                   tags$style(HTML("
-                      .popover {width: 15%; color: #ffffff; background-color: #446e9b; font-size: small; position: absolute; z-index: 9999;}
+                      .popover {width: 15%; color: #ffffff; background-color: #474949; font-size: small; position: absolute; z-index: 9999;}
                       .arrow { border-left-color: #8447cf; }
                       .navbar-nav { width: 98%;}
                       .navbar-nav li:nth-child(6) { float: right }
@@ -413,6 +428,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                         white-space: pre-wrap;
                         word-break: break-word;
                       }
+                      .headerIcon { color: #ffffff;}
                       ")
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
@@ -473,7 +489,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       
                                                       # * Input data and format ####
                                                       bsCollapsePanel(value = 1,
-                                                                      tags$h4(style = "color:white", icon("database", class = NULL, lib = "font-awesome"), "Input data and format",  icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      tags$h4(style = "color:white;", icon("database", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Input data and format"),
+                                                                              div(style = "float: right; margin-right: 10px;",
+                                                                                  helpPopupHeader(HTML("This block allows uploading and setting the series format, if necessary, before plotting.<br><br>
+                                                                                                       Load a series from a local file using the <b><u><i>browse file</i></u></b> button or from a remote file using the <b><u><i>server</i></u></b>, <b><u><i>product</i></u></b> and <b><u><i>station</i></u></b> options.<br><br>
+                                                                                                       If loading a local file, check that the <b><u><i>series format</b></u></i>, <b><u><i>time units</b></u></i> and <b><u><i>series units</b></u></i> are correct before plotting.<br><br>
+                                                                                                       Check the series format before plotting with the <b><u><i>show series header</b></u></i> option.<br><br>
+                                                                                                       Activate or deactivate the series error bars with the <b><u><i>use error bars</b></u></i> option.<br><br>
+                                                                                                       Reduce the sampling of the series with the <b><u><i>reduce sampling</b></u></i> option.<br><br>
+                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                      ),
                                                                       div(style = "padding: 0px 0px; margin-top:-2em",
                                                                           fluidRow(
                                                                             column(4,
@@ -616,7 +641,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       
                                                       # * Plot controls ####
                                                       bsCollapsePanel(value = 2,
-                                                                      tags$h4(style = "color:white", icon("gamepad", class = "NULL", lib = "font-awesome"), "Plot controls", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      tags$h4(style = "color:white;", icon("gamepad", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Plot controls"),
+                                                                         div(style = "float: right; margin-right: 10px;",
+                                                                             helpPopupHeader(HTML("This block allows plotting/resetting the time series with the <b><i><u>plot</u></i></b> and <b><i><u>reset</u></i></b> buttons.<br><br>
+                                                                                                  The <b><i><u>overview</b></i></u> button opens a new browser window containing a plot of the three coordinate components (if available).<br><br>
+                                                                                                  Outliers can be excluded manually or automatically with the <b><i><u>toggle</b></i></u> and <b><i><u>auto toggle</b></i></u> buttons.<br><br>
+                                                                                                  Removed outliers can be restored with the <b><i><u>reset toggle</b></i></u> button.<br><br>
+                                                                                                  The <b><i><u>truncate</b></i></u> option removes the beginning and/or end of the series.<br><br>
+                                                                                                  The <b><i><u>all components</b></i></u> option removes the outliers from all the components (if more than one) simultaneously.<br><br>
+                                                                                                  The <b><i><u>permanent</b></i></u> option permanently deletes the next outliers to be toggled/truncated.<br><br>
+                                                                                                  The <b><i><u>include in file</b></i></u> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
+                                                                                                  The <b><i><u>scrolling</b></i></u> option enables/disables the vertical scrolling of the left panel.<br><br>
+                                                                                                  See more details in the <b><i>help</i></b> tab.")))
+                                                                      ),
                                                                       fluidRow(
                                                                         column(2, style = 'padding:0px 1px 0px 10px;', align = "left",
                                                                                actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
@@ -703,7 +740,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(3,
                                                                                checkboxInput(inputId = "overflow",
                                                                                              div("Scrolling",
-                                                                                                 helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is deactivated, the user can take a screenshot of the full web page.")),
+                                                                                                 helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is disabled, the user can take a screenshot of the full web page.")),
                                                                                              value = T),
                                                                         )
                                                                       ),
@@ -711,7 +748,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       
                                                       # * Ancillary information ####
                                                       bsCollapsePanel(value = 3,
-                                                                      tags$h4(style = "color:white", icon("upload", class = NULL, lib = "font-awesome"), "Ancillary information", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      tags$h4(style = "color:white;", icon("upload", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Ancillary information"),
+                                                                              div(style = "float: right; margin-right: 10px;",
+                                                                                  helpPopupHeader(HTML("This block allows for the uploading of files containing complementary information or metadata related to the analysis of the series.<br><br>
+                                                                                                       The user can upload any of the following possibilities:<br>
+                                                                                                       a <b><i><u>SARI</b></i></u> file,<br>
+                                                                                                       a GNSS <b><i><u>sitelog</b></i></u>,<br>
+                                                                                                       a GAMIT-like <b><i><u>station.info</b></i></u> file,<br>
+                                                                                                       an IGS-like <b><i><u>soln</b></i></u> file,<br>
+                                                                                                       a <b><i><u>custom</b></i></u> offset file,<br>
+                                                                                                       a <b><i><u>secondary</b></i></u> series.<br>
+                                                                                                       The secondary series can be <b><i><u>shown</b></i></u> next to the primary series or used to either <b><i><u>correct</b></i></u> the primary series or to <b><i><u>average</b></i></u> both the primary and secondary series.<br><br>
+                                                                                                       Two model predictions can also be plotted or used to correct the primary series: a <b><i><u>plate motion</b></i></u> model and a <b><i><u>GIA</b></i></u> model.<br><br>
+                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                      ),
                                                                       
                                                                       ## % SARI model ####
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
@@ -1164,7 +1214,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       
                                                       # * Fit controls ####
                                                       bsCollapsePanel(value = 4,
-                                                                      tags$h4(style = "color:white", icon("wand-magic-sparkles", class = NULL, lib = "font-awesome"), "Fit controls",  icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      tags$h4(style = "color:white;", icon("wand-magic-sparkles", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Fit controls"),
+                                                                              div(style = "float: right; margin-right: 10px;",
+                                                                                  helpPopupHeader(HTML("This block allows fitting a model to the time series using:<br>
+                                                                                                       Weighted <b><i><u>least squares</b></i></u> (LS)<br>
+                                                                                                       <b><i><u>Extended Kalman filter</b></i></u> (EKF)<br>
+                                                                                                       <b><i><u>Unscented Kalman filter</b></i></u> (UKF)<br><br>
+                                                                                                       The fitted model may include any combination of <b><i><u>linear</b></i></u> trend, higher-degree <b><i><u>polynomial</b></i></u>, <b><i><u>offsets</b></i></u>, <b><i><u>sinusoidal</b></i></u> periodic signals, <b><i><u>exponential</b></i></u> and <b><i><u>logarithmic</b></i></u> decays.<br><br>
+                                                                                                       The <b><i><u>search discontinuities</b></i></u> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><b>WARNING</b>: long computation time.<br><br>
+                                                                                                       The <b><i><u>check offsets</b></i></u> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
+                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                      ),
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
                                                                             column(3,
@@ -1583,7 +1643,18 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       
                                                       # * Additional fit ####
                                                       bsCollapsePanel(value = 5,
-                                                                      tags$h4(style = "color:white", icon("magnifying-glass-plus", class = NULL, lib = "font-awesome"), "Additional fit", icon("caret-down", class = NULL, lib = "font-awesome")),
+                                                                      tags$h4(style = "color:white;", icon("magnifying-glass-plus", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Additional fit"),
+                                                                              div(style = "float: right; margin-right: 10px;", 
+                                                                                  helpPopupHeader(HTML("This block allows for additional time series fitting, including:<br><br>
+                                                                                                       Two linear trend estimators using the <b><i><u>MIDAS</b></i></u> and the <b><i><u>minimum entropy</b></i></u> methods.<br><br>
+                                                                                                       The <b><i><u>histogram</b></i></u> of the original, model, residual or smoothed series, and a stationarity assessment.<br><br>
+                                                                                                       The non-parametric <b><i><u>periodic waveform</b></i></u> for non-sinusoidal periodic variations.<br><br>
+                                                                                                       The amplitude or power <b><i><u>periodogram</b></i></u> of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><br>
+                                                                                                       The pseudo discrete <b><i><u>wavelet</b></i></u> transform for the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><b>WARNING</b>: long computation time.<br><br>
+                                                                                                       The Vondr&#225;k <b><i><u>band-pass smoother</b></i></u> of the original or residual series.<br><br>
+                                                                                                       The MLE <b><i><u>noise analysis</b></i></u> to estimate the temporal correlation of the model/filter residuals.<br><b>WARNING</b>: long computation time.<br><br>
+                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                      ),
                                                                       
                                                                       ## % MIDAS ####
                                                                       checkboxInput(inputId = "midas",
