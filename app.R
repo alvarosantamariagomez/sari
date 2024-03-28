@@ -409,7 +409,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),
                   tags$html(lang = "en"),
                   tags$style(HTML("
-                      .popover {width: 15%; color: #ffffff; background-color: #474949; font-size: small; position: absolute; z-index: 9999;}
+                      .help {color: #2297E6; font-weight: bold;}
+                      .option {color: #F5C710; font-weight: bold;}
+                      .warning {color: #DF536B; font-weight: bold;}
+                      .popover {min-width: 21%; color: #ffffff; background-color: #474949; font-size: medium; position: absolute; z-index: 9999;}
                       .arrow { border-left-color: #8447cf; }
                       .navbar-nav { width: 98%;}
                       .navbar-nav li:nth-child(6) { float: right }
@@ -491,21 +494,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 1,
                                                                       tags$h4(style = "color:white;", icon("database", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Input data and format"),
                                                                               div(style = "float: right; margin-right: 10px;",
-                                                                                  helpPopupHeader(HTML("This block allows uploading and setting the series format, if necessary, before plotting.<br><br>
-                                                                                                       Load a series from a local file using the <b><u><i>browse file</i></u></b> button or from a remote file using the <b><u><i>server</i></u></b>, <b><u><i>product</i></u></b> and <b><u><i>station</i></u></b> options.<br><br>
-                                                                                                       If loading a local file, check that the <b><u><i>series format</b></u></i>, <b><u><i>time units</b></u></i> and <b><u><i>series units</b></u></i> are correct before plotting.<br><br>
-                                                                                                       Check the series format before plotting with the <b><u><i>show series header</b></u></i> option.<br><br>
-                                                                                                       Activate or deactivate the series error bars with the <b><u><i>use error bars</b></u></i> option.<br><br>
-                                                                                                       Reduce the sampling of the series with the <b><u><i>reduce sampling</b></u></i> option.<br><br>
-                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                                  helpPopupHeader("This block allows uploading and setting the series format, if necessary, before plotting.<br><br>
+                                                                                                  Load a series from a local file using the <span class='option'>browse file</span> button or from a remote file using the <span class='option'>server</span>, <span class='option'>product</span>, and <span class='option'>station</span> options.<br><br>
+                                                                                                  When loading a local file, ensure that the <span class='option'>series format</span>, <span class='option'>time units</span>, and <span class='option'>series units</span> are correct before plotting.<br><br>
+                                                                                                  Check the series format before plotting with the <span class='option'>show series header</span> option.<br><br>
+                                                                                                  Activate or deactivate the series error bars with the <span class='option'>use error bars</span> option.<br><br>
+                                                                                                  Reduce the sampling of the series with the <span class='option'>reduce sampling</span> option.<br><br>
+                                                                                                  See more details in the </i><span class='help'>help</span> tab."))
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:-2em",
                                                                           fluidRow(
                                                                             column(4,
                                                                                    br(),
-                                                                                   div(style = "font-weight: bold", "Input series file",
-                                                                                       helpPopup("Select a column-based text file; comments must start with '#'")
-                                                                                   ),
+                                                                                   div(style = "font-weight: bold", "Input series file"),
                                                                                    div(style = "margin-right: -1em", uiOutput("fileSeries1"))
                                                                             ),
                                                                             column(8,
@@ -531,7 +532,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         div(style = "padding: 0px 0px",
                                                                             fluidRow(
                                                                               column(3,
-                                                                                     div(style = "font-weight: bold", "Series ID", helpPopup("GNSS station ID(s) extracted from the file name(s) of the primary and secondary series"))
+                                                                                     div(style = "font-weight: bold", "Series ID",
+                                                                                         helpPopup("This text field shows the GNSS station ID(s) extracted from the file name(s) of the primary and secondary series.<br>
+                                                                                                   The GNSS station ID(s) are used for extracting the corresponding metadata.<br>
+                                                                                                   Edit the station ID(s) if necessary."))
                                                                               ),
                                                                               column(6, 
                                                                                      textInput(inputId = "ids", label = NULL, value = "")
@@ -541,7 +545,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         div(style = "padding: 0px 0px; margin-top: 1em",
                                                                             fluidRow(
                                                                               column(4,
-                                                                                     div(style = "font-weight: bold", "Series format", helpPopup("Select 1D if the other formats are unknown"))
+                                                                                     div(style = "font-weight: bold", "Series format",
+                                                                                         helpPopup("This option sets the series file format. Select 1D if the other file formats are unknown."))
                                                                               ),
                                                                               column(8,
                                                                                      radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
@@ -556,7 +561,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             ),
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Column selection",
-                                                                                       helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively.")
+                                                                                       helpPopup("Enter the column number for the epochs, data and error bars in the series file.")
                                                                                    ),
                                                                                    div(style = "margin-top:-1em",
                                                                                        fluidRow(
@@ -580,19 +585,22 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      div(style = "margin-top:1em",
                                                                                          radioButtons(inputId = "tunits",
                                                                                                       div("Time units",
-                                                                                                          helpPopup("These are the units of the time axis, not the series sampling. They are used to define periods of time in several options.")),
+                                                                                                          helpPopup("This option sets the units of the time axis.<br>These units define the periods of time in several options.")),
                                                                                                       choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = "", inline = F)
                                                                                      ),
                                                                                      div(
                                                                                        radioButtons(inputId = "sunits",
                                                                                                     div("Series units",
-                                                                                                        helpPopup("These are the units of the variable in the time series and are used to define the units of all the estimated parameters.")),
+                                                                                                        helpPopup("This option sets the units of the variable in the time series.<br>They are used to define the units of the estimated parameters.")),
                                                                                                     choices = list("?" = 0, "m" = 1, "mm" = 2), selected = 0, inline = T)
                                                                                      )
                                                                               ),
                                                                               column(6, offset = 2,
                                                                                      checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
-                                                                                     checkboxInput(inputId = "header", label = "Show series header", value = F),
+                                                                                     checkboxInput(inputId = "header", 
+                                                                                                   div("Show series header",
+                                                                                                       helpPopup("Before plotting the series, this option shows the first lines of the series file.<br>After plotting the series, this option shows the first lines of the series data in the plot.")),
+                                                                                                   value = F),
                                                                                      conditionalPanel(
                                                                                        condition = "input.header == true",
                                                                                        sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
@@ -603,7 +611,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           column(6,
                                                                                  checkboxInput(inputId = "average",
                                                                                                div("Reduce sampling",
-                                                                                                   helpPopup("To compute the moving average of the series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
+                                                                                                   helpPopup("This option computes the moving average of the series for a given non-overlapping time pediod.<br>
+                                                                                                             The new sampling period must have a value between the time series sampling and half the time series length.<br>
+                                                                                                             The new sampling period must be given in the same units as the time axis of the series.<br>
+                                                                                                             Expressions are allowed starting by <span class='option'>=</span>,<br>
+                                                                                                             as in <span class='option'>=7/365.25</span>, for a week period in units of years.")),
                                                                                                value = F)
                                                                           ),
                                                                           column(6,
@@ -643,16 +655,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 2,
                                                                       tags$h4(style = "color:white;", icon("gamepad", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Plot controls"),
                                                                          div(style = "float: right; margin-right: 10px;",
-                                                                             helpPopupHeader(HTML("This block allows plotting/resetting the time series with the <b><i><u>plot</u></i></b> and <b><i><u>reset</u></i></b> buttons.<br><br>
-                                                                                                  The <b><i><u>overview</b></i></u> button opens a new browser window containing a plot of the three coordinate components (if available).<br><br>
-                                                                                                  Outliers can be excluded manually or automatically with the <b><i><u>toggle</b></i></u> and <b><i><u>auto toggle</b></i></u> buttons.<br><br>
-                                                                                                  Removed outliers can be restored with the <b><i><u>reset toggle</b></i></u> button.<br><br>
-                                                                                                  The <b><i><u>truncate</b></i></u> option removes the beginning and/or end of the series.<br><br>
-                                                                                                  The <b><i><u>all components</b></i></u> option removes the outliers from all the components (if more than one) simultaneously.<br><br>
-                                                                                                  The <b><i><u>permanent</b></i></u> option permanently deletes the next outliers to be toggled/truncated.<br><br>
-                                                                                                  The <b><i><u>include in file</b></i></u> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
-                                                                                                  The <b><i><u>scrolling</b></i></u> option enables/disables the vertical scrolling of the left panel.<br><br>
-                                                                                                  See more details in the <b><i>help</i></b> tab.")))
+                                                                             helpPopupHeader("This block allows plotting/resetting the time series with the <span class='option'>plot</span> and <span class='option'>reset</span> buttons.<br><br>
+                                                                                             The <span class='option'>overview</span> button opens a new browser window containing a plot of the three coordinate components, if available.<br><br>
+                                                                                             Outliers can be excluded manually or automatically with the <span class='option'>toggle</span> and <span class='option'>auto toggle</span> buttons.<br><br>
+                                                                                             Removed outliers can be restored with the <span class='option'>reset toggle</span> button.<br><br>
+                                                                                             The <span class='option'>truncate</span> option removes the beginning and/or end of the series.<br><br>
+                                                                                             The <span class='option'>all components</span> option removes the outliers from all the components (if more than one) simultaneously.<br><br>
+                                                                                             The <span class='option'>permanent</span> option permanently deletes (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
+                                                                                             The <span class='option'>include in file</span> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
+                                                                                             The <span class='option'>scrolling</span> option enables/disables the vertical scrolling of the left panel.<br><br>
+                                                                                             See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       fluidRow(
                                                                         column(2, style = 'padding:0px 1px 0px 10px;', align = "left",
@@ -673,10 +685,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
                                                                           fluidRow(
-                                                                            column(3,
+                                                                            column(4,
                                                                                    checkboxInput(inputId = "cut",
                                                                                                  div("Truncate", style = "font-weight: bold",
-                                                                                                     helpPopup("To limit the time axis of the series given the start and/or end epochs")),
+                                                                                                     helpPopup("This option reduces the time axis of the series given a start and/or end epochs.")),
                                                                                                  value = F)
                                                                             ),
                                                                             conditionalPanel(
@@ -695,13 +707,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(4,
                                                                                    textInput(inputId = "thresholdRes",
                                                                                              div("Residual",
-                                                                                                 helpPopup("Threshold to delete points with larger absolute residual")),
+                                                                                                 helpPopup("Enter the threshold to delete all the points with larger absolute residual.")),
                                                                                              value = NULL)
                                                                             ),
                                                                             column(4, style = "padding:0px 10px 0px 0px;", align = "left",
                                                                                    textInput(inputId = "thresholdResN",
                                                                                              div("Norm. residual",
-                                                                                                 helpPopup("Threshold to delete points with larger normalized absolute residual")),
+                                                                                                 helpPopup("Enter the threshold to delete all the points with larger normalized absolute residual.<br>
+                                                                                                           The residuals values are normalized by their error bars.")),
                                                                                              value = NULL)
                                                                             ),
                                                                             column(4, style = "padding:0px 10px 0px 0px; margin-top:1.75em", align = "right",
@@ -719,30 +732,32 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       div(style = "font-weight: bold", "Plot options"),
                                                                       fluidRow(
-                                                                        column(3,
+                                                                        column(4,
                                                                                checkboxInput(inputId = "remove3D",
                                                                                              div("All components", align = "right",
-                                                                                                 helpPopup("To remove points from all components simultaneously")),
+                                                                                                 helpPopup("This option toggles or deletes the points from all the coordinate components at the same time.")),
                                                                                              value = T)
                                                                         ),
-                                                                        column(3,
+                                                                        column(4,
                                                                                checkboxInput(inputId = "permanent",
                                                                                              div("Permanent", align = "right",
-                                                                                                 helpPopup("To delete points from the series permanently, unless the series are reset and reloaded")),
+                                                                                                 helpPopup("This option deletes the points from the series permanently.<br>
+                                                                                                           Deleted points cannot be restored, unless the series are reset and reloaded.")),
                                                                                              value = F)
                                                                         ),
-                                                                        column(3,
+                                                                        column(4,
                                                                                checkboxInput(inputId = "add_excluded",
                                                                                              div("Include in file", align = "right",
-                                                                                                 helpPopup("To include the removed points in the downloaded results file")),
+                                                                                                 helpPopup("This option includes the removed points in the downloaded file as commented lines.")),
                                                                                              value = F)
-                                                                        ),
-                                                                        column(3,
-                                                                               checkboxInput(inputId = "overflow",
-                                                                                             div("Scrolling",
-                                                                                                 helpPopup("Enables or disables the vertical scrolling of the left panel. When the scrolling is disabled, the user can take a screenshot of the full web page.")),
-                                                                                             value = T),
                                                                         )
+                                                                      ),
+                                                                      div(style = "margin-top:-1em;",
+                                                                          checkboxInput(inputId = "overflow",
+                                                                                        div("Scrolling",
+                                                                                            helpPopup("This options enables or disables the vertical scrolling of the left panel.<br>
+                                                                                                           When the scrolling is disabled, the user can take a screenshot of the full web page.")),
+                                                                                        value = T)
                                                                       ),
                                                                       style = "primary"),
                                                       
@@ -750,17 +765,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 3,
                                                                       tags$h4(style = "color:white;", icon("upload", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Ancillary information"),
                                                                               div(style = "float: right; margin-right: 10px;",
-                                                                                  helpPopupHeader(HTML("This block allows for the uploading of files containing complementary information or metadata related to the analysis of the series.<br><br>
-                                                                                                       The user can upload any of the following possibilities:<br>
-                                                                                                       a <b><i><u>SARI</b></i></u> file,<br>
-                                                                                                       a GNSS <b><i><u>sitelog</b></i></u>,<br>
-                                                                                                       a GAMIT-like <b><i><u>station.info</b></i></u> file,<br>
-                                                                                                       an IGS-like <b><i><u>soln</b></i></u> file,<br>
-                                                                                                       a <b><i><u>custom</b></i></u> offset file,<br>
-                                                                                                       a <b><i><u>secondary</b></i></u> series.<br>
-                                                                                                       The secondary series can be <b><i><u>shown</b></i></u> next to the primary series or used to either <b><i><u>correct</b></i></u> the primary series or to <b><i><u>average</b></i></u> both the primary and secondary series.<br><br>
-                                                                                                       Two model predictions can also be plotted or used to correct the primary series: a <b><i><u>plate motion</b></i></u> model and a <b><i><u>GIA</b></i></u> model.<br><br>
-                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                                  helpPopupHeader("This block allows for the uploading of files containing complementary information or metadata related to the analysis of the series.<br><br>
+                                                                                                  The user can upload any of the following possibilities:<br>
+                                                                                                  a <span class='option'>SARI</span> file,<br>
+                                                                                                  a GNSS <span class='option'>sitelog</span>,<br>
+                                                                                                  a GAMIT-like <span class='option'>station.info</span> file,<br>
+                                                                                                  an IGS-like <span class='option'>soln</span> file,<br>
+                                                                                                  a <span class='option'>custom</span> offset file,<br>
+                                                                                                  a <span class='option'>secondary</span> series.<br>
+                                                                                                  The secondary series can be <span class='option'>shown</span> next to the primary series or used to either <span class='option'>correct</span> the primary series or to <span class='option'>average</span> both the primary and secondary series.<br><br>
+                                                                                                  Two model predictions can also be plotted or used to correct the primary series: a <span class='option'>plate motion</span> model and a <span class='option'>GIA</span> model.<br><br>
+                                                                                                  See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       
                                                                       ## % SARI model ####
@@ -768,7 +783,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Load SARI model",
-                                                                                       helpPopup("Load a file with the results of a previous analysis with SARI")
+                                                                                       helpPopup("This option allows loading a file with the model fitted in a previous analysis with SARI.")
                                                                                    )
                                                                             )
                                                                           ),
@@ -784,7 +799,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Input log file",
-                                                                                       helpPopup("IGS-like sitelog file")
+                                                                                       helpPopup("This option allows loading an IGS-like sitelog file.")
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
@@ -812,7 +827,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Input station.info file",
-                                                                                       helpPopup("GAMIT/GLOBK-like station.info file")
+                                                                                       helpPopup("This option allows loading a GAMIT/GLOBK station.info file.")
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
@@ -840,7 +855,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Input soln file",
-                                                                                       helpPopup("IGS-like soln file")
+                                                                                       helpPopup("This option allows loading an IGS-like soln file.")
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
@@ -868,7 +883,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Input custom offset file",
-                                                                                       helpPopup("User-defined offset list to be shown")
+                                                                                       helpPopup("This option allows loading a user-defined offset list.")
                                                                                    )
                                                                             ),
                                                                             column(6, align = "right",
@@ -898,7 +913,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "margin-right:0; padding-right:0",
                                                                                        fileInput(inputId = "series2",
                                                                                                  div("Secondary series file",
-                                                                                                     helpPopup("Secondary input series to show next to, subtract from or average with the primary series")),
+                                                                                                     helpPopup("This option allows loading a secondary series to be shown next to, subtracted from or averaged with the primary series.")),
                                                                                                  multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                                    )
                                                                             ),
@@ -939,13 +954,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        column(6,
                                                                                               textInput(inputId = "scaleFactor",
                                                                                                         div("Scale factor",
-                                                                                                            helpPopup("Multiplicative coefficient for the y-axis of the secondary series.")),
+                                                                                                            helpPopup("Enter the multiplicative coefficient to scale the y-axis of the secondary series.")),
                                                                                                         value = "1")
                                                                                        ),
                                                                                        column(6,
                                                                                               textInput(inputId = "step2",
                                                                                                         div("Averaging",
-                                                                                                            helpPopup("To compute the moving average of the secondary series for a given non-overlapping time pediod between twice the time series sampling and half the time series length. The period must be given in the same units as the time axis in the series. Expressions are allowed starting by '=', as in '=7/365.25'.")),
+                                                                                                            helpPopup("This option computes the moving average of the secondary series for a given non-overlapping time pediod between the time series sampling and half the time series length.<br>
+                                                                                                                      The period must be given in the same units as the time axis in the series.<br>
+                                                                                                                      Expressions are allowed starting by <span class='option'>=</span>, as in <span class='option'>=7/365.25</span>.")),
                                                                                                         value = "")
                                                                                        )
                                                                                      ),
@@ -955,19 +972,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      div(style = "padding: 0px 0px; margin-top:1em",
                                                                                          checkboxInput(inputId = "fullSeries",
                                                                                                        div("Full series",
-                                                                                                           helpPopup("If activated, the total length of the secondary series will be plotted. Otherwise, only the common time period with the primary series will be plotted.")),
+                                                                                                           helpPopup("This option shows the total length of the secondary series.<br>
+                                                                                                                     By default, only the common time period with the primary series will be shown.")),
                                                                                                        value = F),
                                                                                          checkboxInput(inputId = "sameScale",
                                                                                                        div("Same scale",
-                                                                                                           helpPopup("Force the y-axis of the secondary series on the right to have the same scale as the y-axis of the primary series on the left")),
+                                                                                                           helpPopup("This option forces the y-axis of the secondary series on the right of the plot to have the same scale as the y-axis of the primary series on the left.")),
                                                                                                        value = F),
                                                                                          checkboxInput(inputId = "same_axis",
                                                                                                        div("Same axis",
-                                                                                                           helpPopup("Force the y-axis of the secondary series on the right to be the same as the y-axis of the primary series on the left")),
+                                                                                                           helpPopup("This option forces the y-axis of the secondary series on the right of the plot to be the same as the y-axis of the primary series on the left.")),
                                                                                                        value = F),
                                                                                          checkboxInput(inputId = "ne",
                                                                                                        div(HTML("N @ E"),
-                                                                                                           helpPopup("Swap the columns of the North and East components of the series")),
+                                                                                                           helpPopup("This option swaps the columns of the North and East components of the secondary series to match those of the primary series.")),
                                                                                                        value = F)
                                                                                      )
                                                                               )
@@ -981,7 +999,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               ),
                                                                               column(6,
                                                                                      div(style = "font-weight: bold", "Column selection",
-                                                                                         helpPopup("Select the column numbers for the epochs, data and the errorbars, respectively, of the secondary series.")
+                                                                                         helpPopup("Enter the column number for the epochs, data and the errorbars, respectively, of the secondary series.")
                                                                                      ),
                                                                                      div(style = "margin-top:-1em",
                                                                                          fluidRow(
@@ -1010,7 +1028,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(6,
                                                                                checkboxInput(inputId = "euler",
                                                                                              div(style = "font-weight: bold", "Plate motion model",
-                                                                                                 helpPopup("Shows or removes a plate motion model at the series location given the parameters of an Euler pole")),
+                                                                                                 helpPopup("This option shows or removes a plate motion model at the series location given the parameters of an Euler pole.")),
                                                                                              value = F)
                                                                                ),
                                                                         column(6,
@@ -1057,7 +1075,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           div(style = "margin-top: 2em",
                                                                               column(8,
                                                                                      div(style = "font-weight: bold", "Upload a custom plate model",
-                                                                                         helpPopup("File with a list of station coordinates and their associated Euler poles")
+                                                                                         helpPopup("This option allows loading a file with a list of station coordinates and their associated Euler poles.")
                                                                                      )
                                                                               ),
                                                                               column(4, align = "right",
@@ -1068,7 +1086,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty"),
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 div("Station coordinates", helpPopup(HTML("Option 1: Cartesian coordinates in the same units as the series.<br>Option 2: geographic coordinates in decimal degrees")))
+                                                                                 div("Station coordinates", helpPopup("Option 1: Cartesian coordinates in the same units as the series.<br>
+                                                                                                                      Option 2: geographic coordinates in decimal degrees."))
                                                                           ),
                                                                           column(6, align = "right",
                                                                                  radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
@@ -1101,7 +1120,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           condition = "output.series2",
                                                                           fluidRow(
                                                                             column(6,
-                                                                                   div("Secondary station coordinates", helpPopup(HTML("Option 1: Cartesian coordinates in the same units as the series.<br>Option 2: geographic coordinates in decimal degrees")))
+                                                                                   div("Secondary station coordinates", helpPopup("Option 1: Cartesian coordinates in the same units as the series.<br>
+                                                                                                                                  Option 2: geographic coordinates in decimal degrees."))
                                                                             ),
                                                                             column(6, align = "right",
                                                                                    radioButtons(inputId = "station_coordinates2", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
@@ -1133,7 +1153,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ),
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 div("Euler's pole", helpPopup(HTML("Option 1: Cartesian rotation rates in decimal degrees/Ma.<br>Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma")))
+                                                                                 div("Euler's pole", helpPopup("Option 1: Cartesian rotation rates in decimal degrees/Ma.<br>
+                                                                                                               Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma."))
                                                                           ),
                                                                           column(6, align = "right",
                                                                                  radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
@@ -1172,7 +1193,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(4,
                                                                                checkboxInput(inputId = "gia",
                                                                                              div(style = "font-weight: bold", "GIA",
-                                                                                                 helpPopup("Shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location")),
+                                                                                                 helpPopup("This option shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location.")),
                                                                                              value = F)
                                                                         )
                                                                       ),
@@ -1198,7 +1219,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           column(6,
                                                                                  textInput(inputId = "giaTrend", 
                                                                                            div(style = "font-weight: bold", "Vertical land motion trend",
-                                                                                               helpPopup("Vertical trend in the same units as the series")),
+                                                                                               helpPopup("This text field shows the vertical land motion trend in the same units as the series.<br>
+                                                                                                         Modify the value of the VLM trend if necessary.")),
                                                                                            value = "")
                                                                           ),
                                                                           conditionalPanel(
@@ -1216,14 +1238,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 4,
                                                                       tags$h4(style = "color:white;", icon("wand-magic-sparkles", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Fit controls"),
                                                                               div(style = "float: right; margin-right: 10px;",
-                                                                                  helpPopupHeader(HTML("This block allows fitting a model to the time series using:<br>
-                                                                                                       Weighted <b><i><u>least squares</b></i></u> (LS)<br>
-                                                                                                       <b><i><u>Extended Kalman filter</b></i></u> (EKF)<br>
-                                                                                                       <b><i><u>Unscented Kalman filter</b></i></u> (UKF)<br><br>
-                                                                                                       The fitted model may include any combination of <b><i><u>linear</b></i></u> trend, higher-degree <b><i><u>polynomial</b></i></u>, <b><i><u>offsets</b></i></u>, <b><i><u>sinusoidal</b></i></u> periodic signals, <b><i><u>exponential</b></i></u> and <b><i><u>logarithmic</b></i></u> decays.<br><br>
-                                                                                                       The <b><i><u>search discontinuities</b></i></u> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><b>WARNING</b>: long computation time.<br><br>
-                                                                                                       The <b><i><u>check offsets</b></i></u> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
-                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                                  helpPopupHeader("This block allows fitting a model to the time series using:<br>
+                                                                                                  Weighted <span class='option'>least squares</span> (LS)<br>
+                                                                                                  <span class='option'>Extended Kalman filter</span> (EKF)<br>
+                                                                                                  <span class='option'>Unscented Kalman filter</span> (UKF)<br><br>
+                                                                                                  The fitted model may include any combination of <span class='option'>linear</span> trend, higher-degree <span class='option'>polynomial</span>, <span class='option'>offsets</span>, <span class='option'>sinusoidal</span> periodic signals, <span class='option'>exponential</span> and <span class='option'>logarithmic</span> decays.<br><br>
+                                                                                                  The <span class='option'>search discontinuities</span> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
+                                                                                                  The <span class='option'>check offsets</span> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
+                                                                                                  See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
@@ -1251,13 +1273,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             ),
                                                                             checkboxInput(inputId = "errorm",
                                                                                           div("Optimize measurement noise",
-                                                                                              helpPopup("Estimating the measurement noise within bounds and with respect to the provided process noise (WARNING: several iterations of the KF fit)")),
+                                                                                              helpPopup("This option estimates the measurement noise within the given bounds and with respect to the provided process noise.<br>
+                                                                                                        <span class='warning'>WARNING</span>: several iterations of the KF fit.")),
                                                                                           value = F),
                                                                             fluidRow(
                                                                               column(4,
                                                                                      textInput(inputId = "ObsError",
                                                                                                div("Measurement noise",
-                                                                                                   helpPopup("Measurement standard deviation in the same units as the observations. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the measurement standard deviation in the same units as the series.<br>
+                                                                                                             If left empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               ),
                                                                               conditionalPanel(
@@ -1265,7 +1289,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 column(4, align = "left",
                                                                                        textInput(inputId = "min_optirange",
                                                                                                  div("Min bound",
-                                                                                                     helpPopup("Lower & upper bounds of the measurement standard deviation in the same units as the observations")),
+                                                                                                     helpPopup("Lower & upper bounds of the measurement standard deviation in the same units as the series.")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(4,
@@ -1298,7 +1322,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      condition = "input.fitType == 1",
                                                                                      textInput(inputId = "trendRef",
                                                                                                div("Ref. epoch rate",
-                                                                                                   helpPopup("Reference epoch for the rate. If empty, the mean data epoch will be used.")),
+                                                                                                   helpPopup("Enter the reference epoch for the rate. If empty, the mean data epoch will be used.")),
                                                                                                value = "")
                                                                                    )
                                                                             ),
@@ -1307,7 +1331,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "TrendDev",
                                                                                                div("Rate process noise",
-                                                                                                   helpPopup("Rate variation (standard deviation) for each observation.")),
+                                                                                                   helpPopup("Enter the rate variation (standard deviation) for each observation.<br>
+                                                                                                             If a null value is used, a constant linear trend will be estimated.")),
                                                                                                value = "0.0")
                                                                               )
                                                                             )
@@ -1320,14 +1345,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        condition = "input.fitType == 2",
                                                                                        textInput(inputId = "Intercept0",
                                                                                                  div("A priori intercept",
-                                                                                                     helpPopup("Initial state value for the intercept. If empty, an approximate value will be used.")),
+                                                                                                     helpPopup("Enter the initial state value for the intercept. If empty, an approximate value will be used.")),
                                                                                                  value = "")
                                                                                      )
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eIntercept0",
                                                                                                div("A priori intercept error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the intercept. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the intercept.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             ),
@@ -1337,14 +1363,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        condition = "input.fitType == 2",
                                                                                        textInput(inputId = "Trend0",
                                                                                                  div("A priori rate",
-                                                                                                     helpPopup("Initial state value for the rate. If empty, an approximate value will be used.")),
+                                                                                                     helpPopup("Enter the initial state value for the rate. If empty, an approximate value will be used.")),
                                                                                                  value = "")
                                                                                      )
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eTrend0",
                                                                                                div("A priori rate error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the rate. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the rate.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             )
@@ -1359,13 +1386,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           textInput(inputId = "period",
                                                                                     div("Sinusoidal periods",
-                                                                                        helpPopup("Comma-separated list. Each period ended by<br/>d (for days)<br/>w (for weeks)<br/>y (for years).<br/>Add xN at the end to include N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")),
+                                                                                        helpPopup("Enter a comma-separated list of periods. Each period ended by<br/>
+                                                                                                  d : for days<br/>
+                                                                                                  w : for weeks<br/>
+                                                                                                  y : for years.<br/>
+                                                                                                  Add xN at the end to fit up to N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.")),
                                                                                     value = "1y"),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    textInput(inputId = "periodRef",
                                                                                              div("Ref. epoch periods",
-                                                                                                 helpPopup("Reference epoch for the phase of the periods. If empty, the mean data epoch will be used")),
+                                                                                                 helpPopup("Enter the reference epoch for the phase of the periods. If empty, the mean data epoch will be used")),
                                                                                              value = "")
                                                                             ),
                                                                             conditionalPanel(
@@ -1373,7 +1404,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "S0",
                                                                                                div("A priori amplitude",
-                                                                                                   helpPopup("Initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             )
@@ -1384,20 +1415,22 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "SinusoidalDev",
                                                                                                div("Amplitude process noise",
-                                                                                                   helpPopup("Sine/cosine amplitude variation (standard deviation) for each observation.")),
+                                                                                                   helpPopup("Enter the sine/cosine amplitude variation (standard deviation) for each observation and for each period.<br>
+                                                                                                             If a null value is used, a constant sinusoidal oscillation will be estimated.")),
                                                                                                value = "0.0")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eS0",
                                                                                                div("A priori amplitude error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for sine & cosine amplitudes. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for sine & cosine amplitudes.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             ),
                                                                             tags$div(id = "inline",
                                                                                      radioButtons(inputId = "SineCosine",
                                                                                                   div("Amplitude process noise on",
-                                                                                                      helpPopup("Choose between varying the sine amplitude only or varying both the sine & cosine amplitudes independently.")),
+                                                                                                      helpPopup("This option allows choosing between varying the sine amplitude only or varying both the sine & cosine amplitudes independently.")),
                                                                                                   choices = list("Sine" = 1, "Sine & Cosine" = 2), selected = 2, inline = T)
                                                                             )
                                                                           )
@@ -1411,7 +1444,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           textInput(inputId = "offsetEpoch",
                                                                                     div("Offset epochs",
-                                                                                        helpPopup("Comma-separated list")),
+                                                                                        helpPopup("Enter a comma-separated list of offsets in the same time units as the series.")),
                                                                                     value = ""),
                                                                           conditionalPanel(
                                                                             condition = "input.fitType == 2",
@@ -1419,13 +1452,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "O0",
                                                                                                div("A priori offset",
-                                                                                                   helpPopup("Initial state value for the offsets. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state value for the offsets. If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eO0",
                                                                                                div("A priori offset error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             )
@@ -1439,7 +1472,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(6,
                                                                                    sliderInput("segmentLength",
                                                                                                div("Minimum segment",
-                                                                                                   helpPopup("Minimum segment size given as % of the series length")),
+                                                                                                   helpPopup("This option sets the minimum segment size given as % of the series length.")),
                                                                                                min = 0.1, max = 50, value = 10, step = 1, round = 0, ticks = F, animate = F, width = NULL, sep = "", pre = NULL, post = NULL, timeFormat = NULL, timezone = NULL, dragRange = TRUE)
                                                                             )
                                                                           ),
@@ -1448,7 +1481,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(4,
                                                                                    checkboxInput(inputId = "verif_offsets",
                                                                                                  div("Check offsets",
-                                                                                                     helpPopup("To test if the estimated offsets may be due to random noise fluctuations.<br/>If the probability is < 95 %, offsets may be generated by random noise."),
+                                                                                                     helpPopup("This option estimates the probability that the estimated offsets are not generated by random noise variations.<br/>
+                                                                                                               If the probability is < 95 %, offsets may be generated by random noise variations."),
                                                                                                      value = F))
                                                                             ),
                                                                             conditionalPanel(
@@ -1469,7 +1503,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(4,
                                                                                      textInput(inputId = "verif_white",
                                                                                                div("White noise",
-                                                                                                   helpPopup("Standard deviation of the expected white noise in the series.")),
+                                                                                                   helpPopup("Enter the standard deviation of the expected white noise in the series.")),
                                                                                                value = "")
                                                                               ),
                                                                               conditionalPanel(
@@ -1477,13 +1511,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 column(4,
                                                                                        textInput(inputId = "verif_pl",
                                                                                                  div("Power-law",
-                                                                                                     helpPopup("Stardard deviation of the expected power-law noise in the series.")),
+                                                                                                     helpPopup("Enter the stardard deviation of the expected power-law noise in the series.")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(4,
                                                                                        textInput(inputId = "verif_k",
                                                                                                  div("Spectral index",
-                                                                                                     helpPopup("Spectral index of the expected power-law noise in the series.")),
+                                                                                                     helpPopup("Enter the spectral index of the expected power-law noise in the series.")),
                                                                                                  value = "")
                                                                                 )
                                                                               ),
@@ -1492,13 +1526,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 column(4,
                                                                                        textInput(inputId = "verif_fl",
                                                                                                  div("Flicker noise",
-                                                                                                     helpPopup("Stardard deviation of the expected flicker noise in the series.")),
+                                                                                                     helpPopup("Enter the stardard deviation of the expected flicker noise in the series.")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(4,
                                                                                        textInput(inputId = "verif_rw",
                                                                                                  div("Random Walk",
-                                                                                                     helpPopup("Stardard deviation of the expected random walk noise in the series.")),
+                                                                                                     helpPopup("Enter the stardard deviation of the expected random walk noise in the series.")),
                                                                                                  value = "")
                                                                                 )
                                                                               )
@@ -1522,19 +1556,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           textInput(inputId = "ExponenRef",
                                                                                     div("Ref. time exponential",
-                                                                                        helpPopup("Comma-separated lisf of the starting time for the exponential decays.")),
+                                                                                        helpPopup("Enter a comma-separated lisf of the starting epoch of the exponential decays.")),
                                                                                     value = ""),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    textInput(inputId = "E0",
                                                                                              div("A priori constant",
-                                                                                                 helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                                 helpPopup("Enter the initial value for the asymptotic offset for each decay.<br>
+                                                                                                           If empty, an approximate value will be used.")),
                                                                                              value = "")
                                                                             ),
                                                                             column(6,
                                                                                    textInput(inputId = "TE0",
                                                                                              div("A priori decay rate",
-                                                                                                 helpPopup("Initial value for the exponential decay rates. If empty, an approximate value will be used.")),
+                                                                                                 helpPopup("Enter the initial value for each exponential decay rate. If empty, an approximate value will be used.")),
                                                                                              value = "")
                                                                             )
                                                                           ),
@@ -1544,13 +1579,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "eE0",
                                                                                                div("A priori constant error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the asymptotic offsets.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eTE0",
                                                                                                div("A priori decay rate error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the exponential decay rates. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the exponential decay rates.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             )
@@ -1565,19 +1602,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           textInput(inputId = "LogariRef",
                                                                                     div("Ref. time logarithmic",
-                                                                                        helpPopup("Comma-separated lisf of the starting time for the logarithmic decays.")),
+                                                                                        helpPopup("Enter a comma-separated lisf of the starting epoch for each logarithmic decay.")),
                                                                                     value = ""),
                                                                           fluidRow(
                                                                             column(6,
                                                                                    textInput(inputId = "L0",
                                                                                              div("A priori constant",
-                                                                                                 helpPopup("Initial value for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                                 helpPopup("Enter the initial value for the asymptotic offset of each decay.<br>
+                                                                                                           If empty, an approximate value will be used.")),
                                                                                              value = "")
                                                                             ),
                                                                             column(6,
                                                                                    textInput(inputId = "TL0",
                                                                                              div("A priori decay rate",
-                                                                                                 helpPopup("Initial value for the logarithmic decay rates. If empty, an approximate value will be used.")),
+                                                                                                 helpPopup("Enter the initial value for the logarithmic decay rates. If empty, an approximate value will be used.")),
                                                                                              value = "")
                                                                             )
                                                                           ),
@@ -1587,13 +1625,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "eL0",
                                                                                                div("A priori constant error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the asymptotic offsets. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the asymptotic offsets.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eTL0",
                                                                                                div("A priori decay rate error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the logarithmic decay rates. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for the logarithmic decay rates.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             )
@@ -1610,13 +1650,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(6,
                                                                                    textInput(inputId = "PolyRef",
                                                                                              div("Ref. epoch polynomial",
-                                                                                                 helpPopup("Reference epoch for the polynomial. If empty, the rate reference epoch or the mean data epoch will be used.")),
+                                                                                                 helpPopup("Enter the reference epoch for the polynomial. If empty, the rate reference epoch or the mean data epoch will be used.")),
                                                                                              value = "")
                                                                             ),
                                                                             column(6,
                                                                                    textInput(inputId = "PolyCoef",
                                                                                              div("Polynomial degree",
-                                                                                                 helpPopup("The degree must be > 1 & < 20. Degrees 0 and 1 are estimated within the linear component.")),
+                                                                                                 helpPopup("Enter the polynomial degree between 2 and 20.<br>
+                                                                                                           The degrees 0 (intercept) and 1 (rate) are estimated with the linear component.")),
                                                                                              value = "")
                                                                             )
                                                                           ),
@@ -1626,13 +1667,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "P0",
                                                                                                div("A priori polynomial",
-                                                                                                   helpPopup("Initial state value for the polynomial coefficients. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state value for each polynomial coefficient. If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "eP0",
                                                                                                div("A priori polynomial error",
-                                                                                                   helpPopup("Initial state uncertainty (standard deviation) for the polynomial coefficients. If empty, an approximate value will be used.")),
+                                                                                                   helpPopup("Enter the initial state uncertainty (standard deviation) for each polynomial coefficient.<br>
+                                                                                                             If empty, an approximate value will be used.")),
                                                                                                value = "")
                                                                               )
                                                                             )
@@ -1645,33 +1687,33 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 5,
                                                                       tags$h4(style = "color:white;", icon("magnifying-glass-plus", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Additional fit"),
                                                                               div(style = "float: right; margin-right: 10px;", 
-                                                                                  helpPopupHeader(HTML("This block allows for additional time series fitting, including:<br><br>
-                                                                                                       Two linear trend estimators using the <b><i><u>MIDAS</b></i></u> and the <b><i><u>minimum entropy</b></i></u> methods.<br><br>
-                                                                                                       The <b><i><u>histogram</b></i></u> of the original, model, residual or smoothed series, and a stationarity assessment.<br><br>
-                                                                                                       The non-parametric <b><i><u>periodic waveform</b></i></u> for non-sinusoidal periodic variations.<br><br>
-                                                                                                       The amplitude or power <b><i><u>periodogram</b></i></u> of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><br>
-                                                                                                       The pseudo discrete <b><i><u>wavelet</b></i></u> transform for the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><b>WARNING</b>: long computation time.<br><br>
-                                                                                                       The Vondr&#225;k <b><i><u>band-pass smoother</b></i></u> of the original or residual series.<br><br>
-                                                                                                       The MLE <b><i><u>noise analysis</b></i></u> to estimate the temporal correlation of the model/filter residuals.<br><b>WARNING</b>: long computation time.<br><br>
-                                                                                                       See more details in the <b><i>help</i></b> tab.")))
+                                                                                  helpPopupHeader("This block allows for additional time series fitting and analysis, including:<br><br>
+                                                                                                  Two linear trend estimators using the <span class='option'>MIDAS</span> and the <span class='option'>minimum entropy</span> methods.<br><br>
+                                                                                                  The <span class='option'>histogram</span> of the original, model, residual or smoothed series, and a stationarity assessment.<br><br>
+                                                                                                  The non-parametric <span class='option'>periodic waveform</span> of any non-sinusoidal periodic variation.<br><br>
+                                                                                                  The amplitude or power <span class='option'>periodogram</span> of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><br>
+                                                                                                  The pseudo discrete <span class='option'>wavelet</span> transform of the original series, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
+                                                                                                  The Vondr&#225;k <span class='option'>band-pass smoother</span> of the original or residual series.<br><br>
+                                                                                                  The MLE <span class='option'>noise analysis</span> to estimate the temporal correlation of the model/filter residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
+                                                                                                  See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       
                                                                       ## % MIDAS ####
                                                                       checkboxInput(inputId = "midas",
                                                                                     div("MIDAS",
-                                                                                        helpPopup("Median Interannual Difference Adjusted for Skewness")),
+                                                                                        helpPopup("This option estimates the linear trend value with the Median Interannual Difference Adjusted for Skewness algorithm.")),
                                                                                     value = F),
                                                                       
                                                                       ## % Entropy ####
                                                                       checkboxInput(inputId = "entropy",
-                                                                                    div("Minimum Shannon entropy",
-                                                                                        helpPopup("Linear rate estimate from the differential minimum Shannon entropy")),
+                                                                                    div("Minimum entropy",
+                                                                                        helpPopup("This option estimates the linear rate value with the differential minimum Shannon entropy algorithm.")),
                                                                                     value = F),
                                                                       conditionalPanel(
                                                                         condition = "input.entropy == true",
                                                                         textInput(inputId = "offsetEpoch.entropy",
                                                                                   div("Offset epochs (entropy)",
-                                                                                      helpPopup("Comma-separated list")),
+                                                                                      helpPopup("Enter a comma-separated list of offset epochs.")),
                                                                                   value = "")
                                                                       ),
                                                                       
@@ -1694,7 +1736,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(6,
                                                                                checkboxInput(inputId = "waveform",
                                                                                              div("Periodic waveform",
-                                                                                                 helpPopup("To fit a periodic waveform not having a sinusoidal shape")),
+                                                                                                 helpPopup("This option estimates a periodic waveform that does not have a sinusoidal shape.")),
                                                                                              value = F)
                                                                         ),
                                                                         column(6,
@@ -1702,7 +1744,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  condition = "input.waveform == true",
                                                                                  textInput(inputId = "waveformPeriod",
                                                                                            div("Period",
-                                                                                               helpPopup("The waveform period is given in the same units as the time unit of the series. It must be bigger than twice the average sampling period and smaller than half the total period of the series.")),
+                                                                                               helpPopup("Enter the waveform period in the same units as the series.<br>
+                                                                                                         The waveform period must be larger than twice the average sampling period and smaller than half the total period of the series.")),
                                                                                            value = "")
                                                                                )
                                                                         )
@@ -1714,7 +1757,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  div(style = "margin-top:-4em",
                                                                                      checkboxInput(inputId = "correct_waveform",
                                                                                                    div("Remove from series",
-                                                                                                       helpPopup("To remove the estimated periodic waveform from the original series before the model fit")),
+                                                                                                       helpPopup("This option removes the estimated periodic waveform from the original series before the model fit.")),
                                                                                                    value = F)
                                                                                  )
                                                                           )
@@ -1729,7 +1772,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(5,
                                                                                checkboxInput(inputId = "spectrum",
                                                                                              div("Periodogram",
-                                                                                                 helpPopup("Lomb-Scargle amplitude/power spectrum")),
+                                                                                                 helpPopup("This option estimates the Lomb-Scargle periodogram.")),
                                                                                              value = F)
                                                                         ),
                                                                         column(6, offset = 1,
@@ -1787,7 +1830,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(4,
                                                                                      checkboxInput(inputId = "wavelet",
                                                                                                    div("Wavelets",
-                                                                                                       helpPopup("To plot the heatmap from the wavelet transform")),
+                                                                                                       helpPopup("This option estimates the wavelet transform.")),
                                                                                                    value = F)
                                                                               ),
                                                                               column(4, offset = 4,
@@ -1795,7 +1838,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        condition = "input.wavelet == true",
                                                                                        textInput(inputId = "loc_wavelet",
                                                                                                  div("Sampling",
-                                                                                                     helpPopup("The temporal resolution or time separation between wavelets. The maximum valid is half the total observed period. The minimum valid is the sampling period of the series.")),
+                                                                                                     helpPopup("Enter the temporal resolution or time separation between wavelets.<br>
+                                                                                                               The maximum valid value is half the total observed period.<br>
+                                                                                                               The minimum valid value is the sampling period of the series.")),
                                                                                                  value = "")
                                                                                      )
                                                                               )
@@ -1806,19 +1851,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 column(4,
                                                                                        textInput(inputId = "min_wavelet",
                                                                                                  div("Min.",
-                                                                                                     helpPopup("The shortest period to compute the wavelet. The minimum valid is twice the median sampling period.")),
+                                                                                                     helpPopup("Enter the shortest period to compute the transform.<br>The minimum valid value is twice the median sampling period.")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(4,
                                                                                        textInput(inputId = "max_wavelet",
                                                                                                  div("Max.",
-                                                                                                     helpPopup("The longest period to compute the wavelet. The maximum valid is half the total observed period.")),
+                                                                                                     helpPopup("Enter the longest period to compute the transform.<br>The maximum valid value is half the total observed period.")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(4,
                                                                                        textInput(inputId = "res_wavelet",
                                                                                                  div("Step",
-                                                                                                     helpPopup("The resolution or separation between the periods to compute the wavelet.")),
+                                                                                                     helpPopup("Enter the time resolution or separation between the periods to compute the transform.")),
                                                                                                  value = "")
                                                                                 )
                                                                               )
@@ -1839,7 +1884,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(6,
                                                                                    checkboxInput(inputId = "filter",
                                                                                                  div("Band-pass smoother",
-                                                                                                     helpPopup("Vondrak smoother for the original or residual series.")),
+                                                                                                     helpPopup("This option computes the Vondrak smoother for the original or residual series.")),
                                                                                                  value = F)
                                                                             ),
                                                                             div(style = "padding: 0px 0px; margin-top:1em",
@@ -1859,13 +1904,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(6,
                                                                                      textInput(inputId = "low",
                                                                                                div("Low-pass period cutoff",
-                                                                                                   helpPopup("Maximum recommended = T/4 (T = series length)")),
+                                                                                                   helpPopup("Enter the low-pass period. The maximum recommended value is 1/4 of the series length.")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "high",
                                                                                                div("High-pass period cutoff",
-                                                                                                   helpPopup("Maximum recommended = T/4 (T = series length)")),
+                                                                                                   helpPopup("Enter the high-pass period. The maximum recommended value is 1/4 of the series length.")),
                                                                                                value = "")
                                                                               )
                                                                             ),
@@ -1881,7 +1926,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(4,
                                                                                    checkboxInput(inputId = "mle",
                                                                                                  div("Noise analysis",
-                                                                                                     helpPopup("To estimate the parameters of a noise model for the covariance matrix of the residual series")),
+                                                                                                     helpPopup("This option estimates the parameters of a covariance model of the residual series.")),
                                                                                                  value = F)
                                                                             ),
                                                                             conditionalPanel(
@@ -1889,7 +1934,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               column(4,
                                                                                      checkboxInput(inputId = "noise_unc",
                                                                                                    div("Noise unc.",
-                                                                                                       helpPopup("To estimate the formal uncertainties of the parameters of the noise model")),
+                                                                                                       helpPopup("This option enables or disables the estimation of the formal uncertainties of the parameters of the noise model.")),
                                                                                                    value = T)
                                                                               ),
                                                                               column(width = 4, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
@@ -1978,7 +2023,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(8,
                                                                                    textInput(inputId = "directory",
                                                                                              div("Select directory",
-                                                                                                 helpPopup("Copy & paste or type in the complete path to the desired download directory")),
+                                                                                                 helpPopup("Enter the full path of the download directory.")),
                                                                                              value = "")
                                                                             ),
                                                                             column(4,
@@ -5875,6 +5920,7 @@ server <- function(input,output,session) {
       disable("log")
       disable("average")
       disable("midas")
+      disable("entropy")
       disable("mle")
       disable("model")
       disable("wavelet")
@@ -5886,6 +5932,7 @@ server <- function(input,output,session) {
       disable("overflow")
       disable("add_excluded")
       disable("permanent")
+      disable("cut")
       disable("powerl")
       disable("randomw")
       disable("runVerif")
@@ -5971,8 +6018,10 @@ server <- function(input,output,session) {
           enable("traceSoln")
           enable("traceCustom")
           enable("permanent")
+          enable("cut")
           enable("loadSARI")
           enable("midas")
+          enable("entropy")
           enable("reset")
           enable("average")
           if (!isTruthy(input$average) && length(inputs$step) > 0) {
@@ -6017,7 +6066,7 @@ server <- function(input,output,session) {
             disable("remove")
           }
           if (isTruthy(trans$xe)) {
-            disable("add_excluded")
+            enable("add_excluded")
             enable("delete_excluded")
           } else {
             disable("add_excluded")
@@ -6333,6 +6382,7 @@ server <- function(input,output,session) {
           updateTextInput(session, "corto_wavelet", value = "")
           updateTextInput(session, "largo_wavelet", value = "")
           disable("midas")
+          disable("entropy")
           disable("spectrumModel")
           disable("spectrumResiduals")
           disable("spectrumFilter")
@@ -6378,6 +6428,9 @@ server <- function(input,output,session) {
         disable("est.mle")
         disable("remove")
         disable("remove3D")
+        disable("add_excluded")
+        disable("cut")
+        disable("permanent")
         disable("removeAuto")
         disable("filter")
         disable("flicker")
@@ -6391,6 +6444,7 @@ server <- function(input,output,session) {
         disable("log")
         disable("average")
         disable("midas")
+        disable("entropy")
         disable("mle")
         disable("model")
         disable("wavelet")
