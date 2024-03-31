@@ -359,7 +359,7 @@ options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI marzo 2024"
+version <- "SARI abril 2024"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),

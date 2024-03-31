@@ -1,5 +1,23 @@
 # **SARI changelog**
 
+# abril 2024 [2024.04]
+
+### Fixed
+- bug when the download of a remote SPOTGINS file fails and a new local NEU file is loaded
+- correcting the measurement noise value extracted from a SARI file with a KF fit
+- correcting the column names in the downloaded file when fitting a KF
+- reading the PSMSL tide gauge station names having single quotes
+- checking the series values before computing the series summary
+- setting the time units for the PSMSL series
+
+### Changed
+- improving the check for the regular sampling of the primary and secondary series
+- avoiding updating the location map unnecessarily
+
+### Added
+- new VLM corrections from several GIA models
+- new tooltips for each drop-down block of the left panel
+
 # marzo 2024 [2024.03]
 
 ### Fixed

@@ -1,12 +1,12 @@
 ![twitter](https://img.shields.io/twitter/follow/timeserious?style=social)
 ![license](https://img.shields.io/github/license/alvarosantamariagomez/sari)
-![version](https://img.shields.io/badge/version-marzo%202024-blue)
+![version](https://img.shields.io/badge/version-abril%202024-blue)
 ![github](https://img.shields.io/github/languages/code-size/alvarosantamariagomez/sari?color=g)
 ![docker](https://img.shields.io/docker/image-size/alvarosg/sari?color=g)
 
 # ![SARI logo](/www/favicon.png) sari 
 
-SARI is an R/Shiny app that allows you to visualise discrete time series data, analyse them individually, fit unidimensional models interactively and save the results using a web interface.  
+SARI is an R/Shiny app that allows you to visualise discrete time series data, fit unidimensional models, analyse the results interactively and save the results using a web interface.  
 The app focuses mostly on GNSS position time series, but any other type of time series can be used as long as the series format is simple, consistent and does not have uncommented alphabetic characters.
 
 ![SARI screenshot](/www/screenshot.png)
@@ -16,11 +16,11 @@ SARI has been developed in the R programming language, under the interactive fra
 Currently tested in R version 4.1.0.
 
 SARI can be run:  
-- remotelly on the shinyapps server at this link https://alvarosg.shinyapps.io/sari
+- remotely on the shinyapps server at this link https://alvarosg.shinyapps.io/sari
 - locally on your machine using a prebuilt Docker image available at https://hub.docker.com/r/alvarosg/sari  
-- locally on your machine after installing R (optionally RStudio) and all the package dependencies given in the [INSTALL](INSTALL) file. Once all this is set up, then just clone, open and run the [source code](app.R) in RStudio or simply execute `library(shiny)` and then `runGitHub("sari","alvarosantamariagomez",launch.browser=T)`  
+- locally on your machine after installing R (optionally RStudio) and all the package dependencies given in the [INSTALL](INSTALL) file. Once everything is set up, then just clone, open and run the [source code](app.R) in RStudio or simply execute `library(shiny)` and then `runGitHub("sari","alvarosantamariagomez",launch.browser=T)`  
 
-The [SARI shell script](/scripts/sari.sh) can be used to launch SARI from the command line on Unix-like desktop environments. To add the script to the PATH environment variable of your system use this from the SARI Git directory:  
+The [SARI shell script](/scripts/sari.sh) can be used to launch SARI from the command line on Unix-like desktop environments and to create desktop shortcuts on any system. To add the script to the PATH environment variable of your system use this from the SARI Git directory:  
 `sudo ln -s $(realpath scripts/sari.sh) /usr/local/bin/.`
 
 The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers that can accessed via specific parameters on the interface or included in the URL. The latter option makes it possible to include weblinks in a web server to open and analyse any time series on a new tab with SARI. See for example [this page.](https://www.poleterresolide.fr/geodesy-plotter/#/station/CRAL00FRA/130)

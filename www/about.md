@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version marzo 2024'
+title: 'SARI documentation - version abril 2024'
 author:
 - Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
 ---
@@ -38,7 +38,7 @@ author:
 
 # SARI overview
 
-SARI allows you to visualize discrete time series data, analyze them individually, fit unidimensional models interactively and save the results using a [WYSIWYG](https://en.wikipedia.org/wiki/WYSIWYG) web interface.  
+SARI allows you to visualize discrete time series data, analyze and fit unidimensional models interactively and save the results using a [WYSIWYG](https://en.wikipedia.org/wiki/WYSIWYG) web interface.  
 
 It has been developed in the [R programming language](https://www.r-project.org), under the interactive framework of the [Shiny R package](https://shiny.rstudio.com).  
 Currently tested in R version 4.1.0.
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *marzo 2024*  --  "How do you know if you want something yourself or if your upbringing programmed you to want it?"
+Current SARI version: *abril 2024*  --  "What has the world come to when you can't even trust a program?"
 
 -----------------
 
@@ -285,7 +285,7 @@ The user can upload any of the following possibilities:
 * a customized offset file to plot specific dates (for instance, earthquakes)
 * a secondary series that can be `shown` next to the primary series in green color for comparison purposes and detection of common features, or used to either `correct` the primary series to analyze the difference or `average` both the primary and secondary series values. For instance, a model can be subtracted a posteriori from the series (loading, post-seismic, etc.) or even the series of a nearby station in order to remove the spatially correlated signal/noise and better detect the individual equipment changes, relative motion or common variations (see the [<a href="#notes-on-the-secondary-series" target="_self">notes</a>](#notes-on-the-secondary-series) below).
 * a plate motion model to be `shown` on top of the horizontal component series or `removed` from the series. The user needs to select a plate motion model from the dropdown menu and enter the name of a tectonic plate, or provide a custom plate motion model for the current series, or provide the parameters of the [Euler's pole](https://en.wikipedia.org/wiki/Euler%27s_rotation_theorem) manually (see the [<a href="#notes-on-the-plate-motion-model" target="_self">notes</a>](#notes-on-the-plate-motion-model) below).
-* a vertical land motion prediction from a [GIA]() model to be `shown` on top of the vertical component series or `removed` from the series (see the [<a href="#notes-on-the-gia-model" target="_self">notes</a>](#notes-on-the-gia-model) below).  
+* a vertical land motion prediction from a [GIA](https://en.wikipedia.org/wiki/Post-glacial_rebound) model to be `shown` on top of the vertical component series or `removed` from the series (see the [<a href="#notes-on-the-gia-model" target="_self">notes</a>](#notes-on-the-gia-model) below).  
 
 <h5 id="notes-on-the-equipment-change-logs"></h5>
 
