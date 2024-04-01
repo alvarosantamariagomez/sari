@@ -410,7 +410,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$html(lang = "en"),
                   tags$style(HTML("
                       .help {color: #2297E6; font-weight: bold;}
-                      .option {color: #F5C710; font-weight: bold;}
+                      .UIoption {color: #F5C710; font-weight: bold;}
                       .warning {color: #DF536B; font-weight: bold;}
                       .popover {min-width: 21%; color: #ffffff; background-color: #474949; font-size: medium; position: absolute; z-index: 9999;}
                       .arrow { border-left-color: #8447cf; }
@@ -495,11 +495,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$h4(style = "color:white;", icon("database", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Input data and format"),
                                                                               div(style = "float: right; margin-right: 10px;",
                                                                                   helpPopupHeader("This block allows uploading and setting the series format, if necessary, before plotting.<br><br>
-                                                                                                  Load a series from a local file using the <span class='option'>browse file</span> button or from a remote file using the <span class='option'>server</span>, <span class='option'>product</span>, and <span class='option'>station</span> options.<br><br>
-                                                                                                  When loading a local file, ensure that the <span class='option'>series format</span>, <span class='option'>time units</span>, and <span class='option'>series units</span> are correct before plotting.<br><br>
-                                                                                                  Check the series format before plotting with the <span class='option'>show series header</span> option.<br><br>
-                                                                                                  Activate or deactivate the series error bars with the <span class='option'>use error bars</span> option.<br><br>
-                                                                                                  Reduce the sampling of the series with the <span class='option'>reduce sampling</span> option.<br><br>
+                                                                                                  Load a series from a local file using the <span class='UIoption'>browse file</span> button or from a remote file using the <span class='UIoption'>server</span>, <span class='UIoption'>product</span>, and <span class='UIoption'>station</span> options.<br><br>
+                                                                                                  When loading a local file, ensure that the <span class='UIoption'>series format</span>, <span class='UIoption'>time units</span>, and <span class='UIoption'>series units</span> are correct before plotting.<br><br>
+                                                                                                  Check the series format before plotting with the <span class='UIoption'>show series header</span> option.<br><br>
+                                                                                                  Activate or deactivate the series error bars with the <span class='UIoption'>use error bars</span> option.<br><br>
+                                                                                                  Reduce the sampling of the series with the <span class='UIoption'>reduce sampling</span> option.<br><br>
                                                                                                   See more details in the </i><span class='help'>help</span> tab."))
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:-2em",
@@ -614,8 +614,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                    helpPopup("This option computes the moving average of the series for a given non-overlapping time pediod.<br>
                                                                                                              The new sampling period must have a value between the time series sampling and half the time series length.<br>
                                                                                                              The new sampling period must be given in the same units as the time axis of the series.<br>
-                                                                                                             Expressions are allowed starting by <span class='option'>=</span>,<br>
-                                                                                                             as in <span class='option'>=7/365.25</span>, for a week period in units of years.")),
+                                                                                                             Expressions are allowed starting by <span class='UIoption'>=</span>,<br>
+                                                                                                             as in <span class='UIoption'>=7/365.25</span>, for a week period in units of years.")),
                                                                                                value = F)
                                                                           ),
                                                                           column(6,
@@ -655,15 +655,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                       bsCollapsePanel(value = 2,
                                                                       tags$h4(style = "color:white;", icon("gamepad", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Plot controls"),
                                                                          div(style = "float: right; margin-right: 10px;",
-                                                                             helpPopupHeader("This block allows plotting/resetting the time series with the <span class='option'>plot</span> and <span class='option'>reset</span> buttons.<br><br>
-                                                                                             The <span class='option'>overview</span> button opens a new browser window containing a plot of the three coordinate components, if available.<br><br>
-                                                                                             Outliers can be excluded manually or automatically with the <span class='option'>toggle</span> and <span class='option'>auto toggle</span> buttons.<br><br>
-                                                                                             Removed outliers can be restored with the <span class='option'>reset toggle</span> button.<br><br>
-                                                                                             The <span class='option'>truncate</span> option removes the beginning and/or end of the series.<br><br>
-                                                                                             The <span class='option'>all components</span> option removes the outliers from all the components (if more than one) simultaneously.<br><br>
-                                                                                             The <span class='option'>permanent</span> option permanently deletes (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
-                                                                                             The <span class='option'>include in file</span> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
-                                                                                             The <span class='option'>scrolling</span> option enables/disables the vertical scrolling of the left panel.<br><br>
+                                                                             helpPopupHeader("This block allows plotting/resetting the time series with the <span class='UIoption'>plot</span> and <span class='UIoption'>reset</span> buttons.<br><br>
+                                                                                             The <span class='UIoption'>overview</span> button opens a new browser window containing a plot of the three coordinate components, if available.<br><br>
+                                                                                             Outliers can be excluded manually or automatically with the <span class='UIoption'>toggle</span> and <span class='UIoption'>auto toggle</span> buttons.<br><br>
+                                                                                             Removed outliers can be restored with the <span class='UIoption'>reset toggle</span> button.<br><br>
+                                                                                             The <span class='UIoption'>truncate</span> option removes the beginning and/or end of the series.<br><br>
+                                                                                             The <span class='UIoption'>all components</span> option removes the outliers from all the components (if more than one) simultaneously.<br><br>
+                                                                                             The <span class='UIoption'>permanent</span> option permanently deletes (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
+                                                                                             The <span class='UIoption'>include in file</span> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
+                                                                                             The <span class='UIoption'>scrolling</span> option enables/disables the vertical scrolling of the left panel.<br><br>
                                                                                              See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       fluidRow(
@@ -767,14 +767,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               div(style = "float: right; margin-right: 10px;",
                                                                                   helpPopupHeader("This block allows for the uploading of files containing complementary information or metadata related to the analysis of the series.<br><br>
                                                                                                   The user can upload any of the following possibilities:<br>
-                                                                                                  a <span class='option'>SARI</span> file,<br>
-                                                                                                  a GNSS <span class='option'>sitelog</span>,<br>
-                                                                                                  a GAMIT-like <span class='option'>station.info</span> file,<br>
-                                                                                                  an IGS-like <span class='option'>soln</span> file,<br>
-                                                                                                  a <span class='option'>custom</span> offset file,<br>
-                                                                                                  a <span class='option'>secondary</span> series.<br>
-                                                                                                  The secondary series can be <span class='option'>shown</span> next to the primary series or used to either <span class='option'>correct</span> the primary series or to <span class='option'>average</span> both the primary and secondary series.<br><br>
-                                                                                                  Two model predictions can also be plotted or used to correct the primary series: a <span class='option'>plate motion</span> model and a <span class='option'>GIA</span> model.<br><br>
+                                                                                                  a <span class='UIoption'>SARI</span> file,<br>
+                                                                                                  a GNSS <span class='UIoption'>sitelog</span>,<br>
+                                                                                                  a GAMIT-like <span class='UIoption'>station.info</span> file,<br>
+                                                                                                  an IGS-like <span class='UIoption'>soln</span> file,<br>
+                                                                                                  a <span class='UIoption'>custom</span> offset file,<br>
+                                                                                                  a <span class='UIoption'>secondary</span> series.<br>
+                                                                                                  The secondary series can be <span class='UIoption'>shown</span> next to the primary series or used to either <span class='UIoption'>correct</span> the primary series or to <span class='UIoption'>average</span> both the primary and secondary series.<br><br>
+                                                                                                  Two model predictions can also be plotted or used to correct the primary series: a <span class='UIoption'>plate motion</span> model and a <span class='UIoption'>GIA</span> model.<br><br>
                                                                                                   See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       
@@ -962,7 +962,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                         div("Averaging",
                                                                                                             helpPopup("This option computes the moving average of the secondary series for a given non-overlapping time pediod between the time series sampling and half the time series length.<br>
                                                                                                                       The period must be given in the same units as the time axis in the series.<br>
-                                                                                                                      Expressions are allowed starting by <span class='option'>=</span>, as in <span class='option'>=7/365.25</span>.")),
+                                                                                                                      Expressions are allowed starting by <span class='UIoption'>=</span>, as in <span class='UIoption'>=7/365.25</span>.")),
                                                                                                         value = "")
                                                                                        )
                                                                                      ),
@@ -1239,12 +1239,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$h4(style = "color:white;", icon("wand-magic-sparkles", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Fit controls"),
                                                                               div(style = "float: right; margin-right: 10px;",
                                                                                   helpPopupHeader("This block allows fitting a model to the time series using:<br>
-                                                                                                  Weighted <span class='option'>least squares</span> (LS)<br>
-                                                                                                  <span class='option'>Extended Kalman filter</span> (EKF)<br>
-                                                                                                  <span class='option'>Unscented Kalman filter</span> (UKF)<br><br>
-                                                                                                  The fitted model may include any combination of <span class='option'>linear</span> trend, higher-degree <span class='option'>polynomial</span>, <span class='option'>offsets</span>, <span class='option'>sinusoidal</span> periodic signals, <span class='option'>exponential</span> and <span class='option'>logarithmic</span> decays.<br><br>
-                                                                                                  The <span class='option'>search discontinuities</span> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
-                                                                                                  The <span class='option'>check offsets</span> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
+                                                                                                  Weighted <span class='UIoption'>least squares</span> (LS)<br>
+                                                                                                  <span class='UIoption'>Extended Kalman filter</span> (EKF)<br>
+                                                                                                  <span class='UIoption'>Unscented Kalman filter</span> (UKF)<br><br>
+                                                                                                  The fitted model may include any combination of <span class='UIoption'>linear</span> trend, higher-degree <span class='UIoption'>polynomial</span>, <span class='UIoption'>offsets</span>, <span class='UIoption'>sinusoidal</span> periodic signals, <span class='UIoption'>exponential</span> and <span class='UIoption'>logarithmic</span> decays.<br><br>
+                                                                                                  The <span class='UIoption'>search discontinuities</span> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
+                                                                                                  The <span class='UIoption'>check offsets</span> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
                                                                                                   See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:0em",
@@ -1688,13 +1688,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       tags$h4(style = "color:white;", icon("magnifying-glass-plus", class = "headerIcon", lib = "font-awesome"), div(style = "color: white; display: inline; text-decoration-line: inherit;", "Additional fit"),
                                                                               div(style = "float: right; margin-right: 10px;", 
                                                                                   helpPopupHeader("This block allows for additional time series fitting and analysis, including:<br><br>
-                                                                                                  Two linear trend estimators using the <span class='option'>MIDAS</span> and the <span class='option'>minimum entropy</span> methods.<br><br>
-                                                                                                  The <span class='option'>histogram</span> of the original, model, residual or smoothed series, and a stationarity assessment.<br><br>
-                                                                                                  The non-parametric <span class='option'>periodic waveform</span> of any non-sinusoidal periodic variation.<br><br>
-                                                                                                  The amplitude or power <span class='option'>periodogram</span> of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><br>
-                                                                                                  The pseudo discrete <span class='option'>wavelet</span> transform of the original series, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
-                                                                                                  The Vondr&#225;k <span class='option'>band-pass smoother</span> of the original or residual series.<br><br>
-                                                                                                  The MLE <span class='option'>noise analysis</span> to estimate the temporal correlation of the model/filter residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
+                                                                                                  Two linear trend estimators using the <span class='UIoption'>MIDAS</span> and the <span class='UIoption'>minimum entropy</span> methods.<br><br>
+                                                                                                  The <span class='UIoption'>histogram</span> of the original, model, residual or smoothed series, and a stationarity assessment.<br><br>
+                                                                                                  The non-parametric <span class='UIoption'>periodic waveform</span> of any non-sinusoidal periodic variation.<br><br>
+                                                                                                  The amplitude or power <span class='UIoption'>periodogram</span> of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><br>
+                                                                                                  The pseudo discrete <span class='UIoption'>wavelet</span> transform of the original series, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
+                                                                                                  The Vondr&#225;k <span class='UIoption'>band-pass smoother</span> of the original or residual series.<br><br>
+                                                                                                  The MLE <span class='UIoption'>noise analysis</span> to estimate the temporal correlation of the model/filter residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
                                                                                                   See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       
