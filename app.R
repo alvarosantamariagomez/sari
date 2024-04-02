@@ -752,12 +752,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              value = F)
                                                                         )
                                                                       ),
-                                                                      div(style = "margin-top:-1em;",
-                                                                          checkboxInput(inputId = "overflow",
-                                                                                        div("Scrolling",
-                                                                                            helpPopup("This options enables or disables the vertical scrolling of the left panel.<br>
+                                                                      fluidRow(
+                                                                        column(4,
+                                                                               checkboxInput(inputId = "overflow",
+                                                                                             div("Scrolling",
+                                                                                                 helpPopup("This options enables or disables the vertical scrolling of the left panel.<br>
                                                                                                            When the scrolling is disabled, the user can take a screenshot of the full web page.")),
-                                                                                        value = T)
+                                                                                             value = T)
+                                                                        )
                                                                       ),
                                                                       style = "primary"),
                                                       
