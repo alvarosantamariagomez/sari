@@ -7823,11 +7823,11 @@ server <- function(input,output,session) {
       showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
     } else if (isTruthy(inputs$step)) {
       if (input$tunits == 1) {
-        x <- db1$original$x1
+        x <- db1$original$x1[db1$original$status1 %in% T]
       } else if (input$tunits == 2) {
-        x <- db1$original$x2
+        x <- db1$original$x2[db1$original$status1 %in% T]
       } else if (input$tunits == 3) {
-        x <- db1$original$x3
+        x <- db1$original$x3[db1$original$status1 %in% T]
       }
       db1$resampled <- NULL
       if (inputs$step > info$sampling0 && inputs$step <= (max(x) - min(x))/2) {
