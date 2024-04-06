@@ -7276,6 +7276,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2), {
     req(db1[[info$db1]])
     if (isTruthy(input$gia) || isTruthy(trans$gia)) {
+      if (messages > 0) cat(file = stderr(), "GIA model:", input$giaModel, "\n")
       removeNotification("bad_coordinates")
       z1 <- z2 <- NULL
       if (input$tunits == 1) {
