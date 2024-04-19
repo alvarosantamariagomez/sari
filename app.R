@@ -11979,7 +11979,7 @@ server <- function(input,output,session) {
       cat(sprintf('# Averaged with: %s',file$secondary$name), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", info$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$fitType == 1 && length(trans$results) > 0) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
