@@ -2290,6 +2290,8 @@ server <- function(input,output,session) {
   # GUI reactive flags ####
   output$print_out <- reactive({}) # to avoid hidden() breaking the downloadHandler()
   outputOptions(output, "print_out", suspendWhenHidden = F)
+  output$download <- reactive({})
+  outputOptions(output, "download", suspendWhenHidden = F)
   
   output$about_file <- renderUI({
     if (input$isMobile && length(input$isMobile) > 0) {
@@ -5680,7 +5682,7 @@ server <- function(input,output,session) {
         if (any(grepl("East", info$components))) {
           paste0(file$primary$name, "_", strsplit(info$components[as.numeric(input$tab)], " ")[[1]][1], ".sari")
         } else {
-          paste0(file$primary$name, "_", input$tab, ".sari") 
+          paste0(file$primary$name, "_", input$tab, ".sari")
         }
       } else {
         paste0(file$primary$name, ".sari")
