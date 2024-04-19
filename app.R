@@ -7927,7 +7927,7 @@ server <- function(input,output,session) {
         x <- db2$original$x3
       }
       db2$resampled <- NULL
-      if (inputs$step2 > 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
+      if (inputs$step2 > min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
         tolerance <- min(diff(x,1))/3
         info$step2 <- inputs$step2
         withProgress(message = 'Averaging the secondary series.',
