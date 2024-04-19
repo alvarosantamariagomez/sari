@@ -8576,7 +8576,7 @@ server <- function(input,output,session) {
             tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y1[valid1][tie1] - y2.common[tie2])
+            pointsBias <- median(y1[valid1][tie1] - y2.common[tie2], na.rm = T)
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
