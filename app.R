@@ -9433,15 +9433,15 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 0)
-  observeEvent(c(trans$filter, trans$res, input$model, input$filter), {
-    if (length(trans$filter) > 0 || length(trans$res) > 0) {
-      if (input$tab != 4) {
-        showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
-      }
-    } else {
-      hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
-    }
-  }, priority = 0)
+  # observeEvent(c(trans$filter, trans$res, input$model, input$filter), {
+  #   if (length(trans$filter) > 0 || length(trans$res) > 0) {
+  #     if (input$tab != 4) {
+  #       showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
+  #     }
+  #   } else {
+  #     hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+  #   }
+  # }, priority = 0)
 
   # Observe directory ####
   observeEvent(input$directory, {
@@ -12071,7 +12071,8 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas)) {
       OutPut$df[,"Sigma"] <- format(OutPut$df[,"Sigma"],nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
     }
-    if ((input$fitType == 1 || input$fitType == 2) && length(input$model) > 0) {
+    
+    if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
         OutPut$df$Model <- format(trans$mod - trans$pattern,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
         OutPut$df$Residuals <- format(trans$res + trans$pattern,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F)
@@ -12097,7 +12098,7 @@ server <- function(input,output,session) {
         OutPut$df$Smooth.Residuals <- format(trans$filterRes, nsmall = info$decimalsy, digits = 0, trim = F, scientific = F)
       }
     }
-    if (input$fitType == 2) {
+    if (input$fitType == 2 && length(trans$res) > 0) {
       OutPut$df <- cbind(OutPut$df,format(trans$kalman,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F))
       colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
       OutPut$df <- cbind(OutPut$df,format(trans$kalman_unc,nsmall = info$decimalsy, digits = 0, trim = F,scientific = F))
