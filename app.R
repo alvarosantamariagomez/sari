@@ -688,7 +688,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(4,
                                                                                    checkboxInput(inputId = "cut",
                                                                                                  div("Truncate", style = "font-weight: bold",
-                                                                                                     helpPopup("This option reduces the time axis of the series given a start and/or end epochs.")),
+                                                                                                     helpPopup("This option reduces the time axis of the series by removing all points before and/or after the provided epochs.")),
                                                                                                  value = F)
                                                                             ),
                                                                             conditionalPanel(
