@@ -159,8 +159,7 @@ color: gray62 !important;
 }'
 
 # show & check plotAll popup
-showPopup <- "shinyjs.showPopup = function(width) { overview = window.open('SARIseries.png', 'plotAll', 'width=' + width + ', popup=yes, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
-renamePopup <- "shinyjs.renamePopup = function(title) { overview.document.title = title; }"
+showPopup <- "shinyjs.showPopup = function(file) { overview = window.open('' + file + '', 'plotAll', 'popup=yes, width=1000, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
 checkPopup <- "shinyjs.checkPopup = function() { var status = 'FALSE'; if (typeof overview === 'object') { status = !overview.closed; } Shiny.onInputChange('overview', status);}"
 
 # Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
@@ -367,7 +366,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                 useShinyjs(),
                 extendShinyjs(text = showPopup, functions = c("showPopup")),
                 extendShinyjs(text = checkPopup, functions = c("checkPopup")),
-                extendShinyjs(text = renamePopup, functions = c("renamePopup")),
                 div( style = "text-align: center; display: flex; flex-direction: column; justify-content: space-between; margin: auto",
                   id = "loading_page",
                   h1(style = "text-align: center; color: #333333; font-weight: bold", "SARI session established."),
@@ -2088,7 +2086,12 @@ server <- function(input,output,session) {
   reset("side-panel")
   reset("main-panel")
   cat(file = stderr(), "\n", "\n", "START", "\n")
-  onStop(function() cat(file = stderr(), "Session stopped", "\n"))
+  onStop(function() {
+    cat(file = stderr(), "Session stopped", "\n")
+    # if (file.exists(file$primary$datapath)) {
+    #   file.remove(file$primary$datapath)
+    # }  
+  })
   
   # Catch refreshed page
   shinyjs::runjs("
@@ -6545,7 +6548,7 @@ server <- function(input,output,session) {
                 file$primary$datapath <- url$file
               } else {
                 showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(query[['server']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
-                file$primary$datapath <- "www/fileSeries1.txt"
+                file$primary$datapath <- paste0("www/tempFiles/",file$primary$name)
                 down <- download(url$server, url$file, file$primary$datapath)
                 if (file.exists(file$primary$datapath)) {
                   downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
@@ -6556,13 +6559,13 @@ server <- function(input,output,session) {
                 }
               }
               if (isTruthy(down) && down == 0) {
-                if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
+                # if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
                 # update format for primary series
                 shinyjs::delay(100, updateRadioButtons(session, inputId = "format", selected = info$format))
                 # download associated logfile
                 if (isTruthy(url$logfile)) {
                   showNotification(paste0("Downloading logfile for ",toupper(url$station),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-                  file$primary$logfile <- "www/fileLog.txt"
+                  file$primary$logfile <- paste0("www/tempFiles/",basename(url$logfile))
                   down <- download("", url$logfile, file$primary$logfile)
                   if (down == 0) {
                     file$sitelog <- NULL
@@ -6609,7 +6612,7 @@ server <- function(input,output,session) {
                       }
                     }
                     if (isTruthy(down) && down == 0) {
-                      if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath, "\n")
+                      # if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath, "\n")
                       info$menu <- unique(c(info$menu, 3))
                       updateCollapse(session, id = "menu", open = info$menu)
                       shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
@@ -6621,7 +6624,7 @@ server <- function(input,output,session) {
                       session$sendCustomMessage("filename2", filename2)
                       if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
                         showNotification(paste0("Downloading logfile for ",toupper(url$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-                        file$secondary$logfile <- "www/fileLog.txt"
+                        file$secondary$logfile <- paste0("www/tempFiles/",basename(url$logfile2))
                         down <- download("", url$logfile2, file$secondary$logfile)
                         if (down == 0) {
                           file$sitelog <- NULL
@@ -6762,7 +6765,7 @@ server <- function(input,output,session) {
         url$logfile <- url_info[5]
         showNotification(paste0("Downloading series file ",file$primary$name," from ",toupper(input$server1),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url1", type = "warning", session = getDefaultReactiveDomain())
         if (messages > 0) cat(file = stderr(), "Downloading series from", toupper(input$server1), "&", toupper(input$product1), "\n")
-        file$primary$datapath <- "www/fileSeries1.txt"
+        file$primary$datapath <- paste0("www/tempFiles/",file$primary$name)
         down <- download(url$server, url$file, file$primary$datapath)
         if (file.exists(file$primary$datapath)) {
           downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
@@ -6773,7 +6776,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(down) && down == 0) {
           shinyjs::delay(1500, {
-            if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
+            # if (messages > 0) cat(file = stderr(), "Primary series downloaded in", file$primary$datapath, "\n")
             if (messages > 4) cat(file = stderr(), "From: observe remote series (primary)\n")
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
             shinyjs::delay(1500, {
@@ -6782,7 +6785,7 @@ server <- function(input,output,session) {
               session$sendCustomMessage("filename", filename)
               if (isTruthy(url$logfile)) {
                 showNotification(paste0("Downloading logfile for ",toupper(input$station1),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log1", type = "warning", session = getDefaultReactiveDomain())
-                file$primary$logfile <- "www/fileLog.txt"
+                file$primary$logfile <- paste0("www/tempFiles/",basename(url$logfile))
                 down <- download("", url$logfile, file$primary$logfile)
                 if (down == 0) {
                   file$sitelog <- NULL
@@ -6842,7 +6845,7 @@ server <- function(input,output,session) {
           if (length(url$file2) > 1) {
             file$secondary$datapath <- c(file$secondary$datapath, tempfile())
           } else {
-            file$secondary$datapath <- "www/fileSeries2.txt"
+            file$secondary$datapath <- paste0("www/tempFiles/",file$secondary$name)
           }
           showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = NULL, closeButton = T, id = paste0("parsing_url2_",f), type = "warning", session = getDefaultReactiveDomain())
           if (messages > 0) cat(file = stderr(), "Downloading secondary series from", toupper(input$server2), "&", toupper(input$product2), "\n")
@@ -6856,7 +6859,7 @@ server <- function(input,output,session) {
           }
           if (isTruthy(down) && down == 0) {
             secondary_files <- secondary_files + 1
-            if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath[f], "\n")
+            # if (messages > 0) cat(file = stderr(), "Secondary series downloaded in", file$secondary$datapath[f], "\n")
           } else {
             file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
             removeNotification(paste0("parsing_url2_",f))
@@ -6872,7 +6875,7 @@ server <- function(input,output,session) {
             filename2 <- file$secondary$name
             if (isTruthy(url$logfile2) && !isTruthy(url$logfile)) {
               showNotification(paste0("Downloading logfile for ",toupper(input$station2),"."), action = NULL, duration = 5, closeButton = T, id = "parsing_log2", type = "warning", session = getDefaultReactiveDomain())
-              file$secondary$logfile <- "www/fileLog.txt"
+              file$secondary$logfile <- paste0("www/tempFiles/",basename(url$logfile2))
               down <- download("", url$logfile2, file$secondary$logfile)
               if (down == 0) {
                 file$sitelog <- NULL
@@ -6885,6 +6888,7 @@ server <- function(input,output,session) {
             }
           }
           file$secondary$newname <- filename2
+          file$secondary$newpath <- paste0("www/tempFiles/",file$secondary$newname)
           session$sendCustomMessage("filename2", filename2)
           updateRadioButtons(session, inputId = "format2", selected = info$format2)
           shinyjs::delay(1500, {
@@ -7653,26 +7657,26 @@ server <- function(input,output,session) {
   observeEvent(input$log, {
     req(db1$original)
     file$sitelog <- isolate(input$log)
-    file.copy(input$log$datapath, "www/fileLog.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
-    file$sitelog$datapath <- "www/fileLog.txt"
+    file$sitelog$datapath <- paste0("www/tempFiles/",input$log$name)
+    file.copy(input$log$datapath, file$sitelog$datapath, overwrite = T, recursive = F, copy.mode = T, copy.date = T)
   }, priority = 8)
   observeEvent(input$sinfo, {
     req(db1$original)
     file$sinfo <- isolate(input$sinfo)
-    file.copy(input$sinfo$datapath, "www/fileStationInfo.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
-    file$sinfo$datapath <- "www/fileStationInfo.txt"
+    file$sinfo$datapath <- paste0("www/tempFiles/",input$sinfo$name)
+    file.copy(input$sinfo$datapath, file$sinfo$datapath, overwrite = T, recursive = F, copy.mode = T, copy.date = T)
   }, priority = 8)
   observeEvent(input$soln, {
     req(db1$original)
     file$soln <- isolate(input$soln)
-    file.copy(file$soln$datapath, "www/fileSoln.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
-    file$soln$datapath <- "www/fileSoln.txt"
+    file.copy(file$soln$datapath, paste0("www/tempFiles/",input$soln$name), overwrite = T, recursive = F, copy.mode = T, copy.date = T)
+    file$soln$datapath <- paste0("www/tempFiles/",input$soln$name)
   }, priority = 8)
   observeEvent(input$custom, {
     req(db1$original)
     file$custom <- isolate(input$custom)
-    file.copy(file$custom$datapath, "www/fileCustom.txt", overwrite = T, recursive = F, copy.mode = T, copy.date = T)
-    file$custom$datapath <- "www/fileCustom.txt"
+    file.copy(file$custom$datapath, paste0("www/tempFiles/",input$custom$name), overwrite = T, recursive = F, copy.mode = T, copy.date = T)
+    file$custom$datapath <- paste0("www/tempFiles/",input$custom$name)
   }, priority = 8)
 
   # Observe series info ####
@@ -8203,7 +8207,7 @@ server <- function(input,output,session) {
     # providing remote secondary series
     output$fileSeries2 <- renderUI({
       if (input$optionSecondary == 1 && isTruthy(url$station2) && isTruthy(file$secondary$newname)) {
-        tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
+        tags$a(href = sub(pattern = "www/", replacement = "", x = file$secondary$newpath), "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
       } else {
         NULL
       }
@@ -8537,16 +8541,28 @@ server <- function(input,output,session) {
       y12 <- y12 * inputs$scaleFactor
       y22 <- y22 * inputs$scaleFactor
       y32 <- y32 * inputs$scaleFactor
-      sy1 <- db1[[info$db1]]$sy1
-      sy12 <- db2[[info$db2]]$sy1
-      sy2 <- db1[[info$db1]]$sy2
-      sy22 <- db2[[info$db2]]$sy2
-      sy3 <- db1[[info$db1]]$sy3
-      sy32 <- db2[[info$db2]]$sy3
+      if (all(db1[[info$db1]]$sy1 == 1)) {
+        sy1 <- rep(0, length(db1[[info$db1]]$sy1))
+        sy2 <- rep(0, length(db1[[info$db1]]$sy2))
+        sy3 <- rep(0, length(db1[[info$db1]]$sy3))
+      } else {
+        sy1 <- db1[[info$db1]]$sy1
+        sy2 <- db1[[info$db1]]$sy2
+        sy3 <- db1[[info$db1]]$sy3
+      }
+      if (all(db2[[info$db2]]$sy1 == 1)) {
+        sy12 <- rep(0, length(db2[[info$db2]]$sy1))
+        sy22 <- rep(0, length(db2[[info$db2]]$sy2))
+        sy32 <- rep(0, length(db2[[info$db2]]$sy3))
+      } else {
+        sy12 <- db2[[info$db2]]$sy1
+        sy22 <- db2[[info$db2]]$sy2
+        sy32 <- db2[[info$db2]]$sy3 
+      }
       valid1 <- db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)
       valid2 <- db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)
       valid3 <- db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)
-      fileout <- "www/SARIseries.png"
+      fileout <- paste0("www/tempFiles/",file$primary$name,".png")
       if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
         x.range <- ranges$x1
       } else {
@@ -8789,10 +8805,7 @@ server <- function(input,output,session) {
         lines(c(x[valid3][1],x[valid3][length(x[valid3])]),c(y3[valid3][centery] + trans$gia[3]*(x[valid3][1] - x[valid3][centerx]), y3[valid3][centery] + trans$gia[3]*(x[valid3][length(x[valid3])] - x[valid3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
-      js$showPopup(info$width)
-      shinyjs::delay(300, {
-        js$renamePopup(file$primary$name)
-      })
+      js$showPopup(sub(pattern = "www/", replacement = "", x = fileout))
     }
   })
 
@@ -9236,17 +9249,17 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), "Reading sitelog", "\n")
     if (isTruthy(file$sitelog)) {
       info$log <- ReadLog(file$sitelog$datapath)
-      datapath <- basename(file$sitelog$datapath)
+      datapath <- file$sitelog$datapath
     } else if (isTruthy(file$primary$logfile)) {
       info$log <- ReadLog(file$primary$logfile)
-      datapath <- basename(file$primary$logfile)
+      datapath <- file$primary$logfile
     } else if (isTruthy(file$secondary$logfile)) {
       info$log <- ReadLog(file$secondary$logfile)
-      datapath <- basename(file$secondary$logfile)
+      datapath <- file$secondary$logfile
     }
     if (isTruthy(datapath)) {
       output$sitelog <- renderUI({
-        tags$a(href = datapath, "Show log file", title = "Open the log file in a new tab", target = "_blank")
+        tags$a(href = sub(pattern = "www/", replacement = "", x = datapath), "Show log file", title = "Open the log file in a new tab", target = "_blank")
       })
     }
     if (any(!sapply(info$log, is.null))) {
@@ -9608,7 +9621,7 @@ server <- function(input,output,session) {
       if (isTruthy(url$file)) {
         fileName <- file$primary$name
         output$fileSeries1 <- renderUI({
-          tags$a(href = basename(file$primary$datapath), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
+          tags$a(href = sub(pattern = "www/", replacement = "", x = file$primary$datapath), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
         })
       } else {
         if (!isTruthy(inputs$station1)) {
@@ -9789,7 +9802,7 @@ server <- function(input,output,session) {
       if (server == "EOSTLS" && num > 1) {
         showNotification(HTML("Stacking the secondary series into one series."), action = NULL, duration = NULL, closeButton = T, id = "stacking", type = "warning", session = getDefaultReactiveDomain())
         if (any(grepl("ECCO", input$product2)) && any(grepl("TUGO", input$product2))) {
-          showNotification(HTML("WARNING: some forcings of the TUGO and ECCO models are the same and will be considered twice in the secondary series."), action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          showNotification(HTML("WARNING: the TUGO and ECCO models have similar forcing, which will be considered twice in the secondary series."), action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
       for (i in 1:num) {
@@ -9919,7 +9932,7 @@ server <- function(input,output,session) {
           if (dim(as.matrix(files$datapath))[1] > 1) {
             table_stack <- table_stack[,c("x1","y1","y2","y3")]
             names(table_stack) <- c("# MJD", "East", "North", "Up")
-            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = "www/fileSeries2.txt", append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
+            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
           } else {
             # Extracting station coordinates
             spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(files$datapath[i], n = 1, warn = F), fixed = T)
@@ -9937,8 +9950,8 @@ server <- function(input,output,session) {
           info$db2 <- "original"
           db2$original <- as.data.frame(table2)
           output$fileSeries2 <- renderUI({
-            if (input$optionSecondary == 1 && isTruthy(url$station2) && isTruthy(file$secondary$newname)) {
-              tags$a(href = "fileSeries2.txt", "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
+            if (input$optionSecondary == 1 && isTruthy(url$station2) && isTruthy(file$secondary$newpath)) {
+              tags$a(href = sub(pattern = "www/", replacement = "", x = file$secondary$newpath), "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
             } else {
               NULL
             }
