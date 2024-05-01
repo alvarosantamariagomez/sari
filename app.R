@@ -358,7 +358,7 @@ options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI abril 2024"
+version <- "SARI mayo 2024"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
@@ -2086,12 +2086,6 @@ server <- function(input,output,session) {
   reset("side-panel")
   reset("main-panel")
   cat(file = stderr(), "\n", "\n", "START", "\n")
-  onStop(function() {
-    cat(file = stderr(), "Session stopped", "\n")
-    # if (file.exists(file$primary$datapath)) {
-    #   file.remove(file$primary$datapath)
-    # }  
-  })
   
   # Catch refreshed page
   shinyjs::runjs("

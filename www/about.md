@@ -5,9 +5,9 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version abril 2024'
-author:
-- Alvaro Santamaría (alvaro.santamaria@get.omp.eu)
+title: 'SARI documentation - version mayo 2024'
+author: 'Alvaro Santamaría'
+date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
 
 <base target="_blank">
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *abril 2024*  --  "What has the world come to when you can't even trust a program?"
+Current SARI version: *mayo 2024*  --  "They’ve done studies, you know. 60% of the time, it works every time"
 
 -----------------
 

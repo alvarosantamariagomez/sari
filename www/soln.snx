@@ -35,7 +35,7 @@
  AB07  A    6 P 20:293:75279 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
  AB07  A    7 P 21:210:22549 23:092:00000 P - post-seismic
  AB07  A    8 P 23:092:00000 23:197:24501 P - EQ M7.2 - 106 km S of Sand Point, Alaska
- AB07  A    9 P 23:197:24501 00:000:00000 P -
+ AB07  A    9 P 23:197:24501 00:000:00000 P - 
  AB07  A    1 P 00:000:00000 11:006:00000 V - non-linearity
  AB07  A    2 P 11:006:00000 11:268:00000 V - non-linearity
  AB07  A    3 P 11:268:00000 20:204:22365 V - EQ M7.8 - 99 km SSE of Perryville, Alaska
@@ -54,8 +54,9 @@
 *
  AB15  A    1 P 00:000:00000 11:180:00000 P - unknown
  AB15  A    2 P 11:180:00000 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
- AB15  A    3 P 18:023:34301 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
- AB15  A    4 P 21:210:22549 00:000:00000 P - 
+ AB15  A    3 P 18:023:34301 20:293:75279 P - EQ M7.6 - 99 km SE of Sand Point, Alaska
+ AB15  A    4 P 20:293:75279 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
+ AB15  A    5 P 21:210:22549 00:000:00000 P - 
  AB15  A    1 P 00:000:00000 21:210:22549 V - EQ M8.2 - 99 km SE of Perryville, Alaska
  AB15  A    2 P 21:210:22549 00:000:00000 V - 
 *
@@ -143,11 +144,11 @@
  AC43  A    2 P 12:095:00000 16:024:37830 P - EQ M7.1 - 47 km ESE of Pedro Bay, Alaska
  AC43  A    3 P 16:024:37830 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
  AC43  A    4 P 18:023:34301 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
- AC43  A    5 P 21:210:22549 00:000:00000 P -
+ AC43  A    5 P 21:210:22549 00:000:00000 P - 
  AC43  A    1 P 00:000:00000 12:095:00000 V - non-linearity
  AC43  A    2 P 12:095:00000 16:024:37830 V - EQ M7.1 - 47 km ESE of Pedro Bay, Alaska
  AC43  A    3 P 16:024:37830 18:023:34301 V - EQ M7.9 - 261 km SE of Chiniak, Alaska
- AC43  A    4 P 18:023:34301 00:000:00000 V -
+ AC43  A    4 P 18:023:34301 00:000:00000 V - 
 *
  AC58  A    1 P 00:000:00000 08:292:00000 P - antenna change
  AC58  A    2 P 08:292:00000 09:155:00000 P - antenna change
@@ -163,7 +164,7 @@
  AC60  A    3 P 14:174:75190 17:198:84854 P - EQ M7.7 - Komandorskiye Ostrova, Russia region
  AC60  A    4 P 17:198:84854 19:164:00000 P - non-linearity
  AC60  A    5 P 19:164:00000 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
- AC60  A    6 P 21:210:22549 00:000:00000 P -
+ AC60  A    6 P 21:210:22549 00:000:00000 P - 
  AC60  A    1 P 00:000:00000 14:174:75190 V - EQ M7.9 - Rat Islands, Aleutian Islands, Alaska
  AC60  A    2 P 14:174:75190 17:198:84854 V - EQ M7.7 - Komandorskiye Ostrova, Russia region
  AC60  A    3 P 17:198:84854 19:164:00000 V - non-linearity
@@ -252,8 +253,7 @@
  AJAC  A    1 P 00:000:00000 08:331:00000 P - antenna change
  AJAC  A    2 P 08:331:00000 12:340:32400 P - antenna change
  AJAC  A    3 P 12:340:32400 20:021:36000 P - antenna change
- AJAC  A    4 P 20:021:36000 21:349:54000 P - receiver change
- AJAC  A    5 P 21:349:54000 00:000:00000 P - 
+ AJAC  A    4 P 20:021:36000 00:000:00000 P - 
  AJAC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  AL90  A    1 P 00:000:00000 10:237:59040 P - antenna change
@@ -313,9 +313,11 @@
  ALON  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ALRT  A    1 P 00:000:00000 10:238:00000 P - non-linearity
- ALRT  A    2 P 10:238:00000 00:000:00000 P - 
+ ALRT  A    2 P 10:238:00000 14:253:00000 P - non-linearity
+ ALRT  A    3 P 14:253:00000 00:000:00000 P - non-linearity
  ALRT  A    1 P 00:000:00000 10:238:00000 V - non-linearity
- ALRT  A    2 P 10:238:00000 00:000:00000 V - 
+ ALRT  A    2 P 10:238:00000 14:253:00000 V - non-linearity
+ ALRT  A    3 P 14:253:00000 00:000:00000 V - non-linearity
 *
  AMBL  A    1 P 00:000:00000 00:000:00000 P - 
  AMBL  A    1 P 00:000:00000 00:000:00000 V - 
@@ -474,7 +476,8 @@
  ASCG  A    1 P 00:000:00000 21:231:58500 P - antenna change
  ASCG  A    2 P 21:231:58500 22:162:26994 P - EQ M5.6 - 87 km E of Georgetown, Saint Helena
  ASCG  A    3 P 22:162:26994 00:000:00000 P - 
- ASCG  A    1 P 00:000:00000 00:000:00000 V - 
+ ASCG  A    1 P 00:000:00000 22:162:26994 V - EQ M5.6 - 87 km E of Georgetown, Saint Helena
+ ASCG  A    2 P 22:162:26994 00:000:00000 V - 
 *
  ASPA  A    1 P 00:000:00000 08:275:00000 P - antenna change
  ASPA  A    2 P 08:275:00000 09:272:64091 P - EQ M8.1 - 168 km SSW of Matavai, Samoa
@@ -497,8 +500,8 @@
  AUCK  A    4 P 05:307:14940 11:059:86340 P - antenna change
  AUCK  A    5 P 11:059:86340 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  AUCK  A    6 P 16:318:39776 19:296:84840 P - antenna change
- AUCK  A    7 P 19:296:84840 21:091:35797 P - EQ M6.4 - Kermadec Islands, New Zealand
- AUCK  A    8 P 21:091:35797 00:000:00000 P - 
+ AUCK  A    7 P 19:296:84840 21:063:48456 P - EQ M7.3 - 182 km NE of Gisborne, New Zealand
+ AUCK  A    8 P 21:063:48456 00:000:00000 P - 
  AUCK  A    1 P 00:000:00000 00:000:00000 V - 
 *
  AUKT  A    1 P 00:000:00000 12:019:00000 P - unknown
@@ -536,9 +539,11 @@
  AZU1  A    1 P 00:000:00000 99:289:35204 P - EQ M7.1 - Hector Mine, CA Earthquake
  AZU1  A    2 P 99:289:35204 04:218:00000 P - antenna change
  AZU1  A    3 P 04:218:00000 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- AZU1  A    4 P 19:187:11993 00:000:00000 P - 
+ AZU1  A    4 P 19:187:11993 20:294:64620 P - antenna change
+ AZU1  A    5 P 20:294:64620 00:000:00000 P - 
  AZU1  A    1 P 00:000:00000 19:187:11993 V - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- AZU1  A    2 P 19:187:11993 00:000:00000 V - 
+ AZU1  A    2 P 19:187:11993 20:294:64620 V - antenna change
+ AZU1  A    3 P 20:294:64620 00:000:00000 V - 
 *
  BABR  A    1 P 00:000:00000 18:233:00000 P - unknown
  BABR  A    2 P 18:233:00000 00:000:00000 P - 
@@ -856,9 +861,8 @@
  BOR1  A    3 P 16:279:39600 00:000:00000 P - 
  BOR1  A    1 P 00:000:00000 00:000:00000 V - 
 *
- BORJ  A    1 P 00:000:00000 05:160:36000 P - antenna change
- BORJ  A    2 P 05:160:36000 18:115:46800 P - antenna change
- BORJ  A    3 P 18:115:46800 00:000:00000 P - 
+ BORJ  A    1 P 00:000:00000 18:115:46800 P - antenna change
+ BORJ  A    2 P 18:115:46800 00:000:00000 P - 
  BORJ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  BORR  A    1 P 00:000:00000 16:173:30600 P - antenna change
@@ -1201,8 +1205,7 @@
 *
  CEFE  A    1 P 00:000:00000 09:316:00000 P - unknown
  CEFE  A    2 P 09:316:00000 18:085:54720 P - antenna change
- CEFE  A    3 P 18:085:54720 21:032:51480 P - antenna change
- CEFE  A    4 P 21:032:51480 00:000:00000 P - 
+ CEFE  A    3 P 18:085:54720 00:000:00000 P - 
  CEFE  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CEFT  A    1 P 00:000:00000 12:262:66240 P - antenna change
@@ -1275,7 +1278,8 @@
  CHIL  A    3 P 12:129:69000 19:187:11993 V - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
  CHIL  A    4 P 19:187:11993 00:000:00000 V - 
 *
- CHOF  A    1 P 00:000:00000 00:000:00000 P - 
+ CHOF  A    1 P 00:000:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ CHOF  A    2 P 24:001:25809 00:000:00000 P - 
  CHOF  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CHPG  A    1 P 00:000:00000 00:000:00000 P - 
@@ -1400,9 +1404,9 @@
  CLRK  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CMBL  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- CMBL  A    2 P 16:318:39776 00:000:00000 P -
+ CMBL  A    2 P 16:318:39776 00:000:00000 P - 
  CMBL  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- CMBL  A    2 P 16:318:39776 00:000:00000 V -
+ CMBL  A    2 P 16:318:39776 00:000:00000 V - 
 *
  CMP9  A    1 P 00:000:00000 95:216:00000 P - antenna change
  CMP9  A    2 P 95:216:00000 99:161:00000 P - receiver change
@@ -1595,7 +1599,8 @@
  CPVG  A    2 P 15:064:00000 15:112:00000 P - unknown
  CPVG  A    3 P 15:112:00000 15:295:50160 P - receiver change
  CPVG  A    4 P 15:295:50160 23:233:00000 P - unknown
- CPVG  A    5 P 23:233:00000 00:000:00000 P -
+ CPVG  A    5 P 23:233:00000 24:048:00000 P - unknown
+ CPVG  A    6 P 24:048:00000 00:000:00000 P -
  CPVG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CRAO  A    1 P 00:000:00000 09:063:00000 P - antenna change
@@ -1634,7 +1639,7 @@
  CRFP  A   10 P 13:346:78900 17:167:00000 P - unknown
  CRFP  A   11 P 17:167:00000 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
  CRFP  A   12 P 19:187:11993 23:001:00000 P - unknown
- CRFP  A   13 P 23:001:00000 00:000:00000 P -
+ CRFP  A   13 P 23:001:00000 00:000:00000 P - 
  CRFP  A    1 P 00:000:00000 99:289:35204 V - EQ M7.1 - Hector Mine, CA Earthquake
  CRFP  A    2 P 99:289:35204 02:105:00000 V - non-linearity
  CRFP  A    3 P 02:105:00000 05:277:00000 V - non-linearity
@@ -1998,7 +2003,8 @@
 *
  DYNG  A    1 P 00:000:00000 13:123:25080 P - antenna change
  DYNG  A    2 P 13:123:25080 15:268:36000 P - antenna change
- DYNG  A    3 P 15:268:36000 00:000:00000 P - 
+ DYNG  A    3 P 15:268:36000 23:037:04654 P - EQ M7.8 - Pazarcik earthquake
+ DYNG  A    4 P 23:037:04654 00:000:00000 P - 
  DYNG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  EBRE  A    1 P 00:000:00000 97:105:36780 P - antenna change
@@ -2181,8 +2187,7 @@
 *
  FERN  A    1 P 00:000:00000 04:302:00000 P - unknown
  FERN  A    2 P 04:302:00000 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- FERN  A    3 P 19:187:11993 21:132:64860 P - antenna change
- FERN  A    4 P 21:132:64860 00:000:00000 P - 
+ FERN  A    3 P 19:187:11993 00:000:00000 P - 
  FERN  A    1 P 00:000:00000 00:000:00000 V - 
 *
  FERR  A    1 P 00:000:00000 00:000:00000 P - 
@@ -2215,7 +2220,7 @@
  FLIU  A    1 P 00:000:00000 00:000:00000 V - 
 *
  FLM5  A    1 P 00:000:00000 23:024:00180 P - antenna change
- FLM5  A    2 P 23:024:00180 00:000:00000 P -
+ FLM5  A    2 P 23:024:00180 00:000:00000 P - 
  FLM5  A    1 P 00:000:00000 00:000:00000 V - 
 *
  FLND  A    1 P 00:000:00000 18:339:00000 P - antenna change
@@ -2325,7 +2330,8 @@
  GAMB  A    1 P 00:000:00000 02:058:00000 P - unknown
  GAMB  A    2 P 02:058:00000 11:216:00000 P - antenna change
  GAMB  A    3 P 11:216:00000 14:281:79800 P - antenna change
- GAMB  A    4 P 14:281:79800 00:000:00000 P - 
+ GAMB  A    4 P 14:281:79800 23:322:00000 P - unknown
+ GAMB  A    5 P 23:322:00000 00:000:00000 P - 
  GAMB  A    1 P 00:000:00000 00:000:00000 V - 
 *
  GAMG  A    1 P 00:000:00000 20:223:00000 P - unknown
@@ -2339,7 +2345,7 @@
  GANP  A    5 P 17:037:38400 18:013:00000 P - unknown
  GANP  A    6 P 18:013:00000 00:000:00000 P - 
  GANP  A    1 P 00:000:00000 17:037:38400 V - antenna change
- GANP  A    2 P 17:037:38400 00:000:00000 V -
+ GANP  A    2 P 17:037:38400 00:000:00000 V - 
 *
  GARI  A    1 P 00:000:00000 00:000:00000 P - 
  GARI  A    1 P 00:000:00000 00:000:00000 V - 
@@ -2411,9 +2417,11 @@
  GLPS  A    2 P 08:282:00000 12:318:84000 P - antenna change
  GLPS  A    3 P 12:318:84000 12:341:78300 P - antenna change
  GLPS  A    4 P 12:341:78300 19:146:27675 P - EQ M8.0 - 78 km NE of Navarro, Peru
- GLPS  A    5 P 19:146:27675 00:000:00000 P - 
+ GLPS  A    5 P 19:146:27675 23:039:00000 P - unknown
+ GLPS  A    6 P 23:039:00000 00:000:00000 P - 
  GLPS  A    1 P 00:000:00000 12:341:78300 V - antenna change
- GLPS  A    2 P 12:341:78300 00:000:00000 V - 
+ GLPS  A    2 P 12:341:78300 19:146:27675 V - EQ M8.0 - 78 km NE of Navarro, Peru
+ GLPS  A    3 P 19:146:27675 00:000:00000 V - 
 *
  GLPT  A    1 P 00:000:00000 00:000:00000 P - 
  GLPT  A    1 P 00:000:00000 00:000:00000 V - 
@@ -2422,7 +2430,8 @@
  GLSV  A    2 P 07:317:43200 19:172:55800 P - antenna change
  GLSV  A    3 P 19:172:55800 00:000:00000 P - 
  GLSV  A    1 P 00:000:00000 07:317:43200 V - antenna change
- GLSV  A    2 P 07:317:43200 00:000:00000 V - 
+ GLSV  A    2 P 07:317:43200 19:172:55800 V - antenna change
+ GLSV  A    3 P 19:172:55800 00:000:00000 V - 
 *
  GMAS  A    1 P 00:000:00000 04:044:00000 P - unknown
  GMAS  A    2 P 04:044:00000 07:346:00000 P - unknown
@@ -2664,7 +2673,8 @@
  HARV  A    1 P 00:000:00000 00:000:00000 V - 
 *
  HAST  A    1 P 00:000:00000 10:349:79680 P - antenna change
- HAST  A    2 P 10:349:79680 00:000:00000 P -
+ HAST  A    2 P 10:349:79680 00:000:00000 P - 
+ HAST  A    1 P 00:000:00000 00:000:00000 V - 
 *
  HDG0  A    1 P 00:000:00000 00:000:00000 P - 
  HDG0  A    1 P 00:000:00000 00:000:00000 V - 
@@ -3023,7 +3033,8 @@
  IDDR  A    1 P 00:000:00000 00:000:00000 V - 
 *
  IENG  A    1 P 00:000:00000 19:101:25500 P - antenna change
- IENG  A    2 P 19:101:25500 00:000:00000 P - 
+ IENG  A    2 P 19:101:25500 23:160:00000 P - unknown
+ IENG  A    3 P 23:160:00000 00:000:00000 P - 
  IENG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  IHOE  A    1 P 00:000:00000 16:344:19020 P - antenna change
@@ -3059,7 +3070,8 @@
  IMPZ  A    3 P 05:060:00000 07:142:00000 P - antenna change
  IMPZ  A    4 P 07:142:00000 12:311:00000 P - unknown
  IMPZ  A    5 P 12:311:00000 19:073:00000 P - unknown
- IMPZ  A    6 P 19:073:00000 00:000:00000 P - 
+ IMPZ  A    6 P 19:073:00000 22:333:51000 P - antenna change
+ IMPZ  A    7 P 22:333:51000 00:000:00000 P - 
  IMPZ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  INEG  A    1 P 00:000:00000 00:037:00000 P - antenna change
@@ -3139,7 +3151,8 @@
 *
  ISHI  A    1 P 00:000:00000 17:159:00000 P - unknown
  ISHI  A    2 P 17:159:00000 18:177:00000 P - unknown
- ISHI  A    3 P 18:177:00000 00:000:00000 P - 
+ ISHI  A    3 P 18:177:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ ISHI  A    4 P 24:001:25809 00:000:00000 P - 
  ISHI  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ISPA  A    1 P 00:000:00000 12:279:00000 P - antenna change
@@ -3218,7 +3231,7 @@
  JOG2  A    2 P 13:037:00000 17:182:00000 P - unknown
  JOG2  A    3 P 17:182:00000 20:103:00000 P - unknown
  JOG2  A    4 P 20:103:00000 23:296:43200 P - antenna change
- JOG2  A    5 P 23:296:43200 00:000:00000 P -
+ JOG2  A    5 P 23:296:43200 00:000:00000 P - 
  JOG2  A    1 P 00:000:00000 00:000:00000 V - 
 *
  JOZ2  A    1 P 00:000:00000 08:074:36600 P - antenna change
@@ -3279,7 +3292,7 @@
  KARR  A    3 P 10:139:00000 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
  KARR  A    4 P 12:102:31117 21:336:02580 P - antenna change
  KARR  A    5 P 21:336:02580 23:186:02400 P - antenna change
- KARR  A    6 P 23:186:02400 00:000:00000 P -
+ KARR  A    6 P 23:186:02400 00:000:00000 P - 
  KARR  A    1 P 00:000:00000 00:000:00000 V - 
 *
  KASI  A    1 P 00:000:00000 00:000:00000 P - 
@@ -3394,10 +3407,11 @@
  KINL  A    2 P 08:339:37800 18:128:41100 P - receiver change
  KINL  A    3 P 18:128:41100 00:000:00000 P - 
  KINL  A    1 P 00:000:00000 18:128:41100 V - receiver change
- KINL  A    3 P 18:128:41100 00:000:00000 V - 
+ KINL  A    2 P 18:128:41100 00:000:00000 V - 
 *
  KIR0  A    1 P 00:000:00000 16:236:28800 P - antenna change
- KIR0  A    2 P 16:236:28800 00:000:00000 P - 
+ KIR0  A    2 P 16:236:28800 23:290:54000 P - antenna change
+ KIR0  A    3 P 23:290:54000 00:000:00000 P - 
  KIR0  A    1 P 00:000:00000 00:000:00000 V - 
 *
  KIR8  A    1 P 00:000:00000 00:000:00000 P - 
@@ -3562,7 +3576,7 @@
 *
  KTIA  A    1 P 00:000:00000 19:268:02580 P - antenna change
  KTIA  A    2 P 19:268:02580 21:063:48454 P - EQ M7.3 - 182 km NE of Gisborne, New Zealand
- KTIA  A    3 P 21:063:48454 00:000:00000 P -
+ KTIA  A    3 P 21:063:48454 00:000:00000 P - 
  KTIA  A    1 P 00:000:00000 00:000:00000 V - 
 *
  KTVL  A    1 P 00:000:00000 11:216:20400 P - antenna change
@@ -3653,7 +3667,8 @@
  LAUT  A    5 P 12:116:06120 17:076:00000 P - antenna change
  LAUT  A    6 P 17:076:00000 18:249:56959 P - EQ M7.9 - 45 km S of Levuka, Fiji
  LAUT  A    7 P 18:249:56959 21:041:47995 P - EQ M7.7 - southeast of the Loyalty Islands
- LAUT  A    8 P 21:041:47995 00:000:00000 P - 
+ LAUT  A    8 P 21:041:47995 23:264:00000 P - unknown
+ LAUT  A    9 P 23:264:00000 00:000:00000 P - 
  LAUT  A    1 P 00:000:00000 08:340:00000 V - non-linearity
  LAUT  A    2 P 08:340:00000 21:041:47995 V - EQ M7.7 - southeast of the Loyalty Islands
  LAUT  A    3 P 21:041:47995 00:000:00000 V - 
@@ -3678,7 +3693,9 @@
  LCK3  A    1 P 00:000:00000 00:000:00000 P - 
  LCK3  A    1 P 00:000:00000 00:000:00000 V - 
 *
- LCK4  A    1 P 00:000:00000 00:000:00000 P - 
+ LCK4  A    1 P 00:000:00000 23:349:20700 P - antenna change
+ LCK4  A    2 P 23:349:20700 24:014:00000 P - unknown
+ LCK4  A    3 P 24:014:00000 00:000:00000 P - 
  LCK4  A    1 P 00:000:00000 00:000:00000 V - 
 *
  LCKI  A    1 P 00:000:00000 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
@@ -3823,7 +3840,8 @@
  LONG  A    5 P 07:023:00000 12:307:69060 P - antenna change
  LONG  A    6 P 12:307:69060 13:345:00000 P - unknown
  LONG  A    7 P 13:345:00000 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- LONG  A    8 P 19:187:11993 00:000:00000 P - 
+ LONG  A    8 P 19:187:11993 19:311:00060 P - receiver change
+ LONG  A    9 P 19:311:00060 00:000:00000 P - 
  LONG  A    1 P 00:000:00000 97:002:00000 V - antenna change
  LONG  A    2 P 97:002:00000 00:000:00000 V - 
 *
@@ -3864,7 +3882,8 @@
  LPGS  A    6 P 15:259:82473 16:343:50400 P - antenna change
  LPGS  A    7 P 16:343:50400 20:211:00000 P - unknown
  LPGS  A    8 P 20:211:00000 21:132:56700 P - antenna change
- LPGS  A    9 P 21:132:56700 00:000:00000 P - 
+ LPGS  A    9 P 21:132:56700 23:017:51060 P - receiver change
+ LPGS  A   10 P 23:017:51060 00:000:00000 P - 
  LPGS  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
  LPGS  A    2 P 10:058:23656 00:000:00000 V - 
 *
@@ -3881,8 +3900,7 @@
  LPIL  A    2 P 10:359:47797 18:066:00000 V - non-linearity
  LPIL  A    3 P 18:066:00000 00:000:00000 V - 
 *
- LPOC  A    1 P 00:000:00000 22:180:80340 P - antenna change
- LPOC  A    2 P 22:180:80340 00:000:00000 P - 
+ LPOC  A    1 P 00:000:00000 00:000:00000 P - 
  LPOC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  LPPZ  A    1 P 00:000:00000 10:265:43200 P - antenna change
@@ -4141,22 +4159,24 @@
  MAYG  A    4 P 18:259:00000 19:077:00000 P - volcanic activity
  MAYG  A    5 P 19:077:00000 19:214:00000 P - volcanic activity
  MAYG  A    6 P 19:214:00000 20:085:00000 P - volcanic activity
- MAYG  A    7 P 20:085:00000 00:000:00000 P - 
+ MAYG  A    7 P 20:085:00000 20:278:00000 P - volcanic activity
+ MAYG  A    8 P 20:278:00000 00:000:00000 P - 
  MAYG  A    1 P 00:000:00000 18:147:00000 V - volcanic activity
  MAYG  A    2 P 18:147:00000 18:197:00000 V - volcanic activity
  MAYG  A    3 P 18:197:00000 18:259:00000 V - volcanic activity
  MAYG  A    4 P 18:259:00000 19:077:00000 V - volcanic activity
  MAYG  A    5 P 19:077:00000 19:214:00000 V - volcanic activity
  MAYG  A    6 P 19:214:00000 20:085:00000 V - volcanic activity
- MAYG  A    7 P 20:085:00000 00:000:00000 V - 
+ MAYG  A    7 P 20:085:00000 20:278:00000 V - volcanic activity
+ MAYG  A    8 P 20:278:00000 00:000:00000 V - 
 *
  MAZO  A    1 P 00:000:00000 11:316:00000 P - unknown
  MAZO  A    2 P 11:316:00000 21:262:51120 P - start of Cumbre Vieja volcanic eruption
  MAZO  A    3 P 21:262:51120 21:348:00000 P - end of Cumbre Vieja volcanic eruption
- MAZO  A    4 P 21:348:00000 00:000:00000 P -
+ MAZO  A    4 P 21:348:00000 00:000:00000 P - 
  MAZO  A    1 P 00:000:00000 21:262:51120 V - start of Cumbre Vieja volcanic eruption
  MAZO  A    2 P 21:262:51120 21:348:00000 V - end of Cumbre Vieja volcanic eruption
- MAZO  A    3 P 21:348:00000 00:000:00000 V -
+ MAZO  A    3 P 21:348:00000 00:000:00000 V - 
 *
  MBAR  A    1 P 00:000:00000 13:170:00000 P - non-linearity
  MBAR  A    2 P 13:170:00000 00:000:00000 P - 
@@ -4203,7 +4223,8 @@
  MDO1  A    4 P 07:040:00000 17:044:79200 P - receiver change
  MDO1  A    5 P 17:044:79200 19:269:48240 P - antenna change
  MDO1  A    6 P 19:269:48240 00:000:00000 P - 
- MDO1  A    1 P 00:000:00000 00:000:00000 V - 
+ MDO1  A    1 P 00:000:00000 19:269:48240 V - antenna change
+ MDO1  A    2 P 19:269:48240 00:000:00000 V - 
 *
  MDVJ  A    1 P 00:000:00000 00:000:00000 P - 
  MDVJ  A    1 P 00:000:00000 00:000:00000 V - 
@@ -4227,11 +4248,12 @@
  MEMA  A    1 P 00:000:00000 00:000:00000 P - 
  MEMA  A    1 P 00:000:00000 00:000:00000 V - 
 *
- MERS  A    1 P 00:000:00000 19:001:00000 P - unknown
- MERS  A    2 P 19:001:00000 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
- MERS  A    3 P 23:037:04656 00:000:00000 P - 
- MERS  A    1 P 00:000:00000 23:037:04656 V - EQ M7.8 - Pazarcik earthquake
- MERS  A    2 P 23:037:04656 00:000:00000 V - 
+ MERS  A    1 P 00:000:00000 16:322:00000 P - antenna change
+ MERS  A    2 P 16:322:00000 19:001:00000 P - unknown
+ MERS  A    3 P 19:001:00000 21:001:00000 P - unknown
+ MERS  A    4 P 21:001:00000 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
+ MERS  A    5 P 23:037:04656 00:000:00000 P - 
+ MERS  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MET3  A    1 P 00:000:00000 00:000:00000 P - 
  MET3  A    1 P 00:000:00000 00:000:00000 V - 
@@ -4251,7 +4273,8 @@
  METZ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MFKG  A    1 P 00:000:00000 17:083:00000 P - unknown
- MFKG  A    2 P 17:083:00000 00:000:00000 P - 
+ MFKG  A    2 P 17:083:00000 22:001:00000 P - unknown
+ MFKG  A    3 P 22:001:00000 00:000:00000 P - 
  MFKG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MGBH  A    1 P 00:000:00000 14:101:00000 P - unknown
@@ -4262,11 +4285,11 @@
  MGBH  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MGIN  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- MGIN  A    2 P 10:058:23656 22:137:72720 P - antenna change
- MGIN  A    3 P 22:137:72720 00:000:00000 P - 
+ MGIN  A    2 P 10:058:23656 00:000:00000 P - 
  MGIN  A    1 P 00:000:00000 00:000:00000 V - 
 *
- MGMC  A    1 P 00:000:00000 00:000:00000 P - 
+ MGMC  A    1 P 00:000:00000 22:001:00000 P - unknown
+ MGMC  A    2 P 22:001:00000 00:000:00000 P - 
  MGMC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MGUB  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
@@ -4276,7 +4299,7 @@
 *
  MGUE  A    1 P 00:000:00000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  MGUE  A    2 P 15:259:82473 23:242:00000 P - unknown
- MGUE  A    3 P 23:242:00000 00:000:00000 P -
+ MGUE  A    3 P 23:242:00000 00:000:00000 P - 
  MGUE  A    1 P 00:000:00000 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
  MGUE  A    2 P 15:259:82473 00:000:00000 V - 
 *
@@ -4461,19 +4484,19 @@
  MRC1  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MRL1  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- MRL1  A    2 P 16:318:39776 20:001:00000 P - post-seismic relaxation
+ MRL1  A    2 P 16:318:39776 20:001:00000 P - non-linearity
  MRL1  A    3 P 20:001:00000 23:092:00000 P - unknown
- MRL1  A    4 P 23:092:00000 00:000:00000 P -
+ MRL1  A    4 P 23:092:00000 00:000:00000 P - 
  MRL1  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- MRL1  A    2 P 16:318:39776 20:001:00000 V - post-seismic relaxation
+ MRL1  A    2 P 16:318:39776 20:001:00000 V - non-linearity
  MRL1  A    3 P 20:001:00000 00:000:00000 V - 
 *
  MRL2  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- MRL2  A    2 P 16:318:39776 20:001:00000 P - post-seismic relaxation
+ MRL2  A    2 P 16:318:39776 20:001:00000 P - non-linearity
  MRL2  A    3 P 20:001:00000 23:092:00000 P - unknown
- MRL2  A    4 P 23:092:00000 00:000:00000 P -
+ MRL2  A    4 P 23:092:00000 00:000:00000 P - 
  MRL2  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- MRL2  A    2 P 16:318:39776 20:001:00000 V - post-seismic relaxation
+ MRL2  A    2 P 16:318:39776 20:001:00000 V - non-linearity
  MRL2  A    3 P 20:001:00000 00:000:00000 V - 
 *
  MRO1  A    1 P 00:000:00000 14:048:00000 P - unknown
@@ -4497,6 +4520,10 @@
  MSOL  A    2 P 06:138:00000 11:213:00000 P - antenna change
  MSOL  A    3 P 11:213:00000 00:000:00000 P - 
  MSOL  A    1 P 00:000:00000 00:000:00000 V - 
+*
+ MSSA  A    1 P 00:000:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ MSSA  A    2 P 24:001:25809 00:000:00000 P - 
+ MSSA  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MTBG  A    1 P 00:000:00000 07:248:00000 P - unknown
  MTBG  A    2 P 07:248:00000 08:315:00000 P - antenna change
@@ -4534,13 +4561,15 @@
  MTJO  A    1 P 00:000:00000 04:358:53944 V - EQ M8.1 - north of Macquarie Island
  MTJO  A    2 P 04:358:53944 10:246:59748 V - EQ M7.0 - 19 km NE of Methven, New Zealand
  MTJO  A    3 P 10:246:59748 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- MTJO  A    4 P 16:318:39776 00:000:00000 V - 
+ MTJO  A    4 P 16:318:39776 20:028:82320 V - antenna change
+ MTJO  A    5 P 20:028:82320 00:000:00000 V - 
 *
  MTKA  A    1 P 00:000:00000 99:279:00000 P - unknown
  MTKA  A    2 P 99:279:00000 00:192:00000 P - unknown
  MTKA  A    3 P 00:192:00000 04:249:53839 P - EQ M7.4 - 118 km ESE of Shing?, Japan
  MTKA  A    4 P 04:249:53839 11:070:20783 P - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- MTKA  A    5 P 11:070:20783 00:000:00000 P - 
+ MTKA  A    5 P 11:070:20783 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ MTKA  A    6 P 24:001:25809 00:000:00000 P - 
  MTKA  A    1 P 00:000:00000 04:249:53839 V - EQ M7.4 - 118 km ESE of Shing?, Japan
  MTKA  A    2 P 04:249:53839 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  MTKA  A    3 P 11:070:20783 00:000:00000 V - 
@@ -4608,7 +4637,8 @@
  NAUR  A    3 P 10:196:00000 10:345:00000 P - antenna change
  NAUR  A    4 P 10:345:00000 11:010:00000 P - antenna change
  NAUR  A    5 P 11:010:00000 16:343:63526 P - EQ M7.8 - 69 km WSW of Kirakira, Solomon Islands
- NAUR  A    6 P 16:343:63526 00:000:00000 P - 
+ NAUR  A    6 P 16:343:63526 23:116:05280 P - receiver change
+ NAUR  A    7 P 23:116:05280 00:000:00000 P - 
  NAUR  A    1 P 00:000:00000 07:091:74396 V - EQ M8.1 - 45 km SSE of Gizo, Solomon Islands
  NAUR  A    2 P 07:091:74396 00:000:00000 V - 
 *
@@ -4642,9 +4672,9 @@
  NCKU  A    1 P 00:000:00000 16:036:71847 P - EQ M6.4 - 25 km SE of Yujing, Taiwan
  NCKU  A    2 P 16:036:71847 22:261:24253 P - EQ M6.9 - south-east of Lugu, Taiwan
  NCKU  A    3 P 22:261:24253 23:271:00000 P - unknown
- NCKU  A    4 P 23:271:00000 00:000:00000 P -
+ NCKU  A    4 P 23:271:00000 00:000:00000 P - 
  NCKU  A    1 P 00:000:00000 22:261:24253 V - EQ M6.9 - south-east of Lugu, Taiwan
- NCKU  A    2 P 22:261:24253 00:000:00000 V -
+ NCKU  A    2 P 22:261:24253 00:000:00000 V - 
 *
  NCLF  A    1 P 00:000:00000 17:038:20400 P - antenna change
  NCLF  A    2 P 17:038:20400 00:000:00000 P - 
@@ -4666,8 +4696,7 @@
  NDMB  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NEAH  A    1 P 00:000:00000 12:276:00000 P - unknown
- NEAH  A    2 P 12:276:00000 19:155:82860 P - antenna change
- NEAH  A    3 P 19:155:82860 00:000:00000 P - 
+ NEAH  A    2 P 12:276:00000 00:000:00000 P - 
  NEAH  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NEBO  A    1 P 00:000:00000 17:151:17280 P - antenna change
@@ -4745,7 +4774,8 @@
  NIUM  A    3 P 09:272:64091 14:072:05400 P - antenna change
  NIUM  A    4 P 14:072:05400 18:231:01181 P - EQ M8.2 - 267 km E of Levuka, Fiji
  NIUM  A    5 P 18:231:01181 22:315:38925 P - EQ M7.3 - 205 km ESE of Neiafu, Tonga
- NIUM  A    6 P 22:315:38925 00:000:00000 P - 
+ NIUM  A    6 P 22:315:38925 24:058:16740 P - antenna change
+ NIUM  A    7 P 24:058:16740 00:000:00000 P -
  NIUM  A    1 P 00:000:00000 18:231:01181 V - EQ M8.2 - 267 km E of Levuka, Fiji
  NIUM  A    2 P 18:231:01181 00:000:00000 V - 
 *
@@ -4758,7 +4788,8 @@
  NLIB  A    3 P 10:349:69300 18:165:54000 P - antenna change
  NLIB  A    4 P 18:165:54000 00:000:00000 P - 
  NLIB  A    1 P 00:000:00000 02:254:00000 V - unknown
- NLIB  A    2 P 02:254:00000 00:000:00000 V - 
+ NLIB  A    2 P 02:254:00000 18:165:54000 V - antenna change
+ NLIB  A    3 P 18:165:54000 00:000:00000 V - 
 *
  NMGR  A    1 P 00:000:00000 18:109:56940 P - antenna change
  NMGR  A    2 P 18:109:56940 19:258:00000 P - unknown
@@ -4822,7 +4853,8 @@
  NPLY  A    3 P 10:328:07980 13:353:00000 P - non-linearity
  NPLY  A    4 P 13:353:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  NPLY  A    5 P 16:318:39776 19:289:79500 P - antenna change
- NPLY  A    6 P 19:289:79500 00:000:00000 P - 
+ NPLY  A    6 P 19:289:79500 23:242:00000 P - unknown
+ NPLY  A    7 P 23:242:00000 00:000:00000 P - 
  NPLY  A    1 P 00:000:00000 13:353:00000 V - non-linearity
  NPLY  A    2 P 13:353:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  NPLY  A    3 P 16:318:39776 00:000:00000 V - 
@@ -4857,14 +4889,16 @@
  NRMD  A    5 P 10:359:47797 15:028:00000 P - non-linearity
  NRMD  A    6 P 15:028:00000 17:323:81809 P - EQ M7.0 - 85 km ENE of Tadine, New Caledonia
  NRMD  A    7 P 17:323:81809 18:339:15488 P - EQ M7.5 - 166 km ESE of Tadine, New Caledonia
- NRMD  A    8 P 18:339:15488 00:000:00000 P - 
+ NRMD  A    8 P 18:339:15488 23:341:46591 P - EQ M7.1 - 118 km S of Isangel, Vanuatu
+ NRMD  A    9 P 23:341:46591 00:000:00000 P - 
  NRMD  A    1 P 00:000:00000 15:028:00000 V - non-linearity
  NRMD  A    2 P 15:028:00000 00:000:00000 V - 
 *
  NRMG  A    1 P 00:000:00000 15:028:00000 P - non-linearity
  NRMG  A    2 P 15:028:00000 17:323:81809 P - EQ M7.0 - 85 km ENE of Tadine, New Caledonia
  NRMG  A    3 P 17:323:81809 18:339:15488 P - EQ M7.5 - 166 km ESE of Tadine, New Caledonia
- NRMG  A    4 P 18:339:15488 00:000:00000 P - 
+ NRMG  A    4 P 18:339:15488 23:341:46591 P - EQ M7.1 - 118 km S of Isangel, Vanuatu
+ NRMG  A    5 P 23:341:46591 00:000:00000 P - 
  NRMG  A    1 P 00:000:00000 15:028:00000 V - non-linearity
  NRMG  A    2 P 15:028:00000 00:000:00000 V - 
 *
@@ -4923,14 +4957,16 @@
  NYA2  A    3 P 12:001:00000 19:220:36000 P - antenna change
  NYA2  A    4 P 19:220:36000 00:000:00000 P - 
  NYA2  A    1 P 00:000:00000 11:206:43200 V - antenna change
- NYA2  A    2 P 11:206:43200 00:000:00000 V - 
+ NYA2  A    2 P 11:206:43200 19:220:36000 V - antenna change
+ NYA2  A    3 P 19:220:36000 00:000:00000 V - 
 *
  NYAL  A    1 P 00:000:00000 98:047:00000 P - non-linearity
  NYAL  A    2 P 98:047:00000 00:340:00000 P - unknown
  NYAL  A    3 P 00:340:00000 01:249:00000 P - unknown
  NYAL  A    4 P 01:249:00000 04:186:00000 P - non-linearity
  NYAL  A    5 P 04:186:00000 16:233:00000 P - non-linearity
- NYAL  A    6 P 16:233:00000 00:000:00000 P - 
+ NYAL  A    6 P 16:233:00000 22:331:00000 P - switch to IGS20/igs20.atx?
+ NYAL  A    7 P 22:331:00000 00:000:00000 P - 
  NYAL  A    1 P 00:000:00000 98:047:00000 V - non-linearity
  NYAL  A    2 P 98:047:00000 00:340:00000 V - unknown
  NYAL  A    3 P 00:340:00000 04:186:00000 V - non-linearity
@@ -4942,8 +4978,8 @@
  NYB0  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NYBP  A    1 P 00:000:00000 18:202:00000 P - unknown
- NYBP  A    2 P 18:202:00000 21:201:40680 P - antenna change
- NYBP  A    3 P 21:201:40680 00:000:00000 P -
+ NYBP  A    2 P 18:202:00000 21:160:00000 P - unknown
+ NYBP  A    3 P 21:160:00000 00:000:00000 P - 
  NYBP  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NYBR  A    1 P 00:000:00000 00:000:00000 P - 
@@ -5001,7 +5037,9 @@
  OHI2  A    5 P 13:321:32696 14:061:57600 P - antenna change
  OHI2  A    6 P 14:061:57600 16:127:00000 P - unknown
  OHI2  A    7 P 16:127:00000 17:058:42000 P - antenna change
- OHI2  A    8 P 17:058:42000 00:000:00000 P - 
+ OHI2  A    8 P 17:058:42000 21:153:55800 P - receiver change
+ OHI2  A    9 P 21:153:55800 22:179:00000 P - unknown
+ OHI2  A   10 P 22:179:00000 00:000:00000 P - 
  OHI2  A    1 P 00:000:00000 09:030:63900 V - antenna change
  OHI2  A    2 P 09:030:63900 00:000:00000 V - 
 *
@@ -5009,7 +5047,8 @@
  OHI3  A    2 P 10:022:71100 11:034:79200 P - antenna change
  OHI3  A    3 P 11:034:79200 12:266:03180 P - antenna change
  OHI3  A    4 P 12:266:03180 13:321:32696 P - EQ M7.7 - Scotia Sea
- OHI3  A    5 P 13:321:32696 00:000:00000 P - 
+ OHI3  A    5 P 13:321:32696 21:139:33300 P - receiver change
+ OHI3  A    6 P 21:139:33300 00:000:00000 P - 
  OHI3  A    1 P 00:000:00000 10:022:71100 V - antenna change
  OHI3  A    2 P 10:022:71100 00:000:00000 V - 
 *
@@ -5030,7 +5069,7 @@
  OLK2  A    1 P 00:000:00000 00:000:00000 V - 
 *
  OLKI  A    1 P 00:000:00000 15:335:00000 P - unknown
- OLKI  A    2 P 15:335:00000 00:000:00000 P -
+ OLKI  A    2 P 15:335:00000 00:000:00000 P - 
  OLKI  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ONRJ  A    1 P 00:000:00000 09:286:78960 P - antenna change
@@ -5061,7 +5100,8 @@
  ORID  A    3 P 07:326:00000 08:168:00000 P - unknown
  ORID  A    4 P 08:168:00000 08:311:25200 P - antenna change
  ORID  A    5 P 08:311:25200 20:049:39900 P - antenna change
- ORID  A    6 P 20:049:39900 00:000:00000 P - 
+ ORID  A    6 P 20:049:39900 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
+ ORID  A    7 P 23:037:04656 00:000:00000 P - 
  ORID  A    1 P 00:000:00000 00:000:00000 V - 
 *
  OROS  A    1 P 00:000:00000 02:106:00000 P - antenna change
@@ -5131,7 +5171,8 @@
 *
  OWMG  A    1 P 00:000:00000 16:320:00000 P - unknown
  OWMG  A    2 P 16:320:00000 17:213:31620 P - receiver change
- OWMG  A    3 P 17:213:31620 00:000:00000 P - 
+ OWMG  A    3 P 17:213:31620 24:039:03480 P - antenna change
+ OWMG  A    4 P 24:039:03480 00:000:00000 P -
  OWMG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  OWNG  A    1 P 00:000:00000 00:000:00000 P - 
@@ -5181,7 +5222,8 @@
  P044  A    2 P 19:226:64860 00:000:00000 P - 
  P044  A    1 P 00:000:00000 00:000:00000 V - 
 *
- P049  A    1 P 00:000:00000 00:000:00000 P - 
+ P049  A    1 P 00:000:00000 23:312:75660 P - antenna change
+ P049  A    2 P 23:312:75660 00:000:00000 P - 
  P049  A    1 P 00:000:00000 00:000:00000 V - 
 *
  P051  A    1 P 00:000:00000 19:038:44160 P - antenna change
@@ -5292,7 +5334,7 @@
 *
  P777  A    1 P 00:000:00000 21:078:62160 P - antenna change
  P777  A    2 P 21:078:62160 23:106:00000 P - unknown
- P777  A    3 P 23:106:00000 00:000:00000 P -
+ P777  A    3 P 23:106:00000 00:000:00000 P - 
  P777  A    1 P 00:000:00000 00:000:00000 V - 
 *
  P804  A    1 P 00:000:00000 00:000:00000 P - 
@@ -5341,10 +5383,12 @@
  PALM  A    1 P 00:000:00000 99:125:00000 P - unknown
  PALM  A    2 P 99:125:00000 07:180:00000 P - non-linearity
  PALM  A    3 P 07:180:00000 13:321:32696 P - EQ M7.7 - Scotia Sea
- PALM  A    4 P 13:321:32696 00:000:00000 P - 
+ PALM  A    4 P 13:321:32696 20:206:00000 P - non-linearity
+ PALM  A    5 P 20:206:00000 00:000:00000 P - 
  PALM  A    1 P 00:000:00000 07:180:00000 V - non-linearity
  PALM  A    2 P 07:180:00000 13:321:32696 V - EQ M7.7 - Scotia Sea
- PALM  A    3 P 13:321:32696 00:000:00000 V - 
+ PALM  A    3 P 13:321:32696 20:206:00000 V - non-linearity
+ PALM  A    4 P 20:206:00000 00:000:00000 V - 
 *
  PALV  A    1 P 00:000:00000 13:321:32696 P - EQ M7.7 - Scotia Sea
  PALV  A    2 P 13:321:32696 00:000:00000 P - 
@@ -5422,7 +5466,8 @@
  PENC  A    1 P 00:000:00000 99:351:00000 P - unknown
  PENC  A    2 P 99:351:00000 03:142:00000 P - antenna change
  PENC  A    3 P 03:142:00000 07:193:00000 P - antenna change
- PENC  A    4 P 07:193:00000 00:000:00000 P - 
+ PENC  A    4 P 07:193:00000 23:216:00000 P - unknown
+ PENC  A    5 P 23:216:00000 00:000:00000 P - 
  PENC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PEPE  A    1 P 00:000:00000 14:085:76800 P - antenna change
@@ -5499,7 +5544,8 @@
  PIE1  A    1 P 00:000:00000 97:132:00000 V - non-linearity
  PIE1  A    2 P 97:132:00000 00:215:00000 V - non-linearity
  PIE1  A    3 P 00:215:00000 07:023:64800 V - antenna change
- PIE1  A    4 P 07:023:64800 00:000:00000 V - 
+ PIE1  A    4 P 07:023:64800 20:164:64800 V - receiver change
+ PIE1  A    5 P 20:164:64800 00:000:00000 V - 
 *
  PIMO  A    1 P 00:000:00000 99:345:65016 P - EQ M7.3 - 14 km WNW of Bolitoc, Philippines
  PIMO  A    2 P 99:345:65016 01:249:00000 P - antenna change
@@ -5515,7 +5561,8 @@
  PIMO  A    2 P 02:319:00000 04:361:03530 V - EQ M9.1 - 2004 Sumatra - Andaman Islands Earthquake
  PIMO  A    3 P 04:361:03530 09:050:00000 V - receiver change
  PIMO  A    4 P 09:050:00000 12:244:46053 V - EQ M7.6 - 89 km E of Sulangan, Philippines
- PIMO  A    5 P 12:244:46053 00:000:00000 V - 
+ PIMO  A    5 P 12:244:46053 20:015:00000 V - unknown
+ PIMO  A    6 P 20:015:00000 00:000:00000 V - 
 *
  PIN1  A    1 P 00:000:00000 95:214:00000 P - antenna change
  PIN1  A    2 P 95:214:00000 99:289:35204 P - EQ M7.1 - Hector Mine, CA Earthquake
@@ -5690,7 +5737,7 @@
  PRE1  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PRE2  A    1 P 00:000:00000 07:130:00000 P - unknown
- PRE2  A    3 P 07:130:00000 00:000:00000 P - 
+ PRE2  A    2 P 07:130:00000 00:000:00000 P - 
  PRE2  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PRE3  A    1 P 00:000:00000 00:000:00000 P - 
@@ -5710,7 +5757,7 @@
  PRMI  A    4 P 20:007:30265 20:186:00000 P - unknown
  PRMI  A    5 P 20:186:00000 00:000:00000 P - 
  PRMI  A    1 P 00:000:00000 20:186:00000 V - unknown
- PRMI  A    5 P 20:186:00000 00:000:00000 V - 
+ PRMI  A    2 P 20:186:00000 00:000:00000 V - 
 *
  PSAL  A    1 P 00:000:00000 00:000:00000 P - 
  PSAL  A    1 P 00:000:00000 00:000:00000 V - 
@@ -5732,7 +5779,8 @@
  PTAG  A    5 P 20:016:00000 20:359:85421 P - EQ M6.3 - 2 km ESE of Calatagan, Philippines
  PTAG  A    6 P 20:359:85421 21:204:74937 P - EQ M6.7 - 15 km S of Hukay, Philippines
  PTAG  A    7 P 21:204:74937 00:000:00000 P - 
- PTAG  A    1 P 00:000:00000 00:000:00000 V - 
+ PTAG  A    1 P 00:000:00000 21:204:74937 V - EQ M6.7 - 15 km S of Hukay, Philippines
+ PTAG  A    2 P 21:204:74937 00:000:00000 V - 
 *
  PTBB  A    1 P 00:000:00000 02:078:00000 P - antenna change
  PTBB  A    2 P 02:078:00000 19:085:50400 P - antenna change
@@ -5783,7 +5831,8 @@
  PTVL  A    5 P 18:172:76413 18:339:15488 P - EQ M7.5 - 166 km ESE of Tadine, New Caledonia
  PTVL  A    6 P 18:339:15488 21:047:02965 P - EQ M6.2 - 82 km W of Port-Vila, Vanuatu
  PTVL  A    7 P 21:047:02965 22:343:09780 P - receiver change
- PTVL  A    8 P 22:343:09780 00:000:00000 P - 
+ PTVL  A    8 P 22:343:09780 24:023:52426 P - EQ M6.3 - 39 km SW of Port-Vila, Vanuatu
+ PTVL  A    9 P 24:023:52426 00:000:00000 P - 
  PTVL  A    1 P 00:000:00000 14:161:00000 V - non-linearity
  PTVL  A    2 P 14:161:00000 15:130:00000 V - non-linearity
  PTVL  A    3 P 15:130:00000 00:000:00000 V - 
@@ -5884,9 +5933,11 @@
  QUIN  A    5 P 02:317:00000 05:166:10253 P - EQ M7.2 - 153 km W of Big Lagoon, California
  QUIN  A    6 P 05:166:10253 09:015:00000 P - antenna change
  QUIN  A    7 P 09:015:00000 10:224:03900 P - antenna change
- QUIN  A    8 P 10:224:03900 00:000:00000 P - 
+ QUIN  A    8 P 10:224:03900 17:245:00000 P - non-linearity
+ QUIN  A    9 P 17:245:00000 00:000:00000 P - 
  QUIN  A    1 P 00:000:00000 02:317:00000 V - antenna change
- QUIN  A    2 P 02:317:00000 00:000:00000 V - 
+ QUIN  A    2 P 02:317:00000 17:245:00000 V - non-linearity
+ QUIN  A    3 P 17:245:00000 00:000:00000 V - 
 *
  RABT  A    1 P 00:000:00000 09:037:00000 P - receiver change
  RABT  A    2 P 09:037:00000 00:000:00000 P - 
@@ -5965,22 +6016,25 @@
  REDM  A    1 P 00:000:00000 99:209:00000 P - receiver change
  REDM  A    2 P 99:209:00000 04:168:00000 P - non-linearity
  REDM  A    3 P 04:168:00000 18:310:82920 P - antenna change
- REDM  A    4 P 18:310:82920 19:176:00000 P - unknown
+ REDM  A    4 P 18:310:82920 19:176:00000 P - non-linearity
  REDM  A    5 P 19:176:00000 00:000:00000 P - 
  REDM  A    1 P 00:000:00000 04:168:00000 V - non-linearity
- REDM  A    2 P 04:168:00000 00:000:00000 V - 
+ REDM  A    2 P 04:168:00000 19:176:00000 V - non-linearity
+ REDM  A    3 P 19:176:00000 00:000:00000 V - 
 *
  REDU  A    1 P 00:000:00000 13:254:50400 P - antenna change
  REDU  A    2 P 13:254:50400 19:302:36000 P - antenna change
  REDU  A    3 P 19:302:36000 00:000:00000 P - 
  REDU  A    1 P 00:000:00000 13:254:50400 V - antenna change
- REDU  A    2 P 13:254:50400 00:000:00000 V - 
+ REDU  A    2 P 13:254:50400 19:302:36000 V - antenna change
+ REDU  A    3 P 19:302:36000 00:000:00000 V - 
 *
  REPL  A    1 P 00:000:00000 00:000:00000 P - 
  REPL  A    1 P 00:000:00000 00:000:00000 V - 
 *
  RESO  A    1 P 00:000:00000 04:051:00000 P - receiver change
- RESO  A    2 P 04:051:00000 00:000:00000 P - 
+ RESO  A    2 P 04:051:00000 18:327:78600 P - receiver change
+ RESO  A    3 P 18:327:78600 00:000:00000 P - 
  RESO  A    1 P 00:000:00000 00:000:00000 V - 
 *
  REUN  A    1 P 00:000:00000 03:094:36000 P - antenna change
@@ -6001,7 +6055,8 @@
  REYK  A    8 P 13:122:46800 17:005:46800 P - antenna change
  REYK  A    9 P 17:005:46800 19:134:64800 P - antenna change
  REYK  A   10 P 19:134:64800 21:055:36359 P - EQ M5.6 - 6 km SE of Vogar, Iceland
- REYK  A   11 P 21:055:36359 00:000:00000 P - 
+ REYK  A   11 P 21:055:36359 23:316:00000 P - unknown
+ REYK  A   12 P 23:316:00000 00:000:00000 P - 
  REYK  A    1 P 00:000:00000 00:173:03107 V - EQ M6.5 - 12 km ENE of Selfoss, Iceland
  REYK  A    2 P 00:173:03107 21:055:36359 V - EQ M5.6 - 6 km SE of Vogar, Iceland
  REYK  A    3 P 21:055:36359 00:000:00000 V - 
@@ -6037,7 +6092,8 @@
  RIO2  A    3 P 15:258:52560 20:051:54000 P - antenna change
  RIO2  A    4 P 20:051:54000 00:000:00000 P - 
  RIO2  A    1 P 00:000:00000 15:258:52560 V - receiver change
- RIO2  A    2 P 15:258:52560 00:000:00000 V - 
+ RIO2  A    2 P 15:258:52560 20:051:54000 V - antenna change
+ RIO2  A    3 P 20:051:54000 00:000:00000 V - 
 *
  RIOB  A    1 P 00:000:00000 13:094:57720 P - antenna change
  RIOB  A    2 P 13:094:57720 15:132:57000 P - antenna change
@@ -6070,8 +6126,7 @@
  RMBO  A    4 P 21:001:00000 00:000:00000 P - 
  RMBO  A    1 P 00:000:00000 00:000:00000 V - 
 *
- RNKN  A    1 P 00:000:00000 19:250:65880 P - antenna change
- RNKN  A    2 P 19:250:65880 00:000:00000 P - 
+ RNKN  A    1 P 00:000:00000 00:000:00000 P - 
  RNKN  A    1 P 00:000:00000 00:000:00000 V - 
 *
  RNNA  A    1 P 00:000:00000 13:105:54120 P - antenna change
@@ -6118,8 +6173,7 @@
 *
  ROGM  A    1 P 00:000:00000 14:054:00000 P - unknown
  ROGM  A    2 P 14:054:00000 15:274:00000 P - unknown
- ROGM  A    3 P 15:274:00000 20:216:00000 P - antenna change
- ROGM  A    4 P 20:216:00000 00:000:00000 P - 
+ ROGM  A    3 P 15:274:00000 00:000:00000 P - 
  ROGM  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ROSA  A    1 P 00:000:00000 07:337:00000 P - antenna change
@@ -6206,7 +6260,7 @@
  SAMO  A    4 P 12:122:11220 17:277:04800 P - antenna change
  SAMO  A    5 P 17:277:04800 18:231:01181 P - EQ M8.2 - 267 km E of Levuka, Fiji
  SAMO  A    6 P 18:231:01181 23:130:57720 P - EQ M7.6 - 82 km WNW of Hihifo, Tonga
- SAMO  A    7 P 23:130:57720 00:000:00000 P -
+ SAMO  A    7 P 23:130:57720 00:000:00000 P - 
  SAMO  A    1 P 00:000:00000 09:272:64091 V - EQ M8.1 - 168 km SSW of Matavai, Samoa
  SAMO  A    2 P 09:272:64091 00:000:00000 V - 
 *
@@ -6239,7 +6293,8 @@
  SANT  A    6 P 17:006:00000 17:114:77911 P - EQ M6.9 - 40 km W of Valparaíso, Chile
  SANT  A    7 P 17:114:77911 00:000:00000 P - 
  SANT  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- SANT  A    2 P 10:058:23656 00:000:00000 V - 
+ SANT  A    2 P 10:058:23656 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
+ SANT  A    3 P 15:259:82473 00:000:00000 V - 
 *
  SARI  A    1 P 00:000:00000 00:000:00000 P - 
  SARI  A    1 P 00:000:00000 00:000:00000 V - 
@@ -6289,8 +6344,7 @@
 *
  SCHY  A    1 P 00:000:00000 17:024:00000 P - antenna change
  SCHY  A    2 P 17:024:00000 18:079:00000 P - receiver change
- SCHY  A    3 P 18:079:00000 21:137:51900 P - antenna change
- SCHY  A    4 P 21:137:51900 00:000:00000 P - 
+ SCHY  A    3 P 18:079:00000 00:000:00000 P - 
  SCHY  A    1 P 00:000:00000 00:000:00000 V - 
 *
  SCIL  A    1 P 00:000:00000 16:341:00000 P - non-linearity
@@ -6402,7 +6456,7 @@
  SEY1  A    1 P 00:000:00000 00:000:00000 V - 
 *
  SEY2  A    1 P 00:000:00000 23:031:30960 P - antenna change
- SEY2  A    2 P 23:031:30960 00:000:00000 P -
+ SEY2  A    2 P 23:031:30960 00:000:00000 P - 
  SEY2  A    1 P 00:000:00000 00:000:00000 V - 
 *
  SEYG  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6627,7 +6681,8 @@
  SOLO  A    6 P 15:069:06300 16:343:63526 P - EQ M7.8 - 69 km WSW of Kirakira, Solomon Islands
  SOLO  A    7 P 16:343:63526 22:326:07386 P - EQ M7.0 - 18 km SW of Malango, Solomon Islands
  SOLO  A    8 P 22:326:07386 00:000:00000 P - 
- SOLO  A    1 P 00:000:00000 00:000:00000 V - 
+ SOLO  A    1 P 00:000:00000 22:326:07386 V - EQ M7.0 - 18 km SW of Malango, Solomon Islands
+ SOLO  A    2 P 22:326:07386 00:000:00000 V - 
 *
  SOPU  A    1 P 00:000:00000 18:345:00000 P - unknown
  SOPU  A    2 P 18:345:00000 00:000:00000 P - 
@@ -6803,7 +6858,8 @@
  SUP2  A    2 P 13:165:00000 20:230:68700 P - antenna change
  SUP2  A    3 P 20:230:68700 00:000:00000 P - 
  SUP2  A    1 P 00:000:00000 13:165:00000 V - non-linearity
- SUP2  A    2 P 13:165:00000 00:000:00000 V - 
+ SUP2  A    2 P 13:165:00000 20:230:68700 V - antenna change
+ SUP2  A    3 P 20:230:68700 00:000:00000 V - 
 *
  SUTH  A    1 P 00:000:00000 02:058:00000 P - antenna change
  SUTH  A    2 P 02:058:00000 04:153:00000 P - antenna change
@@ -6829,7 +6885,8 @@
  SUWN  A    5 P 13:206:00000 18:036:00000 P - antenna change
  SUWN  A    6 P 18:036:00000 00:000:00000 P - 
  SUWN  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- SUWN  A    2 P 11:070:20783 00:000:00000 V - 
+ SUWN  A    2 P 11:070:20783 18:036:00000 V - antenna change
+ SUWN  A    3 P 18:036:00000 00:000:00000 V - 
 *
  SVIC  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
  SVIC  A    2 P 10:058:23656 14:246:00000 P - unknown
@@ -6862,7 +6919,8 @@
  TABL  A    2 P 99:289:35204 04:300:00000 P - non-linearity
  TABL  A    3 P 04:300:00000 12:048:72360 P - antenna change
  TABL  A    4 P 12:048:72360 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- TABL  A    5 P 19:187:11993 00:000:00000 P - 
+ TABL  A    5 P 19:187:11993 23:141:00000 P - unknown
+ TABL  A    6 P 23:141:00000 00:000:00000 P - 
  TABL  A    1 P 00:000:00000 99:289:35204 V - EQ M7.1 - Hector Mine, CA Earthquake
  TABL  A    2 P 99:289:35204 04:300:00000 V - non-linearity
  TABL  A    3 P 04:300:00000 12:048:72360 V - antenna change
@@ -6911,7 +6969,8 @@
  TAUP  A    3 P 08:146:00000 12:013:00000 P - unknown
  TAUP  A    4 P 12:013:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  TAUP  A    5 P 16:318:39776 20:014:82980 P - antenna change
- TAUP  A    6 P 20:014:82980 00:000:00000 P - 
+ TAUP  A    6 P 20:014:82980 23:020:00000 P - unknown
+ TAUP  A    7 P 23:020:00000 00:000:00000 P - 
  TAUP  A    1 P 00:000:00000 04:358:53944 V - EQ M8.1 - north of Macquarie Island
  TAUP  A    2 P 04:358:53944 08:146:00000 V - non-linearity
  TAUP  A    3 P 08:146:00000 00:000:00000 V - 
@@ -7022,9 +7081,11 @@
 *
  THU2  A    1 P 00:000:00000 06:098:00000 P - non-linearity
  THU2  A    2 P 06:098:00000 17:125:00000 P - unknown
- THU2  A    3 P 17:125:00000 00:000:00000 P - 
+ THU2  A    3 P 17:125:00000 19:200:00000 P - non-linearity
+ THU2  A    4 P 19:200:00000 00:000:00000 P - 
  THU2  A    1 P 00:000:00000 06:098:00000 V - non-linearity
- THU2  A    2 P 06:098:00000 00:000:00000 V - 
+ THU2  A    2 P 06:098:00000 19:200:00000 V - non-linearity
+ THU2  A    3 P 19:200:00000 00:000:00000 V - 
 *
  THU3  A    1 P 00:000:00000 06:098:00000 P - non-linearity
  THU3  A    2 P 06:098:00000 17:125:00000 P - unknown
@@ -7156,7 +7217,7 @@
  TONG  A   14 P 19:166:78970 20:135:00000 P - unknown
  TONG  A   15 P 20:135:00000 21:263:66892 P - EQ M5.8 - 80 km ENE of ‘Ohonua, Tonga
  TONG  A   16 P 21:263:66892 23:166:65188 P - EQ M7.2 - 274 km SW of Houma, Tonga
- TONG  A   17 P 23:166:65188 00:000:00000 P -
+ TONG  A   17 P 23:166:65188 00:000:00000 P - 
  TONG  A    1 P 00:000:00000 06:123:55600 V - EQ M8.0 - 47 km SSE of Pangai, Tonga
  TONG  A    2 P 06:123:55600 13:143:62345 V - EQ M7.4 - 292 km SW of Vaini, Tonga
  TONG  A    3 P 13:143:62345 21:263:66892 V - EQ M5.8 - 80 km ENE of ‘Ohonua, Tonga
@@ -7192,7 +7253,8 @@
  TORP  A    4 P 10:094:81643 11:007:85500 P - antenna change
  TORP  A    5 P 11:007:85500 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
  TORP  A    6 P 19:187:11993 21:263:79500 P - antenna change
- TORP  A    7 P 21:263:79500 00:000:00000 P - 
+ TORP  A    7 P 21:263:79500 23:002:00000 P - unknown
+ TORP  A    8 P 23:002:00000 00:000:00000 P - 
  TORP  A    1 P 00:000:00000 04:301:00000 V - non-linearity
  TORP  A    2 P 04:301:00000 19:187:11993 V - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
  TORP  A    3 P 19:187:11993 00:000:00000 V - 
@@ -7222,7 +7284,8 @@
  TRAK  A    6 P 09:091:00000 10:094:81643 P - EQ M7.2 - 12km SW of Delta, B.C., MX
  TRAK  A    7 P 10:094:81643 11:145:85680 P - antenna change
  TRAK  A    8 P 11:145:85680 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- TRAK  A    9 P 19:187:11993 00:000:00000 P - 
+ TRAK  A    9 P 19:187:11993 23:002:00000 P - unknown
+ TRAK  A   10 P 23:002:00000 00:000:00000 P - 
  TRAK  A    1 P 00:000:00000 99:289:35204 V - EQ M7.1 - Hector Mine, CA Earthquake
  TRAK  A    2 P 99:289:35204 03:119:00000 V - non-linearity
  TRAK  A    3 P 03:119:00000 10:094:81643 V - EQ M7.2 - 12km SW of Delta, B.C., MX
@@ -7239,11 +7302,13 @@
  TRNG  A    1 P 00:000:00000 04:358:53944 P - EQ M8.1 - north of Macquarie Island
  TRNG  A    2 P 04:358:53944 10:341:05640 P - antenna change
  TRNG  A    3 P 10:341:05640 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- TRNG  A    4 P 16:318:39776 00:000:00000 P - 
+ TRNG  A    4 P 16:318:39776 21:063:48456 P - EQ M7.3 - 182 km NE of Gisborne, New Zealand
+ TRNG  A    5 P 21:063:48456 00:000:00000 P - 
  TRNG  A    1 P 00:000:00000 04:358:53944 V - EQ M8.1 - north of Macquarie Island
  TRNG  A    2 P 04:358:53944 10:341:05640 V - antenna change
  TRNG  A    3 P 10:341:05640 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- TRNG  A    4 P 16:318:39776 00:000:00000 V - 
+ TRNG  A    4 P 16:318:39776 21:063:48456 V - EQ M7.3 - 182 km NE of Gisborne, New Zealand
+ TRNG  A    5 P 21:063:48456 00:000:00000 V - 
 *
  TRO1  A    1 P 00:000:00000 98:356:48000 P - antenna change
  TRO1  A    2 P 98:356:48000 00:144:00000 P - unknown
@@ -7271,7 +7336,7 @@
  TSEA  A    8 P 14:113:00000 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
  TSEA  A    9 P 18:023:34301 18:334:62969 P - EQ M7.1 - 1 km SE of Point MacKenzie, Alaska
  TSEA  A   10 P 18:334:62969 21:346:00000 P - non-linearity
- TSEA  A   11 P 21:346:00000 00:000:00000 P -
+ TSEA  A   11 P 21:346:00000 00:000:00000 P - 
  TSEA  A    1 P 00:000:00000 00:241:00000 V - non-linearity
  TSEA  A    2 P 00:241:00000 02:307:79961 V - EQ M7.9 - 75 km E of Cantwell, Alaska
  TSEA  A    3 P 02:307:79961 07:057:00000 V - antenna change
@@ -7279,7 +7344,7 @@
  TSEA  A    5 P 08:335:00000 12:027:00000 V - non-linearity
  TSEA  A    6 P 12:027:00000 14:113:00000 V - non-linearity
  TSEA  A    7 P 14:113:00000 21:346:00000 V - non-linearity
- TSEA  A    8 P 21:346:00000 00:000:00000 V -
+ TSEA  A    8 P 21:346:00000 00:000:00000 V - 
 *
  TSK2  A    1 P 00:000:00000 04:249:53839 P - EQ M7.4 - 118 km ESE of Shing?, Japan
  TSK2  A    2 P 04:249:53839 05:292:42283 P - EQ M6.3 - 25 km ENE of ?arai, Japan
@@ -7291,7 +7356,8 @@
  TSK2  A    8 P 12:030:05400 12:157:00000 P - antenna change
  TSK2  A    9 P 12:157:00000 18:167:00000 P - unknown
  TSK2  A   10 P 18:167:00000 21:146:17100 P - antenna change
- TSK2  A   11 P 21:146:17100 00:000:00000 P - 
+ TSK2  A   11 P 21:146:17100 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ TSK2  A   12 P 24:001:25809 00:000:00000 P - 
  TSK2  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  TSK2  A    2 P 11:070:20783 00:000:00000 V - 
 *
@@ -7306,7 +7372,8 @@
  TSKB  A    9 P 11:070:20783 11:182:02940 P - antenna change
  TSKB  A   10 P 11:182:02940 11:242:05220 P - antenna change
  TSKB  A   11 P 11:242:05220 18:167:00000 P - unknown
- TSKB  A   12 P 18:167:00000 00:000:00000 P - 
+ TSKB  A   12 P 18:167:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ TSKB  A   13 P 24:001:25809 00:000:00000 P - 
  TSKB  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  TSKB  A    2 P 11:070:20783 00:000:00000 V - 
 *
@@ -7339,7 +7406,8 @@
  TUC2  A    1 P 00:000:00000 04:288:36000 P - antenna change
  TUC2  A    2 P 04:288:36000 10:196:33000 P - antenna change
  TUC2  A    3 P 10:196:33000 13:285:47513 P - EQ M6.6 - 36 km W of Kíssamos, Greece
- TUC2  A    4 P 13:285:47513 00:000:00000 P - 
+ TUC2  A    4 P 13:285:47513 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
+ TUC2  A    5 P 23:037:04656 00:000:00000 P - 
  TUC2  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TUKT  A    1 P 00:000:00000 11:330:00000 P - unknown
@@ -7394,7 +7462,7 @@
  TXGA  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TXHO  A    1 P 00:000:00000 10:048:00000 P - antenna change
- TXHO  A    2 P 10:048:00000 00:000:00000 P -
+ TXHO  A    2 P 10:048:00000 00:000:00000 P - 
  TXHO  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TXKM  A    1 P 00:000:00000 13:318:56400 P - antenna change
@@ -7449,9 +7517,11 @@
  UCLU  A    2 P 00:153:82800 01:339:71100 P - antenna change
  UCLU  A    3 P 01:339:71100 07:124:00000 P - antenna change
  UCLU  A    4 P 07:124:00000 18:081:03840 P - antenna change
- UCLU  A    5 P 18:081:03840 00:000:00000 P - 
+ UCLU  A    5 P 18:081:03840 22:083:00000 P - unknown
+ UCLU  A    6 P 22:083:00000 00:000:00000 P - 
  UCLU  A    1 P 00:000:00000 07:124:00000 V - antenna change
- UCLU  A    2 P 07:124:00000 00:000:00000 V - 
+ UCLU  A    2 P 07:124:00000 18:081:03840 V - antenna change
+ UCLU  A    3 P 18:081:03840 00:000:00000 V - 
 *
  UCOM  A    1 P 00:000:00000 11:174:00000 P - unknown
  UCOM  A    2 P 11:174:00000 15:001:00000 P - unknown
@@ -7477,7 +7547,8 @@
  ULAB  A    3 P 11:263:00000 13:008:45480 P - receiver change
  ULAB  A    4 P 13:008:45480 18:263:19320 P - antenna change
  ULAB  A    5 P 18:263:19320 00:000:00000 P - 
- ULAB  A    1 P 00:000:00000 00:000:00000 V - 
+ ULAB  A    1 P 00:000:00000 18:263:19320 V - antenna change
+ ULAB  A    2 P 18:263:19320 00:000:00000 V - 
 *
  ULAG  A    1 P 00:000:00000 00:000:00000 P - 
  ULAG  A    1 P 00:000:00000 00:000:00000 V - 
@@ -7619,7 +7690,8 @@
  USUD  A    3 P 00:279:00000 04:249:53839 P - EQ M7.4 - 118 km ESE of Shing?, Japan
  USUD  A    4 P 04:249:53839 11:070:20783 P - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  USUD  A    5 P 11:070:20783 15:053:00000 P - unknown
- USUD  A    6 P 15:053:00000 00:000:00000 P - 
+ USUD  A    6 P 15:053:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
+ USUD  A    7 P 24:001:25809 00:000:00000 P - 
  USUD  A    1 P 00:000:00000 00:279:00000 V - receiver change
  USUD  A    2 P 00:279:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  USUD  A    3 P 11:070:20783 00:000:00000 V - 
@@ -7739,7 +7811,8 @@
 *
  VIGO  A    1 P 00:000:00000 07:082:00000 P - receiver change
  VIGO  A    2 P 07:082:00000 21:118:50400 P - antenna change
- VIGO  A    3 P 21:118:50400 00:000:00000 P - 
+ VIGO  A    3 P 21:118:50400 22:331:00000 P - switch to IGS20/igs20.atx?
+ VIGO  A    4 P 22:331:00000 00:000:00000 P - 
  VIGO  A    1 P 00:000:00000 00:000:00000 V - 
 *
  VIKC  A    1 P 00:000:00000 17:055:00000 P - unknown
@@ -7816,8 +7889,7 @@
  VTIS  A    4 P 12:035:03300 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
  VTIS  A    5 P 19:187:11993 20:255:69240 P - antenna change
  VTIS  A    6 P 20:255:69240 00:000:00000 P - 
- VTIS  A    1 P 00:000:00000 19:187:11993 V - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- VTIS  A    2 P 19:187:11993 00:000:00000 V - 
+ VTIS  A    1 P 00:000:00000 00:000:00000 V - 
 *
  VTSP  A    1 P 00:000:00000 21:336:52560 P - antenna change
  VTSP  A    2 P 21:336:52560 00:000:00000 P - 
@@ -7854,7 +7926,8 @@
  WANG  A    8 P 14:032:00000 15:220:00000 P - non-linearity
  WANG  A    9 P 15:220:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  WANG  A   10 P 16:318:39776 21:340:00000 P - non-linearity
- WANG  A   11 P 21:340:00000 00:000:00000 P - 
+ WANG  A   11 P 21:340:00000 23:242:00000 P - non-linearity
+ WANG  A   12 P 23:242:00000 00:000:00000 P - 
  WANG  A    1 P 00:000:00000 04:358:53944 V - EQ M8.1 - north of Macquarie Island
  WANG  A    2 P 04:358:53944 05:118:00000 V - non-linearity
  WANG  A    3 P 05:118:00000 09:029:00000 V - non-linearity
@@ -7864,7 +7937,8 @@
  WANG  A    7 P 14:032:00000 15:220:00000 V - non-linearity
  WANG  A    8 P 15:220:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  WANG  A    9 P 16:318:39776 21:340:00000 V - non-linearity
- WANG  A   10 P 21:340:00000 00:000:00000 V - 
+ WANG  A   10 P 21:340:00000 23:242:00000 V - non-linearity
+ WANG  A   11 P 23:242:00000 00:000:00000 V - 
 *
  WARA  A    1 P 00:000:00000 00:000:00000 P - 
  WARA  A    1 P 00:000:00000 00:000:00000 V - 
@@ -7960,14 +8034,14 @@
  WGTN  A    7 P 13:228:09066 14:298:00000 P - non-linearity
  WGTN  A    8 P 14:298:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  WGTN  A    9 P 16:318:39776 23:028:00000 P - non-linearity
- WGTN  A   10 P 23:028:00000 00:000:00000 P -
+ WGTN  A   10 P 23:028:00000 00:000:00000 P - 
  WGTN  A    1 P 00:000:00000 07:273:00000 V - non-linearity
  WGTN  A    2 P 07:273:00000 09:003:00000 V - non-linearity
  WGTN  A    3 P 09:003:00000 13:202:18572 V - EQ M6.5 - 38 km ESE of Blenheim, New Zealand
  WGTN  A    4 P 13:202:18572 14:298:00000 V - non-linearity
  WGTN  A    5 P 14:298:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  WGTN  A    6 P 16:318:39776 23:028:00000 V - non-linearity
- WGTN  A    7 P 23:028:00000 00:000:00000 V -
+ WGTN  A    7 P 23:028:00000 00:000:00000 V - 
 *
  WGTT  A    1 P 00:000:00000 00:181:10800 P - antenna change
  WGTT  A    2 P 00:181:10800 04:358:53944 P - EQ M8.1 - north of Macquarie Island
@@ -7978,14 +8052,14 @@
  WGTT  A    7 P 13:228:09066 14:298:00000 P - non-linearity
  WGTT  A    8 P 14:298:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  WGTT  A    9 P 16:318:39776 23:028:00000 P - non-linearity
- WGTT  A   10 P 23:028:00000 00:000:00000 P -
+ WGTT  A   10 P 23:028:00000 00:000:00000 P - 
  WGTT  A    1 P 00:000:00000 07:273:00000 V - non-linearity
  WGTT  A    2 P 07:273:00000 09:003:00000 V - non-linearity
  WGTT  A    3 P 09:003:00000 13:202:18572 V - EQ M6.5 - 38 km ESE of Blenheim, New Zealand
  WGTT  A    4 P 13:202:18572 14:298:00000 V - non-linearity
  WGTT  A    5 P 14:298:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  WGTT  A    6 P 16:318:39776 23:028:00000 V - non-linearity
- WGTT  A    7 P 23:028:00000 00:000:00000 V -
+ WGTT  A    7 P 23:028:00000 00:000:00000 V - 
 *
  WHC1  A    1 P 00:000:00000 99:289:35204 P - EQ M7.1 - Hector Mine, CA Earthquake
  WHC1  A    2 P 99:289:35204 12:072:82620 P - antenna change
@@ -8007,7 +8081,8 @@
  WHIT  A    6 P 02:307:79961 09:037:00000 P - antenna change
  WHIT  A    7 P 09:037:00000 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
  WHIT  A    8 P 18:023:34301 00:000:00000 P - 
- WHIT  A    1 P 00:000:00000 00:000:00000 V - 
+ WHIT  A    1 P 00:000:00000 18:023:34301 V - EQ M7.9 - 261 km SE of Chiniak, Alaska
+ WHIT  A    2 P 18:023:34301 00:000:00000 V - 
 *
  WHKT  A    1 P 00:000:00000 10:156:00000 P - unknown
  WHKT  A    2 P 10:156:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
@@ -8057,7 +8132,8 @@
  WIND  A    4 P 11:059:64800 14:309:00000 P - unknown
  WIND  A    5 P 14:309:00000 19:134:00000 P - antenna change
  WIND  A    6 P 19:134:00000 00:000:00000 P - 
- WIND  A    1 P 00:000:00000 00:000:00000 V - 
+ WIND  A    1 P 00:000:00000 19:134:00000 V - antenna change
+ WIND  A    2 P 19:134:00000 00:000:00000 V - 
 *
  WINN  A    1 P 00:000:00000 04:072:40500 P - antenna change
  WINN  A    2 P 04:072:40500 11:034:00000 P - unknown
@@ -8112,7 +8188,10 @@
  WSLR  A    2 P 13:005:32299 00:000:00000 V - 
 *
  WSRT  A    1 P 00:000:00000 98:076:54540 P - antenna change
- WSRT  A    2 P 98:076:54540 00:000:00000 P - 
+ WSRT  A    2 P 98:076:54540 23:341:50400 P - antenna change
+ WSRT  A    3 P 23:341:50400 23:364:00000 P - unknown
+ WSRT  A    4 P 23:364:00000 24:014:00000 P - unknown
+ WSRT  A    5 P 24:014:00000 00:000:00000 P - 
  WSRT  A    1 P 00:000:00000 00:000:00000 V - 
 *
  WTZ3  A    1 P 00:000:00000 00:000:00000 P - 
@@ -8174,7 +8253,8 @@
  WUHN  A   13 P 16:265:06000 00:000:00000 P - 
  WUHN  A    1 P 00:000:00000 00:000:00000 V - 
 *
- WVGB  A    1 P 00:000:00000 00:000:00000 P - 
+ WVGB  A    1 P 00:000:00000 23:142:58380 P - antenna change
+ WVGB  A    2 P 23:142:58380 00:000:00000 P - 
  WVGB  A    1 P 00:000:00000 00:000:00000 V - 
 *
  WWLG  A    1 P 00:000:00000 17:362:00000 P - unknown
@@ -8270,7 +8350,7 @@
  YIBL  A    2 P 06:316:81600 14:019:44400 P - receiver change
  YIBL  A    3 P 14:019:44400 22:208:00000 P - unknown
  YIBL  A    4 P 22:208:00000 23:232:00000 P - unknown
- YIBL  A    5 P 23:232:00000 00:000:00000 P -
+ YIBL  A    5 P 23:232:00000 00:000:00000 P - 
  YIBL  A    1 P 00:000:00000 06:316:81600 V - receiver change
  YIBL  A    2 P 06:316:81600 14:019:44400 V - receiver change
  YIBL  A    3 P 14:019:44400 00:000:00000 V - 

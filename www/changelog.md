@@ -1,5 +1,23 @@
 # **SARI changelog**
 
+# mayo 2024 [2024.05]
+
+### Fixed
+- taking into account the removed points when checking the validity of the resampling period
+- correcting the plate model name in the downloaded file
+- checking the kalman filter results before adding them in the downloaded file
+- correcting the estimation of the offset between the primary and secondary series
+- correcting the series averaging when different points have been removed for each series component
+
+### Changed
+- allowing resampling the secondary series down to periods slightly larger than the sampling rate
+- allow downloading the series after removing only the plate motion
+- changing the name and location of the downloaded remote files to avoid collisions between users
+- updating the color of the run KF button when changing the model components after a KF fit
+
+### Added
+
+
 # abril 2024 [2024.04]
 
 ### Fixed
