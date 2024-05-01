@@ -7830,11 +7830,11 @@ server <- function(input,output,session) {
       showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
     } else if (isTruthy(inputs$step)) {
       if (input$tunits == 1) {
-        x <- db1$original$x1[db1$original$status1 %in% T]
+        x <- db1$original$x1
       } else if (input$tunits == 2) {
-        x <- db1$original$x2[db1$original$status1 %in% T]
+        x <- db1$original$x2
       } else if (input$tunits == 3) {
-        x <- db1$original$x3[db1$original$status1 %in% T]
+        x <- db1$original$x3
       }
       db1$resampled <- NULL
       if (inputs$step > info$sampling0 && inputs$step <= (max(x) - min(x))/2) {
@@ -12707,29 +12707,29 @@ server <- function(input,output,session) {
       x_ <- x[1] + (p - 0.5)*s
       if (isTruthy(second)) {
         if (sigmas) {
-          y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2)
-          y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2)
-          y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2)
-          sy1_ <- sqrt(1/sum(1/sy1[index]^2))
-          sy2_ <- sqrt(1/sum(1/sy2[index]^2))
-          sy3_ <- sqrt(1/sum(1/sy3[index]^2))
+          y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2, na.rm = T)
+          y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2, na.rm = T)
+          y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2, na.rm = T)
+          sy1_ <- sqrt(1/sum(1/sy1[index]^2, na.rm = T))
+          sy2_ <- sqrt(1/sum(1/sy2[index]^2, na.rm = T))
+          sy3_ <- sqrt(1/sum(1/sy3[index]^2, na.rm = T))
         } else {
-          y1_ <- mean(y1[index])
-          y2_ <- mean(y2[index])
-          y3_ <- mean(y3[index])
+          y1_ <- mean(y1[index], na.rm = T)
+          y2_ <- mean(y2[index], na.rm = T)
+          y3_ <- mean(y3[index], na.rm = T)
         }
       } else {
         if (sigmas) {
-          y1_ <- weighted.mean(y1[index & db1$original$status1], 1/(sy1[index & db1$original$status1])^2)
-          y2_ <- weighted.mean(y2[index & db1$original$status2], 1/(sy2[index & db1$original$status2])^2)
-          y3_ <- weighted.mean(y3[index & db1$original$status3], 1/(sy3[index & db1$original$status3])^2)
-          sy1_ <- sqrt(1/sum(1/sy1[index & db1$original$status1]^2))
-          sy2_ <- sqrt(1/sum(1/sy2[index & db1$original$status2]^2))
-          sy3_ <- sqrt(1/sum(1/sy3[index & db1$original$status3]^2))
+          y1_ <- weighted.mean(y1[index & db1$original$status1], 1/(sy1[index & db1$original$status1])^2, na.rm = T)
+          y2_ <- weighted.mean(y2[index & db1$original$status2], 1/(sy2[index & db1$original$status2])^2, na.rm = T)
+          y3_ <- weighted.mean(y3[index & db1$original$status3], 1/(sy3[index & db1$original$status3])^2, na.rm = T)
+          sy1_ <- sqrt(1/sum(1/sy1[index & db1$original$status1]^2, na.rm = T))
+          sy2_ <- sqrt(1/sum(1/sy2[index & db1$original$status2]^2, na.rm = T))
+          sy3_ <- sqrt(1/sum(1/sy3[index & db1$original$status3]^2, na.rm = T))
         } else {
-          y1_ <- mean(y1[index & db1$original$status1])
-          y2_ <- mean(y2[index & db1$original$status2])
-          y3_ <- mean(y3[index & db1$original$status3])
+          y1_ <- mean(y1[index & db1$original$status1], na.rm = T)
+          y2_ <- mean(y2[index & db1$original$status2], na.rm = T)
+          y3_ <- mean(y3[index & db1$original$status3], na.rm = T)
         }
       }
     }
