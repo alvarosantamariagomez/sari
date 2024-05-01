@@ -3836,286 +3836,288 @@ server <- function(input,output,session) {
       withBusyIndicatorServer("runKF", {
         withProgress(message = 'Running Kalman Filter.',
                      detail = 'This may take a while ...', value = 0, {
-        x <- trans$x
-        y <- trans$y
-        if (isTruthy(input$correct_waveform)) {
-          if (length(trans$pattern) > 0) {
-            y <- y - trans$pattern
-          }
-        }
-        sy <- trans$sy
-        if (any(sy <= 0) || any(is.na(sy))) {
-          showNotification(HTML("Some errorbar values are not valid.<br>No weighting applied."), action = NULL, duration = 10, closeButton = T, id = "no_weighting", type = "error", session = getDefaultReactiveDomain())
-          sy <- rep(1, length(y))
-          updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
-        }
-        trans$mod <- trans$mod0 <- NULL
-        trans$res <- trans$res0 <- NULL
-        trans$kalman <- trans$kalman0 <- NULL
-        trans$kalman_unc <- trans$kalman_unc0 <- NULL
-        trans$results <- NULL
-        m <- model(x,y)
-        req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
-        trans$KFnames <- unlist(m$nouns)
-        if (!isTruthy(m) && length(m$apriori) < 2) {
-          showNotification(HTML("Not enough model components to run the KF.<br>Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_model", type = "error", session = getDefaultReactiveDomain())
-          info$run <- F
-          req(info$stop)
-        }
-        if (messages > 1) cat(file = stderr(), m$model, "\n")
-        apriori <- as.numeric(m$apriori)
-        unc_ini <- as.numeric(m$error)^2
-        #Measurement function
-        FFfunction <- function(x,k) {
-          e <- matrix(0, nrow = k, ncol = length(x))
-          e[k,] <- x
-          x <- trans$x
-          if (k == 1) {
-            obs <- e[1,1]
-          } else {
-            obs <- eval(parse(text = model_kf))
-          }
-          c(obs)
-        }
-        #State transition
-        if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-          model_kf <- m$model_kf_inst
-          GGfunction <- function(x, k) {
-            if (k != 1) {
-              x[1] <- x[1] + x[2] * (trans$x[k] - trans$x[k - 1])
-            }
-            c(x)
-          }
-        } else {
-          model_kf <- m$model_kf_mean
-          GGfunction <- function(x, k) {
-            c(x)
-          }
-        }
-        start.time <- Sys.time()
-        llikss <- function(x, data) {
-          if (messages > 2) cat(file = stderr(), "This iteration =", sqrt(exp(x[1])), "\n")
-          info$KFiter <- info$KFiter + 1
-          showNotification(paste0("Running KF iteration ", info$KFiter), action = NULL, duration = NULL, closeButton = T, id = "KF_iter", type = "warning", session = getDefaultReactiveDomain())
-          mod <- NULL
-          mod <- list(
-            m0 = apriori,
-            C0 = diag(unc_ini),
-            V = exp(x[1]),
-            W = diag(m$processNoise))
-          UKF(y = data, mod = mod, FFfunction = FFfunction, GGfunction = GGfunction, simplify = T, logLik = T)$logLik
-        }
-        sigmaR <- NULL
-        if (isTruthy(input$ObsError)) {
-          if (isTruthy(inputs$ObsError) && inputs$ObsError > 0) {
-            sigmaR <- inputs$ObsError
-          } else {
-            sigmaR <- info$noise/5
-            max_decimals <- signifdecimal(sigmaR, F) + 2
-            updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
-            showNotification("The input measurement error is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_obserror", type = "error", session = getDefaultReactiveDomain())
-          }
-        } else {
-          sigmaR <- info$noise/5
-          max_decimals <- signifdecimal(sigmaR, F) + 2
-          updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
-        }
-        if (isTruthy(input$errorm)) {
-          if (isTruthy(inputs$min_optirange)) {
-            min_optirange <- inputs$min_optirange
-          } else {
-            min_optirange <- info$noise/10
-            max_decimals <- signifdecimal(min_optirange, F) + 2
-            updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, min_optirange))
-          }
-          if (isTruthy(inputs$max_optirange)) {
-            max_optirange <- inputs$max_optirange
-          } else {
-            max_optirange <- info$noise*10
-            max_decimals <- signifdecimal(max_optirange, F) + 2
-            updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, max_optirange))
-          }
-          if (min_optirange > 0 && max_optirange > 0 && max_optirange > min_optirange) {
-            if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
-            info$KFiter <- 0
-            mod <- optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
-            removeNotification("KF_iter")
-            if (mod$convergence == 0) {
-              sigmaR <- sqrt(exp(mod$par))
-              seParms <- sqrt(diag(solve(mod$hessian)))
-              max_decimals <- signifdecimal(sigmaR, F) + 2
-              updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
-              if (isTruthy(seParms)) {
-                rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
-                max_decimals <- max(signifdecimal(rangoR, F)) + 2
-                updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, rangoR[1]))
-                updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, rangoR[2]))
-                updateCheckboxInput(inputId = "errorm", value = F)
-              }
-            }
-          } else {
-            showNotification(HTML("The input measurement error bounds are not valid.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
-          }
-        }
-        if (!isTruthy(sigmaR)) {
-          sigmaR <- info$noise/5
-          max_decimals <- signifdecimal(rangoR, F) + 2
-          updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
-        }
-        if (isTruthy(input$sigmas)) {
-          sigmaR <- sigmaR * sy / median(sy)
-        } else {
-          sigmaR <- rep(sigmaR, length(trans$y))
-        }
-        ex1 <- list(m0 = apriori, C0 = diag(unc_ini), V = sigmaR^2, W = diag(m$processNoise))
-        kfs <- NULL
-        if (any(is.na(ex1$C0))) {
-          showNotification(HTML("Missing information required on the a priori state to run the Kalman filter.<br>Check the input values"), action = NULL, duration = 10, closeButton = T, id = "bad_a_priori_state", type = "error", session = getDefaultReactiveDomain())
-          info$run <- F
-          req(info$stop)
-        }
-        # EKF
-        if (input$kf == 1) {
-          if (messages > 0) cat(file = stderr(), "EKF fit", "\n")
-          kf <- NULL
-          kf <- try(dlmExtFilter(y = y, mod = ex1, GGfunction = GGfunction, FFfunction = FFfunction), silent = F)
-          if (!inherits(kf,"try-error") && !is.null(kf)) {
-            kfs <- NULL
-            kfs <- try(dlmExtSmooth(kf), silent = F)
-            if (!inherits(kfs,"try-error") && !is.null(kfs)) {
-              varcov_kfs <- dlmSvd2var(kfs$U.S, kfs$D.S)
-              kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
-              for (component in seq_len(ncol(kfs$s))) {
-                kfs_unc[,component] <- unlist(sapply(varcov_kfs[2:length(varcov_kfs)], function(x) diag(x)[component]))
-              }
-              if (any(kfs_unc < 0)) {
-                kfs_unc[kfs_unc < 0] <- NA
-                showNotification(HTML("Negative estimated state variances were found and changed to NA.<br>Something went wrong with the EKF fit."), action = NULL, duration = 15, closeButton = T, id = "bad_variance", type = "warning", session = getDefaultReactiveDomain())
-              }
-            } else {
-              trans$results <- NULL
-              trans$res <- NULL
-              trans$mod <- NULL
-              info$run <- F
-              showNotification(HTML("Unable to run the EKF smoother.<br>The error covariances of the initial state may be zero or too large"), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            trans$results <- NULL
-            trans$res <- NULL
-            trans$mod <- NULL
-            info$run <- F
-            showNotification(HTML("Unable to fit the EKF.<br>Change the model parameters."), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
-          }
-        # UKF
-        } else if (input$kf == 2) {
-          if (messages > 0) cat(file = stderr(), "UKF fit", "\n")
-          kf <- NULL
-          kf <- try(UKF(y = y, mod = ex1, sqrtMethod = "svd", GGfunction = GGfunction, FFfunction = FFfunction), silent = F)
-          if (!inherits(kf,"try-error") && !is.null(kf)) {
-            kfs <- NULL
-            kfs <- try(UKFsmooth(kf, GGfunction = GGfunction), silent = F)
-            if (!inherits(kfs,"try-error") && !is.null(kfs)) {
-              kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
-              for (component in seq_len(ncol(kfs$s))) {
-                kfs_unc[,component] <- unlist(sapply(kfs$S[2:length(kfs$S)], function(x) diag(x)[component]))
-              }
-              if (any(kfs_unc < 0)) {
-                kfs_unc[kfs_unc < 0] <- NA
-                showNotification(HTML("Negative estimated state variances were found and changed to NA.<br>Something went wrong with the UKF fit."), action = NULL, duration = 15, closeButton = T, id = "bad_variance", type = "warning", session = getDefaultReactiveDomain())
-              }
-            } else {
-              trans$results <- NULL
-              trans$res <- NULL
-              trans$mod <- NULL
-              info$run <- F
-              showNotification(HTML("Unable to run the UKF smoother.<br>The error covariances of the initial state may be zero or too large."), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else {
-            trans$results <- NULL
-            trans$res <- NULL
-            trans$mod <- NULL
-            info$run <- F
-            showNotification(HTML("Unable to fit the UKF.<br>Change the model parameters."), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
-          }
-        }
-        # Common EKF & UKF
-        if (isTruthy(kfs$s)) {
-          info$run <- T
-          e <- kfs$s[2:nrow(kfs$s),]
-          if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-            trans$mod <- sapply(1:length(x), function(k) if (k == 1) { e[1,1] } else { eval(parse(text = sub("+ e[k,2]*(x[k] - x[k-1])", "", model_kf, fixed = T))) })
-          } else {
-            trans$mod <- sapply(1:length(x), function(k) eval(parse(text = model_kf)) )
-          }
-          trans$mod0 <- db1[[info$db1]][[paste0("status",input$tab)]]
-          trans$mod0[which(trans$mod0)] <- trans$mod
-          trans$mod0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
-          trans$res <- y - trans$mod
-          trans$res0 <- db1[[info$db1]][[paste0("status",input$tab)]]
-          trans$res0[which(trans$res0)] <- trans$res
-          trans$mod0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
-          if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
-            trans$mod <- trans$mod0 <- trans$mod + trans$pattern
-          }
-          # Computing time-variable mean rate
-          # if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
-          #   mean_rate <- lapply(1:length(x), function(i) coefficients(summary(lm(e[1:i,2]~1,weights = 1/kfs_unc[1:i,1])))[1:2])
-          #   mean_rate[[1]][2] <- kfs_unc[1,2]
-          #   e <- cbind(e,sapply(mean_rate, "[", 1))
-          #   colnames(e) <- c(m$nouns, "MeanRate")
-          #   kfs_unc <- cbind(kfs_unc,sapply(mean_rate, "[", 2))
-          #   colnames(kfs_unc) <- c(m$nouns, "MeanRate")
-          # } else {
-            colnames(e) <- m$nouns
-            colnames(kfs_unc) <- m$nouns
-          # }
-          trans$kalman <- e
-          trans$kalman0 <- matrix(db1[[info$db1]][[paste0("status", input$tab)]], nrow = length(db1[[info$db1]][[paste0("status", input$tab)]]), ncol = ncol(trans$kalman))
-          trans$kalman0[which(trans$kalman0)] <- trans$kalman
-          trans$kalman0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
-          colnames(trans$kalman0) <- colnames(trans$kalman)
-          trans$kalman_unc <- sqrt(kfs_unc)
-          trans$kalman_unc0 <- matrix(db1[[info$db1]][[paste0("status", input$tab)]], nrow = length(db1[[info$db1]][[paste0("status", input$tab)]]), ncol = ncol(trans$kalman_unc))
-          trans$kalman_unc0[which(trans$kalman_unc0)] <- trans$kalman_unc
-          trans$kalman_unc0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
-          colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
-          trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
-          trans$kalman_info <- m
-          trans$equation <- sub("y ~","Model =",m$model)
-          end.time <- Sys.time()
-          time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), "Total time =", time.taken, "\n")
-          db1[[info$db1]]$status.kf <- db1[[info$db1]][[paste0("status",input$tab)]]
-          if (isTruthy(inputs$waveformPeriod)) {
-            save_value <- inputs$waveformPeriod
-            updateTextInput(session, "waveformPeriod", value = "")
-            updateTextInput(session, "waveformPeriod", value = save_value)
-          }
-          # Plot instantaneous rate
-          output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
-            if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
-              if (input$tunits == 1) {
-                period <- "day"
-              } else if (input$tunits == 2) {
-                period <- "week"
-              } else if (input$tunits == 3) {
-                period <- "year"
-              }
-              if (input$sunits == 1) {
-                units <- paste0("(m/",period,")")
-              } else if (input$sunits == 2) {
-                units <- paste0("(mm/",period,")")
-              } else {
-                units <- ""
-              }
-              title <- "Instantaneous linear rate"
-              plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol,F)
-              title(ylab = units)
-              title(title, line = 3)
-            }
-          }, width = reactive(info$width))
-        }
-      })
+                       x <- trans$x
+                       y <- trans$y
+                       if (isTruthy(input$correct_waveform)) {
+                         if (length(trans$pattern) > 0) {
+                           y <- y - trans$pattern
+                         }
+                       }
+                       sy <- trans$sy
+                       if (any(sy <= 0) || any(is.na(sy))) {
+                         showNotification(HTML("Some errorbar values are not valid.<br>No weighting applied."), action = NULL, duration = 10, closeButton = T, id = "no_weighting", type = "error", session = getDefaultReactiveDomain())
+                         sy <- rep(1, length(y))
+                         updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
+                       }
+                       trans$mod <- trans$mod0 <- NULL
+                       trans$res <- trans$res0 <- NULL
+                       trans$kalman <- trans$kalman0 <- NULL
+                       trans$kalman_unc <- trans$kalman_unc0 <- NULL
+                       trans$results <- NULL
+                       m <- model(x,y)
+                       req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
+                       trans$KFnames <- unlist(m$nouns)
+                       if (!isTruthy(m) && length(m$apriori) < 2) {
+                         showNotification(HTML("Not enough model components to run the KF.<br>Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_model", type = "error", session = getDefaultReactiveDomain())
+                         info$run <- F
+                         req(info$stop)
+                       }
+                       if (messages > 1) cat(file = stderr(), m$model, "\n")
+                       apriori <- as.numeric(m$apriori)
+                       unc_ini <- as.numeric(m$error)^2
+                       #Measurement function
+                       FFfunction <- function(x,k) {
+                         e <- matrix(0, nrow = k, ncol = length(x))
+                         e[k,] <- x
+                         x <- trans$x
+                         if (k == 1) {
+                           obs <- e[1,1]
+                         } else {
+                           obs <- eval(parse(text = model_kf))
+                         }
+                         c(obs)
+                       }
+                       #State transition
+                       if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+                         model_kf <- m$model_kf_inst
+                         GGfunction <- function(x, k) {
+                           if (k != 1) {
+                             x[1] <- x[1] + x[2] * (trans$x[k] - trans$x[k - 1])
+                           }
+                           c(x)
+                         }
+                       } else {
+                         model_kf <- m$model_kf_mean
+                         GGfunction <- function(x, k) {
+                           c(x)
+                         }
+                       }
+                       start.time <- Sys.time()
+                       llikss <- function(x, data) {
+                         if (messages > 2) cat(file = stderr(), "This iteration =", sqrt(exp(x[1])), "\n")
+                         info$KFiter <- info$KFiter + 1
+                         showNotification(paste0("Running KF iteration ", info$KFiter), action = NULL, duration = NULL, closeButton = T, id = "KF_iter", type = "warning", session = getDefaultReactiveDomain())
+                         mod <- NULL
+                         mod <- list(
+                           m0 = apriori,
+                           C0 = diag(unc_ini),
+                           V = exp(x[1]),
+                           W = diag(m$processNoise))
+                         UKF(y = data, mod = mod, FFfunction = FFfunction, GGfunction = GGfunction, simplify = T, logLik = T)$logLik
+                       }
+                       sigmaR <- NULL
+                       if (isTruthy(input$ObsError)) {
+                         if (isTruthy(inputs$ObsError) && inputs$ObsError > 0) {
+                           sigmaR <- inputs$ObsError
+                         } else {
+                           sigmaR <- info$noise/5
+                           max_decimals <- signifdecimal(sigmaR, F) + 2
+                           updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
+                           showNotification("The input measurement error is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_obserror", type = "error", session = getDefaultReactiveDomain())
+                         }
+                       } else {
+                         sigmaR <- info$noise/5
+                         max_decimals <- signifdecimal(sigmaR, F) + 2
+                         updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
+                       }
+                       if (isTruthy(input$errorm)) {
+                         if (isTruthy(inputs$min_optirange)) {
+                           min_optirange <- inputs$min_optirange
+                         } else {
+                           min_optirange <- info$noise/10
+                           max_decimals <- signifdecimal(min_optirange, F) + 2
+                           updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, min_optirange))
+                         }
+                         if (isTruthy(inputs$max_optirange)) {
+                           max_optirange <- inputs$max_optirange
+                         } else {
+                           max_optirange <- info$noise*10
+                           max_decimals <- signifdecimal(max_optirange, F) + 2
+                           updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, max_optirange))
+                         }
+                         if (min_optirange > 0 && max_optirange > 0 && max_optirange > min_optirange) {
+                           if (messages > 0) cat(file = stderr(), "Optimizing measurement noise", "\n")
+                           info$KFiter <- 0
+                           mod <- optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
+                           removeNotification("KF_iter")
+                           if (mod$convergence == 0) {
+                             sigmaR <- sqrt(exp(mod$par))
+                             seParms <- sqrt(diag(solve(mod$hessian)))
+                             max_decimals <- signifdecimal(sigmaR, F) + 2
+                             updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
+                             if (isTruthy(seParms)) {
+                               rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
+                               max_decimals <- max(signifdecimal(rangoR, F)) + 2
+                               updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, rangoR[1]))
+                               updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, rangoR[2]))
+                               updateCheckboxInput(inputId = "errorm", value = F)
+                             }
+                           }
+                         } else {
+                           showNotification(HTML("The input measurement error bounds are not valid.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
+                         }
+                       }
+                       if (!isTruthy(sigmaR)) {
+                         sigmaR <- info$noise/5
+                         max_decimals <- signifdecimal(rangoR, F) + 2
+                         updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
+                       }
+                       if (isTruthy(input$sigmas)) {
+                         sigmaR <- sigmaR * sy / median(sy)
+                       } else {
+                         sigmaR <- rep(sigmaR, length(trans$y))
+                       }
+                       ex1 <- list(m0 = apriori, C0 = diag(unc_ini), V = sigmaR^2, W = diag(m$processNoise))
+                       kfs <- NULL
+                       if (any(is.na(ex1$C0))) {
+                         showNotification(HTML("Missing information required on the a priori state to run the Kalman filter.<br>Check the input values"), action = NULL, duration = 10, closeButton = T, id = "bad_a_priori_state", type = "error", session = getDefaultReactiveDomain())
+                         info$run <- F
+                         req(info$stop)
+                       }
+                       # EKF
+                       if (input$kf == 1) {
+                         if (messages > 0) cat(file = stderr(), "EKF fit", "\n")
+                         kf <- NULL
+                         kf <- try(dlmExtFilter(y = y, mod = ex1, GGfunction = GGfunction, FFfunction = FFfunction), silent = F)
+                         if (!inherits(kf,"try-error") && !is.null(kf)) {
+                           kfs <- NULL
+                           kfs <- try(dlmExtSmooth(kf), silent = F)
+                           if (!inherits(kfs,"try-error") && !is.null(kfs)) {
+                             varcov_kfs <- dlmSvd2var(kfs$U.S, kfs$D.S)
+                             kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
+                             for (component in seq_len(ncol(kfs$s))) {
+                               kfs_unc[,component] <- unlist(sapply(varcov_kfs[2:length(varcov_kfs)], function(x) diag(x)[component]))
+                             }
+                             if (any(kfs_unc < 0)) {
+                               kfs_unc[kfs_unc < 0] <- NA
+                               showNotification(HTML("Negative estimated state variances were found and changed to NA.<br>Something went wrong with the EKF fit."), action = NULL, duration = 15, closeButton = T, id = "bad_variance", type = "warning", session = getDefaultReactiveDomain())
+                             }
+                           } else {
+                             trans$results <- NULL
+                             trans$res <- NULL
+                             trans$mod <- NULL
+                             info$run <- F
+                             showNotification(HTML("Unable to run the EKF smoother.<br>The error covariances of the initial state may be zero or too large"), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
+                           }
+                         } else {
+                           trans$results <- NULL
+                           trans$res <- NULL
+                           trans$mod <- NULL
+                           info$run <- F
+                           showNotification(HTML("Unable to fit the EKF.<br>Change the model parameters."), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
+                         }
+                         # UKF
+                       } else if (input$kf == 2) {
+                         if (messages > 0) cat(file = stderr(), "UKF fit", "\n")
+                         kf <- NULL
+                         kf <- try(UKF(y = y, mod = ex1, sqrtMethod = "svd", GGfunction = GGfunction, FFfunction = FFfunction), silent = F)
+                         if (!inherits(kf,"try-error") && !is.null(kf)) {
+                           kfs <- NULL
+                           kfs <- try(UKFsmooth(kf, GGfunction = GGfunction), silent = F)
+                           if (!inherits(kfs,"try-error") && !is.null(kfs)) {
+                             kfs_unc <- matrix(data = 0, nrow = nrow(kfs$s) - 1, ncol = ncol(kfs$s))
+                             for (component in seq_len(ncol(kfs$s))) {
+                               kfs_unc[,component] <- unlist(sapply(kfs$S[2:length(kfs$S)], function(x) diag(x)[component]))
+                             }
+                             if (any(kfs_unc < 0)) {
+                               kfs_unc[kfs_unc < 0] <- NA
+                               showNotification(HTML("Negative estimated state variances were found and changed to NA.<br>Something went wrong with the UKF fit."), action = NULL, duration = 15, closeButton = T, id = "bad_variance", type = "warning", session = getDefaultReactiveDomain())
+                             }
+                           } else {
+                             trans$results <- NULL
+                             trans$res <- NULL
+                             trans$mod <- NULL
+                             info$run <- F
+                             showNotification(HTML("Unable to run the UKF smoother.<br>The error covariances of the initial state may be zero or too large."), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
+                           }
+                         } else {
+                           trans$results <- NULL
+                           trans$res <- NULL
+                           trans$mod <- NULL
+                           info$run <- F
+                           showNotification(HTML("Unable to fit the UKF.<br>Change the model parameters."), action = NULL, duration = 10, closeButton = T, id = "bad_kf", type = "error", session = getDefaultReactiveDomain())
+                         }
+                       }
+                       # Common EKF & UKF
+                       if (isTruthy(kfs$s)) {
+                         info$run <- T
+                         e <- kfs$s[2:nrow(kfs$s),]
+                         if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+                           trans$mod <- sapply(1:length(x), function(k) if (k == 1) { e[1,1] } else { eval(parse(text = sub("+ e[k,2]*(x[k] - x[k-1])", "", model_kf, fixed = T))) })
+                         } else {
+                           trans$mod <- sapply(1:length(x), function(k) eval(parse(text = model_kf)) )
+                         }
+                         trans$mod0 <- db1[[info$db1]][[paste0("status",input$tab)]]
+                         trans$mod0[which(trans$mod0)] <- trans$mod
+                         trans$mod0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
+                         trans$res <- y - trans$mod
+                         trans$res0 <- db1[[info$db1]][[paste0("status",input$tab)]]
+                         trans$res0[which(trans$res0)] <- trans$res
+                         trans$mod0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
+                         if (isTruthy(input$correct_waveform) && length(trans$pattern) > 0) {
+                           trans$mod <- trans$mod0 <- trans$mod + trans$pattern
+                         }
+                         # Computing time-variable mean rate
+                         # if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
+                         #   mean_rate <- lapply(1:length(x), function(i) coefficients(summary(lm(e[1:i,2]~1,weights = 1/kfs_unc[1:i,1])))[1:2])
+                         #   mean_rate[[1]][2] <- kfs_unc[1,2]
+                         #   e <- cbind(e,sapply(mean_rate, "[", 1))
+                         #   colnames(e) <- c(m$nouns, "MeanRate")
+                         #   kfs_unc <- cbind(kfs_unc,sapply(mean_rate, "[", 2))
+                         #   colnames(kfs_unc) <- c(m$nouns, "MeanRate")
+                         # } else {
+                         colnames(e) <- m$nouns
+                         colnames(kfs_unc) <- m$nouns
+                         # }
+                         trans$kalman <- e
+                         trans$kalman0 <- matrix(db1[[info$db1]][[paste0("status", input$tab)]], nrow = length(db1[[info$db1]][[paste0("status", input$tab)]]), ncol = ncol(trans$kalman))
+                         trans$kalman0[which(trans$kalman0)] <- trans$kalman
+                         trans$kalman0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
+                         colnames(trans$kalman0) <- colnames(trans$kalman)
+                         trans$kalman_unc <- sqrt(kfs_unc)
+                         trans$kalman_unc0 <- matrix(db1[[info$db1]][[paste0("status", input$tab)]], nrow = length(db1[[info$db1]][[paste0("status", input$tab)]]), ncol = ncol(trans$kalman_unc))
+                         trans$kalman_unc0[which(trans$kalman_unc0)] <- trans$kalman_unc
+                         trans$kalman_unc0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
+                         colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
+                         trans$results <- print(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), digits = 4)
+                         trans$kalman_info <- m
+                         trans$equation <- sub("y ~","Model =",m$model)
+                         end.time <- Sys.time()
+                         time.taken <- end.time - start.time
+                         if (messages > 2) cat(file = stderr(), "Total time =", time.taken, "\n")
+                         db1[[info$db1]]$status.kf <- db1[[info$db1]][[paste0("status",input$tab)]]
+                         if (isTruthy(inputs$waveformPeriod)) {
+                           save_value <- inputs$waveformPeriod
+                           updateTextInput(session, "waveformPeriod", value = "")
+                           updateTextInput(session, "waveformPeriod", value = save_value)
+                         }
+                         # Plot instantaneous rate
+                         output$rate1 <- output$rate2 <- output$rate3 <- renderPlot({
+                           if ("Linear" %in% input$model && length(trans$kalman) > 0 && trans$kalman_info$processNoise[2] > 0) {
+                             if (input$tunits == 1) {
+                               period <- "day"
+                             } else if (input$tunits == 2) {
+                               period <- "week"
+                             } else if (input$tunits == 3) {
+                               period <- "year"
+                             }
+                             if (input$sunits == 1) {
+                               units <- paste0("(m/",period,")")
+                             } else if (input$sunits == 2) {
+                               units <- paste0("(mm/",period,")")
+                             } else {
+                               units <- ""
+                             }
+                             title <- "Instantaneous linear rate"
+                             plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol,F)
+                             title(ylab = units)
+                             title(title, line = 3)
+                           }
+                         }, width = reactive(info$width))
+                         trans$model_old <- input$model
+                         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
+                       }
+                     })
       })
     }
   })
@@ -8428,6 +8430,12 @@ server <- function(input,output,session) {
       trans$equation <- NULL
       trans$midas_vel <- NULL
       trans$midas_all <- NULL
+    } else if (input$fitType == 2 && length(trans$kalman) > 0)  {
+      if (setequal(input$model,trans$model_old)) {
+        updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
+      } else {
+        updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
+      }
     }
     trans$mle <- F
     trans$verif <- NULL
