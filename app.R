@@ -4128,10 +4128,9 @@ server <- function(input,output,session) {
     } else {
       units <- ""
     }
+    title <- "Model residuals"
     if (!is.null(trans$filter)) {
-      title <- paste("Obs-Model residuals", units, "& Filter-Model residuals (blue)")
-    } else {
-      title <- paste("Model residuals", units)
+      title <- paste(title, "(black) & Filter-Model residuals (yellow)")
     }
     if (length(trans$reserror) > 0) {
       ey <- trans$reserror
