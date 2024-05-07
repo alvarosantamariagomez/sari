@@ -2132,7 +2132,8 @@ server <- function(input,output,session) {
                          product1 = NULL,
                          db1 = "stop", db2 = "stop",
                          trendRef = F, PolyRef = F, periodRef = F, noLS = F,
-                         plateFile = NULL)
+                         plateFile = NULL,
+                         overview = F)
   
   # 4. database:
   #   1 = original
@@ -3339,7 +3340,7 @@ server <- function(input,output,session) {
     }
     js$checkPopup()
     shinyjs::delay(100, {
-      if (isTRUE(isolate(input$overview))) {
+      if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
         shinyjs::click("plotAll")
       }
     })
@@ -8807,6 +8808,7 @@ server <- function(input,output,session) {
         lines(c(x[valid3][1],x[valid3][length(x[valid3])]),c(y3[valid3][centery] + trans$gia[3]*(x[valid3][1] - x[valid3][centerx]), y3[valid3][centery] + trans$gia[3]*(x[valid3][length(x[valid3])] - x[valid3][centerx])), col = SARIcolors[4], lwd = 3)
       }
       dev.off()
+      info$overview <- T
       js$showPopup(sub(pattern = "www/", replacement = "", x = fileout))
     }
   })
