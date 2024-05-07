@@ -12859,11 +12859,11 @@ server <- function(input,output,session) {
             }
             if (series == 1) {
               output$station1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
               output$station2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 2) {
                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -12894,11 +12894,11 @@ server <- function(input,output,session) {
               stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
               if (series == 1) {
                 output$station1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
                 output$station2 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -12943,11 +12943,11 @@ server <- function(input,output,session) {
             stations_available <- read.table("www/JPL_database.txt")$V1
             if (series == 1) {
               output$station1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
               output$station2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 2) {
                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -12982,11 +12982,11 @@ server <- function(input,output,session) {
               stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
               if (series == 1) {
                 output$station1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
                 output$station2 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -13027,11 +13027,11 @@ server <- function(input,output,session) {
                 stations_available <- dir_contents$stations[[code]]
                 if (series == 1) {
                   output$station1 <- renderUI({
-                    suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })  
                 } else if (series == 2) {
                   output$station2 <- renderUI({
-                    suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
                   if (input$sunits == 2) {
                     updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -13071,11 +13071,11 @@ server <- function(input,output,session) {
             }
             if (series == 1) {
               output$station1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
               output$station2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 2) {
                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -13108,11 +13108,11 @@ server <- function(input,output,session) {
               stations_available <- sub(pattern, "", grep(pattern, dir_contents, ignore.case = F, value = T))
               if (series == 1) {
                 output$station1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
                 output$station2 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -13170,11 +13170,11 @@ server <- function(input,output,session) {
               if (length(stations_available) > 0) {
                 if (series == 1) {
                   output$station1 <- renderUI({
-                    suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })  
                 } else if (series == 2) {
                   output$station2 <- renderUI({
-                    suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
                   if (input$sunits == 2) {
                     updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -13234,11 +13234,11 @@ server <- function(input,output,session) {
             }
             if (series == 1) {
               output$station1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
               output$station2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 1) {
                 updateTextInput(session, inputId = "scaleFactor", value = "0.001")
@@ -13325,11 +13325,11 @@ server <- function(input,output,session) {
             stations_available <- readLines("www/EOSTLS_database.txt", warn = F)
             if (series == 1) {
               output$station1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
               output$station2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$tunits == 1) {
                 step <- 1
@@ -13375,11 +13375,11 @@ server <- function(input,output,session) {
               stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
               if (series == 1) {
                 output$station1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
                 output$station2 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
@@ -13391,11 +13391,11 @@ server <- function(input,output,session) {
                 stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
                 if (series == 1) {
                   output$station1 <- renderUI({
-                    suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })  
                 } else if (series == 2) {
                   output$station2 <- renderUI({
-                    suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
                 }
               } else {
@@ -13438,11 +13438,11 @@ server <- function(input,output,session) {
             stations_available <- do.call(paste, c(read.table("www/PSMSL_database.txt", sep = ";", quote = "@")[,c(1,2)], sep = ": "))
             if (series == 1) {
               output$station1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
               output$station2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station:", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
             }
           } else {
