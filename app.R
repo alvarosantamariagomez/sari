@@ -9063,7 +9063,7 @@ server <- function(input,output,session) {
     }
   }, priority = 4)
   
-  # Observe cut series ####
+  # Observe truncate ####
   observeEvent(c(inputs$cutStart, inputs$cutEnd), {
     req(db1[[info$db1]], input$cut)
     removeNotification("bad_cut")
@@ -9071,8 +9071,10 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), "Cutting series:", inputs$cutStart, "-", inputs$cutEnd, "\n")
       start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, trans$x[1])
       end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, trans$x[length(trans$x)])
+      start <- ifelse(start < trans$x[1], trans$x[1], start)
+      end <- ifelse(end > trans$x[length(trans$x)], trans$x[length(trans$x)], end)
       if (end <= start) {
-        shinyjs::delay(500, showNotification(HTML("The End epoch is equal or smaller than the Start epoch.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
+        shinyjs::delay(500, showNotification(HTML("The End epoch or the end of the series is equal or smaller than the Start epoch or the start of the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
       }
       if (isTruthy(input$permanent)) {
