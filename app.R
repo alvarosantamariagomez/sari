@@ -2079,7 +2079,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 server <- function(input,output,session) {
   
-  mySession <- ""
+  mySession <- NULL
   
   toggleClass( # disabling clicking on SARI name (panic button)
     class = "disabled",
@@ -2258,7 +2258,7 @@ server <- function(input,output,session) {
           }
           info$welcome <- F
         }
-        mySession <- as.integer(runif(n = 1, min = 1, max = 999999))
+        mySession <<- as.integer(runif(n = 1, min = 1, max = 999999))
         load_data(2)
       }
       output$station1 <- renderUI({
