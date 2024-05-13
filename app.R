@@ -2079,7 +2079,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 server <- function(input,output,session) {
   
-  mySession <- as.integer(runif(n = 1, min = 1, max = 999999))
+  mySession <- ""
   
   toggleClass( # disabling clicking on SARI name (panic button)
     class = "disabled",
@@ -2223,6 +2223,7 @@ server <- function(input,output,session) {
         load_data(0)
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
+        
       } else {
         shinyjs::delay(100, {
           if (isTRUE(input$refreshed)) {
@@ -2257,6 +2258,7 @@ server <- function(input,output,session) {
           }
           info$welcome <- F
         }
+        mySession <- as.integer(runif(n = 1, min = 1, max = 999999))
         load_data(2)
       }
       output$station1 <- renderUI({
