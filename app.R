@@ -352,7 +352,7 @@ tabContents <- function(tabNum) {
 }
 
 # Shiny/R options
-options(shiny.fullstacktrace = T, shiny.maxRequestSize = 30*1024^2, width = 280, max.print = 50)
+options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 # options(shiny.trace = T)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 Sys.setlocale('LC_ALL','C')
@@ -2164,7 +2164,8 @@ server <- function(input,output,session) {
                           model_old = NULL, offsetEpochs = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL,
                           plate = NULL, plate2 = NULL, gia = NULL, gia2 = NULL,
-                          entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL)
+                          entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL,
+                          slope = NULL)
 
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -4762,13 +4763,14 @@ server <- function(input,output,session) {
         } else {
           c <- max(which(trans$spectra_old))
           p <- trans$psd[,c]
-          # slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
-          # if (isTruthy(slope) && !inherits(slope,"try-error")) {
-          #   slope$coef[2] <- -1*slope$coef[2]
-          #   regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
-          #   lines(1/trans$fs, regression, col = SARIcolors[c], lwd = 3)
-          #   text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[c])
-          # }
+          slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
+          if (isTruthy(slope) && !inherits(slope,"try-error")) {
+            slope$coef[2] <- -1*slope$coef[2]
+            trans$slope <- slope$coef[2]
+            regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
+            lines(1/trans$fs, regression, col = SARIcolors[c], lwd = 3)
+            text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[c])
+          }
           lombx <- c(inputs$long_period,inputs$short_period)
           longest <- ifelse(length(p) > 200, as.integer(length(p)/100), 10)
           start <- median(head(p, n = longest))
@@ -5292,10 +5294,15 @@ server <- function(input,output,session) {
                          upper <- apriori + log(3)
                          lower <- apriori - log(10)
                          if (isTruthy(info$powerl)) {
-                           apriori <- c(apriori, -4) # a priori spectral index (= k - 3)
+                           if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
+                             slope <- trans$slope - 3
+                           } else {
+                             slope <- -4
+                           }
+                           apriori <- c(apriori, slope) # a priori spectral index (= k - 3)
                            typsize <- c(typsize, 1)
                            upper <- c(upper, -3) # max expected spectral index (= k - 3)
-                           lower <- c(lower, -6) # min expected spectral index (= k - 3)
+                           lower <- c(lower, -7) # min expected spectral index (= k - 3)
                          }
                          # creating non reactive variables for running on a cluster
                          white <- info$white
@@ -5335,30 +5342,30 @@ server <- function(input,output,session) {
                            #                 hessian = hessian,
                            #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
                            # )
-                           
-                           if (isTruthy(info$powerl)) {
-                             # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
-                             method <- "Nelder & Mead"
-                             fitmle <- optim(par = apriori,
-                                             fn = loglik_global,
-                                             hessian = hessian,
-                                             control = list(fnscale = 1, reltol = 1e-2)
-                             )
-                           
-                           } else {
-                             # Quasi-Newton method as in optim, but seems to run faster
-                             method <- "NLM"
-                             fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                           fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
-                                           stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
-                             )
-                             setProgress(0.75)
-                             if (fitmle$code < 4) { # transforming nlm results into optim format
-                               fitmle$convergence <- 0
-                               fitmle$value <- fitmle$minimum
-                               fitmle$par <- fitmle$estimate
-                             }
-                           }
+
+                            # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
+                              # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
+                              # method <- "Nelder & Mead"
+                              # fitmle <- optim(par = apriori,
+                              #                 fn = loglik_global,
+                              #                 hessian = hessian,
+                              #                 control = list(fnscale = 1, reltol = 1e-2)
+                              # )
+
+                            # } else {
+                              # Quasi-Newton method as in optim, but seems to run faster
+                              method <- "NLM"
+                              fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
+                                            fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
+                                            stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
+                              )
+                              setProgress(0.75)
+                              if (fitmle$code < 4) { # transforming nlm results into optim format
+                                fitmle$convergence <- 0
+                                fitmle$value <- fitmle$minimum
+                                fitmle$par <- fitmle$estimate
+                              }
+                            # }
                            
                            if (fitmle$convergence == 0) {
                              convergence <- 0
@@ -9503,6 +9510,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$white, input$flicker, input$randomw, input$powerl, input$noise_unc, info$points), {
     removeNotification("no_mle")
     removeNotification("too_long")
+    removeNotification("warning_no_slope")
     trans$noise <- NULL
     trans$mle <- 0
     output$est.white <- renderUI({ NULL })
@@ -9547,6 +9555,9 @@ server <- function(input,output,session) {
               info$timeMLE <- ceiling(2e-09*info$points^3.2207)
             }
           } else if (input$powerl) { # WH + PL
+            if (!isTruthy(trans$slope)) {
+              showNotification("It is highly recommended to estimate the power spectrum of the residual series before fitting a PL noise model.", action = NULL, duration = 10, closeButton = T, id = "warning_no_slope", type = "warning", session = getDefaultReactiveDomain())
+            }
             if (isTruthy(input$noise_unc)) {
               info$timeMLE <- ceiling(5e-08*info$points^2.9773)
             } else {
@@ -9569,6 +9580,9 @@ server <- function(input,output,session) {
         } else if (input$randomw) { # RW
           info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
         } else if (input$powerl) { # PL
+          if (!isTruthy(trans$slope)) {
+            showNotification("It is highly recommended to estimate the power spectrum of the residual series before fitting a PL noise model.", action = NULL, duration = 10, closeButton = T, id = "warning_no_slope", type = "warning", session = getDefaultReactiveDomain())
+          }
           if (isTruthy(input$noise_unc)) {
             info$timeMLE <- ceiling(5e-08*info$points^2.9304)
           } else {
