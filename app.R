@@ -12733,21 +12733,21 @@ server <- function(input,output,session) {
       x_ <- x[1] + (p - 0.5)*s
       if (isTruthy(second)) {
         y1_ <- y1[index]
-        y2_ <- y2[index]
-        y3_ <- y3[index]
+        if (isTruthy(y2)) y2_ <- y2[index]
+        if (isTruthy(y3)) y3_ <- y3[index]
         if (sigmas) {
           sy1_ <- sy1[index]
-          sy2_ <- sy2[index]
-          sy3_ <- sy3[index]
+          if (isTruthy(sy2)) sy2_ <- sy2[index]
+          if (isTruthy(sy3)) sy3_ <- sy3[index]
         }
       } else {
         y1_ <- y1[index & db1$original$status1]
-        y2_ <- y2[index & db1$original$status2]
-        y3_ <- y3[index & db1$original$status3]
+        if (isTruthy(y2)) y2_ <- y2[index & db1$original$status2]
+        if (isTruthy(y3)) y3_ <- y3[index & db1$original$status3]
         if (sigmas) {
           sy1_ <- sy1[index & db1$original$status1]
-          sy2_ <- sy2[index & db1$original$status2]
-          sy3_ <- sy3[index & db1$original$status3]
+          if (isTruthy(sy2)) sy2_ <- sy2[index & db1$original$status2]
+          if (isTruthy(sy3)) sy3_ <- sy3[index & db1$original$status3]
         }
       }
     } else if (length(x[index]) > 1) {
@@ -12755,28 +12755,28 @@ server <- function(input,output,session) {
       if (isTruthy(second)) {
         if (sigmas) {
           y1_ <- weighted.mean(y1[index], 1/(sy1[index])^2, na.rm = T)
-          y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2, na.rm = T)
-          y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2, na.rm = T)
+          if (isTruthy(y2)) y2_ <- weighted.mean(y2[index], 1/(sy2[index])^2, na.rm = T)
+          if (isTruthy(y3)) y3_ <- weighted.mean(y3[index], 1/(sy3[index])^2, na.rm = T)
           sy1_ <- sqrt(1/sum(1/sy1[index]^2, na.rm = T))
-          sy2_ <- sqrt(1/sum(1/sy2[index]^2, na.rm = T))
-          sy3_ <- sqrt(1/sum(1/sy3[index]^2, na.rm = T))
+          if (isTruthy(sy2)) sy2_ <- sqrt(1/sum(1/sy2[index]^2, na.rm = T))
+          if (isTruthy(sy3)) sy3_ <- sqrt(1/sum(1/sy3[index]^2, na.rm = T))
         } else {
           y1_ <- mean(y1[index], na.rm = T)
-          y2_ <- mean(y2[index], na.rm = T)
-          y3_ <- mean(y3[index], na.rm = T)
+          if (isTruthy(y2)) y2_ <- mean(y2[index], na.rm = T)
+          if (isTruthy(y3)) y3_ <- mean(y3[index], na.rm = T)
         }
       } else {
         if (sigmas) {
           y1_ <- weighted.mean(y1[index & db1$original$status1], 1/(sy1[index & db1$original$status1])^2, na.rm = T)
-          y2_ <- weighted.mean(y2[index & db1$original$status2], 1/(sy2[index & db1$original$status2])^2, na.rm = T)
-          y3_ <- weighted.mean(y3[index & db1$original$status3], 1/(sy3[index & db1$original$status3])^2, na.rm = T)
+          if (isTruthy(y2)) y2_ <- weighted.mean(y2[index & db1$original$status2], 1/(sy2[index & db1$original$status2])^2, na.rm = T)
+          if (isTruthy(y3)) y3_ <- weighted.mean(y3[index & db1$original$status3], 1/(sy3[index & db1$original$status3])^2, na.rm = T)
           sy1_ <- sqrt(1/sum(1/sy1[index & db1$original$status1]^2, na.rm = T))
-          sy2_ <- sqrt(1/sum(1/sy2[index & db1$original$status2]^2, na.rm = T))
-          sy3_ <- sqrt(1/sum(1/sy3[index & db1$original$status3]^2, na.rm = T))
+          if (isTruthy(sy2)) sy2_ <- sqrt(1/sum(1/sy2[index & db1$original$status2]^2, na.rm = T))
+          if (isTruthy(sy3)) sy3_ <- sqrt(1/sum(1/sy3[index & db1$original$status3]^2, na.rm = T))
         } else {
           y1_ <- mean(y1[index & db1$original$status1], na.rm = T)
-          y2_ <- mean(y2[index & db1$original$status2], na.rm = T)
-          y3_ <- mean(y3[index & db1$original$status3], na.rm = T)
+          if (isTruthy(y2)) y2_ <- mean(y2[index & db1$original$status2], na.rm = T)
+          if (isTruthy(y3)) y3_ <- mean(y3[index & db1$original$status3], na.rm = T)
         }
       }
     }
