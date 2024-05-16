@@ -9715,7 +9715,7 @@ server <- function(input,output,session) {
         })
       }
       if (is.null(table)) {
-        showNotification("All records in the series were removed.<br> Check the series format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
+        showNotification(HTML("All records in the series were removed.<br> Check the series format."), action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         req(info$stop)
       }
       # Extracting station coordinates
