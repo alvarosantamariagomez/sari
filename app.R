@@ -9698,7 +9698,7 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       # Extracting station coordinates
-      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(filein, n = 1, warn = F), fixed = T)
+      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION]", readLines(filein, n = 1, warn = F), fixed = T)
       if (isTruthy(spotgins)) info$product1 <- "SPOTGINS_POS"
       coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,skip,sep))
       lat <- coordinates[4]
@@ -10030,7 +10030,7 @@ server <- function(input,output,session) {
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
       tunitsKnown <- F
-      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(file, n = 1, warn = F), fixed = T)
+      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION]", readLines(file, n = 1, warn = F), fixed = T)
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
