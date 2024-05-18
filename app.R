@@ -11761,12 +11761,16 @@ server <- function(input,output,session) {
     axis(2, at = pin, labels = pout)
     if (isTruthy(input$tunits)) {
       if (input$tunits == 1) {
+        offset <- 0
+        if (all(x < 35000)) {
+          offset <- 33282
+        }
         if (isTruthy(rangex)) {
           ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
         } else {
           ticks <- base::pretty(x)
         }
-        labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks))
+        labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks + offset))
         axis(3, at = ticks, labels = labels_dyear)
       } else if (input$tunits == 2) {
         if (isTruthy(rangex)) {
