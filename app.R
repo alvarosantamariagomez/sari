@@ -3360,7 +3360,6 @@ server <- function(input,output,session) {
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs, input$tunits), {
     req(trans$x, trans$y, info$tol)
-    removeNotification("no_interannual")
     if (isTruthy(input$midas)) {
       if (input$tunits == 1) {
         period <- 365
