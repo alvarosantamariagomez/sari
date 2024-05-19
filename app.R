@@ -10034,6 +10034,9 @@ server <- function(input,output,session) {
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
     tableAll <- NULL
     extracted <- NULL
+    if (input$optionSecondary > 1 && isTruthy(db1$merged)) {
+      updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
+    }
     removeNotification("no_weeks")
     removeNotification("no_error_bars")
     removeNotification("bad_coordinates")
