@@ -7716,12 +7716,32 @@ server <- function(input,output,session) {
   # Observe primary file ####
   observeEvent(c(input$series), {
     file$primary <- isolate(input$series)
-    if (grepl(".tenv3", file$primary$name)) {
+    header <- readLines(input$series$datapath, n = 1)
+    if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
       updateRadioButtons(inputId = "format", selected = 3)
       updateRadioButtons(inputId = "sunits", selected = 1)
-    } else if (grepl("pbo|.pos", file$primary$name)) {
+      updateRadioButtons(inputId = "tunits", selected = 3)
+    } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
       updateRadioButtons(inputId = "format", selected = 2)
       updateRadioButtons(inputId = "sunits", selected = 1)
+      updateRadioButtons(inputId = "tunits", selected = 3)
+    } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
+      updateRadioButtons(inputId = "format", selected = 1)
+      updateRadioButtons(inputId = "sunits", selected = 1)
+      updateRadioButtons(inputId = "tunits", selected = 3)
+      url$server <- "EARTHSCOPE"
+      url$file <- file$primary
+    } else if (grepl(".enu$", file$primary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
+      updateRadioButtons(inputId = "format", selected = 1)
+      updateRadioButtons(inputId = "sunits", selected = 1)
+      updateRadioButtons(inputId = "tunits", selected = 3)
+      info$product1 <- "SPOTGINS_POS"
+    } else if (grepl(".PLH$", file$primary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
+      updateRadioButtons(inputId = "format", selected = 1)
+      updateRadioButtons(inputId = "sunits", selected = 1)
+      updateRadioButtons(inputId = "tunits", selected = 3)
+      url$server <- "SIRGAS"
+      url$file <- file$primary
     } else {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 0)
@@ -8001,7 +8021,8 @@ server <- function(input,output,session) {
   observeEvent(input$series2, {
     req(db1$original)
     file$secondary <- isolate(input$series2)
-    url$file2 <- url$server2 <- url$station2 <- NULL
+    url$file2 <- url$station2 <- NULL
+    url$server2 <- ""
     if (isTruthy(url$logfile2)) {
       url$logfile2 <- info$log <- NULL
       session$sendCustomMessage("log", "")
@@ -8009,12 +8030,27 @@ server <- function(input,output,session) {
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     updateSelectInput(inputId = "server2", selected = "")
     updateSelectInput(inputId = "product2", selected = "")
-    if (grepl(".tenv3", file$secondary$name)) {
+    header <- readLines(input$series2$datapath, n = 1)
+    if (grepl(".tenv3$", file$secondary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
       updateRadioButtons(inputId = "format2", selected = 3)
       info$format2 <- 3
-    } else if (grepl("pbo|.pos", file$secondary$name)) {
+    } else if (grepl(".pos$", file$secondary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
       updateRadioButtons(inputId = "format2", selected = 2)
       info$format2 <- 2
+    } else if (grepl(".pos$", file$secondary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
+      updateRadioButtons(inputId = "format2", selected = 1)
+      info$format2 <- 1
+      url$server2 <- "EARTHSCOPE"
+      url$file2 <- file$secondary
+    } else if (grepl(".enu$", file$secondary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
+      updateRadioButtons(inputId = "format2", selected = 1)
+      info$format2 <- 1
+      info$product2 <- "SPOTGINS_POS"
+    } else if (grepl(".PLH$", file$secondary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
+      updateRadioButtons(inputId = "format2", selected = 1)
+      info$format2 <- 1
+      url$server2 <- "SIRGAS"
+      url$file2 <- file$secondary
     } else if (as.numeric(input$format) < 4) {
       updateRadioButtons(inputId = "format2", selected = 1)
       info$format2 <- 1
@@ -9647,15 +9683,12 @@ server <- function(input,output,session) {
     ## primary series ####
     if (series == 1) {
       if (messages > 0) cat(file = stderr(), mySession, "Reading primary series file", "\n")
-      if (isTruthy(url$file)) {
+      if (isTruthy(url$file) && isTruthy(url$station)) {
         fileName <- file$primary$name
         output$fileSeries1 <- renderUI({
           tags$a(href = sub(pattern = "www/", replacement = "", x = file$primary$datapath), "Show series file", title = "Open the file of the primary series in a new tab", target = "_blank", download = fileName)
         })
       } else {
-        if (!isTruthy(inputs$station1)) {
-          info$product1 <- NULL
-        }
         fileName <- input$series$name
         output$fileSeries1 <- renderUI({
           NULL
@@ -9718,8 +9751,6 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       # Extracting station coordinates
-      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION]", readLines(filein, n = 1, warn = F), fixed = T)
-      if (isTruthy(spotgins)) info$product1 <- "SPOTGINS_POS"
       coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,skip,sep))
       lat <- coordinates[4]
       lon <- coordinates[5]
@@ -9742,9 +9773,7 @@ server <- function(input,output,session) {
       } else if (info$format == 2 || info$format == 3) {
         updateRadioButtons(session, inputId = "sunits", selected = 1)
       } else {
-        if (isTruthy(spotgins)) {
-          updateRadioButtons(session, inputId = "sunits", selected = 1)
-        } else if (input$sunits == 0) {
+        if (input$sunits == 0) {
           showNotification(HTML("Unknown units of the series.<br>If necessary, the series units can be set on the left panel."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
@@ -9816,30 +9845,25 @@ server <- function(input,output,session) {
       }
       # Getting secondary series
       table2 <- NULL
-      if (isTruthy(url$file2)) {
+      if (isTruthy(url$file2) && isTruthy(url$station2)) {
         files <- file$secondary
-        server <- url$server2
       } else {
-        if (!isTruthy(inputs$station2)) {
-          info$product2 <- NULL
-        }
         files <- input$series2
-        server <- ""
       }
       table_stack <- NULL
       num <- dim(as.matrix(files$datapath))[1]
-      if (server == "EOSTLS" && num > 1) {
+      if (url$server2 == "EOSTLS" && num > 1) {
         showNotification(HTML("Stacking the secondary series into one series."), action = NULL, duration = NULL, closeButton = T, id = "stacking", type = "warning", session = getDefaultReactiveDomain())
         if (any(grepl("ECCO", input$product2)) && any(grepl("TUGO", input$product2))) {
           showNotification(HTML("WARNING: the TUGO and ECCO models have similar forcing, which will be considered twice in the secondary series."), action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
       for (i in 1:num) {
-        table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server,2)
+        table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,url$server2,2)
         removeNotification(paste0("parsing_url2_",i))
         removeNotification("parsing_url2")
         # starting EOSTLS series at epoch .0
-        if (server == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
+        if (url$server2 == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
           while (table2$x1[1] %% 1 > 0) {
             table2 <- table2[-1,]
           }
@@ -9869,7 +9893,7 @@ server <- function(input,output,session) {
                                averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                                table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
                              } else {
-                               if (server == "EOSTLS" || server == "EPOS") {
+                               if (url$server2 == "EOSTLS" || url$server2 == "EPOS") {
                                  averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                                  table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
                                } else {
@@ -9917,7 +9941,7 @@ server <- function(input,output,session) {
                 showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
               }
             }
-            if (server == "EOSTLS" || server == "EPOS") {
+            if (url$server2 == "EOSTLS" || url$server2 == "EPOS") {
               table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
                 x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
                 x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
@@ -9964,8 +9988,6 @@ server <- function(input,output,session) {
             suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
           } else {
             # Extracting station coordinates
-            spotgins <- grepl("# SPOTGINS SOLUTION [POSITION] ", readLines(files$datapath[i], n = 1, warn = F), fixed = T)
-            if (isTruthy(spotgins)) info$product2 <- "SPOTGINS_POS"
             coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,skip,sep2)
             lat2 <- as.numeric(coordinates[4])
             lon2 <- as.numeric(coordinates[5])
