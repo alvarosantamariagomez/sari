@@ -2894,10 +2894,12 @@ server <- function(input,output,session) {
       # show all points from primary & secondary series
       info$minx <- min(trans$x, trans$xe, trans$x2, na.rm = T)
       info$maxx <- max(trans$x, trans$xe, trans$x2, na.rm = T)
+      ranges$x1 <- c(info$minx, info$maxx)
     } else {
       # show all points from primary series only
       info$minx <- min(trans$x, trans$xe, na.rm = T)
       info$maxx <- max(trans$x, trans$xe, na.rm = T)
+      ranges$x1 <- c(info$minx, info$maxx)
     }
     info$miny <- min(trans$y, na.rm = T)
     info$maxy <- max(trans$y, na.rm = T)
@@ -6154,6 +6156,15 @@ server <- function(input,output,session) {
               enable("ne")
             } else {
               disable("ne")
+              updateCheckboxInput(session, inputId = "fullSeries", value = F)
+              updateCheckboxInput(session, inputId = "sameScale", value = F)
+              updateCheckboxInput(session, inputId = "same_axis", value = F)
+              updateCheckboxInput(session, inputId = "ne", value = F)
+              # setting new axis limits
+              req(db2[[info$db2]])
+              info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+              info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+              ranges$x1 <- c(info$minx, info$maxx)
             }
             if (input$optionSecondary == 1) {
               enable("fullSeries")
