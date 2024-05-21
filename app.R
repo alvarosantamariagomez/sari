@@ -226,7 +226,7 @@ tabContents <- function(tabNum) {
                       #side-panel,.navbar-nav {-webkit-user-select: none; -ms-user-select: none; user-select: none;}
                       .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
                       "),
-           hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 99999;", "Zoomed in")),
+           hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
            withSpinner(
              plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
