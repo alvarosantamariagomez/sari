@@ -221,7 +221,11 @@ tabContents <- function(tabNum) {
     tabName <- uiOutput("tabName3")
   }
   tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
-           tags$style(type = "text/css", "body {padding-top: 60px; -webkit-user-select: none; -ms-user-select: none; user-select: none;}"),
+           tags$style(type = "text/css", "
+                      body {padding-top: 60px;}
+                      #side-panel,.navbar-nav {-webkit-user-select: none; -ms-user-select: none; user-select: none;}
+                      .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
+                      "),
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 99999;", "Zoomed in")),
            withSpinner(
              plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
