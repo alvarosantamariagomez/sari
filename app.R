@@ -1931,19 +1931,30 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             ),
                                                                             conditionalPanel(
                                                                               condition = "input.mle == true",
-                                                                              column(4,
-                                                                                     checkboxInput(inputId = "noise_unc",
-                                                                                                   div("Noise unc.",
-                                                                                                       helpPopup("This option enables or disables the estimation of the formal uncertainties of the parameters of the noise model.")),
-                                                                                                   value = T)
-                                                                              ),
-                                                                              column(width = 4, offset = 0, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
+                                                                              column(width = 4, offset = 4, style = "margin-top:0em; padding: 0px 0px 0px 0px", align = "left",
                                                                                      conditionalPanel(
                                                                                        condition = "input.mle == true",
                                                                                        withBusyIndicatorUI(
                                                                                          actionButton(inputId = "runmle", label = "Run MLE", icon = icon("hourglass", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                                        )
                                                                                      )
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.mle == true",
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     checkboxInput(inputId = "noise_unc",
+                                                                                                   div("Noise unc.",
+                                                                                                       helpPopup("This option enables or disables the estimation of the formal uncertainties of the parameters of the noise model.")),
+                                                                                                   value = T)
+                                                                              ),
+                                                                              column(8,
+                                                                                     checkboxInput(inputId = "wiener",
+                                                                                                   div("Wiener filter",
+                                                                                                       helpPopup("This option applies a low-pass/high-pass filter to separate the residual series into the different noise components.")),
+                                                                                                   value = F)
                                                                               )
                                                                             )
                                                                           ),
@@ -2003,6 +2014,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             htmlOutput("crossover")
                                                                           )
                                                                       ),
+                                                                      
                                                                       style = "primary")
                                            ),
                                            
@@ -2164,7 +2176,8 @@ server <- function(input,output,session) {
                           x_orig = NULL, gaps = NULL,
                           plate = NULL, plate2 = NULL, gia = NULL, gia2 = NULL,
                           entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL,
-                          slope = NULL)
+                          slope = NULL,
+                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, white_sig = NULL, flicker_sig = NULL, randomw_sig = NULL, powerl_sig = NULL)
 
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -5422,6 +5435,14 @@ server <- function(input,output,session) {
             } else {
               updateTextInput(session, inputId = "verif_white", value = sigmaWH)
             }
+            if (input$wiener) {
+              qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
+              trans$white <- unlist(as.list(trans$res %*% qQ))
+              if (input$sigmas) {
+                trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+              }
+              rm(qQ,Cwh)
+            }
             output$est.white <- renderUI({
               line1 <- "White noise:"
               line2 <- formatting(sigmaWH)
@@ -5449,6 +5470,14 @@ server <- function(input,output,session) {
               }
             } else {
               updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+            }
+            if (input$wiener) {
+              qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
+              trans$flicker <- unlist(as.list(trans$res %*% qQ))
+              if (input$sigmas) {
+                trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+              }
+              rm(qQ,Cfl)
             }
             output$est.flicker <- renderUI({
               line1 <- "Flicker noise:"
@@ -5479,6 +5508,14 @@ server <- function(input,output,session) {
             } else {
               updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
             }
+            if (input$wiener) {
+              qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
+              trans$randomw <- unlist(as.list(trans$res %*% qQ))
+              if (input$sigmas) {
+                trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+              }
+              rm(qQ,Crw)
+            }
             output$est.randomw <- renderUI({
               line1 <- "Random walk:"
               line2 <- formatting(sigmaRW)
@@ -5508,6 +5545,14 @@ server <- function(input,output,session) {
             } else {
               updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
             }
+            if (input$wiener) {
+              qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
+              trans$powerl <- unlist(as.list(trans$res %*% qQ))
+              if (input$sigmas) {
+                trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+              }
+              rm(qQ,CPL)
+            }
             output$est.powerl <- renderUI({
               line1 <- "Power-law:"
               line2 <- formatting(sigmaPL)
@@ -5516,6 +5561,7 @@ server <- function(input,output,session) {
               }
               HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
             })
+            rm(Qinv)
             updateRadioButtons(session, inputId = "typeColor", selected = 2)
             i <- i + 1
             sigmaK <- fitmle$par[i] + 3
@@ -5948,6 +5994,7 @@ server <- function(input,output,session) {
       disable("midas")
       disable("entropy")
       disable("mle")
+      disable("wiener")
       disable("model")
       disable("wavelet")
       disable("waveletType")
@@ -6299,6 +6346,14 @@ server <- function(input,output,session) {
               disable("runmle")
               disable("noise_unc")
               enable("est.mle")
+              if (sum(input$white,input$flicker,input$randomw,input$powerl) > 1) {
+                enable("wiener")
+              } else {
+                if (input$wiener) {
+                  updateCheckboxInput(session, inputId = "wiener", value = F)
+                }
+                disable("wiener")
+              }
               if (input$flicker || input$randomw || input$white || input$powerl) {
                 enable("runmle")
               } else {
@@ -12186,6 +12241,32 @@ server <- function(input,output,session) {
       } else {
         OutPut$df$Smooth <- formatting(trans$filter)
         OutPut$df$Smooth.Residuals <- formatting(trans$filterRes)
+      }
+    }
+    if (input$wiener && input$mle) {
+      if (input$white && length(trans$white) > 0) {
+        OutPut$df$White <- formatting(trans$white)
+        if (input$sigmas && length(trans$white_sig) > 0) {
+          OutPut$df$Sigma.White <- formatting(trans$white_sig)
+        }
+      }
+      if (input$flicker && length(trans$flicker) > 0) {
+        OutPut$df$Flicker <- formatting(trans$flicker)
+        if (input$sigmas && length(trans$flicker) > 0) {
+          OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig)
+        }
+      }
+      if (input$randomw && length(trans$randomw) > 0) {
+        OutPut$df$RandomWalk <- formatting(trans$randomw)
+        if (input$sigmas && length(trans$randomw_sig) > 0) {
+          OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig)
+        }
+      }
+      if (input$powerl && length(trans$powerl) > 0) {
+        OutPut$df$PowerLaw <- formatting(trans$powerl)
+        if (input$sigmas && length(trans$powerl_sig) > 0) {
+          OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig)
+        }
       }
     }
     if (input$fitType == 2 && length(trans$res) > 0) {
