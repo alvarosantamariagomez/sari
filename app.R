@@ -1944,16 +1944,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           conditionalPanel(
                                                                             condition = "input.mle == true",
                                                                             fluidRow(
-                                                                              column(4,
+                                                                              column(6,
                                                                                      checkboxInput(inputId = "noise_unc",
-                                                                                                   div("Noise unc.",
-                                                                                                       helpPopup("This option enables or disables the estimation of the formal uncertainties of the parameters of the noise model.")),
+                                                                                                   div("Noise uncertainty",
+                                                                                                       helpPopup("This option enables or disables the estimation of the formal uncertainties of the parameters of the estimated noise model.")),
                                                                                                    value = T)
                                                                               ),
-                                                                              column(8,
+                                                                              column(6,
                                                                                      checkboxInput(inputId = "wiener",
-                                                                                                   div("Wiener filter",
-                                                                                                       helpPopup("This option applies a low-pass/high-pass filter to separate the residual series into the different noise components.")),
+                                                                                                   div("Noise separation",
+                                                                                                       helpPopup("This option separates the residual series into the different estimated noise components.")),
                                                                                                    value = F)
                                                                               )
                                                                             )
@@ -5207,6 +5207,7 @@ server <- function(input,output,session) {
                          ll <- ll_out[[1]]
                          Qinv <<- ll_out[[2]]
                          QinvR <<- ll_out[[3]]
+                         rm(ll_out)
                          if (method == "NLM") {
                            attr(ll, "gradient") <- grad_global(x)  
                          }
@@ -5420,6 +5421,9 @@ server <- function(input,output,session) {
           } else {
             unit <- ""
           }
+          if (input$wiener) {
+            kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
+          }
           if (isTruthy(info$white)) {
             i <- i + 1
             sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
@@ -5561,7 +5565,6 @@ server <- function(input,output,session) {
               }
               HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
             })
-            rm(Qinv)
             updateRadioButtons(session, inputId = "typeColor", selected = 2)
             i <- i + 1
             sigmaK <- fitmle$par[i] + 3
@@ -5593,6 +5596,7 @@ server <- function(input,output,session) {
             trans$noise[9] <- NA
             trans$noise[10] <- NA
           }
+          rm(Qinv,QinvR)
           if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
             if (length(fitmle$value) > 0) {
               trans$noise[11] <- fitmle$value
