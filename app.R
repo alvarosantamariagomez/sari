@@ -4779,10 +4779,10 @@ server <- function(input,output,session) {
             }
           }
           var <- NULL
-          if (isTruthy(input$spectrumFilterRes) && isTruthy(trans$filterRes)) {
-            var <- var(trans$filterRes)
-          } else if (isTruthy(input$spectrumResiduals) && isTruthy(trans$res)) {
+          if (isTruthy(input$spectrumResiduals) && isTruthy(trans$res)) {
             var <- var(trans$res)
+          } else if (isTruthy(input$spectrumFilterRes) && isTruthy(trans$filterRes)) {
+            var <- var(trans$filterRes)
           }
           psd <- psd*var/sum(psd)
           lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
@@ -5118,11 +5118,14 @@ server <- function(input,output,session) {
     removeNotification("timeWillTake")
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
       trans$noise <- vector(length = 11)
-      if (length(trans$filterRes) > 0) {
-        res <- trans$filterRes
-      } else if (length(trans$res) > 0) {
+      if (length(trans$res) > 0) {
         res <- trans$res
+        resError <- trans$reserror
+      } else if (length(trans$filterRes) > 0) {
+        res <- unlist(as.list(trans$filterRes))
+        resError <- trans$sy
       }
+      req(res)
       vari <- var(res)
       n <- length(res)
       n_all <- length(trans$gaps)
@@ -5460,9 +5463,9 @@ server <- function(input,output,session) {
             }
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
-              trans$white <- unlist(as.list(trans$res %*% qQ))
+              trans$white <- unlist(as.list(res %*% qQ))
               if (input$sigmas) {
-                trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+                trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
             output$est.white <- renderUI({
@@ -5495,9 +5498,9 @@ server <- function(input,output,session) {
             }
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
-              trans$flicker <- unlist(as.list(trans$res %*% qQ))
+              trans$flicker <- unlist(as.list(res %*% qQ))
               if (input$sigmas) {
-                trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+                trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
             output$est.flicker <- renderUI({
@@ -5531,9 +5534,9 @@ server <- function(input,output,session) {
             }
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
-              trans$randomw <- unlist(as.list(trans$res %*% qQ))
+              trans$randomw <- unlist(as.list(res %*% qQ))
               if (input$sigmas) {
-                trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+                trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
             output$est.randomw <- renderUI({
@@ -5567,9 +5570,9 @@ server <- function(input,output,session) {
             }
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
-              trans$powerl <- unlist(as.list(trans$res %*% qQ))
+              trans$powerl <- unlist(as.list(res %*% qQ))
               if (input$sigmas) {
-                trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
+                trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
             output$est.powerl <- renderUI({
@@ -5645,7 +5648,7 @@ server <- function(input,output,session) {
                   unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling) # general power-law trend uncertainty
                   unc_pl <- sqrt(unc_pl^2 + unc^2)
                 }
-                unc_white <- sqrt( 12 * sd(trans$res)^2 / (info$points * ((info$points - 1) * info$sampling)^2) )
+                unc_white <- sqrt( 12 * sd(res)^2 / (info$points * ((info$points - 1) * info$sampling)^2) )
                 if (isTruthy(trans$unc)) {
                   if (isTruthy(unc_pl) && unc_pl > 0) {
                     trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
