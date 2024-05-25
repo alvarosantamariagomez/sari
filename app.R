@@ -6318,8 +6318,8 @@ server <- function(input,output,session) {
               shinyjs::hide(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::hide(id = "res2", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::hide(id = "res3", anim = T, animType = "fade", time = 0.5, selector = NULL)
-              # updateCheckboxInput(session, inputId = "spectrumResiduals", value = F)
-              # updateCheckboxInput(session, inputId = "spectrumModel", value = F)
+              updateCheckboxInput(session, inputId = "spectrumResiduals", value = F)
+              updateCheckboxInput(session, inputId = "spectrumModel", value = F)
               info$run <- F
               disable("mle")
               disable("spectrumModel")
