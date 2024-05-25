@@ -4736,8 +4736,7 @@ server <- function(input,output,session) {
           } else if (input$tunits == 3) { #years
             f_scale <- daysInYear*24*60*60
           }
-          samplingScale <- sqrt(info$rangex*daysInYear/7)
-          f_hz <- trans$fs * samplingScale/f_scale
+          f_hz <- trans$fs/f_scale
           if (isTruthy(info$white)) {
             wn <- noise_var(trans$noise[1],0)
           } else {
@@ -4750,7 +4749,7 @@ server <- function(input,output,session) {
           if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
             fl <- noise_var(trans$noise[3],-1)
             pfl <- fl * f_hz^-1
-            psd <- sqrt(psd^2 + pfl^2)
+            psd <- psd + pfl
             if (wn > 0) {
               crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
               type_crossover <- "Flicker / White"
@@ -4758,14 +4757,14 @@ server <- function(input,output,session) {
             if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
               rw <- noise_var(trans$noise[5],-2)
               prw <- rw * f_hz^-2
-              psd <- sqrt(psd^2 + prw^2)
+              psd <- psd + prw
               crossover <- c(crossover, suppressWarnings(min(1/trans$fs[prw > pfl])))
               type_crossover <- c(type_crossover, "Random walk / Flicker")
             }
           } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
             rw <- noise_var(trans$noise[5],-2)
             prw <- rw * f_hz^-2
-            psd <- sqrt(psd^2 + prw^2)
+            psd <- psd + prw
             if (wn > 0) {
               crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
               type_crossover <- "Random walk / White"
@@ -4773,7 +4772,7 @@ server <- function(input,output,session) {
           } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
             pl <- noise_var(trans$noise[7],trans$noise[9])
             ppl <- pl * f_hz^trans$noise[9]
-            psd <- sqrt(psd^2 + ppl^2)
+            psd <- psd + ppl
             if (wn > 0) {
               crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
               type_crossover <- "Power-law / White"
@@ -13659,28 +13658,14 @@ server <- function(input,output,session) {
   }
   #
   noise_var <- function(std,k) {
-    # if (input$tunits == 1) { #days
-    #   f_scale <- 24*60*60
-    # } else if (input$tunits == 2) { #weeks
-    #   f_scale <- 7*24*60*60
-    # } else if (input$tunits == 3) { #years
-    #   f_scale <- 365.25*24*60*60
-    # }
-    # fs_hz <- 1/(info$sampling*f_scale)
-    # f_hz <- trans$fs/f_scale
-    
     if (input$tunits == 1) { #days
       f_scale <- 24*60*60
-      samplingScale <- daysInYear
     } else if (input$tunits == 2) { #weeks
       f_scale <- 7*24*60*60
-      samplingScale <- daysInYear/7
     } else if (input$tunits == 3) { #years
       f_scale <- 365.25*24*60*60
-      samplingScale <- 1
     }
-    fs_hz <- 1/(info$sampling*f_scale/samplingScale)
-    f_hz <- trans$fs * samplingScale/f_scale
+    fs_hz <- 1/(info$sampling*f_scale)
     
     Dk <- 2*(2*pi)^k * f_scale^(k/2)
     return(std^2 * Dk / (fs_hz^(1 + (k/2)))) #from Williams 2003 (Eq. 10)
