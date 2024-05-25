@@ -2117,6 +2117,7 @@ server <- function(input,output,session) {
   })
 
   # Initialize reactive variables of the global database
+  database <- c("file", "ranges", "info", "db1", "db2", "inputs", "trans", "url")
 
   # 1. input files.
   file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL, soln = NULL, custom = NULL)
@@ -3020,6 +3021,10 @@ server <- function(input,output,session) {
       updateTextInput(session, "max_wavelet", value = "")
       updateTextInput(session, "res_wavelet", value = "")
     }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
+    }
   }, priority = 3)
 
   # Load SARI file ####
@@ -3440,6 +3445,10 @@ server <- function(input,output,session) {
     } else {
       trans$midas_vel <- NULL
     }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
+    }
   })
 
   # Plot MIDAS histogram ####
@@ -3565,6 +3574,10 @@ server <- function(input,output,session) {
     } else {
       trans$entropy_vel <- trans$entropy_sig <- NULL
     }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
+    }
   })
   
   # Offset verification ####
@@ -3645,6 +3658,10 @@ server <- function(input,output,session) {
         NULL
       }
     })
+    #
+    if (isTruthy(debug)) {
+      debugMem()
+    }
   })
 
   # LS fit ####
@@ -3813,15 +3830,7 @@ server <- function(input,output,session) {
     }
     #
     if (isTruthy(debug)) {
-      env <- environment()  # can use globalenv(), parent.frame(), etc
-      output$debug <- renderTable({
-        data.frame(
-          object = ls(env),
-          size = unlist(lapply(ls(env), function(x) {
-            format(object.size(get(x, envir = env, inherits = F)), unit = 'Mb')
-          }))
-        )
-      })
+      debugMem()
     }
   }, priority = 2)
 
@@ -4139,6 +4148,10 @@ server <- function(input,output,session) {
                      })
       })
     }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
+    }
   })
 
   # Plot residuals ####
@@ -4426,6 +4439,10 @@ server <- function(input,output,session) {
           trans$pattern <- NULL
         }
       }
+    }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
     }
   })
 
@@ -4813,6 +4830,10 @@ server <- function(input,output,session) {
           }
         }
       })
+      #
+      if (isTruthy(debug)) {
+        debugMem()
+      }
     }
   }, width = reactive(info$width))
 
@@ -4947,15 +4968,7 @@ server <- function(input,output,session) {
       }
       #
       if (isTruthy(debug)) {
-        env <- environment()
-        output$debug <- renderTable({
-          data.frame(
-            object = ls(env),
-            size = unlist(lapply(ls(env), function(x) {
-              format(object.size(get(x, envir = env, inherits = F)), unit = 'Mb')
-            }))
-          )
-        })
+        debugMem()
       }
       output$wavelet1_info <- output$wavelet2_info <- output$wavelet3_info <- renderText({
         if (length(input$wavelet_1click$x) > 0) {
@@ -4968,6 +4981,10 @@ server <- function(input,output,session) {
       inputs$min_wavelet <- ""
       inputs$max_wavelet <- ""
       info$run_wavelet <- T
+    }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
     }
   }, width = reactive(info$width))
 
@@ -5063,6 +5080,10 @@ server <- function(input,output,session) {
     } else {
       trans$filter <- NULL
       trans$filterRes <- NULL
+    }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
     }
   }, priority = 1)
 
@@ -5207,7 +5228,6 @@ server <- function(input,output,session) {
                          ll <- ll_out[[1]]
                          Qinv <<- ll_out[[2]]
                          QinvR <<- ll_out[[3]]
-                         rm(ll_out)
                          if (method == "NLM") {
                            attr(ll, "gradient") <- grad_global(x)  
                          }
@@ -5445,7 +5465,6 @@ server <- function(input,output,session) {
               if (input$sigmas) {
                 trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
               }
-              rm(qQ,Cwh)
             }
             output$est.white <- renderUI({
               line1 <- "White noise:"
@@ -5481,7 +5500,6 @@ server <- function(input,output,session) {
               if (input$sigmas) {
                 trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
               }
-              rm(qQ,Cfl)
             }
             output$est.flicker <- renderUI({
               line1 <- "Flicker noise:"
@@ -5518,7 +5536,6 @@ server <- function(input,output,session) {
               if (input$sigmas) {
                 trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
               }
-              rm(qQ,Crw)
             }
             output$est.randomw <- renderUI({
               line1 <- "Random walk:"
@@ -5555,7 +5572,6 @@ server <- function(input,output,session) {
               if (input$sigmas) {
                 trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(trans$reserror^2) %*% t(qQ)))))
               }
-              rm(qQ,CPL)
             }
             output$est.powerl <- renderUI({
               line1 <- "Power-law:"
@@ -5596,7 +5612,6 @@ server <- function(input,output,session) {
             trans$noise[9] <- NA
             trans$noise[10] <- NA
           }
-          rm(Qinv,QinvR)
           if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
             if (length(fitmle$value) > 0) {
               trans$noise[11] <- fitmle$value
@@ -5663,6 +5678,10 @@ server <- function(input,output,session) {
         }
       }
     }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
+    }
   })
   
   # Search offsets ####
@@ -5718,6 +5737,10 @@ server <- function(input,output,session) {
       })
     } else {
       showNotification("Finding discontinuities is only possible from detrended series or, more generally, residual series.", action = NULL, duration = 10, closeButton = T, id = "no_search", type = "error", session = getDefaultReactiveDomain())
+    }
+    #
+    if (isTruthy(debug)) {
+      debugMem()
     }
   })
 
@@ -8348,8 +8371,6 @@ server <- function(input,output,session) {
     db2_tmp <- db2[[info$db2]]
     db1[[info$db1]] <- db2_tmp
     db2[[info$db1]] <- db1_tmp
-    rm(db1_tmp)
-    rm(db2_tmp)
     if (!isTruthy(db1[[info$db1]]$status1)) {
       db1[[info$db1]]$status1 <- rep(T, length(db1[[info$db1]]$x1))
       db1[[info$db1]]$status2 <- rep(T, length(db1[[info$db1]]$x1))
@@ -9578,15 +9599,6 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 0)
-  # observeEvent(c(trans$filter, trans$res, input$model, input$filter), {
-  #   if (length(trans$filter) > 0 || length(trans$res) > 0) {
-  #     if (input$tab != 4) {
-  #       showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
-  #     }
-  #   } else {
-  #     hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
-  #   }
-  # }, priority = 0)
 
   # Observe directory ####
   observeEvent(input$directory, {
@@ -9722,26 +9734,6 @@ server <- function(input,output,session) {
       }
     }
   })
-
-  # Observe ??? ####
-  # observe({
-  #   if (length(input$model) == 0) {
-  #     updateCheckboxInput(session, inputId = "spectrumResiduals", label = NULL, value = F)
-  #     updateCheckboxInput(session, inputId = "spectrumModel", label = NULL, value = F)
-  #     shinyjs::delay(1000, disable("spectrumResiduals"))
-  #     shinyjs::delay(1000, disable("spectrumModel"))
-  #   }
-  #   if (length(trans$filter) > 0) {
-  #     enable("spectrumFilter")
-  #     enable("spectrumFilterRes")
-  #   } else {
-  #     updateCheckboxInput(session, inputId = "spectrumFilter", label = NULL, value = F)
-  #     updateCheckboxInput(session, inputId = "spectrumFilterRes", label = NULL, value = F)
-  #     shinyjs::delay(1000, disable("spectrumFilter"))
-  #     shinyjs::delay(1000, disable("spectrumFilterRes"))
-  #   }
-  # }, priority = 0)
-
 
 
   # Functions ####
@@ -10710,7 +10702,6 @@ server <- function(input,output,session) {
           if (input$fitType == 1) {
             x1 <- x - x[1]
             fastFit <- lm(y ~ x1)
-            rm(x1)
           } else {
             fastFit <- try(lm(y[1:tenth]~x[1:tenth]), silent = F)
           }
@@ -13057,12 +13048,10 @@ server <- function(input,output,session) {
               fullFile <- try(suppressWarnings(read.table("https://sideshow.jpl.nasa.gov/post/tables/table1.html", skip = 6, fill = T)), silent = T)
               if (isTruthy(fullFile) && !inherits(fullFile,"try-error")) {
                 listStations <- fullFile[fullFile$V2 == "POS", c(1,3,4,5)]
-                rm(fullFile)
                 listStations$V3 <- as.numeric(listStations$V3) / 1000
                 listStations$V4 <- as.numeric(listStations$V4) / 1000
                 listStations$V5 <- as.numeric(listStations$V5) / 1000
                 write.table(listStations, "www/JPL_database.txt", append = F, quote = F, sep = " ", row.names = F, col.names = F)
-                rm(listStations)
               } else {
                 showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
                 return(NULL)
@@ -13896,6 +13885,22 @@ server <- function(input,output,session) {
     # width <- max(width + 1 - 1*grepl("^-", x, perl = T, ))
     width <- NULL
     return(format(x, nsmall = info$nsmall, digits = info$digits, scientific = info$scientific, trim = F, width = width))
+  }
+  #
+  debugMem <- function() {
+    output$debug <- renderTable({
+      data.frame(
+        object = database,
+        size = unlist(lapply(database, function(x) {
+          total <- 0
+          for (i in 1:length(names(get(x)))) {
+            name <- names(get(x))[i]
+            total <- total + object.size(get(x)[[name]])
+          }
+          format(total, unit = 'Mb')
+        }))
+      )
+    })
   }
 }
 
