@@ -5422,16 +5422,19 @@ server <- function(input,output,session) {
       ##* convergence ####
       if (!is.na(convergence)) {
         if (convergence == 0) {
-          end.time <- Sys.time()
-          if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
-          time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
+          if (input$wiener) {
+            kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
+          }
           trans$mle <- 1
           sd_noises <- NA
           line3 <- NULL
           if (input$noise_unc) {
             sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
           }
+          end.time <- Sys.time()
+          if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
+          time.taken <- end.time - start.time
+          if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
           i <- 0
           sigmaFL <- NULL
           sigmaPL <- NULL
@@ -5443,9 +5446,6 @@ server <- function(input,output,session) {
             unit <- "mm"
           } else {
             unit <- ""
-          }
-          if (input$wiener) {
-            kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
           }
           if (isTruthy(info$white)) {
             i <- i + 1
