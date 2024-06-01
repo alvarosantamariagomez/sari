@@ -5464,7 +5464,7 @@ server <- function(input,output,session) {
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
               trans$white <- unlist(as.list(res %*% qQ))
-              if (input$sigmas) {
+              if (input$sigmas && length(resError) > 0) {
                 trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
@@ -5499,7 +5499,7 @@ server <- function(input,output,session) {
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
               trans$flicker <- unlist(as.list(res %*% qQ))
-              if (input$sigmas) {
+              if (input$sigmas && length(resError) > 0) {
                 trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
@@ -5535,7 +5535,7 @@ server <- function(input,output,session) {
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
               trans$randomw <- unlist(as.list(res %*% qQ))
-              if (input$sigmas) {
+              if (input$sigmas && length(resError) > 0) {
                 trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
@@ -5571,7 +5571,7 @@ server <- function(input,output,session) {
             if (input$wiener) {
               qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
               trans$powerl <- unlist(as.list(res %*% qQ))
-              if (input$sigmas) {
+              if (input$sigmas && length(resError) > 0) {
                 trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
               }
             }
