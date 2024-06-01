@@ -5132,6 +5132,7 @@ server <- function(input,output,session) {
       component <- 0
       convergence <- 1
       withBusyIndicatorServer("runmle", {
+        cat(file = stderr(), mySession, "MLE fit", "\n")
         start.time <- Sys.time()
         if (messages > 2) cat(file = stderr(), mySession, "MLE fit start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
         message <- ""
