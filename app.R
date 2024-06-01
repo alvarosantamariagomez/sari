@@ -5604,7 +5604,7 @@ server <- function(input,output,session) {
               if (input$noise_unc) {
                 line3 <- format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F)
               }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
+              HTML(paste(line1,'<br/>',line2, '<br/>+/-',line3))
             })
           } else {
             updateTextInput(session, inputId = "verif_pl", value = "0")
