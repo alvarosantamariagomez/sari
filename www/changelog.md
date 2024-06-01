@@ -1,5 +1,27 @@
 # **SARI changelog**
 
+# junio 2024 [2024.06]
+
+### Fixed
+- correcting the estimation of the power-law crossover period
+- fixing bug with a new uploaded secondary series when the previous secondary has been merged with the primary series
+- fixing bug with the series truncation when the provided epochs have already been used in a previous truncation
+
+### Changed
+- removing the model and residuals spectra when the series fit is deleted
+- reducing the z-index value of the zoomed-in label so it hides under the navbar
+- disabling text selection on the left panel
+- updating the options of the secondary series when only the primary series is shown
+- improving the format of extremely small values
+- extracting the a priori value of the power-law spectral index from the power spectrum
+
+### Added
+- separating the residual series into the contribution of the different noise model components with the Wiener filter 
+- uploading local series in GeoCVS format from EarthScope and in PLH format from SIRGAS
+- converting the CNES Julian days into Modified Julian days
+- adding a random and anonymous session id to the log file
+
+
 # mayo 2024 [2024.05]
 
 ### Fixed

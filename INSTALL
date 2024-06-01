@@ -1,7 +1,9 @@
-Instructions to run SARI locally using R/RStudio on Windows, Linux or MacOS
-----------------------------------------------------------------------------
+Instructions to install and run SARI locally using R/RStudio on Windows, Linux or MacOS
+---------------------------------------------------------------------------------------
 
-Note on the Windows Subsystem for Linux: if using scripts/sari.sh to launch SARI from a WSL terminal, R and all the package dependencies must be installed on WSL as well. The Windows install will only be accessible from Windows itself, for instance with RStudio. The windows install is not necessary if running SARI only from WSL.
+Note 1: as a general rule, it is recommended to compile all the R dependencies on your machine if that is possible. It will take much more time to install all the packages, but SARI will run much faster compared to an install based on pre-compiled binaries.
+
+Note 2: if you want to run SARI on a Windows Subsystem for Linux (WSL) terminal (without RStudio), for instance by using the sari.sh script, in that case R and all the package dependencies must be installed on WSL. A Windows install will only be accessible from Windows itself, not from WSL. The windows install is not necessary if running SARI only from WSL.
 
 
 
@@ -39,7 +41,9 @@ sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontc
 `
 
 
-4) Install all the R packages indicated below and their dependencies from CRAN. There are several ways of installing the required packages:  
+4) Install all the R packages indicated below and their dependencies from CRAN. 
+
+The two methods indicated below will either install the package binaries or either compile packages from source. Compiling the package sources may take a long time now, but it allows running SARI much faster later.
 
 4.1) On Rstudio, go to Tools -> Install Packages  
 Then copy&paste the following list of packages separated by spaces or commas:
@@ -50,8 +54,6 @@ data.table, devtools, dlm, fields, lubridate, magrittr, markdown, matrixStats, n
 `
 install.packages(c("data.table", "devtools", "dlm", "fields", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"))
 `
-
-4.3) The above two methods will either install the package binaries on Windows (probably on macOS as well) or compile packages from source on Linux, which may take a long time. A third method would consist on installing the Linux binaries, if a repo is available on CRAN. This method depends on each Linux distro and will not be described here.
 
 
 
