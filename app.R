@@ -4107,7 +4107,7 @@ server <- function(input,output,session) {
                          trans$kalman_unc0[which(trans$kalman_unc0)] <- trans$kalman_unc
                          trans$kalman_unc0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
                          colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
-                         trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T))
+                         trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T),1)
                          trans$kalman_info <- m
                          trans$equation <- sub("y ~","Model =",m$model)
                          end.time <- Sys.time()
@@ -5471,9 +5471,9 @@ server <- function(input,output,session) {
             }
             output$est.white <- renderUI({
               line1 <- "White noise:"
-              line2 <- formatting(sigmaWH)
+              line2 <- formatting(sigmaWH,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsWH)
+                line3 <- formatting(seParmsWH,1)
               }
               HTML(paste(line1,'<br/>',line2,unit,'<br/>+/-',line3))
             })
@@ -5506,9 +5506,9 @@ server <- function(input,output,session) {
             }
             output$est.flicker <- renderUI({
               line1 <- "Flicker noise:"
-              line2 <- formatting(sigmaFL)
+              line2 <- formatting(sigmaFL,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsFL)
+                line3 <- formatting(seParmsFL,1)
               }
               HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
             })
@@ -5542,9 +5542,9 @@ server <- function(input,output,session) {
             }
             output$est.randomw <- renderUI({
               line1 <- "Random walk:"
-              line2 <- formatting(sigmaRW)
+              line2 <- formatting(sigmaRW,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsRW)
+                line3 <- formatting(seParmsRW,1)
               }
               HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
             })
@@ -5578,9 +5578,9 @@ server <- function(input,output,session) {
             }
             output$est.powerl <- renderUI({
               line1 <- "Power-law:"
-              line2 <- formatting(sigmaPL)
+              line2 <- formatting(sigmaPL,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsPL)
+                line3 <- formatting(seParmsPL,1)
               }
               HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
             })
@@ -12125,11 +12125,11 @@ server <- function(input,output,session) {
       cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
         max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
-        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1]), '+/-', formatting(trans$LScoefs[i,2])), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1],1), '+/-', formatting(trans$LScoefs[i,2],1)), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$results$sinusoidales)) {
         for (i in 1:dim(trans$results$sinusoidales)[1]) {
-          cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2]), '+/-', formatting(trans$results$sinusoidales[i,3]), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4]), '+/-', formatting(trans$results$sinusoidales[i,5]), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],1), '+/-', formatting(trans$results$sinusoidales[i,3],1), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
         } 
       }
     } else if (input$fitType == 2 && length(trans$kalman) > 0) {
@@ -12138,24 +12138,24 @@ server <- function(input,output,session) {
       } else if (input$kf == 2) {
         cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
       }
-      cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman)), '+/-', formatting(colMeans(trans$kalman_unc))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori), '+/-', formatting(trans$kalman_info$error)), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise)))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# Measurement noise:', formatting(inputs$ObsError), unit), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),1), '+/-', formatting(colMeans(trans$kalman_unc),1)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,1), '+/-', formatting(trans$kalman_info$error,1)), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (length(trans$offsetEpochs) > 0) {
       cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
       if (isTruthy(trans$midas_vel2)) {
-        cat(paste('# MIDAS:', formatting(trans$midas_vel), '+/-', formatting(trans$midas_sig), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# MIDAS:', formatting(trans$midas_vel2), '+/-', formatting(trans$midas_sig2), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
       } else {
-        cat(paste('# MIDAS:', formatting(trans$midas_vel), '+/-', formatting(trans$midas_sig), units), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
-      cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel), '+/-', formatting(trans$entropy_sig), units), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,1), '+/-', formatting(trans$entropy_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$waveform && inputs$waveformPeriod > 0) {
       cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
@@ -12178,16 +12178,16 @@ server <- function(input,output,session) {
     }
     if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
       if (isTruthy(trans$noise[1])) {
-        cat(paste('# Noise: WH', formatting(trans$noise[1]), '+/-', formatting(trans$noise[2]), unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: WH', formatting(trans$noise[1],1), '+/-', formatting(trans$noise[2],1), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[3])) {
-        cat(paste('# Noise: FL', formatting(trans$noise[3]), '+/-', formatting(trans$noise[4]), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: FL', formatting(trans$noise[3],1), '+/-', formatting(trans$noise[4],1), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[5])) {
-        cat(paste('# Noise: RW', formatting(trans$noise[5]), '+/-', formatting(trans$noise[6]), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: RW', formatting(trans$noise[5],1), '+/-', formatting(trans$noise[6],1), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[7])) {
-        cat(paste('# Noise: PL', formatting(trans$noise[7]), '+/-', formatting(trans$noise[8]), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Noise: PL', formatting(trans$noise[7],1), '+/-', formatting(trans$noise[8],1), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$noise[9])) {
         cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, digits = 0, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
@@ -12210,70 +12210,70 @@ server <- function(input,output,session) {
       digits <- 0
     }
     OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx)
-    OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"])
+    OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
     if (isTruthy(input$sigmas)) {
-      OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"])
+      OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
     }
     
     if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-        OutPut$df$Model <- formatting(trans$mod - trans$pattern)
-        OutPut$df$Residuals <- formatting(trans$res + trans$pattern)
+        OutPut$df$Model <- formatting(trans$mod - trans$pattern,1)
+        OutPut$df$Residuals <- formatting(trans$res + trans$pattern,1)
       } else {
-        OutPut$df$Model <- formatting(trans$mod)
-        OutPut$df$Residuals <- formatting(trans$res)
+        OutPut$df$Model <- formatting(trans$mod,1)
+        OutPut$df$Residuals <- formatting(trans$res,1)
       }
     }
     if (input$fitType == 1 && length(input$model) > 0) {
       if (length(trans$moderror) > 0) {
-        OutPut$df$Sigma.Model <- formatting(trans$moderror)
+        OutPut$df$Sigma.Model <- formatting(trans$moderror,1)
       }
       if (length(trans$reserror) > 0) {
-        OutPut$df$Sigma.Residuals <- formatting(trans$reserror)
+        OutPut$df$Sigma.Residuals <- formatting(trans$reserror,1)
       }
     }
     if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
-        OutPut$df$Smooth <- formatting(trans$filter - trans$pattern)
-        OutPut$df$Smooth.Residuals <- formatting(trans$filterRes + trans$pattern)
+        OutPut$df$Smooth <- formatting(trans$filter - trans$pattern,1)
+        OutPut$df$Smooth.Residuals <- formatting(trans$filterRes + trans$pattern,1)
       } else {
-        OutPut$df$Smooth <- formatting(trans$filter)
-        OutPut$df$Smooth.Residuals <- formatting(trans$filterRes)
+        OutPut$df$Smooth <- formatting(trans$filter,1)
+        OutPut$df$Smooth.Residuals <- formatting(trans$filterRes,1)
       }
     }
     if (input$wiener && input$mle) {
       if (input$white && length(trans$white) > 0) {
-        OutPut$df$White <- formatting(trans$white)
+        OutPut$df$White <- formatting(trans$white,1)
         if (input$sigmas && length(trans$white_sig) > 0) {
-          OutPut$df$Sigma.White <- formatting(trans$white_sig)
+          OutPut$df$Sigma.White <- formatting(trans$white_sig,1)
         }
       }
       if (input$flicker && length(trans$flicker) > 0) {
-        OutPut$df$Flicker <- formatting(trans$flicker)
+        OutPut$df$Flicker <- formatting(trans$flicker,1)
         if (input$sigmas && length(trans$flicker) > 0) {
-          OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig)
+          OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig,1)
         }
       }
       if (input$randomw && length(trans$randomw) > 0) {
-        OutPut$df$RandomWalk <- formatting(trans$randomw)
+        OutPut$df$RandomWalk <- formatting(trans$randomw,1)
         if (input$sigmas && length(trans$randomw_sig) > 0) {
-          OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig)
+          OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig,1)
         }
       }
       if (input$powerl && length(trans$powerl) > 0) {
-        OutPut$df$PowerLaw <- formatting(trans$powerl)
+        OutPut$df$PowerLaw <- formatting(trans$powerl,1)
         if (input$sigmas && length(trans$powerl_sig) > 0) {
-          OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig)
+          OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig,1)
         }
       }
     }
     if (input$fitType == 2 && length(trans$res) > 0) {
-      OutPut$df <- cbind(OutPut$df,formatting(trans$kalman))
+      OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,1))
       colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
-      OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc))
+      OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,1))
     }
     if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-      OutPut$df$Waveform <- formatting(trans$pattern)
+      OutPut$df$Waveform <- formatting(trans$pattern,1)
     }
     if (isTruthy(input$add_excluded)) {
       if (isTruthy(input$sigmas)) {
@@ -12284,7 +12284,7 @@ server <- function(input,output,session) {
         names(output_excluded$df) <- c("# Epoch", "Data")
       }
       output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F,scientific = F)
-      output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"])
+      output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],0)
       if (isTruthy(input$sigmas)) {
         OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
       } else {
@@ -13870,11 +13870,16 @@ server <- function(input,output,session) {
     return(z)
   }
   #
-  formatting <- function(x) {
+  formatting <- function(x, y) {
     # width <- nchar(format(x, nsmall = info$nsmall, digits = info$digits, scientific = info$scientific, trim = F))
     # width <- max(width + 1 - 1*grepl("^-", x, perl = T, ))
     width <- NULL
-    return(format(x, nsmall = info$nsmall, digits = info$digits, scientific = info$scientific, trim = F, width = width))
+    if (info$scientific) {
+      extra_dec <- 0
+    } else {
+      extra_dec <- y
+    }
+    return(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits, scientific = info$scientific, trim = F, width = width))
   }
   #
   debugMem <- function() {
