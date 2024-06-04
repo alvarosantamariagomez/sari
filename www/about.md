@@ -88,7 +88,9 @@ This block allows uploading and setting the series format, if necessary, before 
 
 There are three different ways to upload a time series on SARI:
 
+<p id="format"></p>
 1) The user can upload GNSS series from <ins>**local files**</ins> using the `Input series` option. GNSS series are allowed in the *NEU/ENU* format (North/East, East/North, Up) or in the file formats produced by *PBO* (with extension *.pos*, version 1.1.0) and *NGL* (with extension *.tenv3*). For series that are not in *NEU/ENU*, *PBO* or *NGL* format, the user must use the *1D* option, then set the column separator (blanks, commas or semi-colons) and then set the column numbers containing the epochs, the variable and the error bars if available.  
+<p id="tunits"></p>
 For *NEU/ENU* and *1D* series, the user may need to set the `Time units` (days, weeks or years) and the `Series units` (metres or millimetres) of the input series, which may be otherwise unknown to SARI. For the *PBO* and *NGL* series, different time units are available in these formats, so changing the `Time units` is optional. The latter also applies in case of a *NEU/ENU* series where the epochs are provided in [ISO 8601 calendar date and time format](https://en.wikipedia.org/wiki/ISO_8601).  
 The user must pay attention to the time units that are set when the series are loaded, as these units will define the sampling of the series. Changing the time units later when the series are already plotted will chage the units of the time axis, but not its sampling, i.e. it will change one point per day into one ponint per ~0.1429 weeks or ~0.0027 years.  
 The input file can contain comments anywhere identified by a *#* at the beginning of the line. These lines will be skipped. In case uncommented text is found, the behavior depends on the requested series format:  
@@ -96,6 +98,7 @@ Any non-numeric value in a *NEU/ENU* or *1D* series will make the full line to b
 For the *PBO* and *NGL* series, the headers are recognized and skipped, also the first two columns of the *NGL* files and the last column of the *PBO* files. However, any other non-numeric value in these files will stop the app.  
 Data records having a NA, NaN or Inf/inf entries will be treated as valid not-available or not-a-number numeric values and will be automatically skipped, but na, Na, nan, NAN or any other string will be considered as unwanted text.  
 If the series does not contain error bars, or the user does not want to use them, it is possible to turn the error bars off in the processing using the `use error bars` option. By default, they are always on.  
+<p id="header"></p>
 If the format of the input file is not known (content of columns, separation, etc.), it is possible to print on screen the first lines of the input series to assess the corresponding format before plotting using the `show series header` option.  After the series has been plotted, if it is not a *1D* series, this option will show the first lines of the coordinate component that has been extracted from the input file and is being used in the analysis.  
 When the format of the series is set, click the `Plot` button in the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block.
 
@@ -233,10 +236,12 @@ When uploading a series from a remote server via the the `server`, `product` and
 
 Once uploaded and plotted (see the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block), the three coordinates components of the GNSS series will be shown in separate tabs on the top. In case the coordinate components are not known to SARI, the tabs will be labeled : 1st, 2nd and 3rd component, respectively. When plotting a primary and a secondary series with different formats, the option `N@E` can be activated to match the coordinate components North and East of the secondary series with respect to those of the primary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).
 
+<p id="series-id"></p>
 For GNSS time series, the station ID is extracted from the first characters of the input file name and will be shown in the `series ID` box under the loaded series. The station ID can be modified by the user if necessary. For more information on the use of the station ID, see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block. For other type of series, this feature can be neglected.
 
 A summary of the contents of the uploaded series will be shown on the left pannel. If the station coordinates are known, the station location will be shown on a location map, together with the [<a href="#references" target="_self">Bird (2003)</a>](#references) plate boundaries. The station ID and the plate name can be obtained by hoovering over the map.
-  
+
+<p id="average"></p>
 It is possible to average and reduce the sampling of the input series, for instance from daily values to weekly, by using the `reduce sampling` option. The user needs to provide the new sampling period in the same time units of the series. This option also accepts expressions identified by a starting *=*, such as *=7/365.25* for transforming a daily series into weekly using year units.  
 If high-frequency data are not needed, averaging the series will save a lot of time when fitting models, finding discontinuities or when estimating the colored noise in the series (see the [<a href="#additional-fit" target="_self">Additional fit</a>](#v.-additional-fit) block).  
 If the series was computed with a constant integration period, like the common 24 h in GNSS position series, this option is useful to transform daily GNSS series with irregular sampling into daily GNSS series with regular sampling, i.e., one point every 24 h, except when data gaps exist.  
@@ -253,17 +258,23 @@ Also, if there is a secondary series being used with the `correct` or `average` 
 Once the format of the series is set, this block allows plotting/resetting the time series with the `plot` button.  
 The button `overview` opens a new browser window containing a plot of the three coordinate components that takes into account the current state of the series (zoom, removed points, plate motion correction, etc.).  
 
+<p id="cut"></p>
 The `truncate` option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the [<a href="#input-format" target="_self">Input data and format</a>](#input-format) section).  
+<p id="threshold"></p>
 Outliers selected manually can be excluded from the analysis with the `toggle` option. Outliers can also be `auto toggled` by setting a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).  
 See more details about removing/restoring points manually in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section.
 
+<p id="3d"></p>
 The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously, which is useful if one wants to join the results from each coordinate component into a single file afterwards (a NEU/ENU file for instance). This option works also when analyzing different columns using the 1D series format.
 
+<p id="permanent"></p>
 The `permanent` option will permanently delete the next points to be toggled/truncated from the series (see more details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section). Permanently here means these points cannot be restored back and they will not be shown again in the current session. This option is intended, for instance, to remove extreme outliers that do not allow visualizing the series correctly.  
 The original series file is not modified and can be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are toggled/truncated in a single action, it will automatically deactivate itself so the next points to be toggled/truncated will be available to be restored. When toggling/truncating p.oints that were already removed, this option will delete them permanently as well, instead of restoring them.
 
+<p id="excluded"></p>
 The `include in file` option will keep the excluded outliers in the downloaded results file as commented lines. No fitting values will be provided for these points.  
 
+<p id="scrolling"></p>
 The `scrolling` option enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing/archiving a specific analysis, making reports or marking assignments. The quality of the full page screenshot may depend on the browser/extension used.  
 
 Alternatively, the user can download the full SARI interface from the web browser (usually by pressing Ctrl+s) into an HTML file together with the corresponding web files in a separate directory having a similar name. The downloaded HTML file represents a frozen SARI session (i.e., not connected to the server) that can be reopened later on the web browser even offline. The advantage of the HTML page compared to the fixed screenshot is that all the numeric values are available to be selected and copied, so the same analysis can be easily replicated in a live session. However, before opening the HTML file in a web browser, it needs to be modified first. The shell script [SARIwebpage.sh](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/SARIwebpage.sh) does the modifications automatically.  
