@@ -3212,7 +3212,8 @@ server <- function(input,output,session) {
             # Extracting Sinusoidal info
             if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
               index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              updateTextInput(session, "periodRef", value = unique(text[index + 1]))
+              inputs$periodRef <- unique(text[index + 1])
+              updateTextInput(session, "periodRef", value = inputs$periodRef)
               info$periodRef <- T
               if (input$tunits == 1) {
                 units <- "d"
