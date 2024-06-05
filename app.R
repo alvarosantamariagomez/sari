@@ -13748,7 +13748,11 @@ server <- function(input,output,session) {
   }
   #
   mjd2week <- function(x) {
-    return((x - 44244)/7)
+    offset <- 0
+    if (all(x < 35000)) {
+      offset <- 33282
+    }
+    return((x + offset - 44244)/7)
   }
   #
   week2mjd <- function(x) {
@@ -13756,7 +13760,11 @@ server <- function(input,output,session) {
   }
   #
   mjd2year <- function(x) {
-    return(decimal_date(as.Date(x, origin = as.Date("1858-11-17"))))
+    offset <- 0
+    if (all(x < 35000)) {
+      offset <- 33282
+    }
+    return(decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))
   }
   #
   year2mjd <- function(x) {
