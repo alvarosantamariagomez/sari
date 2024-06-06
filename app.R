@@ -13799,12 +13799,13 @@ server <- function(input,output,session) {
     H <- 0
     breaks <- unique(sort(c(trans$x[1],trans$offsetEpochs,trans$offsetEpoch.entropy,trans$x[length(trans$x)])))
     detrended <- trans$y - trans$x * vel
+    ntot <- length(unique(detrended))
     for (i in seq_len(length(breaks) - 1)) {
       segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
-      series <- detrended[segment]
+      series <- unique(detrended[segment])
       w <- max(table(series)) + 1
-      p <- length(series)/length(detrended)
       n <- length(series)
+      p <- n/ntot
       xord <- sort(series)
       S <- numeric(n)
       S[1:w] <- log2(n*(xord[1:w + w] - xord[1])/(2*w))
