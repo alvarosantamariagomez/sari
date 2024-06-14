@@ -12334,6 +12334,7 @@ server <- function(input,output,session) {
   }
   #
   collect_periodogram <- function(file_out) {
+    removeNotification("bad_output")
     if (messages > 0) cat(file = stderr(), mySession, "Downloading periodogram", "\n")
     now <- paste0(" run on ",Sys.time()," ",Sys.timezone())
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
@@ -12370,31 +12371,34 @@ server <- function(input,output,session) {
     cat(paste("# Shortest period =",inputs$short_period, period), file = file_out, sep = "\n", fill = F, append = T)
     cat(paste("# Oversampling =",inputs$ofac), file = file_out, sep = "\n", fill = F, append = T)
     OutPut$df <- as.data.frame(trans$spectra)
-    req(OutPut$df)
-    names(OutPut$df)[1] <- "# period"
-    column <- 2
-    if (input$spectrumOriginal) {
-      names(OutPut$df)[column] <- "original"
-      column <- column + 1
+    if (isTruthy(OutPut$df) && ncol(OutPut$df) > 1) {
+      names(OutPut$df)[1] <- "# period"
+      column <- 2
+      if (input$spectrumOriginal) {
+        names(OutPut$df)[column] <- "original"
+        column <- column + 1
+      }
+      if (input$spectrumModel && isolate(length(trans$mod) > 0) && isolate(length(trans$res) > 0)) {
+        names(OutPut$df)[column] <- "model"
+        column <- column + 1
+      }
+      if (input$spectrumResiduals && length(trans$res) > 0) {
+        names(OutPut$df)[column] <- "modelResiduals"
+        column <- column + 1
+      }
+      if (input$spectrumFilter && isolate(length(trans$filter) > 0)) {
+        names(OutPut$df)[column] <- "filter"
+        column <- column + 1
+      }
+      if (input$spectrumFilterRes && length(trans$filterRes) > 0) {
+        names(OutPut$df)[column] <- "filterResiduals"
+        column <- column + 1
+      }
+      colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
+      suppressWarnings(write.table(format(OutPut$df, digits = 6, nsmall = 6, trim = F, scientific = F),file_out,append = T,quote = F,sep = "  ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
+    } else {
+      showNotification("Problem when writing the periodogram data to a file.", action = NULL, duration = 10, closeButton = T, id = "bad_output", type = "error", session = getDefaultReactiveDomain())
     }
-    if (input$spectrumModel && isolate(length(trans$mod) > 0) && isolate(length(trans$res) > 0)) {
-      names(OutPut$df)[column] <- "model"
-      column <- column + 1
-    }
-    if (input$spectrumResiduals && length(trans$res) > 0) {
-      names(OutPut$df)[column] <- "modelResiduals"
-      column <- column + 1
-    }
-    if (input$spectrumFilter && isolate(length(trans$filter) > 0)) {
-      names(OutPut$df)[column] <- "filter"
-      column <- column + 1
-    }
-    if (input$spectrumFilterRes && length(trans$filterRes) > 0) {
-      names(OutPut$df)[column] <- "filterResiduals"
-      column <- column + 1
-    }
-    colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
-    suppressWarnings(write.table(format(OutPut$df, digits = 6, nsmall = 6, trim = F, scientific = F),file_out,append = T,quote = F,sep = "  ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
   }
   #Based on www.datall-analyse.nl/R/UKF.R
   UKF <- function(y, mod, GGfunction, FFfunction, kappa=0, sqrtMethod="Cholesky", logLik=FALSE, simplify=FALSE) {
