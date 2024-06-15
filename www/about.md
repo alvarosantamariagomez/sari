@@ -671,6 +671,66 @@ Zeileis A, Kleiber C, Krämer W, Hornik K (2003) Testing and Dating of Structura
 
 -----------------
 
+[<a href="#contents" target="_self">Go to top of document</a>](#contents)  
+
+# R packages
+
+Attali D (2021) shinyjs: Easily Improve the User Experience of Your Shiny Apps in Seconds. R package version 2.1.0. https://CRAN.R-project.org/package=shinyjs
+
+Azzalini A, Genz A (2022) The R package 'mnormt': The multivariate normal and 't' distributions (version 2.1.1). http://azzalini.stat.unipd.it/SW/Pkg-mnormt/
+
+Bailey E (2022) shinyBS: Twitter Bootstrap Components for Shiny. R package version 0.61.1. https://CRAN.R-project.org/package=shinyBS
+
+Barrett T, Dowle M, Srinivasan A, Gorecki J, Chirico M, Hocking T (2024) data.table: Extension of data.frame. R package version 1.15.4. https://CRAN.R-project.org/package=data.table
+
+Bengtsson H (2024) matrixStats: Functions that Apply to Rows and Columns of Matrices (and to Vectors). R package version 1.3.0. https://CRAN.R-project.org/package=matrixStats
+
+Borchers HW (2023) pracma: Practical Numerical Math Functions. R package version 2.4.4. https://CRAN.R-project.org/package=pracma
+
+Chamberlain S, Teucher A, Mahoney M (2023) geojsonio: Convert Data from and to 'GeoJSON' or 'TopoJSON'. R package version 0.11.3. https://CRAN.R-project.org/package=geojsonio
+
+Chang W (2021) shinythemes: Themes for Shiny. R package version 1.2.0. https://CRAN.R-project.org/package=shinythemes
+
+Chang W, Cheng J, Allaire JJ, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2024) shiny: Web Application Framework for R. R package version 1.8.1.1. https://CRAN.R-project.org/package=shiny
+
+Cheng J, Schloerke B, Karambelkar B, Xie Y (2024) leaflet: Create Interactive Web Maps with the JavaScript 'Leaflet' Library. R package version 2.2.2. https://CRAN.R-project.org/package=leaflet
+
+Gilbert P, Varadhan R (2019) numDeriv: Accurate Numerical Derivatives. R package version 2016.8-1.1. https://CRAN.R-project.org/package=numDeriv
+
+Grolemund G, Wickham H (2011) Dates and Times Made Easy with lubridate. Journal of Statistical Software, 40(3), 1-25. https://www.jstatsoft.org/v40/i03/
+
+Keitt TH (2019) mvcwt: Wavelet Analysis of Multiple Time Series. R package version 1.3.1. https://CRAN.R-project.org/package=mvcwt
+
+Milton Bache S, Wickham H (2022) magrittr: A Forward-Pipe Operator for R. R package version 2.0.3. https://CRAN.R-project.org/package=magrittr
+
+Neuwirth E (2022) RColorBrewer: ColorBrewer Palettes. R package version 1.1-3. https://CRAN.R-project.org/package=RColorBrewer
+
+Nychka D, Furrer R, Paige J, Sain S (2021) fields: Tools for spatial data. R package version 15.2. https://github.com/dnychka/fieldsRPackage
+
+Ooms J (2014) The jsonlite Package: A Practical and Consistent Mapping Between JSON Data and R Objects. arXiv:1403.2805. https://arxiv.org/abs/1403.2805.
+
+Petris G (2010) An R Package for Dynamic Linear Models. Journal of Statistical Software, 36(12), 1-16. https://www.jstatsoft.org/v36/i12/.
+
+Petris, Petrone, and Campagnoli (2009) Dynamic Linear Models with R. Springer.
+
+Revelle W (2024) psych: Procedures for Psychological, Psychometric, and Personality Research. Northwestern University, Evanston, Illinois. R package version 2.4.3. https://CRAN.R-project.org/package=psych.
+
+Sali A, Attali D (2020) shinycssloaders: Add Loading Animations to a 'shiny' Output While It's Recalculating. R package version 1.0.0. https://CRAN.R-project.org/package=shinycssloaders
+
+Seilmayer M (2021) spectral: Common Methods of Spectral Data Analysis. R package version 2.0. https://CRAN.R-project.org/package=spectral
+
+Temple Lang D (2023) RCurl: General Network (HTTP/FTP/...) Client Interface for R. R package version 1.98-1.12. https://CRAN.R-project.org/package=RCurl
+
+Temple Lang D (2023) XML: Tools for Parsing and Generating XML Within R and S-Plus. R package version 3.99-0.14. https://CRAN.R-project.org/package=XML
+
+Trapletti A, Hornik K (2024) tseries: Time Series Analysis and Computational Finance. R package version 0.10-56. https://CRAN.R-project.org/package=tseries
+
+Xie Y, Allaire JJ, Horner J (2024) markdown: Render Markdown with 'commonmark'. R package version 1.13. https://CRAN.R-project.org/package=markdown
+
+Zeileis A, Leisch F, Hornik K, Kleiber C (2002) strucchange: An R Package for Testing for Structural Change in Linear Regression Models. Journal of Statistical Software, 7(2), 1-38. doi: 10.18637/jss.v007.i02. https://doi.org/10.18637/jss.v007.i02.
+
+-----------------
+
 <h1 id="author"></h1>
 
 # Author
