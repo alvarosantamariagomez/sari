@@ -142,7 +142,7 @@ withBusyIndicatorUI <- function(button) {
   )
 }
 
-# HTML class for disabled tabs
+# CSS class for disabled tabs
 withBusyIndicatorCSS <- "
   .btn-loading-container {
     margin-left: 10px;
@@ -221,14 +221,14 @@ Shiny.addCustomMessageHandler('trendRef', function(txt) {
   target.val(txt);
 }); "
 
-# Hide loading page, from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
+# Hide loading page splash, from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
   Sys.sleep(seconds)
   hide("loading_page")
   show("main_content")
 }
 
-# Setting the plots of the visualization panel
+# Setting the layout of the plots in the visualization panel
 tabContents <- function(tabNum) {
   if (tabNum == 1) {
     tabName <- uiOutput("tabName1")
@@ -372,7 +372,7 @@ tabContents <- function(tabNum) {
   )
 }
 
-# Shiny/R options
+# Shiny/R general options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 # options(shiny.trace = T)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
@@ -408,7 +408,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   )
                 ),
                 
-                # Getting the input elements that change
+                # Getting the input elements that are solicited during execution
                 tags$script(
                   "$(document).on('shiny:inputchanged', function(event) {
                       if (event.name !== 'changed') {
@@ -424,7 +424,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$head(tags$link(rel = "shortcut icon", href = "favicon.png")),
                   tags$meta(name = "application-name", content = "SARI"),
                   tags$meta(name = "description", content = "Interactive & online GNSS position time series analysis tool"),
-                  tags$meta(name = "keywords", content = "SARI,sari,GNSS,time,series,analysis"),
+                  tags$meta(name = "keywords", content = "SARI,sari,GNSS,gnss,GPS,gps,time,series,analysis"),
                   tags$meta(name = "author", content = "Alvaro Santamaria-Gomez"),
                   tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0"),
                   tags$html(lang = "en"),
@@ -451,10 +451,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
                   tags$style(type = 'text/css', 'form.well { height: 96vh; overflow-y: auto; width: 100%}'),
-                  tags$head(tags$style(".modal-body {padding: 10px}
+                  tags$style(".modal-body {padding: 10px}
                      .modal-content  {-webkit-border-radius: 6px !important;-moz-border-radius: 6px !important;border-radius: 6px !important;}
                      .modal-dialog { width: 90%; max-width: 600px; vertical-align: center;}
-                     .modal { color: #333333; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}")),
+                     .modal { color: #333333; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}"),
                   
                   # Getting user screen size (from https://stackoverflow.com/questions/36995142/get-the-size-of-the-window-in-shiny)
                   tags$script('
@@ -476,7 +476,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                 });
                             '),
                   
-                  # update fileInput file name from URL
+                  # update fileInput file names from URL
                   tags$script(HTML(update_series)),
                   tags$script(HTML(update_series2)),
                   tags$script(HTML(update_sitelog)),
@@ -2108,15 +2108,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 server <- function(input,output,session) {
   
-  toggleClass( # disabling clicking on SARI name (panic button)
+  toggleClass( # disabling clicking on the SARI name
     class = "disabled",
     selector = "#tab li a[data-value=0]"
   )
   
+  # starting logging the user' session
   mySession <- NULL
-  cat(file = stderr(), mySession, "\n", "\n", "START", "\n")
+  cat(file = stderr(), "\n", "\n", "START", "\n")
   
-  # Catch refreshed page
+  # Catching a refreshed page, but trying to exclude the loading of a new instance
   shinyjs::runjs("
     var pageAccessedByReload = 'false';
     var startTime = 0;
@@ -2128,7 +2129,7 @@ server <- function(input,output,session) {
     Shiny.onInputChange('refreshed', pageAccessedByReload);
   ")
 
-  # Debugging (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
+  # Debugging pit stop (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
   observeEvent(input$browser,{
     browser()
   })
@@ -2209,13 +2210,12 @@ server <- function(input,output,session) {
   reset("main-panel")
   
   # Constants ####
-  # Some initial values and constants
   SARIcolors <- c("black", "#DF536B", "#61D04F", "#2297E6", "#28E2E5", "#CD0BBC", "#F5C710", "gray62") # colorblind palette copied from the palette R4 for R versions < 4
   daysInYear <- 365.2425 # Gregorian year
-  degMa2radyr <- pi/180000000 # geologic to geodetic conversion
-  debug <- F # saving the environment (if it were really true ...)
+  degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
+  debug <- F # saving the environment
   messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
-  info$components <- c("Visualization panel", "", "")
+  info$components <- c("Visualization panel", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ info$components[1] })
   output$tabName2 <- renderText({ info$components[2] })
   output$tabName3 <- renderText({ info$components[3] })
@@ -2250,18 +2250,17 @@ server <- function(input,output,session) {
       ))
       load_data(2)
     } else {
-      if (info$local) {
+      if (info$local) { # local SARI session
         load_data(0)
         if (!is.null(dev.list())) dev.off()
         shinyjs::show("localDir")
-        
-      } else {
+      } else { # remote SARI session
         shinyjs::delay(100, {
-          if (isTRUE(input$refreshed)) {
+          if (isTRUE(input$refreshed)) { # we do not like refreshed remote sessions
             if (messages > 0) cat(file = stderr(), mySession, "Page refreshed", "\n")
             showModal(modalDialog(
               title = tags$h3("Dear SARI user"),
-              HTML("<div style='padding: 0px 50px'>The SARI webpage has been reloaded.<br><br>If this was due to an error, please consider giving feedback to the author <a href='https://github.com/alvarosantamariagomez/sari' target='_blank'>here</a>.<br><br>Otherwise, if the session is still connected to the server, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section).</div>"),
+              HTML("<div style='padding: 0px 50px'>The SARI webpage has been reloaded.<br><br>If this was due to an error, please consider giving feedback <a href='https://github.com/alvarosantamariagomez/sari' target='_blank'>here</a>.<br><br>Otherwise, if the session is still connected to the server, to start a new analysis, it is <span style='color: red; font-weight: bold;'>strongly recommended</span> to use the RESET button instead (left panel, plot controls section).</div>"),
               size = "m",
               easyClose = T,
               fade = T
@@ -2272,6 +2271,7 @@ server <- function(input,output,session) {
         if (messages > 2) cat(file = stderr(), mySession, "Pixel ratio", info$pixelratio, "\n")
         if (messages > 2) cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
         shinyjs::hide("localDir")
+        # welcome message on screen (deprecated)
         if (isTRUE(info$welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = "point_to_help", type = "message", session = getDefaultReactiveDomain())
           if (messages > 2) cat(file = stderr(), mySession, "Warning", "\n")
@@ -2289,9 +2289,10 @@ server <- function(input,output,session) {
           }
           info$welcome <- F
         }
-        mySession <<- as.integer(runif(n = 1, min = 1, max = 999999))
+        mySession <<- as.integer(runif(n = 1, min = 1, max = 999999)) # setting anonymous user' session id
         load_data(2)
       }
+      # setting the IU options that are defined at the server side
       output$station1 <- renderUI({
         textInput(inputId = "station1", label = "Station", value = "")
       })
@@ -2320,8 +2321,8 @@ server <- function(input,output,session) {
     info$intro <- F
   }, priority = 2000)
 
-  # GUI reactive flags ####
-  output$print_out <- reactive({}) # to avoid hidden() breaking the downloadHandler()
+  # UI output reactive flags ####
+  output$print_out <- reactive({}) # bugfix to avoid hidden() breaking the downloadHandler()
   outputOptions(output, "print_out", suspendWhenHidden = F)
   output$download <- reactive({})
   outputOptions(output, "download", suspendWhenHidden = F)
@@ -2439,7 +2440,7 @@ server <- function(input,output,session) {
     HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
   })
 
-  # Debouncers & checks for reactive typed inputs ####
+  # Debouncers & checks for user typed inputs ####
   reactive({
     inputs$ObsError <- suppressWarnings(as.numeric(trimws(input$ObsError, which = "both", whitespace = "[ \t\r\n]")))
   }) %>% debounce(0, priority = 1000)
