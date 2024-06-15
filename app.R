@@ -16,29 +16,29 @@
 
 # Loading packages ####
 suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-  library(data.table, verbose = F, quietly = T) #v1.14.0
-  library(dlm, verbose = F, quietly = T) #v1.1-5
-  library(fields, verbose = F, quietly = T) #v12.5
-  library(lubridate, verbose = F, quietly = T) #v1.7.10
-  library(magrittr, verbose = F, quietly = T) #v2.0.1
-  library(markdown, verbose = F, quietly = T) #v1.1
-  library(matrixStats, verbose = F, quietly = T) #v0.59.0
-  library(mnormt, verbose = F, quietly = T) #v2.0.2
-  library(numDeriv, verbose = F, quietly = T) #v2016.8-1.1
-  library(pracma, verbose = F, quietly = T) #v2.3.8
-  library(psych, verbose = F, quietly = T) #v2.1.6
-  library(RColorBrewer, verbose = F, quietly = T) #v1.1-2
-  library(RCurl, verbose = F, quietly = T) #v1.98-1.12
-  library(XML, verbose = F, quietly = T) #v3.99-0.14
-  library(jsonlite, verbose = F, quietly = T) #v1.8.0
-  library(shinyBS, verbose = F, quietly = T) #v0.61
-  library(shinycssloaders, verbose = F, quietly = T) #v1.0.0
-  library(shinyjs, verbose = F, quietly = T) #v2.0
-  library(shinythemes, verbose = F, quietly = T) #v1.2.0
-  library(shiny, verbose = F, quietly = T) #v1.6.0
-  library(spectral, verbose = F, quietly = T) #v2.0
-  library(strucchange, verbose = F, quietly = T) #v1.5-2
-  library(tseries, verbose = F, quietly = T) #v0.10-48
+  library(data.table, verbose = F, quietly = T)
+  library(dlm, verbose = F, quietly = T)
+  library(fields, verbose = F, quietly = T)
+  library(lubridate, verbose = F, quietly = T)
+  library(magrittr, verbose = F, quietly = T)
+  library(markdown, verbose = F, quietly = T)
+  library(matrixStats, verbose = F, quietly = T)
+  library(mnormt, verbose = F, quietly = T)
+  library(numDeriv, verbose = F, quietly = T)
+  library(pracma, verbose = F, quietly = T)
+  library(psych, verbose = F, quietly = T)
+  library(RColorBrewer, verbose = F, quietly = T)
+  library(RCurl, verbose = F, quietly = T)
+  library(XML, verbose = F, quietly = T)
+  library(jsonlite, verbose = F, quietly = T)
+  library(shinyBS, verbose = F, quietly = T)
+  library(shinycssloaders, verbose = F, quietly = T)
+  library(shinyjs, verbose = F, quietly = T)
+  library(shinythemes, verbose = F, quietly = T)
+  library(shiny, verbose = F, quietly = T)
+  library(spectral, verbose = F, quietly = T)
+  library(strucchange, verbose = F, quietly = T)
+  library(tseries, verbose = F, quietly = T)
 })))
 
 # Function to check and load packages if installed
@@ -66,7 +66,7 @@ check_load(optionalPackages)
 
 # GUI addons ####
 
-# Help popup (based on https://github.com/daattali/ddpcr/blob/master/inst/shiny/ui/helpers.R)
+# Help popups (based on https://github.com/daattali/ddpcr/blob/master/inst/shiny/ui/helpers.R)
 helpPopup <- function(content, title = NULL, anchor = NULL) {
   if (is.null(anchor)) {
     a(#href = "#",
@@ -113,6 +113,7 @@ helpPopupHeader <- function(content, title = NULL) {
     icon("circle-question", class = "headerIcon")
   )
 }
+
 # Working spinner (based on https://github.com/daattali/advanced-shiny/blob/master/busy-indicator/helpers.R)
 withBusyIndicatorUI <- function(button) {
   id <- button[['attribs']][['id']]
