@@ -11,9 +11,9 @@ The app focuses mostly on GNSS position time series, but any other type of time 
 
 ![SARI screenshot](/www/screenshot.png)
 
+Some examples of use can be found on the [SARI Official Website](https://sari-gnss.github.io)
 
-SARI has been developed in the R programming language, under the interactive framework of the Shiny R package.  
-Currently tested with R version 4.1.0.
+## How to run and/or install
 
 SARI can be run:  
 - remotely on the shinyapps server at this link https://alvarosg.shinyapps.io/sari
@@ -23,14 +23,21 @@ SARI can be run:
 The [SARI shell script](/scripts/sari.sh) can be used to launch SARI from the command line on Unix-like desktop environments and to create desktop shortcuts on any system. To add the script to the PATH environment variable of your system use this from the SARI Git directory:  
 `sudo ln -s $(realpath scripts/sari.sh) /usr/local/bin/.`
 
-The files containing the GNSS series (or any other type of series) can be uploaded from your local machine or from specific remote servers that can accessed via specific parameters on the interface or included in the URL. The latter option makes it possible to include weblinks on a web server to open and analyse any time series in a new tab with SARI. See for example [this page.](https://www.poleterresolide.fr/geodesy-plotter/#/station/CRAL00FRA/130)
+## Where to find help
 
 The [help file](/www/about.pdf) contains detailed information on how to use SARI, including the description of all the implemented functionalities. This file is also accessible from the main web interface of SARI by clicking on the `Help` button.  
 
 A video tutorial is also available [here](https://youtu.be/Zt61jzehhoc).  
 This video tutorial was made with a previous version of SARI and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.
 
-Some examples of use can be found on the [SARI Official Website](https://sari-gnss.github.io)
-
 Further details and references can be found in:  
 Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series analysis software. GPS solutions, 23:52. DOI: [10.1007/s10291-019-0846-y](https://link.springer.com/article/10.1007/s10291-019-0846-y)
+
+## How to contribute
+
+Contributions to the SARI app are welcome!  
+Any type of contribution is accepted: from changing complex functions in the code to suggesting a better style of the interface.
+
+For changes in the code, plase fork this repository, then clone it, make the modification and finally send a pull request. For a more detailed step-by-step guide, you can check [this repo](https://github.com/firstcontributions/first-contributions).
+
+For bug reports, suggestions or questions, please create an issue using a template.
