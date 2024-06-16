@@ -5201,8 +5201,7 @@ server <- function(input,output,session) {
                        fitmle <- NULL
                        apriori <- NULL
                        cl <- NULL
-                       significant <- signifdecimal(vari, T) + 1
-                       scaling <- 10^signifdecimal(sd(res), T)
+                       scaling <- 1/sd(res)
                        resS <- res*scaling
                        if (isTruthy(input$noise_unc)) {
                          hessian <- T
