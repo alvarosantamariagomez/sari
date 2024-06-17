@@ -6155,7 +6155,7 @@ server <- function(input,output,session) {
             updateSelectInput(session, inputId = "giaModel", selected = "")
             disable("giaType")
           } else {
-            if (isTruthy(is.numeric(inputs$giaTrend))) {
+            if (!is.na(inputs$giaTrend)) {
               enable("giaType")
             } else {
               disable("giaType")
