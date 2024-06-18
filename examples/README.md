@@ -1,3 +1,5 @@
+<base target="_blank">
+
 # Examples of time series analysis
 
 The files contained in this folder were downloaded after the analysis of some real time series.  
