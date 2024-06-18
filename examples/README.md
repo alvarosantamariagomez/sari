@@ -3,18 +3,18 @@
 The files contained in this folder were downloaded after the analysis of some real time series.  
 
 Example 1: GNSS & earthquakes  
-<a href="SPOTGINS_CONZ00CHL.enu_East.sari" download>SPOTGINS_CONZ00CHL.enu_East.sari</a>
+<a href="SPOTGINS_CONZ00CHL.enu_East.sari" target="_blank" download>SPOTGINS_CONZ00CHL.enu_East.sari</a>
 
 Example 2: GNSS & mass loading  
-<a href="SPOTGINS_NAUS00BRA.enu_Up.sari" download>SPOTGINS_NAUS00BRA.enu_Up.sari</a>
+<a href="SPOTGINS_NAUS00BRA.enu_Up.sari" target="_blank" download>SPOTGINS_NAUS00BRA.enu_Up.sari</a>
 
 Example 3: Earth rotation  
-<a href="14C04_IAU2000_UT1-UTC_1972.txt.sari" download>14C04_IAU2000_UT1-UTC_1972.txt.sari</a>
+<a href="14C04_IAU2000_UT1-UTC_1972.txt.sari" target="_blank" download>14C04_IAU2000_UT1-UTC_1972.txt.sari</a>
 
 Example 4: sea-level change  
-<a href="1.rlrdata.sari" download>1.rlrdata.sari</a>
+<a href="1.rlrdata.sari" target="_blank" download>1.rlrdata.sari</a>
 
-Check the [official SARI website](https://sari-gnss.github.io) to have a description of the time series contents and their analysis.
+Check the <a href="https://sari-gnss.github.io" target="_blank">official SARI website</a> to have a description of the time series contents and their analysis.
 
 These examples can be used to test and validate some of the analysis options of a local installation of SARI.  
 To do so:
