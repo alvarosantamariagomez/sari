@@ -1,0 +1,27 @@
+# Examples of time series analysis
+
+The files contained in this folder were downloaded after the analysis of some real time series.  
+
+Example 1: GNSS & earthquakes  
+<a href="SPOTGINS_CONZ00CHL.enu_East.sari" download>SPOTGINS_CONZ00CHL.enu_East.sari</a>
+
+Example 2: GNSS & mass loading  
+<a href="SPOTGINS_NAUS00BRA.enu_Up.sari" download>SPOTGINS_NAUS00BRA.enu_Up.sari</a>
+
+Example 3: Earth rotation  
+<a href="14C04_IAU2000_UT1-UTC_1972.txt.sari" download>14C04_IAU2000_UT1-UTC_1972.txt.sari</a>
+
+Example 4: sea-level change  
+<a href="1.rlrdata.sari" download>1.rlrdata.sari</a>
+
+Check the [official SARI website](https://sari-gnss.github.io) to have a description of the time series contents and their analysis.
+
+These examples can be used to test and validate some of the analysis options of a local installation of SARI.  
+To do so:
+1. upload the files
+2. select the 1D format
+3. select time units years
+4. click plot
+5. upload the same file in *load SARI model* (Andillary information)
+6. if the loaded file contains a KF model, click on the *run KF* button
+7. compare the estimated values with those indecated in the file header
