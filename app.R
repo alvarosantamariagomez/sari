@@ -9686,22 +9686,22 @@ server <- function(input,output,session) {
           if (input$flicker) {
             if (input$randomw) { # WH + FN + RW
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(3e-08*info$points^2.9261)
+                info$timeMLE <- ceiling(0.0000000212*info$points^2.7310170576)
               } else {
-                info$timeMLE <- ceiling(7e-08*info$points^2.7735)
+                info$timeMLE <- ceiling(0.0000000163*info$points^2.6969406699)
               }
             } else {  # WH + FN
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(7e-08*info$points^2.7297)
+                info$timeMLE <- ceiling(0.0000000190*info$points^2.7218809680)
               } else {
-                info$timeMLE <- ceiling(6e-08*info$points^2.6829)
+                info$timeMLE <- ceiling(0.0000000194*info$points^2.6777146385)
               }
             }
           } else if (input$randomw) { # WH + RW
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(6e-10*info$points^3.3903)
+              info$timeMLE <- ceiling(0.0000000193*info$points^2.7102027977)
             } else {
-              info$timeMLE <- ceiling(2e-09*info$points^3.2207)
+              info$timeMLE <- ceiling(0.0000000153*info$points^2.6965310604)
             }
           } else if (input$powerl) { # WH + PL
             if (!isTruthy(trans$slope)) {
@@ -9709,48 +9709,48 @@ server <- function(input,output,session) {
             }
             if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000002082*info$points^2.8167802768)
+                info$timeMLE <- ceiling(0.0000000307*info$points^2.8678681550)
               } else {
-                info$timeMLE <- ceiling(0.0000001032*info$points^2.8489878927)
+                info$timeMLE <- ceiling(0.0000000072*info$points^2.9601124082)
               }
             } else {
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(5e-08*info$points^2.9773)
+                info$timeMLE <- ceiling(0.0000000242*info$points^2.8788032122)
               } else {
-                info$timeMLE <- ceiling(4e-08*info$points^2.9191)
+                info$timeMLE <- ceiling(0.0000000244*info$points^2.7892022798)
               }
             }
-            # info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
+            # info$timeMLE <- info$timeMLE * 3 # if using the Nelder & Mead method
           } else { # WH
             info$timeMLE <- 2
           }
         } else if (input$flicker) {
           if (input$randomw) { # FN + RW
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(3e-08*info$points^2.8560)
+              info$timeMLE <- ceiling(0.0000000041*info$points^2.9122849861)
             } else {
-              info$timeMLE <- ceiling(2e-08*info$points^2.8413)
+              info$timeMLE <- ceiling(0.0000000022*info$points^2.9418404761)
             }
           } else { # FN
-            info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
+            info$timeMLE <- ceiling(0.0000000335*info$points^2.3767196923)
           }
         } else if (input$randomw) { # RW
-          info$timeMLE <- ceiling(6e-06*info$points^2 - 0.0177*info$points + 11.848)
+          info$timeMLE <- ceiling(0.0000000502*info$points^2.3299799835)
         } else if (input$powerl) { # PL
           if (!isTruthy(trans$slope)) {
             showNotification("It is highly recommended to estimate the power spectrum of the residual series before fitting a PL noise model.", action = NULL, duration = 10, closeButton = T, id = "warning_no_slope", type = "warning", session = getDefaultReactiveDomain())
           }
           if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000002577*info$points^2.7092284869)
+              info$timeMLE <- ceiling(0.0000000701*info$points^2.6922976117)
             } else {
-              info$timeMLE <- ceiling(0.0000037132*info$points^2.2870136340)
+              info$timeMLE <- ceiling(0.0000001128*info$points^2.5592103439)
             }
           } else {
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(5e-08*info$points^2.9304)
+              info$timeMLE <- ceiling(0.0000000407*info$points^2.7533105211)
             } else {
-              info$timeMLE <- ceiling(1e-08*info$points^3.0321)
+              info$timeMLE <- ceiling(0.0000000577*info$points^2.6412651200)
             }
             # info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
           }
