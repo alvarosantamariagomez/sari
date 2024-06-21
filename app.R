@@ -5491,9 +5491,9 @@ server <- function(input,output,session) {
               line1 <- "White noise:"
               line2 <- formatting(sigmaWH,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsWH,1)
+                line3 <- paste("+/-", formatting(seParmsWH,1))
               }
-              HTML(paste(line1,'<br/>',line2,unit,'<br/>+/-',line3))
+              HTML(paste(line1,'<br/>',line2,unit,'<br/>',line3))
             })
           } else {
             updateTextInput(session, inputId = "verif_white", value = "0")
@@ -5526,9 +5526,9 @@ server <- function(input,output,session) {
               line1 <- "Flicker noise:"
               line2 <- formatting(sigmaFL,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsFL,1)
+                line3 <- paste("+/-", formatting(seParmsFL,1))
               }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
+              HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
             })
             updateRadioButtons(session, inputId = "typeColor", selected = 1)
           } else {
@@ -5562,9 +5562,9 @@ server <- function(input,output,session) {
               line1 <- "Random walk:"
               line2 <- formatting(sigmaRW,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsRW,1)
+                line3 <- paste("+/-", formatting(seParmsRW,1))
               }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
+              HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
             })
             updateRadioButtons(session, inputId = "typeColor", selected = 1)
           } else {
@@ -5598,9 +5598,9 @@ server <- function(input,output,session) {
               line1 <- "Power-law:"
               line2 <- formatting(sigmaPL,1)
               if (input$noise_unc) {
-                line3 <- formatting(seParmsPL,1)
+                line3 <- paste("+/-", formatting(seParmsPL,1))
               }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>+/-',line3))
+              HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
             })
             updateRadioButtons(session, inputId = "typeColor", selected = 2)
             i <- i + 1
@@ -5621,9 +5621,9 @@ server <- function(input,output,session) {
               line1 <- "Spectral index:"
               line2 <- format(sigmaK, nsmall = 3, digits = 0, trim = F, scientific = F)
               if (input$noise_unc) {
-                line3 <- format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F)
+                line3 <- paste("+/-", format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F))
               }
-              HTML(paste(line1,'<br/>',line2, '<br/>+/-',line3))
+              HTML(paste(line1,'<br/>',line2, '<br/>',line3))
             })
           } else {
             updateTextInput(session, inputId = "verif_pl", value = "0")
