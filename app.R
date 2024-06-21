@@ -3755,10 +3755,11 @@ server <- function(input,output,session) {
             jacobian <- fit$m$gradient()/sqrt(weights)
             synthesis <- summary(fit,correlation = T, signif.stars = T)
             synthesis$coefficients[1] <- coef(synthesis)[1] + trans$ordinate
+            synthesis$coefficients[1,3] <- abs(synthesis$coefficients[1,1]) / synthesis$coefficients[1,2]
+            synthesis$coefficients[1,4] <- 2 * pt(abs(synthesis$coefficients[1,3]), synthesis$df , lower.tail = F)[2]
             trans$names <- names(coef(fit))
             synthesis$formula <- deparse(synthesis$formula)
             synthesis$formula <- gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, synthesis$formula), perl = TRUE)))))))
-            synthesis$parameters[1,1] <- synthesis$parameters[1,1] + trans$ordinate
             trans$unc <- synthesis$coefficients[2,2]
             mod <- predict(fit)
             if (length(mod) == 1) {
@@ -3824,6 +3825,7 @@ server <- function(input,output,session) {
               trans$unc <- NULL
               trans$res <- NULL
               trans$mod <- NULL
+              trans$LScoefs <- NULL
               showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
             } else {
               info$noLS <- T
@@ -3840,6 +3842,7 @@ server <- function(input,output,session) {
           trans$results <- NULL
           trans$res <- NULL
           trans$mod <- NULL
+          trans$LScoefs <- NULL
         }
       }
     } else {
@@ -5672,6 +5675,8 @@ server <- function(input,output,session) {
                   if (isTruthy(unc_pl) && unc_pl > 0) {
                     trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
                     trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                    trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
+                    trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
                     line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
                     HTML(line1)
                   } else {
@@ -5687,6 +5692,8 @@ server <- function(input,output,session) {
                   }
                   if (isTruthy(trans$results$coefficients[2,2])) {
                     trans$results$coefficients[2,2] <- trans$unc
+                    trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
+                    trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
                   }
                 }
                 NULL
@@ -9676,6 +9683,8 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$results$coefficients[2,2])) {
         trans$results$coefficients[2,2] <- trans$unc
+        trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
+        trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
       }
     }
     # estimating MLE duration
