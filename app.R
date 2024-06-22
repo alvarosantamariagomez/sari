@@ -5286,7 +5286,7 @@ server <- function(input,output,session) {
                            Cpl <- CPL[[1]]
                            k_deriv <- pl * CPL[[2]]
                            grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
-                           grad <- c(grad, 0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
+                           grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
                          }
                          if (messages > 2) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
                          grad/-1
@@ -5363,7 +5363,7 @@ server <- function(input,output,session) {
                              slope <- -4
                            }
                            apriori <- c(apriori, slope) # a priori spectral index (= k - 3)
-                           typsize <- c(typsize, 1)
+                           typsize <- c(typsize, 3)
                            upper <- c(upper, -3) # max expected spectral index (= k - 3)
                            lower <- c(lower, -7) # min expected spectral index (= k - 3)
                          }
@@ -5452,10 +5452,6 @@ server <- function(input,output,session) {
           if (input$noise_unc) {
             sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
           }
-          end.time <- Sys.time()
-          if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
-          time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
           i <- 0
           sigmaFL <- NULL
           sigmaPL <- NULL
@@ -5636,6 +5632,10 @@ server <- function(input,output,session) {
             trans$noise[9] <- NA
             trans$noise[10] <- NA
           }
+          end.time <- Sys.time()
+          if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
+          time.taken <- end.time - start.time
+          if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
           if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
             if (length(fitmle$value) > 0) {
               trans$noise[11] <- fitmle$value
