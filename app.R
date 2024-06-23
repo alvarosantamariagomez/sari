@@ -9726,15 +9726,15 @@ server <- function(input,output,session) {
             }
             if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000000307*info$points^2.8678681550)
+                info$timeMLE <- ceiling(0.0000000283*info$points^2.8574872668)
               } else {
-                info$timeMLE <- ceiling(0.0000000072*info$points^2.9601124082)
+                info$timeMLE <- ceiling(0.0000000182*info$points^2.8093811786)
               }
             } else {
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000000242*info$points^2.8788032122)
+                info$timeMLE <- ceiling(0.0000000029*info$points^3.1797797014)
               } else {
-                info$timeMLE <- ceiling(0.0000000244*info$points^2.7892022798)
+                info$timeMLE <- ceiling(0.0000000006*info$points^3.3238998899)
               }
             }
             # info$timeMLE <- info$timeMLE * 3 # if using the Nelder & Mead method
@@ -9759,15 +9759,15 @@ server <- function(input,output,session) {
           }
           if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000000701*info$points^2.6922976117)
+              info$timeMLE <- ceiling(0.0000000137*info$points^2.8892566790)
             } else {
-              info$timeMLE <- ceiling(0.0000001128*info$points^2.5592103439)
+              info$timeMLE <- ceiling(0.0000000084*info$points^2.8777970916)
             }
           } else {
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000000407*info$points^2.7533105211)
+              info$timeMLE <- ceiling(0.0000000209*info$points^2.8807048341)
             } else {
-              info$timeMLE <- ceiling(0.0000000577*info$points^2.6412651200)
+              info$timeMLE <- ceiling(0.0000000145*info$points^2.8835059302)
             }
             # info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
           }
