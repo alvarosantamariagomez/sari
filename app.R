@@ -5405,30 +5405,30 @@ server <- function(input,output,session) {
                            #                 hessian = hessian,
                            #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
                            # )
-
-                            # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
-                              # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
-                              # method <- "Nelder & Mead"
-                              # fitmle <- optim(par = apriori,
-                              #                 fn = loglik_global,
-                              #                 hessian = hessian,
-                              #                 control = list(fnscale = 1, reltol = 1e-2)
-                              # )
-
-                            # } else {
-                              # Quasi-Newton method as in optim, but seems to run faster
-                              method <- "NLM"
-                              fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                            fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
-                                            stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
-                              )
-                              setProgress(0.75)
-                              if (fitmle$code < 4) { # transforming nlm results into optim format
-                                fitmle$convergence <- 0
-                                fitmle$value <- fitmle$minimum
-                                fitmle$par <- fitmle$estimate
-                              }
-                            # }
+                           
+                           # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
+                           # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
+                           # method <- "Nelder & Mead"
+                           # fitmle <- optim(par = apriori,
+                           #                 fn = loglik_global,
+                           #                 hessian = hessian,
+                           #                 control = list(fnscale = 1, reltol = 1e-2)
+                           # )
+                           
+                           # } else {
+                           # Quasi-Newton method as in optim, but seems to run faster
+                           method <- "NLM"
+                           fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
+                                         fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
+                                         stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
+                           )
+                           setProgress(0.75)
+                           if (fitmle$code < 4) { # transforming nlm results into optim format
+                             fitmle$convergence <- 0
+                             fitmle$value <- fitmle$minimum
+                             fitmle$par <- fitmle$estimate
+                           }
+                           # }
                            
                            if (fitmle$convergence == 0) {
                              convergence <- 0
@@ -5438,273 +5438,273 @@ server <- function(input,output,session) {
                        Sys.sleep(1)
                        setProgress(1)
                      })
-      })
-      
-      ##* convergence ####
-      if (!is.na(convergence)) {
-        if (convergence == 0) {
-          if (input$wiener) {
-            kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
-          }
-          trans$mle <- 1
-          sd_noises <- NA
-          line3 <- NULL
-          if (input$noise_unc) {
-            sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
-          }
-          i <- 0
-          sigmaFL <- NULL
-          sigmaPL <- NULL
-          sigmaRW <- NULL
-          sigmaK <- NULL
-          if (input$sunits == 1) {
-            unit <- "m"
-          } else if (input$sunits == 2) {
-            unit <- "mm"
-          } else {
-            unit <- ""
-          }
-          if (isTruthy(info$white)) {
-            i <- i + 1
-            sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
-            trans$noise[1] <- sigmaWH
+        
+        ##* convergence ####
+        if (!is.na(convergence)) {
+          if (convergence == 0) {
+            if (input$wiener) {
+              kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
+            }
+            trans$mle <- 1
+            sd_noises <- NA
+            line3 <- NULL
             if (input$noise_unc) {
-              seParmsWH <- sd_noises[i]/scaling
-              trans$noise[2] <- seParmsWH
-              if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
+              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
+            }
+            i <- 0
+            sigmaFL <- NULL
+            sigmaPL <- NULL
+            sigmaRW <- NULL
+            sigmaK <- NULL
+            if (input$sunits == 1) {
+              unit <- "m"
+            } else if (input$sunits == 2) {
+              unit <- "mm"
+            } else {
+              unit <- ""
+            }
+            if (isTruthy(info$white)) {
+              i <- i + 1
+              sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
+              trans$noise[1] <- sigmaWH
+              if (input$noise_unc) {
+                seParmsWH <- sd_noises[i]/scaling
+                trans$noise[2] <- seParmsWH
+                if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
+                  updateTextInput(session, inputId = "verif_white", value = sigmaWH)
+                } else {
+                  updateTextInput(session, inputId = "verif_white", value = "0")
+                }
+              } else {
                 updateTextInput(session, inputId = "verif_white", value = sigmaWH)
-              } else {
-                updateTextInput(session, inputId = "verif_white", value = "0")
               }
+              if (input$wiener) {
+                qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
+                trans$white <- unlist(as.list(res %*% qQ))
+                if (input$sigmas && length(resError) > 0) {
+                  trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                }
+              }
+              output$est.white <- renderUI({
+                line1 <- "White noise:"
+                line2 <- formatting(sigmaWH,1)
+                if (input$noise_unc) {
+                  line3 <- paste("+/-", formatting(seParmsWH,1))
+                }
+                HTML(paste(line1,'<br/>',line2,unit,'<br/>',line3))
+              })
             } else {
-              updateTextInput(session, inputId = "verif_white", value = sigmaWH)
+              updateTextInput(session, inputId = "verif_white", value = "0")
+              trans$noise[1] <- NA
+              trans$noise[2] <- NA
             }
-            if (input$wiener) {
-              qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
-              trans$white <- unlist(as.list(res %*% qQ))
-              if (input$sigmas && length(resError) > 0) {
-                trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-              }
-            }
-            output$est.white <- renderUI({
-              line1 <- "White noise:"
-              line2 <- formatting(sigmaWH,1)
+            if (isTruthy(info$flicker)) {
+              i <- i + 1
+              sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
+              trans$noise[3] <- sigmaFL
               if (input$noise_unc) {
-                line3 <- paste("+/-", formatting(seParmsWH,1))
-              }
-              HTML(paste(line1,'<br/>',line2,unit,'<br/>',line3))
-            })
-          } else {
-            updateTextInput(session, inputId = "verif_white", value = "0")
-            trans$noise[1] <- NA
-            trans$noise[2] <- NA
-          }
-          if (isTruthy(info$flicker)) {
-            i <- i + 1
-            sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
-            trans$noise[3] <- sigmaFL
-            if (input$noise_unc) {
-              seParmsFL <- sd_noises[i]/scaling
-              trans$noise[4] <- seParmsFL
-              if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
+                seParmsFL <- sd_noises[i]/scaling
+                trans$noise[4] <- seParmsFL
+                if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
+                  updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+                } else {
+                  updateTextInput(session, inputId = "verif_fl", value = "0")
+                }
+              } else {
                 updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
-              } else {
-                updateTextInput(session, inputId = "verif_fl", value = "0")
               }
+              if (input$wiener) {
+                qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
+                trans$flicker <- unlist(as.list(res %*% qQ))
+                if (input$sigmas && length(resError) > 0) {
+                  trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                }
+              }
+              output$est.flicker <- renderUI({
+                line1 <- "Flicker noise:"
+                line2 <- formatting(sigmaFL,1)
+                if (input$noise_unc) {
+                  line3 <- paste("+/-", formatting(seParmsFL,1))
+                }
+                HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
+              })
+              updateRadioButtons(session, inputId = "typeColor", selected = 1)
             } else {
-              updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+              updateTextInput(session, inputId = "verif_fl", value = "0")
+              trans$noise[3] <- NA
+              trans$noise[4] <- NA
             }
-            if (input$wiener) {
-              qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
-              trans$flicker <- unlist(as.list(res %*% qQ))
-              if (input$sigmas && length(resError) > 0) {
-                trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-              }
-            }
-            output$est.flicker <- renderUI({
-              line1 <- "Flicker noise:"
-              line2 <- formatting(sigmaFL,1)
+            if (isTruthy(info$randomw)) {
+              i <- i + 1
+              sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
+              trans$noise[5] <- sigmaRW
               if (input$noise_unc) {
-                line3 <- paste("+/-", formatting(seParmsFL,1))
-              }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
-            })
-            updateRadioButtons(session, inputId = "typeColor", selected = 1)
-          } else {
-            updateTextInput(session, inputId = "verif_fl", value = "0")
-            trans$noise[3] <- NA
-            trans$noise[4] <- NA
-          }
-          if (isTruthy(info$randomw)) {
-            i <- i + 1
-            sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
-            trans$noise[5] <- sigmaRW
-            if (input$noise_unc) {
-              seParmsRW <- sd_noises[i]/scaling
-              trans$noise[6] <- seParmsRW
-              if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
+                seParmsRW <- sd_noises[i]/scaling
+                trans$noise[6] <- seParmsRW
+                if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
+                  updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
+                } else {
+                  updateTextInput(session, inputId = "verif_rw", value = "0")
+                }
+              } else {
                 updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
-              } else {
-                updateTextInput(session, inputId = "verif_rw", value = "0")
               }
+              if (input$wiener) {
+                qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
+                trans$randomw <- unlist(as.list(res %*% qQ))
+                if (input$sigmas && length(resError) > 0) {
+                  trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                }
+              }
+              output$est.randomw <- renderUI({
+                line1 <- "Random walk:"
+                line2 <- formatting(sigmaRW,1)
+                if (input$noise_unc) {
+                  line3 <- paste("+/-", formatting(seParmsRW,1))
+                }
+                HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
+              })
+              updateRadioButtons(session, inputId = "typeColor", selected = 1)
             } else {
-              updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
+              updateTextInput(session, inputId = "verif_rw", value = "0")
+              trans$noise[5] <- NA
+              trans$noise[6] <- NA
             }
-            if (input$wiener) {
-              qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
-              trans$randomw <- unlist(as.list(res %*% qQ))
-              if (input$sigmas && length(resError) > 0) {
-                trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-              }
-            }
-            output$est.randomw <- renderUI({
-              line1 <- "Random walk:"
-              line2 <- formatting(sigmaRW,1)
+            if (isTruthy(info$powerl)) {
+              i <- i + 1
+              sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
+              trans$noise[7] <- sigmaPL
               if (input$noise_unc) {
-                line3 <- paste("+/-", formatting(seParmsRW,1))
-              }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
-            })
-            updateRadioButtons(session, inputId = "typeColor", selected = 1)
-          } else {
-            updateTextInput(session, inputId = "verif_rw", value = "0")
-            trans$noise[5] <- NA
-            trans$noise[6] <- NA
-          }
-          if (isTruthy(info$powerl)) {
-            i <- i + 1
-            sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
-            trans$noise[7] <- sigmaPL
-            if (input$noise_unc) {
-              seParmsPL <- sd_noises[i]/scaling
-              trans$noise[8] <- seParmsPL
-              if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
+                seParmsPL <- sd_noises[i]/scaling
+                trans$noise[8] <- seParmsPL
+                if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
+                  updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
+                } else {
+                  updateTextInput(session, inputId = "verif_pl", value = "0")
+                }
+              } else {
                 updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
-              } else {
-                updateTextInput(session, inputId = "verif_pl", value = "0")
               }
-            } else {
-              updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
-            }
-            if (input$wiener) {
-              qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
-              trans$powerl <- unlist(as.list(res %*% qQ))
-              if (input$sigmas && length(resError) > 0) {
-                trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+              if (input$wiener) {
+                qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
+                trans$powerl <- unlist(as.list(res %*% qQ))
+                if (input$sigmas && length(resError) > 0) {
+                  trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                }
               }
-            }
-            output$est.powerl <- renderUI({
-              line1 <- "Power-law:"
-              line2 <- formatting(sigmaPL,1)
+              output$est.powerl <- renderUI({
+                line1 <- "Power-law:"
+                line2 <- formatting(sigmaPL,1)
+                if (input$noise_unc) {
+                  line3 <- paste("+/-", formatting(seParmsPL,1))
+                }
+                HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
+              })
+              updateRadioButtons(session, inputId = "typeColor", selected = 2)
+              i <- i + 1
+              sigmaK <- fitmle$par[i] + 3
+              trans$noise[9] <- sigmaK
               if (input$noise_unc) {
-                line3 <- paste("+/-", formatting(seParmsPL,1))
-              }
-              HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
-            })
-            updateRadioButtons(session, inputId = "typeColor", selected = 2)
-            i <- i + 1
-            sigmaK <- fitmle$par[i] + 3
-            trans$noise[9] <- sigmaK
-            if (input$noise_unc) {
-              seParmsK <- sd_noises[i]
-              trans$noise[10] <- seParmsK
-              if (isTruthy(sigmaK) && isTruthy(seParmsK) && abs(sigmaK) > seParmsK * 3) {
+                seParmsK <- sd_noises[i]
+                trans$noise[10] <- seParmsK
+                if (isTruthy(sigmaK) && isTruthy(seParmsK) && abs(sigmaK) > seParmsK * 3) {
+                  updateTextInput(session, inputId = "verif_k", value = sigmaK)
+                } else {
+                  updateTextInput(session, inputId = "verif_k", value = "0")
+                }
+              } else {
                 updateTextInput(session, inputId = "verif_k", value = sigmaK)
-              } else {
-                updateTextInput(session, inputId = "verif_k", value = "0")
               }
+              output$est.index <- renderUI({
+                line1 <- "Spectral index:"
+                line2 <- format(sigmaK, nsmall = 3, digits = 0, trim = F, scientific = F)
+                if (input$noise_unc) {
+                  line3 <- paste("+/-", format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F))
+                }
+                HTML(paste(line1,'<br/>',line2, '<br/>',line3))
+              })
             } else {
-              updateTextInput(session, inputId = "verif_k", value = sigmaK)
+              updateTextInput(session, inputId = "verif_pl", value = "0")
+              updateTextInput(session, inputId = "verif_k", value = "0")
+              trans$noise[7] <- NA
+              trans$noise[8] <- NA
+              trans$noise[9] <- NA
+              trans$noise[10] <- NA
             }
-            output$est.index <- renderUI({
-              line1 <- "Spectral index:"
-              line2 <- format(sigmaK, nsmall = 3, digits = 0, trim = F, scientific = F)
-              if (input$noise_unc) {
-                line3 <- paste("+/-", format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F))
-              }
-              HTML(paste(line1,'<br/>',line2, '<br/>',line3))
-            })
-          } else {
-            updateTextInput(session, inputId = "verif_pl", value = "0")
-            updateTextInput(session, inputId = "verif_k", value = "0")
-            trans$noise[7] <- NA
-            trans$noise[8] <- NA
-            trans$noise[9] <- NA
-            trans$noise[10] <- NA
-          }
-          end.time <- Sys.time()
-          if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
-          time.taken <- end.time - start.time
-          if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
-          if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
-            if (length(fitmle$value) > 0) {
-              trans$noise[11] <- fitmle$value
-            } else {
-              trans$noise[11] <- NA
-            }
-            output$est.mle <- renderUI({
-              if (isTruthy(trans$mle)) {
-                line1 <- sprintf("<br/>log-Likelihood = %.4f",fitmle$value/-1)
-                HTML(line1)
+            end.time <- Sys.time()
+            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
+            time.taken <- end.time - start.time
+            if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
+            if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
+              if (length(fitmle$value) > 0) {
+                trans$noise[11] <- fitmle$value
               } else {
-                NULL
+                trans$noise[11] <- NA
               }
-            })
-          }
-          output$est.unc <- renderUI({
-            if ("Linear" %in% input$model && input$fitType == 1) {
-              if (isTruthy(trans$mle)) {
-                unc_pl <- 0
-                if (isTruthy(sigmaFL)) {
-                  unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling) # general power-law trend uncertainty
-                  # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
-                  # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+              output$est.mle <- renderUI({
+                if (isTruthy(trans$mle)) {
+                  line1 <- sprintf("<br/>log-Likelihood = %.4f",fitmle$value/-1)
+                  HTML(line1)
+                } else {
+                  NULL
                 }
-                if (isTruthy(sigmaRW)) {
-                  unc <- pl_trend_unc(sigmaRW,-2,info$sampling) # general power-law trend uncertainty
-                  # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
-                  unc_pl <- sqrt(unc_pl^2 + unc^2)
-                }
-                if (isTruthy(sigmaPL)) {
-                  # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
-                  unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling) # general power-law trend uncertainty
-                  unc_pl <- sqrt(unc_pl^2 + unc^2)
-                }
-                unc_white <- sqrt( 12 * sd(res)^2 / (info$points * ((info$points - 1) * info$sampling)^2) )
-                if (isTruthy(trans$unc)) {
-                  if (isTruthy(unc_pl) && unc_pl > 0) {
-                    trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                    trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                    trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
-                    trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
-                    line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
-                    HTML(line1)
+              })
+            }
+            output$est.unc <- renderUI({
+              if ("Linear" %in% input$model && input$fitType == 1) {
+                if (isTruthy(trans$mle)) {
+                  unc_pl <- 0
+                  if (isTruthy(sigmaFL)) {
+                    unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling) # general power-law trend uncertainty
+                    # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
+                    # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                  }
+                  if (isTruthy(sigmaRW)) {
+                    unc <- pl_trend_unc(sigmaRW,-2,info$sampling) # general power-law trend uncertainty
+                    # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
+                    unc_pl <- sqrt(unc_pl^2 + unc^2)
+                  }
+                  if (isTruthy(sigmaPL)) {
+                    # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
+                    unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling) # general power-law trend uncertainty
+                    unc_pl <- sqrt(unc_pl^2 + unc^2)
+                  }
+                  unc_white <- sqrt( 12 * sd(res)^2 / (info$points * ((info$points - 1) * info$sampling)^2) )
+                  if (isTruthy(trans$unc)) {
+                    if (isTruthy(unc_pl) && unc_pl > 0) {
+                      trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                      trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                      trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
+                      trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
+                      line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
+                      HTML(line1)
+                    } else {
+                      NULL
+                    }
                   } else {
                     NULL
                   }
                 } else {
+                  if (isTruthy(trans$unc)) {
+                    if (isTruthy(trans$LScoefs[2,2])) {
+                      trans$LScoefs[2,2] <- trans$unc
+                    }
+                    if (isTruthy(trans$results$coefficients[2,2])) {
+                      trans$results$coefficients[2,2] <- trans$unc
+                      trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
+                      trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
+                    }
+                  }
                   NULL
                 }
-              } else {
-                if (isTruthy(trans$unc)) {
-                  if (isTruthy(trans$LScoefs[2,2])) {
-                    trans$LScoefs[2,2] <- trans$unc
-                  }
-                  if (isTruthy(trans$results$coefficients[2,2])) {
-                    trans$results$coefficients[2,2] <- trans$unc
-                    trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
-                    trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
-                  }
-                }
-                NULL
               }
-            }
-          })
-        } else {
-          trans$mle <- NULL
-          showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+            })
+          } else {
+            trans$mle <- NULL
+            showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+          }
         }
-      }
+      })
     }
     #
     if (isTruthy(debug)) {
