@@ -5137,6 +5137,7 @@ server <- function(input,output,session) {
   # Noise analysis ####
   observeEvent(input$runmle, {
     removeNotification("no_mle")
+    removeNotification("no_optim")
     removeNotification("too_long")
     removeNotification("timeWillTake")
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
@@ -5375,65 +5376,71 @@ server <- function(input,output,session) {
                          powerl <- info$powerl
                          gaps <- trans$gaps
                          sampling <- info$sampling
-                         # setting cluster if run is local and long
-                         # if (info$local && info$timeMLE > 60) {
-                         #   cl <- makeCluster(detectCores() - 1, type = "FORK")
-                         #   setDefaultCluster(cl = cl)
-                         # }
-                         if (isTruthy(cl)) {
-                           # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
-                           method <- "L-BFGS-B"
-                           fitmle <- optimParallel(par = apriori,
-                                                   fn = loglik_global,
-                                                   gr = grad_global,
-                                                   lower = lower,
-                                                   upper = upper,
-                                                   method = "L-BFGS-B",
-                                                   hessian = hessian,
-                                                   control = list(fnscale = 1, pgtol = 1e1, factr = 1e11)
-                           )
-                           setDefaultCluster(cl = NULL)
-                           stopCluster(cl)
-                         } else { # standard 1 proc run
-                           # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
-                           # method <- "L-BFGS-B"
-                           # fitmle <- optim(par = apriori,
-                           #                 fn = loglik_global,
-                           #                 gr = grad_global,
-                           #                 lower = lower,
-                           #                 upper = upper,
-                           #                 method = "L-BFGS-B",
-                           #                 hessian = hessian,
-                           #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
-                           # )
-                           
-                           # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
-                           # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
-                           # method <- "Nelder & Mead"
-                           # fitmle <- optim(par = apriori,
-                           #                 fn = loglik_global,
-                           #                 hessian = hessian,
-                           #                 control = list(fnscale = 1, reltol = 1e-2)
-                           # )
-                           
-                           # } else {
-                           # Quasi-Newton method as in optim, but seems to run faster
-                           method <- "NLM"
-                           fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                         fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
-                                         stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
-                           )
-                           setProgress(0.75)
-                           if (fitmle$code < 4) { # transforming nlm results into optim format
-                             fitmle$convergence <- 0
-                             fitmle$value <- fitmle$minimum
-                             fitmle$par <- fitmle$estimate
-                           }
+                         tryOptim <- try({
+                           # setting cluster if run is local and long
+                           # if (info$local && info$timeMLE > 60) {
+                           #   cl <- makeCluster(detectCores() - 1, type = "FORK")
+                           #   setDefaultCluster(cl = cl)
                            # }
-                           
-                           if (fitmle$convergence == 0) {
-                             convergence <- 0
+                           if (isTruthy(cl)) {
+                             # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
+                             method <- "L-BFGS-B"
+                             fitmle <- optimParallel(par = apriori,
+                                                     fn = loglik_global,
+                                                     gr = grad_global,
+                                                     lower = lower,
+                                                     upper = upper,
+                                                     method = "L-BFGS-B",
+                                                     hessian = hessian,
+                                                     control = list(fnscale = 1, pgtol = 1e1, factr = 1e11)
+                             )
+                             setDefaultCluster(cl = NULL)
+                             stopCluster(cl)
+                           } else { # standard 1 proc run
+                             # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
+                             # method <- "L-BFGS-B"
+                             # fitmle <- optim(par = apriori,
+                             #                 fn = loglik_global,
+                             #                 gr = grad_global,
+                             #                 lower = lower,
+                             #                 upper = upper,
+                             #                 method = "L-BFGS-B",
+                             #                 hessian = hessian,
+                             #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
+                             # )
+                             
+                             # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
+                             # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
+                             # method <- "Nelder & Mead"
+                             # fitmle <- optim(par = apriori,
+                             #                 fn = loglik_global,
+                             #                 hessian = hessian,
+                             #                 control = list(fnscale = 1, reltol = 1e-2)
+                             # )
+                             
+                             # } else {
+                             # Quasi-Newton method as in optim, but seems to run faster
+                             method <- "NLM"
+                             fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
+                                           fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
+                                           stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
+                             )
+                             setProgress(0.75)
+                             if (fitmle$code < 4) { # transforming nlm results into optim format
+                               fitmle$convergence <- 0
+                               fitmle$value <- fitmle$minimum
+                               fitmle$par <- fitmle$estimate
+                             }
+                             # }
+                             
+                             if (fitmle$convergence == 0) {
+                               convergence <- 0
+                             }
                            }
+                         }, silent = T)
+                         if (inherits(tryOptim,"try-error") || tryOptim == "") {
+                           showNotification(HTML("Something went wrong with the MLE optimization.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_optim", type = "error", session = getDefaultReactiveDomain())
+                           req(info$stop)
                          }
                        }
                        Sys.sleep(1)
