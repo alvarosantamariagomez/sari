@@ -4714,6 +4714,7 @@ server <- function(input,output,session) {
 
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
+    trans$slope <- NULL
     req(db1[[info$db1]], input$spectrum, trans$fs, trans$psd)
     removeNotification("no_noise_psd")
     if (length(trans$fs) > 0) {
