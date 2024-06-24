@@ -5627,6 +5627,9 @@ server <- function(input,output,session) {
                 line1 <- "Spectral index:"
                 line2 <- format(sigmaK, nsmall = 3, digits = 0, trim = F, scientific = F)
                 if (input$noise_unc) {
+                  if (seParmsK <= 0.0005) {
+                    seParmsK <- 0.001
+                  }
                   line3 <- paste("+/-", format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F))
                 }
                 HTML(paste(line1,'<br/>',line2, '<br/>',line3))
