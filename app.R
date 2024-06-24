@@ -10751,23 +10751,22 @@ server <- function(input,output,session) {
         model_kf_mean <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k]-",text_rate,")"), sep = " ")
         j <- j + 2
         if (identical(input$Trend0,character(0)) || is.na(input$Trend0) || input$Trend0 == "" || input$Trend0 == " ") {
-          if (length(y) > 30) {
-            tenth <- ceiling(length(y)/10)  
-          } else {
-            tenth <- length(y)
-          }
           if (input$fitType == 1) {
-            x1 <- x - x[1]
-            fastFit <- lm(y ~ x1)
+            ap_rate <- sigma_rate <- 0
           } else {
+            if (length(y) > 30) {
+              tenth <- ceiling(length(y)/10)  
+            } else {
+              tenth <- length(y)
+            }
             fastFit <- try(lm(y[1:tenth]~x[1:tenth]), silent = F)
-          }
-          if (isTruthy(fastFit)) {
-            ap_rate <- summary(fastFit)$coefficients[2,1]
-            sigma_rate <- summary(fastFit)$coefficients[2,2] * 3
-          } else {
-            ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
-            sigma_rate <- ap_rate * 5
+            if (isTruthy(fastFit)) {
+              ap_rate <- summary(fastFit)$coefficients[2,1]
+              sigma_rate <- summary(fastFit)$coefficients[2,2] * 3
+            } else {
+              ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
+              sigma_rate <- ap_rate * 5
+            }
           }
           if (input$fitType == 2) {
             max_decimals <- signifdecimal(ap_rate, F) + 2
