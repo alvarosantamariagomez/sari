@@ -12865,7 +12865,7 @@ server <- function(input,output,session) {
   #Based on https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
   decimalplaces <- function(x,axis) {
     if (any(abs(x - round(x)) > .Machine$double.eps)) {
-      d <- max(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), na.rm = T)
+      d <- quantile(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), probs = 0.95)
       if (isTruthy(d) && d > 0) {
         if (axis == "x") {
           return(d)
@@ -12874,7 +12874,7 @@ server <- function(input,output,session) {
           return(d)
         } else {
           info$scientific <- T
-          d <- min(na.omit(nchar(sub(pattern = "^.*\\.0*([1-9])", replacement = "\\1", x = x))))
+          d <- quantile(na.omit(nchar(sub(pattern = "^.*\\.0*([1-9])", replacement = "\\1", x = x))), probs = 0.05)
           if (isTruthy(d) && d > 0) {
             return(d)
           } else {
