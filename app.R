@@ -6242,6 +6242,11 @@ server <- function(input,output,session) {
             if (isTruthy(input$product2)) {
               enable("station2")
             } else {
+              file$secondary <- NULL
+              updateRadioButtons(inputId = "optionSecondary", selected = 0)
+              output$station2 <- renderUI({
+                textInput(inputId = "station2", label = "Station", value = "")
+              })
               disable("station2")
             }
           } else {
@@ -6961,14 +6966,13 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$product2), {
-    req(input$server2,input$product2)
+    req(input$server2)
     removeNotification("bad_remote")
     removeNotification("bad_url")
     removeNotification("no_answer")
-    if (input$product2[1] != "") {
-      file$secondary <- NULL
-    }
+    file$secondary <- NULL
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
+    req(input$product2)
     get_URL_info(input$server2,NULL,input$product2,2)
   })
   ## station2 ####
@@ -8346,7 +8350,7 @@ server <- function(input,output,session) {
       }
       showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       if (nrow(table_common) > 0) {
-        if (isTruthy(db1$merged)) {
+        if (isTruthy(db1$merged) && length(db1$merged$status1) == length(table_common$status1)) {
           table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
           table_common$status2 <- table_common$status2 + db1$merged$status2 > 1
           table_common$status3 <- table_common$status3 + db1$merged$status3 > 1
