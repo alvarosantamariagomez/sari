@@ -1,5 +1,25 @@
 # **SARI changelog**
 
+# julio 2024 [2024.07]
+
+### Fixed
+- fixing bug when correcting the primary series with a new uploaded secondary series
+- improving the estimation of the spectral index of the power-law noise model
+- checking the periodogram data before writing it to a file
+- removing duplicate values from the series when computing the minimum entropy
+- fixing the uncertainty of the noise series from the residuals of a Kalman fit
+
+### Changed
+- improving the assessment of the number of decimal places to use
+- avoiding showing a zero uncertainty for the estimted spectral index of a power-law model
+- updating the expected processing time of the MLE fit
+- updating the values of the Student's t-test after a MLE fit
+- converting CNES Julian days into Modified Julian days when changing the time units
+- making the help popups to open the help file at the right spot
+
+### Added
+
+
 # junio 2024 [2024.06]
 
 ### Fixed

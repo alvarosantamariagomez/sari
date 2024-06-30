@@ -93,7 +93,7 @@
 *
  ABPO  A    1 P 00:000:00000 08:339:00000 P - unknown
  ABPO  A    2 P 08:339:00000 18:135:27000 P - antenna change
- ABPO  A    3 P 18:135:27000 00:000:00000 P - 
+ ABPO  A    3 P 18:135:27000 00:000:00000 P -
  ABPO  A    1 P 00:000:00000 08:339:00000 V - unknown
  ABPO  A    2 P 08:339:00000 00:000:00000 V - 
 *
@@ -110,6 +110,10 @@
  AC19  A    2 P 16:024:37830 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
  AC19  A    3 P 21:210:22549 00:000:00000 P - 
  AC19  A    1 P 00:000:00000 00:000:00000 V - 
+*
+ AC23  A    1 P 00:000:00000 23:001:00000 P - unknown
+ AC23  A    2 P 23:001:00000 00:000:00000 P -
+ AC23  A    1 P 00:000:00000 00:000:00000 V -
 *
  AC24  A    1 P 00:000:00000 16:024:37830 P - EQ M7.1 - 47 km ESE of Pedro Bay, Alaska
  AC24  A    2 P 16:024:37830 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
@@ -301,7 +305,8 @@
  ALIC  A    1 P 00:000:00000 98:010:00000 P - unknown
  ALIC  A    2 P 98:010:00000 99:307:00000 P - unknown
  ALIC  A    3 P 99:307:00000 11:201:00000 P - antenna change
- ALIC  A    4 P 11:201:00000 00:000:00000 P - 
+ ALIC  A    4 P 11:201:00000 24:113:02820 P - antenna change
+ ALIC  A    5 P 24:113:02820 00:000:00000 P -
  ALIC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ALME  A    1 P 00:000:00000 03:133:00000 P - unknown
@@ -2446,7 +2451,8 @@
  GMSD  A    5 P 16:106:59106 17:271:16200 P - antenna change
  GMSD  A    6 P 17:271:16200 17:354:21600 P - antenna change
  GMSD  A    7 P 17:354:21600 19:008:45571 P - EQ M6.3 - 16 km SSE of Nishinoomote, Japan
- GMSD  A    8 P 19:008:45571 00:000:00000 P - 
+ GMSD  A    8 P 19:008:45571 23:155:00000 P - receiver change?
+ GMSD  A    9 P 23:155:00000 00:000:00000 P -
  GMSD  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  GMSD  A    2 P 11:070:20783 13:259:00000 V - non-linearity
  GMSD  A    3 P 13:259:00000 19:008:45571 V - EQ M6.3 - 16 km SSE of Nishinoomote, Japan
@@ -3446,7 +3452,8 @@
  KMAN  A    1 P 00:000:00000 00:000:00000 P - 
  KMAN  A    1 P 00:000:00000 00:000:00000 V - 
 *
- KMNM  A    1 P 00:000:00000 00:000:00000 P - 
+ KMNM  A    1 P 00:000:00000 24:093:86291 P - EQ M7.4 - 15 km S of Hualien City, Taiwan
+ KMNM  A    2 P 24:093:86291 00:000:00000 P -
  KMNM  A    1 P 00:000:00000 00:000:00000 V - 
 *
  KNGS  A    1 P 00:000:00000 00:000:00000 P - 
@@ -4253,7 +4260,8 @@
  MERS  A    3 P 19:001:00000 21:001:00000 P - unknown
  MERS  A    4 P 21:001:00000 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
  MERS  A    5 P 23:037:04656 00:000:00000 P - 
- MERS  A    1 P 00:000:00000 00:000:00000 V - 
+ MERS  A    1 P 00:000:00000 23:037:04656 V - EQ M7.8 - Pazarcik earthquake
+ MERS  A    2 P 23:037:04656 00:000:00000 V -
 *
  MET3  A    1 P 00:000:00000 00:000:00000 P - 
  MET3  A    1 P 00:000:00000 00:000:00000 V - 
@@ -4299,7 +4307,8 @@
 *
  MGUE  A    1 P 00:000:00000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  MGUE  A    2 P 15:259:82473 23:242:00000 P - unknown
- MGUE  A    3 P 23:242:00000 00:000:00000 P - 
+ MGUE  A    3 P 23:242:00000 24:107:00000 P - unknown
+ MGUE  A    4 P 24:107:00000 00:000:00000 P -
  MGUE  A    1 P 00:000:00000 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
  MGUE  A    2 P 15:259:82473 00:000:00000 V - 
 *
@@ -5384,7 +5393,8 @@
  PALM  A    2 P 99:125:00000 07:180:00000 P - non-linearity
  PALM  A    3 P 07:180:00000 13:321:32696 P - EQ M7.7 - Scotia Sea
  PALM  A    4 P 13:321:32696 20:206:00000 P - non-linearity
- PALM  A    5 P 20:206:00000 00:000:00000 P - 
+ PALM  A    5 P 20:206:00000 24:106:00000 P - new signal splitter installed
+ PALM  A    6 P 24:106:00000 00:000:00000 P -
  PALM  A    1 P 00:000:00000 07:180:00000 V - non-linearity
  PALM  A    2 P 07:180:00000 13:321:32696 V - EQ M7.7 - Scotia Sea
  PALM  A    3 P 13:321:32696 20:206:00000 V - non-linearity
@@ -6998,7 +7008,8 @@
  TCMS  A    4 P 11:070:20783 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
  TCMS  A    5 P 12:102:31117 18:037:57043 P - EQ M6.4 - 18 km NNE of Hualien City, Taiwan
  TCMS  A    6 P 18:037:57043 22:261:24253 P - EQ M6.9 - south-east of Lugu, Taiwan
- TCMS  A    7 P 22:261:24253 00:000:00000 P - 
+ TCMS  A    7 P 22:261:24253 24:093:86291 P - EQ M7.4 - 15 km S of Hualien City, Taiwan
+ TCMS  A    8 P 24:093:86291 00:000:00000 P -
  TCMS  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TDOU  A    1 P 00:000:00000 14:361:00000 P - non-linearity
@@ -7194,7 +7205,8 @@
  TNML  A    5 P 18:037:57043 19:198:00000 P - antenna change
  TNML  A    6 P 19:198:00000 21:024:00000 P - unknown
  TNML  A    7 P 21:024:00000 22:261:24253 P - EQ M6.9 - south-east of Lugu, Taiwan
- TNML  A    8 P 22:261:24253 00:000:00000 P - 
+ TNML  A    8 P 22:261:24253 24:093:86291 P - EQ M7.4 - 15 km S of Hualien City, Taiwan
+ TNML  A    9 P 24:093:86291 00:000:00000 P -
  TNML  A    1 P 00:000:00000 04:361:03530 V - EQ M9.1 - 2004 Sumatra - Andaman Islands Earthquake
  TNML  A    2 P 04:361:03530 00:000:00000 V - 
 *
@@ -7443,7 +7455,8 @@
  TWTF  A    4 P 07:344:00000 13:241:00000 P - non-linearity
  TWTF  A    5 P 13:241:00000 18:037:57043 P - EQ M6.4 - 18 km NNE of Hualien City, Taiwan
  TWTF  A    6 P 18:037:57043 22:261:24253 P - EQ M6.9 - south-east of Lugu, Taiwan
- TWTF  A    7 P 22:261:24253 00:000:00000 P - 
+ TWTF  A    7 P 22:261:24253 24:093:86291 P - EQ M7.4 - 15 km S of Hualien City, Taiwan
+ TWTF  A    8 P 24:093:86291 00:000:00000 P -
  TWTF  A    1 P 00:000:00000 04:361:03530 V - EQ M9.1 - 2004 Sumatra - Andaman Islands Earthquake
  TWTF  A    2 P 04:361:03530 07:344:00000 V - non-linearity
  TWTF  A    3 P 07:344:00000 13:241:00000 V - non-linearity
