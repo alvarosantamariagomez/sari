@@ -372,6 +372,54 @@ tabContents <- function(tabNum) {
   )
 }
 
+# Setting the layout of the model and the residual series for all the components simultaneously
+tab3Contents <- function(series) {
+  if (series == "model") {
+    tabNum <- 4
+    tabName <- uiOutput("tabName4")
+  } else if (series == "residuals") {
+    tabNum <- 5
+    tabName <- uiOutput("tabName5")
+  }
+  tabPanel(div(style = "font-size: 20px;",tabName), value = tabNum,
+           tags$style(type = "text/css", "
+                      body {padding-top: 60px;}
+                      #side-panel,.navbar-nav {-webkit-user-select: none; -ms-user-select: none; user-select: none;}
+                      .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
+                      "),
+           hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
+           withSpinner(
+             plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = paste0("plot",tabNum,"1_2click"), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+             type = getOption("spinner.type", default = 1),
+             color = getOption("spinner.color", default = "#0080ff"),
+             size = getOption("spinner.size", default = 2),
+             color.background = getOption("spinner.color.background", default = "#ffffff"),
+             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+           ),
+           div(style = "margin-top:-3em",
+               withSpinner(
+                 plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = paste0("plot",tabNum,"2_2click"), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+                 type = getOption("spinner.type", default = 1),
+                 color = getOption("spinner.color", default = "#0080ff"),
+                 size = getOption("spinner.size", default = 2),
+                 color.background = getOption("spinner.color.background", default = "#ffffff"),
+                 custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+               )
+           ),
+           div(style = "margin-top:-3em",
+               withSpinner(
+                 plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = paste0("plot",tabNum,"3_2click"), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+                 type = getOption("spinner.type", default = 1),
+                 color = getOption("spinner.color", default = "#0080ff"),
+                 size = getOption("spinner.size", default = 2),
+                 color.background = getOption("spinner.color.background", default = "#ffffff"),
+                 custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+               )
+           ),
+           verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F)
+  )
+}
+
 # Shiny/R general options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 # options(shiny.trace = T)
@@ -435,8 +483,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .popover {min-width: 21%; color: #ffffff; background-color: #474949; font-size: medium; position: absolute; z-index: 9999;}
                       .arrow { border-left-color: #8447cf; }
                       .navbar-nav { width: 98%;}
-                      .navbar-nav li:nth-child(6) { float: right }
-                      .navbar-nav li:nth-child(7) { float: right }
+                      .navbar-nav li:nth-child(9) { float: right }
+                      .navbar-nav li:nth-child(8) { float: right }
                       .navbar-nav li:nth-child(2) { width: 17%; }
                       .navbar-nav li:nth-child(1) { width: 17%; }
                       .tabbable > .nav > li[class=active] > a { background-color: #333333; color:white; }
@@ -2069,6 +2117,18 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     ),
                                     
                                     # Visualization panel ####
+                                    
+                                    # Tab numbers:
+                                    # 0: SARI logo
+                                    # 1: 1st component
+                                    # 2: 2nd component
+                                    # 3: 3rd component
+                                    # 4: model series
+                                    # 5: residual series
+                                    # 6: help 
+                                    # 7: save
+                                    # 8: PDF
+                                    
                                     mainPanel(
                                       # style = "position:fixed; right: 0px; height: 90vh; overflow-y: auto;",
                                       id = "main-panel",
@@ -2082,7 +2142,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       navbarPage(
                                         title = "", windowTitle = version, id = "tab", selected = 1, position = "fixed-top", header = NULL, footer = NULL, inverse = F, collapsible = T, fluid = T, theme = NULL,
                                         tabPanel(div(style = "display: inline-block; font-size: 40px; color: #333333", "SARI"), value = 0, id = "SARI"),
-                                        tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 4, icon = icon("circle-info", class = "fas fa-2x"),
+                                        tabPanel(div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block;","Help"), value = 6, icon = icon("circle-info", class = "fas fa-2x"),
                                                  uiOutput("about_file")
                                         ),
                                         
@@ -2095,8 +2155,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                         # * component 3 ####
                                         tabContents(3),
                                         
-                                        tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","PDF"), class = "fa-solid fa-file", style = "font-size:30px; margin-top:-0.9em"), value = 6),
-                                        tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Save"), class = "fa-solid fa-floppy-disk", style = "font-size:30px; margin-top:-0.9em"), value = 5)
+                                        # * model series ####
+                                        tab3Contents("model"),
+                                        
+                                        # * residual series ####
+                                        tab3Contents("residuals"),
+                                        
+                                        tabPanel(title = downloadLink('print_out', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","PDF"), class = "fa-solid fa-file", style = "font-size:30px; margin-top:-0.9em"), value = 8),
+                                        tabPanel(title = downloadLink('download', div(style = "margin-top:-3.5em; font-size: 25px; display: inline-block; font-family: sans-serif; font-weight: normal;","Save"), class = "fa-solid fa-floppy-disk", style = "font-size:30px; margin-top:-0.9em"), value = 7)
                                       )
                                     )
                       )
@@ -2180,7 +2246,8 @@ server <- function(input,output,session) {
                            LogariRef = NULL, L0 = NULL, TL0 = NULL, PolyRef = NULL, PolyCoef = NULL, ofac = "",
                            long_period = "", short_period = "", low = NULL, high = NULL, scaleFactor = 1,
                            step = NULL, step2 = NULL,
-                           giaTrend = NULL, giaTrend2 = NULL)
+                           giaTrend = NULL, giaTrend2 = NULL,
+                           plot4_1click = NULL, plot5_1click = NULL)
   obs <- reactiveVal()
 
   # 6. computed values
@@ -2215,10 +2282,12 @@ server <- function(input,output,session) {
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
   messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
-  info$components <- c("Visualization panel", "", "") # labels of the tab components at start up
+  info$components <- c("Visualization panel", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ info$components[1] })
   output$tabName2 <- renderText({ info$components[2] })
   output$tabName3 <- renderText({ info$components[3] })
+  output$tabName4 <- renderText({ info$components[4] })
+  output$tabName5 <- renderText({ info$components[5] })
 
   # Welcome ####
   observe({
@@ -2237,9 +2306,11 @@ server <- function(input,output,session) {
       shinyjs::hide(selector = "#tab li a[data-value=1]")
       shinyjs::hide(selector = "#tab li a[data-value=2]")
       shinyjs::hide(selector = "#tab li a[data-value=3]")
-      shinyjs::hide(selector = "#tab li a[data-value=6]")
-      updateNavbarPage(session, "tab", selected = "4")
       shinyjs::hide(selector = "#tab li a[data-value=4]")
+      shinyjs::hide(selector = "#tab li a[data-value=5]")
+      shinyjs::hide(selector = "#tab li a[data-value=8]")
+      updateNavbarPage(session, "tab", selected = "6")
+      shinyjs::hide(selector = "#tab li a[data-value=6]")
       shinyjs::hideElement(id = "side-panel", anim = F)
       showModal(modalDialog(
         title = tags$h3("Dear SARI user"),
@@ -2820,7 +2891,7 @@ server <- function(input,output,session) {
                  input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
     req(db1[[info$db1]])
-    if (input$tab == 4) {
+    if (input$tab > 3) {
       req(info$stop)
     }
     removeNotification("kf_not_valid")
@@ -3399,6 +3470,32 @@ server <- function(input,output,session) {
       }
     })
 }, width = reactive(info$width))
+  output$plot41 <- renderPlot({
+    req(db1[[info$db1]]$y1, trans$x)
+    if (input$tab == 4) {
+      plot3series(1)
+    }
+  }, width = reactive(info$width))
+  output$plot42 <- renderPlot({
+    req(db1[[info$db1]]$y2, trans$x)
+    if (input$tab == 4) {
+      plot3series(2)
+    }
+  }, width = reactive(info$width))
+  output$plot43 <- renderPlot({
+    req(db1[[info$db1]]$y3, trans$x)
+    if (input$tab == 4) {
+      plot3series(3)
+    }
+  }, width = reactive(info$width))
+  output$plot4_info <- renderText({
+    x <- y <- NULL
+    if (length(inputs$plot4_1click$x) > 0) {
+      x <- inputs$plot4_1click$x
+      y <- inputs$plot4_1click$y
+      paste("Plot coordinates =", x, y, sep = "\t")
+    }
+  })
 
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs, input$tunits), {
@@ -3692,7 +3789,7 @@ server <- function(input,output,session) {
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
     removeNotification("bad_LS")
-    if (input$tab == 4) {
+    if (input$tab == 6) {
       req(info$stop)
     }
     output$offsetFound <- renderUI({ NULL })
@@ -5941,6 +6038,29 @@ server <- function(input,output,session) {
       ranges$y4 <- NULL
     }
   })
+  observeEvent(c(input$plot41_2click, input$plot42_2click, input$plot43_2click), {
+    brush <- NULL
+    if (length(input$plot41_brush) > 0) {
+      brush <- input$plot41_brush
+    } else if (length(input$plot42_brush) > 0) {
+      brush <- input$plot42_brush
+    } else if (length(input$plot43_brush) > 0) {
+      brush <- input$plot43_brush
+    }
+    values_now <- db1[[info$db1]]$status1
+    if (!is.null(brush) && !all(is.na(values_now[trans$x0 > brush$xmin & trans$x0 < brush$xmax]))) {
+      ranges$x1 <- ranges$x2 <- ranges$x4 <- c(brush$xmin, brush$xmax)
+      ranges$y1 <- ranges$y2 <- NULL
+    } else {
+      ranges$x1 <- c(info$minx, info$maxx)
+      ranges$y1 <- NULL
+      ranges$y12 <- NULL
+      ranges$x2 <- NULL
+      ranges$y2 <- NULL
+      ranges$x4 <- NULL
+      ranges$y4 <- NULL
+    }
+  })
   observeEvent(input$res_2click, {
     req(db1[[info$db1]])
     brush <- NULL
@@ -6037,7 +6157,7 @@ server <- function(input,output,session) {
 
   # Enable/disable options ####
   observe({
-    if (input$tab == "4") {
+    if (input$tab == "6") {
       disable("fitType")
       disable("autoDownload")
       disable("white")
@@ -6580,7 +6700,7 @@ server <- function(input,output,session) {
           disable("swap")
         }
       } else {
-        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "7", session = getDefaultReactiveDomain())
         # updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
         shinyjs::delay(100, disable("waveletType"))
         updateTextInput(session, "corto_wavelet", value = "")
@@ -7854,7 +7974,7 @@ server <- function(input,output,session) {
 
   # Observe series info ####
   observeEvent(c(input$tab, input$format, input$format2), {
-    if (input$tab == "4") {
+    if (input$tab == "6") {
       if (messages > 0) cat(file = stderr(), mySession, "Showing help file", "\n")
     } else {
       req(db1[[info$db1]])
@@ -7865,7 +7985,7 @@ server <- function(input,output,session) {
     }
   }, priority = 7)
   observeEvent(c(input$tunits, input$sunits, input$sigmas, file$secondary, input$optionSecondary, input$log, input$sinfo, file$soln, file$custom, inputs$step, input$separator, inputs$epoch, inputs$variable, inputs$errorBar, inputs$scaleFactor, inputs$step2, input$separator2, inputs$epoch2, inputs$variable2, inputs$errorBar2, input$fullSeries, input$sameScale, input$same_axis, input$ne), {
-    if (input$tab == "4") {
+    if (input$tab == "6") {
       if (messages > 0) cat(file = stderr(), mySession, "Showing help file", "\n")
     } else {
       req(db1[[info$db1]])
@@ -8700,9 +8820,13 @@ server <- function(input,output,session) {
       output$tabName1 <- renderText({ "1D series" })
       hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+      hideTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
+      hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     } else {
       showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+      showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
+      showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     }
   }, priority = 10)
 
@@ -9640,10 +9764,12 @@ server <- function(input,output,session) {
     })
     enable("neuenu")
     enable("server1")
-    info$components <- c("Visualization panel", "", "")
+    info$components <- c("Visualization panel", "", "", "", "")
     output$tabName1 <<- renderText({ info$components[1] })
     output$tabName2 <<- renderText({ info$components[2] })
     output$tabName3 <<- renderText({ info$components[3] })
+    output$tabName4 <<- renderText({ info$components[4] })
+    output$tabName5 <<- renderText({ info$components[5] })
     output$fileSeries1 <- renderUI({
       tags$a(href = "SPOTGINS_CRAL00FRA.enu", "Show file example", targe = "_blank")
     })
@@ -9671,11 +9797,11 @@ server <- function(input,output,session) {
 
   # Observe hide buttons ####
   observeEvent(c(input$tab, trans$filter, trans$res, trans$y, inputs$step, input$optionSecondary), {
-    if (input$tab == 4) {
-      showTab(inputId = "tab", target = "6", select = F, session = getDefaultReactiveDomain())
-      hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+    if (input$tab == 6) {
+      showTab(inputId = "tab", target = "8", select = F, session = getDefaultReactiveDomain())
+      hideTab(inputId = "tab", target = "7", session = getDefaultReactiveDomain())
     } else {
-      hideTab(inputId = "tab", target = "6", session = getDefaultReactiveDomain())
+      hideTab(inputId = "tab", target = "8", session = getDefaultReactiveDomain())
       if (length(trans$y) > 0 && 
           (  length(trans$filter) > 0 || 
              length(trans$res) > 0 || 
@@ -9683,9 +9809,9 @@ server <- function(input,output,session) {
              input$optionSecondary > 1 ||
              (input$eulerType == 2 && length(trans$plate) > 0)  )
       ) {
-        showTab(inputId = "tab", target = "5", select = F, session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "7", select = F, session = getDefaultReactiveDomain())
       } else {
-        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "7", session = getDefaultReactiveDomain())
       }
     }
   }, priority = 0)
@@ -9842,6 +9968,20 @@ server <- function(input,output,session) {
       }
     }
   })
+  
+  # Observe clicks on multiple plots ####
+  observeEvent(input$plot41_1click, {
+    inputs$plot4_1click$x <- input$plot41_1click$x
+    inputs$plot4_1click$y <- input$plot41_1click$y
+  })
+  observeEvent(input$plot42_1click, {
+    inputs$plot4_1click$x <- input$plot42_1click$x
+    inputs$plot4_1click$y <- input$plot42_1click$y
+  })
+  observeEvent(input$plot43_1click, {
+    inputs$plot4_1click$x <- input$plot43_1click$x
+    inputs$plot4_1click$y <- input$plot43_1click$y
+  })
 
 
   # Functions ####
@@ -9971,35 +10111,47 @@ server <- function(input,output,session) {
       # Setting new tab names if necessary
       if (info$format == 1) { #NEU/ENU
         if (isTruthy(url$server) && url$server != "LOCAL") {
-          info$components <- c("East component", "North component", "Up component")
+          info$components <- c("East component", "North component", "Up component", "3D", "Residuals")
           output$tabName1 <<- renderText({ info$components[1] })
           output$tabName2 <<- renderText({ info$components[2] })
           output$tabName3 <<- renderText({ info$components[3] })
+          output$tabName4 <<- renderText({ info$components[4] })
+          output$tabName5 <<- renderText({ info$components[5] })
         } else {
           extension <- tolower(rev(strsplit(as.character(file$primary$name), ".", fixed = T)[[1]])[1])
           if (isTruthy(extension) && (extension == "neu" || extension == "enu")) {
-            info$components <- c("East component", "North component", "Up component")
+            info$components <- c("East component", "North component", "Up component", "3D", "Residuals")
             output$tabName1 <<- renderText({ info$components[1] })
             output$tabName2 <<- renderText({ info$components[2] })
             output$tabName3 <<- renderText({ info$components[3] })
+            output$tabName4 <<- renderText({ info$components[4] })
+            output$tabName5 <<- renderText({ info$components[5] })
           }
         }
         showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
         showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       } else if (info$format == 4) { #1D
         output$tabName1 <- renderText({ "Series" })
         hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
         hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       } else { #PBO & NGL
-        info$components <- c("East component", "North component", "Up component")
+        info$components <- c("East component", "North component", "Up component", "3D", "Residuals")
         output$tabName1 <<- renderText({ info$components[1] })
         output$tabName2 <<- renderText({ info$components[2] })
         output$tabName3 <<- renderText({ info$components[3] })
+        output$tabName4 <<- renderText({ info$components[4] })
+        output$tabName5 <<- renderText({ info$components[5] })
         showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
         showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
+        showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       }
       if (info$components[1] != "East component" && info$format != 4) {
-        info$components <- c("1st component", "2nd component", "3rd component")
+        info$components <- c("1st component", "2nd component", "3rd component", "3D", "Residuals")
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
       # all good
@@ -11987,6 +12139,133 @@ server <- function(input,output,session) {
         showNotification(HTML("Something is wrong with the series plot and the errorbars could not be plotted.<br>Please contact the author to provide feedback"), action = NULL, duration = 10, closeButton = T, id = "wrong_series", type = "error", session = getDefaultReactiveDomain())
       }
     }
+  }
+  #
+  plot3series <- function(component) {
+        removeNotification("wrong_series")
+        if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
+        y1 <- db1[[info$db1]][[paste0("y",component)]]
+        sy1 <- db1[[info$db1]][[paste0("sy",component)]]
+        title <- ""
+        sigmas <- F
+        if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
+          sigmas <- T
+        }
+        if (length(ranges$x1) > 0 && !isTruthy(ranges$y1)) {
+          rangeY <- range(y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]])
+        } else {
+          rangeY <- ranges$y1
+        }
+        if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && abs(sum(db2[[info$db2]]$y1, na.rm = T)) > 0) {
+          y2 <- db2[[info$db1]][[paste0("y",component)]]
+          sy2 <- db2[[info$db1]][[paste0("sy",component)]]
+          if (input$symbol == 0) {
+            symbol <- 'p'
+          } else if (input$symbol == 1) {
+            symbol <- 'l'
+          } else if (input$symbol == 2) {
+            symbol <- 'o'
+          }
+          if (isTruthy(input$sameScale)) {
+            pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+            pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+            pointsY1 <- y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+            pointsY2 <- y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+            half <- abs(rangeY[1] - mean(rangeY))
+            middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
+            ranges$y12 <- c(middle - half, middle + half)
+            if (length(pointsX1) == 0 || length(pointsX2) == 0) {
+              # NA
+            } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
+              # NA
+            } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
+              # NA
+            } else {
+              tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
+              tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
+              tie1 <- tie1[1:min(length(tie1),length(tie2))]
+              tie2 <- tie2[1:min(length(tie1),length(tie2))]
+              pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
+              ranges$y12 <- isolate(ranges$y12 + (rangeY[1] - ranges$y12[1]) - pointsBias)
+            }
+          } else if (isTruthy(input$same_axis)) {
+            ranges$y12 <- rangeY
+          } else {
+            ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
+            if (sum(ids) > 0) {
+              ranges$y12 <- range(y2[ids], na.rm = T) 
+            } else {
+              ranges$y12 <- range(y2, na.rm = T)
+            }
+          }
+          plot(trans$x2, y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+          if (isTruthy(sigmas)) {
+            color <- SARIcolors[3]
+            alfa <- 0.2
+            shade <- adjustcolor(color, alpha.f = alfa)
+            ba <- y2 + sy2
+            bb <- y2 - sy2
+            polygon(c(trans$x2, rev(trans$x2)), c(ba, rev(bb)), col = shade, border = NA)
+          }
+          axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
+          par(new = T)
+        }
+        plot_series(trans$x,y1,sy1,ranges$x1,rangeY,sigmas,title,input$symbol,T)
+        points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
+        xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+        yy <- median(y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+        centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
+        centery <- which(abs(y1 - yy) == min(abs(y1 - yy)))[1]
+        if (input$tab == 1 || input$tab == 2) {
+          if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+            rate <- trans$plate[as.numeric(input$tab)]
+          }
+          if (input$format == 4 && isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+            rate <- ifelse(exists("rate") && is.numeric(rate), yes = rate + trans$gia[3], no = trans$gia[3])
+          }
+        } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+          rate <- trans$gia[3]
+        }
+        if (exists("rate") && is.numeric(rate)) {
+          lines(c(trans$x[1],trans$x[length(trans$x)]),c(y1[centery] + rate*(trans$x[1] - trans$x[centerx]),y1[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
+        }
+        if (input$traceLog && length(info$log) > 0) {
+          for (r in info$log[[2]]) {
+            abline(v = r, col = SARIcolors[4], lty = 2)
+          }
+          for (a in info$log[[1]]) {
+            abline(v = a, col = SARIcolors[4])
+          }
+        }
+        if (input$traceSinfo && length(info$sinfo) > 0) {
+          for (r in info$sinfo[[2]]) {
+            abline(v = r, col = SARIcolors[6], lty = 2)
+          }
+          for (a in info$sinfo[[1]]) {
+            abline(v = a, col = SARIcolors[6])
+          }
+        }
+        if (input$traceSoln && length(info$soln) > 0) {
+          for (a in info$soln) {
+            abline(v = a, col = SARIcolors[8])
+          }
+        }
+        if (input$traceCustom && length(info$custom) > 0) {
+          for (a in info$custom) {
+            abline(v = a, col = SARIcolors[5])
+          }
+        }
+        if (length(trans$mod) > 0 && isTruthy(info$run)) {
+          lines(trans$x,trans$mod, col = SARIcolors[2], lwd = 3)
+        }
+        if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
+          lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
+        }
+        if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
+          shinyjs::show(paste0("zoomin",input$tab))
+        } else {
+          shinyjs::hide(paste0("zoomin",input$tab))
+        }
   }
   #
   periodogram <- function(serie) {
