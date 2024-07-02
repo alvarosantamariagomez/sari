@@ -8888,10 +8888,10 @@ server <- function(input,output,session) {
         y2 <- y2 - trans$gia[2]*(x - median(x, na.rm = T)) - median(y2, na.rm = T)
         y3 <- y3 - trans$gia[3]*(x - median(x, na.rm = T)) - median(y3, na.rm = T)
       }
-      if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
-        y12 <- db2[[info$db2]]$y1 - trans$plate[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
-        y22 <- db2[[info$db2]]$y2 - trans$plate[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
-        y32 <- db2[[info$db2]]$y3 - trans$plate[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
+      if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
+        y12 <- db2[[info$db2]]$y1 - trans$plate2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
+        y22 <- db2[[info$db2]]$y2 - trans$plate2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
+        y32 <- db2[[info$db2]]$y3 - trans$plate2[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
       } else {
         y12 <- db2[[info$db2]]$y1
         y22 <- db2[[info$db2]]$y2
@@ -12144,7 +12144,14 @@ server <- function(input,output,session) {
   plot3series <- function(component) {
         removeNotification("wrong_series")
         if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
-        y1 <- db1[[info$db1]][[paste0("y",component)]]
+        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+          y1 <- db1[[info$db1]][[paste0("y",component)]] - trans$plate[component]*(trans$x - median(trans$x, na.rm = T)) - median(db1[[info$db1]][[paste0("y",component)]], na.rm = T)
+        } else {
+          y1 <- db1[[info$db1]][[paste0("y",component)]]
+        }
+        if (isTruthy(trans$gia) && input$giaType == 2) {
+          y1 <- y1 - trans$gia[component]*(trans$x - median(trans$x, na.rm = T)) - median(y1, na.rm = T)
+        }
         sy1 <- db1[[info$db1]][[paste0("sy",component)]]
         title <- ""
         sigmas <- F
@@ -12157,7 +12164,15 @@ server <- function(input,output,session) {
           rangeY <- ranges$y1
         }
         if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && abs(sum(db2[[info$db2]]$y1, na.rm = T)) > 0) {
-          y2 <- db2[[info$db1]][[paste0("y",component)]]
+          if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
+            y2 <- db2[[info$db1]][[paste0("y",component)]] - trans$plate2[component]*(trans$x - median(trans$x, na.rm = T)) - median(db2[[info$db1]][[paste0("y",component)]], na.rm = T)
+          } else {
+            y2 <- db2[[info$db1]][[paste0("y",component)]]
+          }
+          if (isTruthy(trans$gia2) && input$giaType == 2) {
+            y2 <- y2 - trans$gia2[component]*(trans$x - median(trans$x, na.rm = T)) - median(y2, na.rm = T)
+          }
+          y2 <- y2 * inputs$scaleFactor
           sy2 <- db2[[info$db1]][[paste0("sy",component)]]
           if (input$symbol == 0) {
             symbol <- 'p'
@@ -12216,15 +12231,15 @@ server <- function(input,output,session) {
         yy <- median(y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
         centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
         centery <- which(abs(y1 - yy) == min(abs(y1 - yy)))[1]
-        if (input$tab == 1 || input$tab == 2) {
-          if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-            rate <- trans$plate[as.numeric(input$tab)]
+        if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+            rate <- trans$plate[component]
+        }
+        if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+          if (exists("rate") && is.numeric(rate)) {
+            rate <- rate + trans$gia[component]
+          } else {
+            rate <- trans$gia[component]
           }
-          if (input$format == 4 && isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-            rate <- ifelse(exists("rate") && is.numeric(rate), yes = rate + trans$gia[3], no = trans$gia[3])
-          }
-        } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-          rate <- trans$gia[3]
         }
         if (exists("rate") && is.numeric(rate)) {
           lines(c(trans$x[1],trans$x[length(trans$x)]),c(y1[centery] + rate*(trans$x[1] - trans$x[centerx]),y1[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
