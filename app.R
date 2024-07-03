@@ -8260,11 +8260,12 @@ server <- function(input,output,session) {
             showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
-          if (min(diff(table1$x1)) < min(diff(table2$x1))) {
-            showNotification(HTML("The sampling of the primary series is not regular.<br>Consider using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-          } else {
-            showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-          }
+          # if (min(diff(table1$x1)) < min(diff(table2$x1))) {
+          #   showNotification(HTML("The sampling of the primary series is not regular.<br>Consider using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+          # } else {
+          #   showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+          # }
+          showNotification(HTML("The sampling of the primary series, or secodary series, or both, is not regular.<br>Consider using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
         }
       } else {
         if (info$format != 4) {
@@ -8350,9 +8351,13 @@ server <- function(input,output,session) {
       }
       showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       if (nrow(table_common) > 0) {
-        if (isTruthy(db1$merged) && length(db1$merged$status1) == length(table_common$status1)) {
+        if (isTruthy(db1$merged$status1) && length(db1$merged$status1) == length(table_common$status1)) {
           table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
+        }
+        if (isTruthy(db1$merged$status2) && length(db1$merged$status2) == length(table_common$status2)) {
           table_common$status2 <- table_common$status2 + db1$merged$status2 > 1
+        }
+        if (isTruthy(db1$merged$status3) && length(db1$merged$status3) == length(table_common$status3)) {
           table_common$status3 <- table_common$status3 + db1$merged$status3 > 1
         }
         db1$merged <- table_common
