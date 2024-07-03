@@ -388,6 +388,7 @@ tab3Contents <- function(series) {
                       .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
                       "),
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
+           hidden(div(id = paste0("component",tabNum,1), style = "margin: 2em 0em -4.5em 5em; font-weight: bold; font-size: 12px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1")))),
            withSpinner(
              plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = paste0("plot",tabNum,"1_2click"), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
@@ -396,7 +397,8 @@ tab3Contents <- function(series) {
              color.background = getOption("spinner.color.background", default = "#ffffff"),
              custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
-           div(style = "margin-top:-3em",
+           div(style = "margin-top: 1em;",
+               hidden(div(id = paste0("component",tabNum,2), style = "margin: 0em 0em -4.5em 5em; font-weight: bold; font-size: 12px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2")))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = paste0("plot",tabNum,"2_2click"), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -406,7 +408,8 @@ tab3Contents <- function(series) {
                  custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
                )
            ),
-           div(style = "margin-top:-3em",
+           div(style = "margin-top: 1em;",
+               hidden(div(id = paste0("component",tabNum,3), style = "margin: 0em 0em -4.5em 5em; font-weight: bold; font-size: 12px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3")))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = paste0("plot",tabNum,"3_2click"), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -2282,8 +2285,8 @@ server <- function(input,output,session) {
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
   messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
-  info$components <- c("Visualization panel", "", "", "", "") # labels of the tab components at start up
-  output$tabName1 <- renderText({ info$components[1] })
+  info$components <- c("", "", "", "", "") # labels of the tab components at start up
+  output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
   output$tabName3 <- renderText({ info$components[3] })
   output$tabName4 <- renderText({ info$components[4] })
@@ -9764,8 +9767,8 @@ server <- function(input,output,session) {
     })
     enable("neuenu")
     enable("server1")
-    info$components <- c("Visualization panel", "", "", "", "")
-    output$tabName1 <<- renderText({ info$components[1] })
+    info$components <- c("", "", "", "", "")
+    output$tabName1 <<- renderText({ "Visualization panel" })
     output$tabName2 <<- renderText({ info$components[2] })
     output$tabName3 <<- renderText({ info$components[3] })
     output$tabName4 <<- renderText({ info$components[4] })
@@ -12231,6 +12234,8 @@ server <- function(input,output,session) {
         }
         plot_series(trans$x,y1,sy1,ranges$x1,rangeY,sigmas,title,input$symbol,T)
         points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
+        output[[paste0("component4",component)]] <- renderText(info$components[component])
+        shinyjs::show(paste0("component4",component))
         xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
         yy <- median(y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
         centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
