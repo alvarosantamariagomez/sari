@@ -374,7 +374,7 @@ tabContents <- function(tabNum) {
 
 # Setting the layout of the model and the residual series for all the components simultaneously
 tab3Contents <- function(series) {
-  if (series == "model") {
+  if (series == "3D") {
     tabNum <- 4
     tabName <- uiOutput("tabName4")
   } else if (series == "residuals") {
@@ -2118,14 +2118,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                     
                                     # Visualization panel ####
                                     
-                                    # Tab numbers:
+                                    # Tab numbers in order from left to right:
                                     # 0: SARI logo
+                                    # 6: help 
+                                    # 4: 3D series
                                     # 1: 1st component
                                     # 2: 2nd component
                                     # 3: 3rd component
-                                    # 4: model series
                                     # 5: residual series
-                                    # 6: help 
                                     # 7: save
                                     # 8: PDF
                                     
@@ -2146,6 +2146,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                  uiOutput("about_file")
                                         ),
                                         
+                                        # * 3D series ####
+                                        tab3Contents("3D"),
+                                        
                                         # * component 1 ####
                                         tabContents(1),
                                         
@@ -2154,9 +2157,6 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                         
                                         # * component 3 ####
                                         tabContents(3),
-                                        
-                                        # * model series ####
-                                        tab3Contents("model"),
                                         
                                         # * residual series ####
                                         tab3Contents("residuals"),
@@ -10017,8 +10017,12 @@ server <- function(input,output,session) {
       } else if (input$separator == "3") {
         sep <- ";"
       }
-      if (isTruthy(info$format) && info$format == 4) {
-        updateTabsetPanel(session, inputId = "tab", selected = "1")
+      if (isTruthy(info$format)) {
+        if (info$format == 4) {
+          updateTabsetPanel(session, inputId = "tab", selected = "1")
+        } else {
+          updateTabsetPanel(session, inputId = "tab", selected = "4")
+        }
       }
       # Getting primary series
       table <- NULL
