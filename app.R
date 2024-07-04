@@ -7947,6 +7947,15 @@ server <- function(input,output,session) {
     if (input$waveletType > 0) {
       updateRadioButtons(session, inputId = "waveletType", label = NULL, selected = 0)
     }
+    if (input$tab == 4) {
+      info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
+                       db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
+                       db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
+      info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
+                       db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
+                       db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
+      ranges$x1 <- c(info$minx, info$maxx)
+    }
   }, priority = 100)
 
   # Observe ancillary files ####
@@ -12160,24 +12169,26 @@ server <- function(input,output,session) {
   plot3series <- function(component) {
         removeNotification("wrong_series")
         if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
-        x1 <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] == T]
-        xe <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] == F]
-        y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] == T]
-        ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] == F]
+        x0 <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
+        x1 <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
+        xe <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
+        y0 <- db1[[info$db1]][[paste0("y",component)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
+        y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
+        ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
         if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
           y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
         }
         if (isTruthy(trans$gia) && input$giaType == 2) {
           y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
         }
-        sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] == T]
+        sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
         title <- ""
         sigmas <- F
         if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
           sigmas <- T
         }
         if (length(ranges$x1) > 0 && !isTruthy(ranges$y1)) {
-          rangeY <- range(y1[x1 > ranges$x1[1] & x1 < ranges$x1[2]])
+          rangeY <- range(y0[x0 > ranges$x1[1] & x0 < ranges$x1[2]])
         } else {
           rangeY <- ranges$y1
         }
