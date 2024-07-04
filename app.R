@@ -6331,7 +6331,8 @@ server <- function(input,output,session) {
           } else {
             enable("plotAll")
           }
-          if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0) {
+          if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0 ||
+              length(input$plot41_brush) > 0 || length(input$plot42_brush) > 0 || length(input$plot43_brush) > 0) {
             enable("remove")
           } else {
             disable("remove")
@@ -9202,8 +9203,25 @@ server <- function(input,output,session) {
     removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), mySession, "Removing points, manually", "\n")
     excluding_plot <- excluding_plotres <- NULL
-    series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
-    brush1 <- input$plot_brush
+    if (isTruthy(input$plot_brush)) {
+      brush1 <- input$plot_brush
+      series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
+    } else if (isTruthy(input$plot41_brush)) {
+      brush1 <- input$plot41_brush
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)]
+      y <- db1[[info$db1]]$y1[!is.na(db1[[info$db1]]$status1)]
+      series <- data.frame(x = x, y = y)
+    } else if (isTruthy(input$plot42_brush)) {
+      brush1 <- input$plot42_brush
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)]
+      y <- db1[[info$db1]]$y2[!is.na(db1[[info$db1]]$status2)]
+      series <- data.frame(x = x, y = y)
+    } else if (isTruthy(input$plot43_brush)) {
+      brush1 <- input$plot43_brush
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)]
+      y <- db1[[info$db1]]$y3[!is.na(db1[[info$db1]]$status3)]
+      series <- data.frame(x = x, y = y)
+    }
     brush2 <- NULL
     if (isTruthy(input$res_brush) && length(trans$res) > 0) {
       residuals <- data.frame(x = trans$x, y = trans$res)
