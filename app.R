@@ -3474,22 +3474,13 @@ server <- function(input,output,session) {
     })
 }, width = reactive(info$width))
   output$plot41 <- renderPlot({
-    req(db1[[info$db1]]$y1, trans$x)
-    if (input$tab == 4) {
       plot3series(1)
-    }
   }, width = reactive(info$width))
   output$plot42 <- renderPlot({
-    req(db1[[info$db1]]$y2, trans$x)
-    if (input$tab == 4) {
       plot3series(2)
-    }
   }, width = reactive(info$width))
   output$plot43 <- renderPlot({
-    req(db1[[info$db1]]$y3, trans$x)
-    if (input$tab == 4) {
       plot3series(3)
-    }
   }, width = reactive(info$width))
   output$plot4_info <- renderText({
     x <- y <- NULL
@@ -6426,9 +6417,18 @@ server <- function(input,output,session) {
               updateCheckboxInput(session, inputId = "same_axis", value = F)
               updateCheckboxInput(session, inputId = "ne", value = F)
               # setting new axis limits
-              req(db2[[info$db2]])
-              info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
-              info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+              if (input$tab == 4) {
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
+                                 db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
+                                 db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
+                                 db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
+                                 db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
+              } else {
+                req(db2[[info$db2]])
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+              }
               ranges$x1 <- c(info$minx, info$maxx)
             }
             if (input$optionSecondary == 1) {
@@ -8544,8 +8544,17 @@ server <- function(input,output,session) {
     # Updating plot ranges
     if (input$optionSecondary > 1 || (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1)) {
       # setting new axis limits
-      info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
-      info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+      if (input$tab == 4) {
+        info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
+                         db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
+                         db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
+        info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
+                         db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
+                         db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
+      } else {
+        info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+        info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+      }
       ranges$x1 <- c(info$minx, info$maxx)
     }
     # Updating station IDs
@@ -12151,36 +12160,38 @@ server <- function(input,output,session) {
   plot3series <- function(component) {
         removeNotification("wrong_series")
         if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
+        x1 <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] == T]
+        xe <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] == F]
+        y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] == T]
+        ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] == F]
         if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
-          y1 <- db1[[info$db1]][[paste0("y",component)]] - trans$plate[component]*(trans$x - median(trans$x, na.rm = T)) - median(db1[[info$db1]][[paste0("y",component)]], na.rm = T)
-        } else {
-          y1 <- db1[[info$db1]][[paste0("y",component)]]
+          y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
         }
         if (isTruthy(trans$gia) && input$giaType == 2) {
-          y1 <- y1 - trans$gia[component]*(trans$x - median(trans$x, na.rm = T)) - median(y1, na.rm = T)
+          y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
         }
-        sy1 <- db1[[info$db1]][[paste0("sy",component)]]
+        sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] == T]
         title <- ""
         sigmas <- F
         if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
           sigmas <- T
         }
         if (length(ranges$x1) > 0 && !isTruthy(ranges$y1)) {
-          rangeY <- range(y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]])
+          rangeY <- range(y1[x1 > ranges$x1[1] & x1 < ranges$x1[2]])
         } else {
           rangeY <- ranges$y1
         }
-        if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && abs(sum(db2[[info$db2]]$y1, na.rm = T)) > 0) {
+        if (input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+          x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
+          y2 <- db2[[info$db2]][[paste0("y",component)]]
           if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
-            y2 <- db2[[info$db1]][[paste0("y",component)]] - trans$plate2[component]*(trans$x - median(trans$x, na.rm = T)) - median(db2[[info$db1]][[paste0("y",component)]], na.rm = T)
-          } else {
-            y2 <- db2[[info$db1]][[paste0("y",component)]]
+            y2 <- y2 - trans$plate2[component]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
           }
           if (isTruthy(trans$gia2) && input$giaType == 2) {
-            y2 <- y2 - trans$gia2[component]*(trans$x - median(trans$x, na.rm = T)) - median(y2, na.rm = T)
+            y2 <- y2 - trans$gia2[component]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
           }
           y2 <- y2 * inputs$scaleFactor
-          sy2 <- db2[[info$db1]][[paste0("sy",component)]]
+          sy2 <- db2[[info$db2]][[paste0("sy",component)]]
           if (input$symbol == 0) {
             symbol <- 'p'
           } else if (input$symbol == 1) {
@@ -12189,13 +12200,13 @@ server <- function(input,output,session) {
             symbol <- 'o'
           }
           if (isTruthy(input$sameScale)) {
-            pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
-            pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
-            pointsY1 <- y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
-            pointsY2 <- y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+            pointsX1 <- x1[x1 > ranges$x1[1] & x1 < ranges$x1[2]]
+            pointsX2 <- x2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
+            pointsY1 <- y1[x1 > ranges$x1[1] & x1 < ranges$x1[2]]
+            pointsY2 <- y2[x2 > ranges$x1[1] & x2 < ranges$x1[2]]
             half <- abs(rangeY[1] - mean(rangeY))
             middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
-            ranges$y12 <- c(middle - half, middle + half)
+            rangeY2 <- c(middle - half, middle + half)
             if (length(pointsX1) == 0 || length(pointsX2) == 0) {
               # NA
             } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
@@ -12208,37 +12219,37 @@ server <- function(input,output,session) {
               tie1 <- tie1[1:min(length(tie1),length(tie2))]
               tie2 <- tie2[1:min(length(tie1),length(tie2))]
               pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
-              ranges$y12 <- isolate(ranges$y12 + (rangeY[1] - ranges$y12[1]) - pointsBias)
+              rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
             }
           } else if (isTruthy(input$same_axis)) {
-            ranges$y12 <- rangeY
+            rangeY2 <- rangeY
           } else {
-            ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
+            ids <- x2 >= ranges$x1[1] & x2 <= ranges$x1[2]
             if (sum(ids) > 0) {
-              ranges$y12 <- range(y2[ids], na.rm = T) 
+              rangeY2 <- range(y2[ids], na.rm = T) 
             } else {
-              ranges$y12 <- range(y2, na.rm = T)
+              rangeY2 <- range(y2, na.rm = T)
             }
           }
-          plot(trans$x2, y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+          plot(x2, y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = rangeY2)
           if (isTruthy(sigmas)) {
             color <- SARIcolors[3]
             alfa <- 0.2
             shade <- adjustcolor(color, alpha.f = alfa)
             ba <- y2 + sy2
             bb <- y2 - sy2
-            polygon(c(trans$x2, rev(trans$x2)), c(ba, rev(bb)), col = shade, border = NA)
+            polygon(c(x2, rev(x2)), c(ba, rev(bb)), col = shade, border = NA)
           }
           axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
           par(new = T)
         }
-        plot_series(trans$x,y1,sy1,ranges$x1,rangeY,sigmas,title,input$symbol,T)
-        points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
-        output[[paste0("component4",component)]] <- renderText(info$components[component])
+        plot_series(x1,y1,sy1,ranges$x1,rangeY,sigmas,title,input$symbol,T)
+        points(xe, ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
+        output[[paste0("component4",component)]] <- renderText(sub(" component", "", info$components[component]))
         shinyjs::show(paste0("component4",component))
-        xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
-        yy <- median(y1[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
-        centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
+        xx <- median(x1[x1 > ranges$x1[1] & x1 < ranges$x1[2]], na.rm = T)
+        yy <- median(y1[x1 > ranges$x1[1] & x1 < ranges$x1[2]], na.rm = T)
+        centerx <- which(abs(x1 - xx) == min(abs(x1 - xx)))[1]
         centery <- which(abs(y1 - yy) == min(abs(y1 - yy)))[1]
         if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
             rate <- trans$plate[component]
@@ -12251,7 +12262,7 @@ server <- function(input,output,session) {
           }
         }
         if (exists("rate") && is.numeric(rate)) {
-          lines(c(trans$x[1],trans$x[length(trans$x)]),c(y1[centery] + rate*(trans$x[1] - trans$x[centerx]),y1[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
+          lines(c(x1[1],x1[length(x1)]),c(y1[centery] + rate*(x1[1] - x1[centerx]),y1[centery] + rate*(x1[length(x1)] - x1[centerx])), col = SARIcolors[4], lwd = 3)
         }
         if (input$traceLog && length(info$log) > 0) {
           for (r in info$log[[2]]) {
@@ -12280,10 +12291,10 @@ server <- function(input,output,session) {
           }
         }
         if (length(trans$mod) > 0 && isTruthy(info$run)) {
-          lines(trans$x,trans$mod, col = SARIcolors[2], lwd = 3)
+          lines(x1,trans$mod, col = SARIcolors[2], lwd = 3)
         }
         if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
-          lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
+          lines(x1,trans$filter, col = SARIcolors[7], lwd = 3)
         }
         if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
           shinyjs::show(paste0("zoomin",input$tab))
