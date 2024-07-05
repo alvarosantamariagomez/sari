@@ -6337,7 +6337,7 @@ server <- function(input,output,session) {
           } else {
             disable("remove")
           }
-          if (isTruthy(trans$xe)) {
+          if (any(c(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3) == F)) {
             enable("add_excluded")
             enable("delete_excluded")
           } else {
