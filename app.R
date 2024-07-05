@@ -9286,7 +9286,7 @@ server <- function(input,output,session) {
           }
           db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
         } else {
-          if (input$tab == 1 || is.null(input$tab)) {
+          if (input$tab == 1 || isTruthy(input$plot41_brush) || is.null(input$tab)) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
                 db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
@@ -9303,7 +9303,7 @@ server <- function(input,output,session) {
                 db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
               }
             }
-          } else if (input$tab == 2) {
+          } else if (input$tab == 2 || isTruthy(input$plot42_brush)) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
                 db1[[info$db1]]$status2[excluding_plot$selected_] <- NA
@@ -9320,7 +9320,7 @@ server <- function(input,output,session) {
                 db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plotres$selected_)
               }
             }
-          } else if (input$tab == 3) {
+          } else if (input$tab == 3 || isTruthy(input$plot43_brush)) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
                 db1[[info$db1]]$status3[excluding_plot$selected_] <- NA
