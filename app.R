@@ -2255,7 +2255,10 @@ server <- function(input,output,session) {
 
   # 6. computed values
   trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL,
-                          sye = NULL, y2 = NULL, sy2 = NULL, res = NULL, results = NULL, mod = NULL, filter = NULL,
+                          sye = NULL, y2 = NULL, sy2 = NULL, 
+                          res = NULL, res1x = NULL, res1y = NULL, res1sy = NULL, res2x = NULL, res2y = NULL, res2sy = NULL, res3x = NULL, res3y = NULL, res3sy = NULL,
+                          mod = NULL, mod1y = NULL, mod2y = NULL, mod3y = NULL,
+                          results = NULL, filter = NULL,
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
                           midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
@@ -2894,7 +2897,7 @@ server <- function(input,output,session) {
                  input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
     req(db1[[info$db1]])
-    if (input$tab > 3) {
+    if (input$tab > 3 || info$tab > 3) {
       req(info$stop)
     }
     removeNotification("kf_not_valid")
@@ -3779,6 +3782,9 @@ server <- function(input,output,session) {
                  inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType,
                  input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, input$tunits,
                  trans$y, trans$sy), {
+    if (input$tab == 4) {
+      req(info$stop)
+    }
     req(trans$x, trans$y, trans$sy, trans$ordinate)
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
@@ -3811,7 +3817,7 @@ server <- function(input,output,session) {
           }
         }
         trans$model_old <- input$model
-        x <- trans$x
+        x <- trans[[paste0("res",input$tab,"x")]] <- trans$x
         y <- trans$y - trans$ordinate
         if (isTruthy(input$correct_waveform)) {
           if (length(trans$pattern) > 0) {
@@ -3893,18 +3899,18 @@ server <- function(input,output,session) {
             trans$equation <- sub("y ~","Model =",m$model)
             trans$results <- synthesis
             trans$LScoefs <- synthesis$coefficients
-            trans$res <- res
+            trans$res <- trans[[paste0("res",input$tab,"y")]] <- res
             if (isTruthy(input$wavelet) && input$waveletType > 1) {
               updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
             }
             trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
             if (isTruthy(synthesis$sigma)) {
               if (!any(1/weights < trans$moderror^2)) {
-                trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
+                trans$reserror <- trans[[paste0("res",input$tab,"sy")]] <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
               }
               trans$moderror <- trans$moderror * synthesis$sigma
             }
-            trans$mod <- mod
+            trans$mod <- trans[[paste0("mod",input$tab,"y")]] <- mod
             if (isTruthy(inputs$waveformPeriod)) {
               save_value <- inputs$waveformPeriod
               updateTextInput(session, "waveformPeriod", value = "")
@@ -6242,6 +6248,13 @@ server <- function(input,output,session) {
       disable("step2")
       disable("scaleFactor")
     } else {
+      if (input$tab == 4) {
+        runjs("document.getElementsByClassName('panel-primary')[3].classList.add('hidden');")
+        runjs("document.getElementsByClassName('panel-primary')[4].classList.add('hidden');")
+      } else {
+        runjs("document.getElementsByClassName('panel-primary')[3].classList.remove('hidden');")
+        runjs("document.getElementsByClassName('panel-primary')[4].classList.remove('hidden');")
+      }
       if (length(file$primary) > 0) {
         info$menu <- unique(c(info$menu, 2))
         updateCollapse(session, id = "menu", open = info$menu)
@@ -6470,6 +6483,11 @@ server <- function(input,output,session) {
           enable("model")
           if (input$fitType == 1 || input$fitType == 2) {
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
+              if (length(trans$res1x) > 0 && length(trans$res2x) > 0 && length(trans$res3x) > 0) {
+                showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+              } else {
+                hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+              }
               enable("spectrumModel")
               enable("spectrumResiduals")
               shinyjs::show(id = "res", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -6499,6 +6517,7 @@ server <- function(input,output,session) {
                 disable("runVerif")
               }
             } else {
+              hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
               disable("correct_waveform")
               shinyjs::hide(id = "res", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::hide(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -8848,7 +8867,7 @@ server <- function(input,output,session) {
       showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
-      showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+      # showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     }
   }, priority = 10)
 
@@ -10061,6 +10080,7 @@ server <- function(input,output,session) {
           updateTabsetPanel(session, inputId = "tab", selected = "1")
         } else {
           updateTabsetPanel(session, inputId = "tab", selected = "4")
+          info$tab <- 4
         }
       }
       # Getting primary series
@@ -10171,16 +10191,9 @@ server <- function(input,output,session) {
             output$tabName5 <<- renderText({ info$components[5] })
           }
         }
-        showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-        showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-        showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
-        showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       } else if (info$format == 4) { #1D
         output$tabName1 <- renderText({ "Series" })
-        hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-        hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-        hideTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
-        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       } else { #PBO & NGL
         info$components <- c("East component", "North component", "Up component", "3D", "Residuals")
         output$tabName1 <<- renderText({ info$components[1] })
@@ -10188,10 +10201,7 @@ server <- function(input,output,session) {
         output$tabName3 <<- renderText({ info$components[3] })
         output$tabName4 <<- renderText({ info$components[4] })
         output$tabName5 <<- renderText({ info$components[5] })
-        showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
-        showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
-        showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
-        showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       }
       if (info$components[1] != "East component" && info$format != 4) {
         info$components <- c("1st component", "2nd component", "3rd component", "3D", "Residuals")
@@ -12319,8 +12329,8 @@ server <- function(input,output,session) {
             abline(v = a, col = SARIcolors[5])
           }
         }
-        if (length(trans$mod) > 0 && isTruthy(info$run)) {
-          lines(x1,trans$mod, col = SARIcolors[2], lwd = 3)
+        if (length(trans[[paste0("mod",component,"y")]]) > 0) {
+          lines(trans[[paste0("res",component,"x")]],trans[[paste0("mod",component,"y")]], col = SARIcolors[2], lwd = 3)
         }
         if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
           lines(x1,trans$filter, col = SARIcolors[7], lwd = 3)
