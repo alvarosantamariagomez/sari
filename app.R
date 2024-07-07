@@ -2256,15 +2256,13 @@ server <- function(input,output,session) {
   # 6. computed values
   trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL,
                           sye = NULL, y2 = NULL, sy2 = NULL, 
-                          res = NULL, res1x = NULL, res1y = NULL, res1sy = NULL, res2x = NULL, res2y = NULL, res2sy = NULL, res3x = NULL, res3y = NULL, res3sy = NULL,
-                          mod = NULL, mod1y = NULL, mod2y = NULL, mod3y = NULL,
-                          results = NULL, filter = NULL,
+                          res = NULL, mod = NULL, results = NULL, filter = NULL,
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
                           midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
                           noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
-                          model_old = NULL, offsetEpochs = NULL, periods = NULL,
+                          model_old = NULL, offsetEpochs = NULL, offsetEpochs1 = NULL, offsetEpochs2 = NULL, offsetEpochs3 = NULL, periods = NULL,
                           x_orig = NULL, gaps = NULL,
                           plate = NULL, plate2 = NULL, gia = NULL, gia2 = NULL,
                           entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL,
@@ -2896,7 +2894,7 @@ server <- function(input,output,session) {
                  input$fullSeries, info$db1, info$db2,
                  input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
-    req(db1[[info$db1]])
+    req(isolate(db1[[info$db1]]))
     if (input$tab > 3 || info$tab > 3) {
       req(info$stop)
     }
@@ -2904,8 +2902,11 @@ server <- function(input,output,session) {
     removeNotification("regular")
     if (messages > 0) cat(file = stderr(), mySession, "Updating dataset", "\n")
 
-    table1 <- db1[[info$db1]]
-    table2 <- db2[[info$db2]]
+    isolate({
+      table1 <- db1[[info$db1]]
+      table2 <- db2[[info$db2]]
+      status <- db1[[info$db1]][[paste0("status",input$tab)]]
+    })
     
     if (isTruthy(input$ne)) {
       table2y_tmp <- table2$y2
@@ -3071,21 +3072,21 @@ server <- function(input,output,session) {
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     # dealing with the kalman filter series
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
-      if (sum(db1[[info$db1]][[paste0("status",input$tab)]], na.rm = T) < sum(db1[[info$db1]]$status.kf, na.rm = T)) {
-        trans$mod <- trans$mod0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]]]
-        trans$res <- trans$res0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]]]
-        trans$kalman <- trans$kalman0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]],]
-        trans$kalman_unc <- trans$kalman_unc0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]],]
+      if (sum(status, na.rm = T) < sum(isolate(db1[[info$db1]]$status.kf), na.rm = T)) {
+        trans$mod <- trans$mod0[!is.na(status) & status]
+        trans$res <- trans$res0[!is.na(status) & status]
+        trans$kalman <- trans$kalman0[!is.na(status) & status,]
+        trans$kalman_unc <- trans$kalman_unc0[!is.na(status) & status,]
         showNotification(HTML("At least one point used in the KF fit was removed. The KF fit results are no longer valid.<br>Consider running it again."), action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "danger")
-      } else if (sum(db1[[info$db1]][[paste0("status",input$tab)]], na.rm = T) > sum(db1[[info$db1]]$status.kf, na.rm = T)) {
+      } else if (sum(status, na.rm = T) > sum(isolate(db1[[info$db1]]$status.kf), na.rm = T)) {
         info$run <- F
         trans$mod <- trans$mod0 <- NULL
         trans$res <- trans$res0 <- NULL
         trans$kalman <- trans$kalman0 <- NULL
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
         showNotification("At least one point previously not used in the KF fit has been restored in the series. The KF fit is no longer valid. Consider running it again.", action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
-      } else if (any(is.na(trans$mod0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]]]))) {
+      } else if (any(is.na(trans$mod0[!is.na(status) & status]))) {
         info$run <- F
         trans$mod <- trans$mod0 <- NULL
         trans$res <- trans$res0 <- NULL
@@ -3093,10 +3094,10 @@ server <- function(input,output,session) {
         trans$kalman_unc <- trans$kalman_unc0 <- NULL
         showNotification(HTML("At least one point previously not used in the KF fit has been restored in the series. The KF fit is no longer valid.<br>Consider running it again."), action = NULL, duration = 10, closeButton = T, id = "kf_not_valid", type = "warning", session = getDefaultReactiveDomain())
       } else {
-        trans$mod <- trans$mod0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]]]
-        trans$res <- trans$res0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]]]
-        trans$kalman <- trans$kalman0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]],]
-        trans$kalman_unc <- trans$kalman_unc0[!is.na(db1[[info$db1]][[paste0("status",input$tab)]]) & db1[[info$db1]][[paste0("status",input$tab)]],]
+        trans$mod <- trans$mod0[!is.na(status) & status]
+        trans$res <- trans$res0[!is.na(status) & status]
+        trans$kalman <- trans$kalman0[!is.na(status) & status,]
+        trans$kalman_unc <- trans$kalman_unc0[!is.na(status) & status,]
         updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
       }
     }
@@ -3475,22 +3476,71 @@ server <- function(input,output,session) {
         paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
       }
     })
-}, width = reactive(info$width))
+  }, width = reactive(info$width))
   output$plot41 <- renderPlot({
+    if (input$tab == 4) {
       plot3series(1)
+    }
   }, width = reactive(info$width))
   output$plot42 <- renderPlot({
+    if (input$tab == 4) {
       plot3series(2)
+    }
   }, width = reactive(info$width))
   output$plot43 <- renderPlot({
+    if (input$tab == 4) {
       plot3series(3)
+    }
   }, width = reactive(info$width))
-  output$plot4_info <- renderText({
-    x <- y <- NULL
-    if (length(inputs$plot4_1click$x) > 0) {
-      x <- inputs$plot4_1click$x
-      y <- inputs$plot4_1click$y
-      paste("Plot coordinates =", x, y, sep = "\t")
+  output$plot51 <- renderPlot({
+    plot3series(1)
+  }, width = reactive(info$width))
+  output$plot52 <- renderPlot({
+    plot3series(2)
+  }, width = reactive(info$width))
+  output$plot53 <- renderPlot({
+    plot3series(3)
+  }, width = reactive(info$width))
+  output$plot4_info <- renderPrint({
+    line1 <- line2 <- line3 <- NULL
+    if (length(input$plot41_1click$x) > 0) {
+      x <- input$plot41_1click$x
+      y <- input$plot41_1click$y
+      line1 <- paste("Plot 1 coordinates =", x, y, sep = "\t")
+    }
+    if (length(input$plot42_1click$x) > 0) {
+      x <- input$plot42_1click$x
+      y <- input$plot42_1click$y
+      line2 <- paste("Plot 2 coordinates =", x, y, sep = "\t")
+    }
+    if (length(input$plot43_1click$x) > 0) {
+      x <- input$plot43_1click$x
+      y <- input$plot43_1click$y
+      line3 <- paste("Plot 3 coordinates =", x, y, sep = "\t")
+    }
+    if (isTruthy(line1) || isTruthy(line2) || isTruthy(line3)) {
+      cat('', line1, '\n', line2, '\n', line3, '\n')
+    }
+  })
+  output$plot5_info <- renderPrint({
+    line1 <- line2 <- line3 <- NULL
+    if (length(input$plot51_1click$x) > 0) {
+      x <- input$plot51_1click$x
+      y <- input$plot51_1click$y
+      line1 <- paste("Plot 1 coordinates =", x, y, sep = "\t")
+    }
+    if (length(input$plot52_1click$x) > 0) {
+      x <- input$plot52_1click$x
+      y <- input$plot52_1click$y
+      line2 <- paste("Plot 2 coordinates =", x, y, sep = "\t")
+    }
+    if (length(input$plot53_1click$x) > 0) {
+      x <- input$plot53_1click$x
+      y <- input$plot53_1click$y
+      line3 <- paste("Plot 3 coordinates =", x, y, sep = "\t")
+    }
+    if (isTruthy(line1) || isTruthy(line2) || isTruthy(line3)) {
+      cat('', line1, '\n', line2, '\n', line3, '\n')
     }
   })
 
@@ -3782,14 +3832,11 @@ server <- function(input,output,session) {
                  inputs$TE0, inputs$offsetEpoch, inputs$period, inputs$periodRef, inputs$trendRef, input$fitType,
                  input$tab, inputs$PolyRef, inputs$PolyCoef, input$P0, input$correct_waveform, inputs$step, input$tunits,
                  trans$y, trans$sy), {
-    if (input$tab == 4) {
-      req(info$stop)
-    }
     req(trans$x, trans$y, trans$sy, trans$ordinate)
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
     removeNotification("bad_LS")
-    if (input$tab == 6) {
+    if (input$tab > 3) {
       req(info$stop)
     }
     output$offsetFound <- renderUI({ NULL })
@@ -3899,22 +3946,38 @@ server <- function(input,output,session) {
             trans$equation <- sub("y ~","Model =",m$model)
             trans$results <- synthesis
             trans$LScoefs <- synthesis$coefficients
-            trans$res <- trans[[paste0("res",input$tab,"y")]] <- res
+            trans$res <- res
             if (isTruthy(input$wavelet) && input$waveletType > 1) {
               updateRadioButtons(session, inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
             }
             trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
             if (isTruthy(synthesis$sigma)) {
               if (!any(1/weights < trans$moderror^2)) {
-                trans$reserror <- trans[[paste0("res",input$tab,"sy")]] <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
+                trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
               }
               trans$moderror <- trans$moderror * synthesis$sigma
             }
-            trans$mod <- trans[[paste0("mod",input$tab,"y")]] <- mod
+            trans$mod <- mod
             if (isTruthy(inputs$waveformPeriod)) {
               save_value <- inputs$waveformPeriod
               updateTextInput(session, "waveformPeriod", value = "")
               updateTextInput(session, "waveformPeriod", value = save_value)
+            }
+            if (input$format != 4) {
+              
+              isolate({
+                if (all(is.na(db1[[info$db1]][[paste0("res", input$tab)]])) ||
+                    length(trans$res) != length(db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])]) ||
+                    any(trans$res - db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])] != 0)) {
+                  db1[[info$db1]][[paste0("res", input$tab)]] <- NA
+                  db1[[info$db1]][[paste0("mod", input$tab)]] <- NA
+                  db1[[info$db1]][[paste0("reserror", input$tab)]] <- NA
+                  db1[[info$db1]][[paste0("res", input$tab)]][match(x, db1[[info$db1]][[paste0("x", input$tunits)]])] <- trans$res
+                  db1[[info$db1]][[paste0("mod", input$tab)]][match(x, db1[[info$db1]][[paste0("x", input$tunits)]])] <- trans$mod
+                  db1[[info$db1]][[paste0("reserror", input$tab)]][match(x, db1[[info$db1]][[paste0("x", input$tunits)]])] <- trans$reserror
+                  trans[[paste0("offsetEpochs", input$tab)]] <- trans$offsetEpochs
+                }
+              })
             }
           } else {
             if (isTruthy(info$noLS) || "Logarithmic" %in% input$model || "Exponential" %in% input$model) {
@@ -5928,10 +5991,14 @@ server <- function(input,output,session) {
   output$download <- output$downloadAs <- downloadHandler(
     filename = function() {
       if (input$format != 4) {
-        if (any(grepl("East", info$components))) {
-          paste0(file$primary$name, "_", strsplit(info$components[as.numeric(input$tab)], " ")[[1]][1], ".sari")
+        if (input$tab == 5) {
+          paste0(file$primary$name, "_res.sari")
         } else {
-          paste0(file$primary$name, "_", input$tab, ".sari")
+          if (any(grepl("East", info$components))) {
+            paste0(file$primary$name, "_", strsplit(info$components[as.numeric(input$tab)], " ")[[1]][1], ".sari")
+          } else {
+            paste0(file$primary$name, "_", input$tab, ".sari")
+          }
         }
       } else {
         paste0(file$primary$name, ".sari")
@@ -6248,7 +6315,7 @@ server <- function(input,output,session) {
       disable("step2")
       disable("scaleFactor")
     } else {
-      if (input$tab == 4) {
+      if (input$tab == 4 || input$tab == 5) {
         runjs("document.getElementsByClassName('panel-primary')[3].classList.add('hidden');")
         runjs("document.getElementsByClassName('panel-primary')[4].classList.add('hidden');")
       } else {
@@ -6431,7 +6498,7 @@ server <- function(input,output,session) {
               updateCheckboxInput(session, inputId = "same_axis", value = F)
               updateCheckboxInput(session, inputId = "ne", value = F)
               # setting new axis limits
-              if (input$tab == 4) {
+              if (input$tab == 4 || input$tab == 5) {
                 info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
                                  db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
                                  db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
@@ -6479,15 +6546,16 @@ server <- function(input,output,session) {
             disable("errorBar2")
             disable("swap")
           }
+          if (isTruthy(db1[[info$db1]]$res1) && isTruthy(db1[[info$db1]]$res2) && isTruthy(db1[[info$db1]]$res3) &&
+              sum(abs(db1[[info$db1]]$res1), na.rm = T) > 0 && sum(abs(db1[[info$db1]]$res2), na.rm = T) > 0 && sum(abs(db1[[info$db1]]$res3), na.rm = T) > 0) {
+            showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+          } else {
+            hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
+          }
           enable("fitType")
           enable("model")
           if (input$fitType == 1 || input$fitType == 2) {
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
-              if (length(trans$res1x) > 0 && length(trans$res2x) > 0 && length(trans$res3x) > 0) {
-                showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
-              } else {
-                hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
-              }
               enable("spectrumModel")
               enable("spectrumResiduals")
               shinyjs::show(id = "res", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -6517,7 +6585,6 @@ server <- function(input,output,session) {
                 disable("runVerif")
               }
             } else {
-              hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
               disable("correct_waveform")
               shinyjs::hide(id = "res", anim = T, animType = "fade", time = 0.5, selector = NULL)
               shinyjs::hide(id = "res1", anim = T, animType = "fade", time = 0.5, selector = NULL)
@@ -8867,7 +8934,6 @@ server <- function(input,output,session) {
       showTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       showTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
-      # showTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
     }
   }, priority = 10)
 
@@ -9222,6 +9288,7 @@ server <- function(input,output,session) {
     removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), mySession, "Removing points, manually", "\n")
     excluding_plot <- excluding_plotres <- NULL
+    brush1 <- brush2 <- NULL
     if (isTruthy(input$plot_brush)) {
       brush1 <- input$plot_brush
       series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
@@ -9240,8 +9307,9 @@ server <- function(input,output,session) {
       x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)]
       y <- db1[[info$db1]]$y3[!is.na(db1[[info$db1]]$status3)]
       series <- data.frame(x = x, y = y)
+    } else {
+      series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     }
-    brush2 <- NULL
     if (isTruthy(input$res_brush) && length(trans$res) > 0) {
       residuals <- data.frame(x = trans$x, y = trans$res)
       brush2 <- input$res_brush
@@ -9860,12 +9928,14 @@ server <- function(input,output,session) {
       hideTab(inputId = "tab", target = "7", session = getDefaultReactiveDomain())
     } else {
       hideTab(inputId = "tab", target = "8", session = getDefaultReactiveDomain())
-      if (length(trans$y) > 0 && 
-          (  length(trans$filter) > 0 || 
-             length(trans$res) > 0 || 
-             (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || 
-             input$optionSecondary > 1 ||
-             (input$eulerType == 2 && length(trans$plate) > 0)  )
+      if (input$tab == 5 ||
+          (length(trans$y) > 0 && 
+           (  length(trans$filter) > 0 || 
+              length(trans$res) > 0 || 
+              (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || 
+              input$optionSecondary > 1 ||
+              (input$eulerType == 2 && length(trans$plate) > 0) )
+          )
       ) {
         showTab(inputId = "tab", target = "7", select = F, session = getDefaultReactiveDomain())
       } else {
@@ -10191,7 +10261,6 @@ server <- function(input,output,session) {
             output$tabName5 <<- renderText({ info$components[5] })
           }
         }
-        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       } else if (info$format == 4) { #1D
         output$tabName1 <- renderText({ "Series" })
       } else { #PBO & NGL
@@ -10201,10 +10270,14 @@ server <- function(input,output,session) {
         output$tabName3 <<- renderText({ info$components[3] })
         output$tabName4 <<- renderText({ info$components[4] })
         output$tabName5 <<- renderText({ info$components[5] })
-        hideTab(inputId = "tab", target = "5", session = getDefaultReactiveDomain())
       }
       if (info$components[1] != "East component" && info$format != 4) {
         info$components <- c("1st component", "2nd component", "3rd component", "3D", "Residuals")
+        output$tabName1 <- renderText({ info$components[1] })
+        output$tabName2 <- renderText({ info$components[2] })
+        output$tabName3 <- renderText({ info$components[3] })
+        output$tabName4 <- renderText({ info$components[4] })
+        output$tabName5 <- renderText({ info$components[5] })
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
       # all good
@@ -12197,21 +12270,29 @@ server <- function(input,output,session) {
   plot3series <- function(component) {
         removeNotification("wrong_series")
         if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
-        x0 <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
         x1 <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
-        xe <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
-        y0 <- db1[[info$db1]][[paste0("y",component)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
-        y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
-        ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
-        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
-          y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
+        if (input$tab == 4) {
+          x0 <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
+          xe <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
+          y0 <- db1[[info$db1]][[paste0("y",component)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
+          y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
+          ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
+          if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+            y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
+          }
+          if (isTruthy(trans$gia) && input$giaType == 2) {
+            y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
+          }
+          sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
+        } else if (input$tab == 5) {
+          x0 <- x1
+          xe <- ye <- NULL
+          y1 <- y0 <- db1[[info$db1]][[paste0("res",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
+          sy1 <- db1[[info$db1]][[paste0("reserror",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
         }
-        if (isTruthy(trans$gia) && input$giaType == 2) {
-          y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
-        }
-        sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
         title <- ""
         sigmas <- F
+        if (length(y1) > 0) {
         if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
           sigmas <- T
         }
@@ -12220,7 +12301,7 @@ server <- function(input,output,session) {
         } else {
           rangeY <- ranges$y1
         }
-        if (input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+        if (input$tab == 4 && input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
           x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
           y2 <- db2[[info$db2]][[paste0("y",component)]]
           if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
@@ -12284,8 +12365,8 @@ server <- function(input,output,session) {
         }
         plot_series(x1,y1,sy1,ranges$x1,rangeY,sigmas,title,input$symbol,T)
         points(xe, ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
-        output[[paste0("component4",component)]] <- renderText(sub(" component", "", info$components[component]))
-        shinyjs::show(paste0("component4",component))
+        output[[paste0("component",input$tab,component)]] <- renderText(sub(" component", "", info$components[component]))
+        shinyjs::show(paste0("component",input$tab,component))
         xx <- median(x1[x1 > ranges$x1[1] & x1 < ranges$x1[2]], na.rm = T)
         yy <- median(y1[x1 > ranges$x1[1] & x1 < ranges$x1[2]], na.rm = T)
         centerx <- which(abs(x1 - xx) == min(abs(x1 - xx)))[1]
@@ -12300,7 +12381,7 @@ server <- function(input,output,session) {
             rate <- trans$gia[component]
           }
         }
-        if (exists("rate") && is.numeric(rate)) {
+        if (input$tab == 4 && exists("rate") && is.numeric(rate)) {
           lines(c(x1[1],x1[length(x1)]),c(y1[centery] + rate*(x1[1] - x1[centerx]),y1[centery] + rate*(x1[length(x1)] - x1[centerx])), col = SARIcolors[4], lwd = 3)
         }
         if (input$traceLog && length(info$log) > 0) {
@@ -12329,16 +12410,22 @@ server <- function(input,output,session) {
             abline(v = a, col = SARIcolors[5])
           }
         }
-        if (length(trans[[paste0("mod",component,"y")]]) > 0) {
+        if (input$tab == 4 && length(trans[[paste0("mod",component,"y")]]) > 0) {
           lines(trans[[paste0("res",component,"x")]],trans[[paste0("mod",component,"y")]], col = SARIcolors[2], lwd = 3)
         }
-        if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
+        if (input$tab == 4 && length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
           lines(x1,trans$filter, col = SARIcolors[7], lwd = 3)
+        }
+        if (input$tab == 5 && length(trans[[paste0("offsetEpochs",component)]]) > 0) {
+          for (p in trans[[paste0("offsetEpochs",component)]]) {
+            abline(v = p, col = SARIcolors[2], lwd = 2)
+          }
         }
         if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
           shinyjs::show(paste0("zoomin",input$tab))
         } else {
           shinyjs::hide(paste0("zoomin",input$tab))
+        }
         }
   }
   #
@@ -12529,7 +12616,9 @@ server <- function(input,output,session) {
     cat(paste0("# ",version,now), file = file_out, sep = "\n", fill = F, append = F)
     cat(paste0("# Original series: ",file$primary$name), file = file_out, sep = "\n", fill = F, append = T)
     if (input$format != 4) {
-      cat(paste0("# Coordinate component: ", info$components[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
+      if (input$tab < 4) {
+        cat(paste0("# Coordinate component: ", info$components[as.numeric(input$tab)]), file = file_out, sep = "\n", fill = F, append = T)
+      }
     } else {
       if (isTruthy(input$sigmas)) {
         cat(paste0("# Column numbers for data and errorbars: ",inputs$variable," ",inputs$errorBar), file = file_out, sep = "\n", fill = F, append = T)
@@ -12585,32 +12674,34 @@ server <- function(input,output,session) {
     if (input$eulerType == 2 && length(trans$plate) > 0) {
       cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
     }
-    if (input$fitType == 1 && length(trans$results) > 0) {
-      cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
-      for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
-        max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
-        cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1],1), '+/-', formatting(trans$LScoefs[i,2],1)), file = file_out, sep = "\n", fill = F, append = T)
+    if (input$tab < 4) {
+      if (input$fitType == 1 && length(trans$results) > 0) {
+        cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+        for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
+          max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
+          cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1],1), '+/-', formatting(trans$LScoefs[i,2],1)), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        if (isTruthy(trans$results$sinusoidales)) {
+          for (i in 1:dim(trans$results$sinusoidales)[1]) {
+            cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],1), '+/-', formatting(trans$results$sinusoidales[i,3],1), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
+          } 
+        }
+      } else if (input$fitType == 2 && length(trans$kalman) > 0) {
+        if (input$kf == 1) {
+          cat(paste0("# Model EKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+        } else if (input$kf == 2) {
+          cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),1), '+/-', formatting(colMeans(trans$kalman_unc),1)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,1), '+/-', formatting(trans$kalman_info$error,1)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (isTruthy(trans$results$sinusoidales)) {
-        for (i in 1:dim(trans$results$sinusoidales)[1]) {
-          cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],1), '+/-', formatting(trans$results$sinusoidales[i,3],1), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
-        } 
-      }
-    } else if (input$fitType == 2 && length(trans$kalman) > 0) {
-      if (input$kf == 1) {
-        cat(paste0("# Model EKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
-      } else if (input$kf == 2) {
-        cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
-      }
-      cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),1), '+/-', formatting(colMeans(trans$kalman_unc),1)), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,1), '+/-', formatting(trans$kalman_info$error,1)), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
-      cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
     }
-    if (length(trans$offsetEpochs) > 0) {
+    if (input$tab < 4 && length(trans$offsetEpochs) > 0) {
       cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
     }
-    if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
+    if (input$tab < 4 && isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
       if (isTruthy(trans$midas_vel2)) {
         cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
         cat(paste('# MIDAS:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
@@ -12618,13 +12709,13 @@ server <- function(input,output,session) {
         cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
-    if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
+    if (input$tab < 4 && isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
       cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,1), '+/-', formatting(trans$entropy_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
     }
-    if (input$waveform && inputs$waveformPeriod > 0) {
+    if (input$tab < 4 && input$waveform && inputs$waveformPeriod > 0) {
       cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
     }
-    if (isTruthy(input$filter)) {
+    if (input$tab < 4 && isTruthy(input$filter)) {
       if (isTruthy(trans$vondrak) && (isTruthy(inputs$low) || isTruthy(inputs$high))) {
         if (input$series2filter == 1) {
           origen <- " from original series"
@@ -12660,12 +12751,30 @@ server <- function(input,output,session) {
         cat(sprintf('# Noise: MLE %s', format(trans$noise[11]/-1, nsmall = 2, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
-    if (isTruthy(input$sigmas)) {
-      OutPut$df <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)
-      names(OutPut$df) <- c("# Epoch", "Data", "Sigma")
-    } else {
-      OutPut$df <- data.frame(x = trans$x, y = trans$y)
-      names(OutPut$df) <- c("# Epoch", "Data")
+    if (input$tab < 4) {
+      if (isTruthy(input$sigmas)) {
+        OutPut$df <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)
+        names(OutPut$df) <- c("# Epoch", "Data", "Sigma")
+      } else {
+        OutPut$df <- data.frame(x = trans$x, y = trans$y)
+        names(OutPut$df) <- c("# Epoch", "Data")
+      }
+    } else if (input$tab == 5) {
+      if (isTruthy(input$sigmas)) {
+        component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T], sy = db1[[info$db1]]$reserror1[db1[[info$db1]]$status1 %in% T])
+        component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$res2[db1[[info$db1]]$status2 %in% T], sy = db1[[info$db1]]$reserror2[db1[[info$db1]]$status2 %in% T])
+        component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$res3[db1[[info$db1]]$status3 %in% T], sy = db1[[info$db1]]$reserror3[db1[[info$db1]]$status3 %in% T])
+        component_list <- list(component1, component2, component3)
+        OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
+        names(OutPut$df) <- c("# Epoch", sub(" component","Res",info$components[1]), sub(" component","Res",info$components[2]), sub(" component","Res",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
+      } else {
+        component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T])
+        component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$res2[db1[[info$db1]]$status2 %in% T])
+        component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$res3[db1[[info$db1]]$status3 %in% T])
+        component_list <- list(component1, component2, component3)
+        OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)
+        names(OutPut$df) <- c("# Epoch", sub(" component","Res",info$components[1]), sub(" component","Res",info$components[2]), sub(" component","Res",info$components[3]))
+      }
     }
     req(OutPut$df)
     if (isTruthy(info$scientific)) {
@@ -12674,89 +12783,97 @@ server <- function(input,output,session) {
       digits <- 0
     }
     OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx)
-    OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
-    if (isTruthy(input$sigmas)) {
-      OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
+    if (input$tab < 4) {
+      OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
+      if (isTruthy(input$sigmas)) {
+        OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
+      }
+    } else if (input$tab == 5) {
+      OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],0)
+      if (isTruthy(input$sigmas)) {
+        OutPut$df[,c(5,6,7)] <- formatting(OutPut$df[,c(5,6,7)],0)
+      }
     }
-    
-    if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
+    if (input$tab < 4) {
+      if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
+        if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
+          OutPut$df$Model <- formatting(trans$mod - trans$pattern,1)
+          OutPut$df$Residuals <- formatting(trans$res + trans$pattern,1)
+        } else {
+          OutPut$df$Model <- formatting(trans$mod,1)
+          OutPut$df$Residuals <- formatting(trans$res,1)
+        }
+      }
+      if (input$fitType == 1 && length(input$model) > 0) {
+        if (length(trans$moderror) > 0) {
+          OutPut$df$Sigma.Model <- formatting(trans$moderror,1)
+        }
+        if (length(trans$reserror) > 0) {
+          OutPut$df$Sigma.Residuals <- formatting(trans$reserror,1)
+        }
+      }
+      if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
+        if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
+          OutPut$df$Smooth <- formatting(trans$filter - trans$pattern,1)
+          OutPut$df$Smooth.Residuals <- formatting(trans$filterRes + trans$pattern,1)
+        } else {
+          OutPut$df$Smooth <- formatting(trans$filter,1)
+          OutPut$df$Smooth.Residuals <- formatting(trans$filterRes,1)
+        }
+      }
+      if (input$wiener && input$mle) {
+        if (input$white && length(trans$white) > 0) {
+          OutPut$df$White <- formatting(trans$white,1)
+          if (input$sigmas && length(trans$white_sig) > 0) {
+            OutPut$df$Sigma.White <- formatting(trans$white_sig,1)
+          }
+        }
+        if (input$flicker && length(trans$flicker) > 0) {
+          OutPut$df$Flicker <- formatting(trans$flicker,1)
+          if (input$sigmas && length(trans$flicker) > 0) {
+            OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig,1)
+          }
+        }
+        if (input$randomw && length(trans$randomw) > 0) {
+          OutPut$df$RandomWalk <- formatting(trans$randomw,1)
+          if (input$sigmas && length(trans$randomw_sig) > 0) {
+            OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig,1)
+          }
+        }
+        if (input$powerl && length(trans$powerl) > 0) {
+          OutPut$df$PowerLaw <- formatting(trans$powerl,1)
+          if (input$sigmas && length(trans$powerl_sig) > 0) {
+            OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig,1)
+          }
+        }
+      }
+      if (input$fitType == 2 && length(trans$res) > 0) {
+        OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,1))
+        colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
+        OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,1))
+      }
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-        OutPut$df$Model <- formatting(trans$mod - trans$pattern,1)
-        OutPut$df$Residuals <- formatting(trans$res + trans$pattern,1)
-      } else {
-        OutPut$df$Model <- formatting(trans$mod,1)
-        OutPut$df$Residuals <- formatting(trans$res,1)
+        OutPut$df$Waveform <- formatting(trans$pattern,1)
       }
-    }
-    if (input$fitType == 1 && length(input$model) > 0) {
-      if (length(trans$moderror) > 0) {
-        OutPut$df$Sigma.Model <- formatting(trans$moderror,1)
-      }
-      if (length(trans$reserror) > 0) {
-        OutPut$df$Sigma.Residuals <- formatting(trans$reserror,1)
-      }
-    }
-    if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
-      if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
-        OutPut$df$Smooth <- formatting(trans$filter - trans$pattern,1)
-        OutPut$df$Smooth.Residuals <- formatting(trans$filterRes + trans$pattern,1)
-      } else {
-        OutPut$df$Smooth <- formatting(trans$filter,1)
-        OutPut$df$Smooth.Residuals <- formatting(trans$filterRes,1)
-      }
-    }
-    if (input$wiener && input$mle) {
-      if (input$white && length(trans$white) > 0) {
-        OutPut$df$White <- formatting(trans$white,1)
-        if (input$sigmas && length(trans$white_sig) > 0) {
-          OutPut$df$Sigma.White <- formatting(trans$white_sig,1)
+      if (isTruthy(input$add_excluded)) {
+        if (isTruthy(input$sigmas)) {
+          output_excluded$df <- data.frame(x = trans$xe, y = trans$ye, sy = trans$sye)
+          names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
+        } else {
+          output_excluded$df <- data.frame(x = trans$xe, y = trans$ye)
+          names(output_excluded$df) <- c("# Epoch", "Data")
         }
-      }
-      if (input$flicker && length(trans$flicker) > 0) {
-        OutPut$df$Flicker <- formatting(trans$flicker,1)
-        if (input$sigmas && length(trans$flicker) > 0) {
-          OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig,1)
+        output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F,scientific = F)
+        output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],0)
+        if (isTruthy(input$sigmas)) {
+          OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
+        } else {
+          OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
         }
-      }
-      if (input$randomw && length(trans$randomw) > 0) {
-        OutPut$df$RandomWalk <- formatting(trans$randomw,1)
-        if (input$sigmas && length(trans$randomw_sig) > 0) {
-          OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig,1)
+        excluded <- c(unique(which(is.na(OutPut$df), arr.ind = T)[,1]))
+        for (i in excluded) {
+          OutPut$df[i,"# Epoch"] <- paste0("#",OutPut$df[i,"# Epoch"])
         }
-      }
-      if (input$powerl && length(trans$powerl) > 0) {
-        OutPut$df$PowerLaw <- formatting(trans$powerl,1)
-        if (input$sigmas && length(trans$powerl_sig) > 0) {
-          OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig,1)
-        }
-      }
-    }
-    if (input$fitType == 2 && length(trans$res) > 0) {
-      OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,1))
-      colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
-      OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,1))
-    }
-    if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-      OutPut$df$Waveform <- formatting(trans$pattern,1)
-    }
-    if (isTruthy(input$add_excluded)) {
-      if (isTruthy(input$sigmas)) {
-        output_excluded$df <- data.frame(x = trans$xe, y = trans$ye, sy = trans$sye)
-        names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
-      } else {
-        output_excluded$df <- data.frame(x = trans$xe, y = trans$ye)
-        names(output_excluded$df) <- c("# Epoch", "Data")
-      }
-      output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F,scientific = F)
-      output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],0)
-      if (isTruthy(input$sigmas)) {
-        OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
-      } else {
-        OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
-      }
-      excluded <- c(unique(which(is.na(OutPut$df), arr.ind = T)[,1]))
-      for (i in excluded) {
-        OutPut$df[i,"# Epoch"] <- paste0("#",OutPut$df[i,"# Epoch"])
       }
     }
     colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
