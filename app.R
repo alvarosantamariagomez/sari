@@ -388,7 +388,7 @@ tab3Contents <- function(series) {
                       .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
                       "),
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
-           hidden(div(id = paste0("component",tabNum,1), style = "margin: 2em 0em -4.5em 5em; font-weight: bold; font-size: 12px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1")))),
+           hidden(div(id = paste0("component",tabNum,1), style = "margin: 2em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1")))),
            withSpinner(
              plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = paste0("plot",tabNum,"1_2click"), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
@@ -398,7 +398,7 @@ tab3Contents <- function(series) {
              custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
            div(style = "margin-top: 1em;",
-               hidden(div(id = paste0("component",tabNum,2), style = "margin: 0em 0em -4.5em 5em; font-weight: bold; font-size: 12px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2")))),
+               hidden(div(id = paste0("component",tabNum,2), style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2")))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = paste0("plot",tabNum,"2_2click"), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -409,7 +409,7 @@ tab3Contents <- function(series) {
                )
            ),
            div(style = "margin-top: 1em;",
-               hidden(div(id = paste0("component",tabNum,3), style = "margin: 0em 0em -4.5em 5em; font-weight: bold; font-size: 12px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3")))),
+               hidden(div(id = paste0("component",tabNum,3), style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3")))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = paste0("plot",tabNum,"3_2click"), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -2462,7 +2462,7 @@ server <- function(input,output,session) {
   outputOptions(output, "verifhelp", suspendWhenHidden = F)
 
   output$data <- reactive({
-    return(!is.null(info$rangex))
+    return(!is.null(db1$original))
   })
   outputOptions(output, "data", suspendWhenHidden = F)
 
@@ -2506,13 +2506,24 @@ server <- function(input,output,session) {
     } else if (input$tunits == 3) {
         units <- "years"
     }
+    if (input$tab > 3) {
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T || db1[[info$db1]]$status1 %in% T || db1[[info$db1]]$status1 %in% T]
+      rangex <- range(x)
+      seriesInfo(x)
+    } else {
+      rangex <- range(trans$x)
+    }
     line1 <- sprintf("Number of points = %d",info$points)
     line2 <- sprintf("Number of points removed = %d",info$removed)
     line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
-    line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, trans$x[1],info$decimalsx,trans$x[length(trans$x)])
+    line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
     line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
     line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
+    if (input$tab > 3) {
+      HTML(paste("", line1, line3, line4, line5, line6, sep = "<br/>"))
+    } else {
+      HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
+    }
   })
 
   # Debouncers & checks for user typed inputs ####
@@ -3043,19 +3054,9 @@ server <- function(input,output,session) {
       }
     }
     # getting data sampling
-    info$points <- length(trans$x)
-    info$sampling <- min(diff(trans$x,1))
-    if (!isTruthy(info$step)) {
-      info$sampling0 <- info$sampling
-    }
-    info$sampling_regular <- median(diff(trans$x))
-    info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
-    info$rangex <- trans$x[length(trans$x)] - trans$x[1]
-    times <- round(diff(trans$x)/info$sampling)
-    trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+    seriesInfo(trans$x)
     # Getting significant decimals from the primary series
     # info$decimalsx <- decimalplaces(signif(info$sampling, digits = 2),"x")
-    info$decimalsx <- decimalplaces(trans$x, "x")
     info$decimalsy <- decimalplaces(trans$y, "y")
     if (!isTruthy(info$decimalsy)) {
       info$decimalsy <- 4
@@ -14501,6 +14502,20 @@ server <- function(input,output,session) {
         }))
       )
     })
+  }
+  #
+  seriesInfo <- function(x) {
+    info$points <- length(x)
+    info$sampling <- min(diff(x,1))
+    if (!isTruthy(info$step)) {
+      info$sampling0 <- info$sampling
+    }
+    info$sampling_regular <- median(diff(x))
+    info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
+    info$rangex <- x[length(x)] - x[1]
+    times <- round(diff(x)/info$sampling)
+    trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+    info$decimalsx <- decimalplaces(x, "x")
   }
 }
 
