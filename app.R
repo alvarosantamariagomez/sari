@@ -2895,7 +2895,7 @@ server <- function(input,output,session) {
                  input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
     req(isolate(db1[[info$db1]]))
-    if (input$tab > 3 || info$tab > 3) {
+    if (input$tab > 3 || (isTruthy(info$tab) && info$tab > 3)) {
       req(info$stop)
     }
     removeNotification("kf_not_valid")
@@ -6417,7 +6417,7 @@ server <- function(input,output,session) {
           } else {
             disable("remove")
           }
-          if (any(c(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3) == F)) {
+          if (any(c(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3) %in% F)) {
             enable("add_excluded")
             enable("delete_excluded")
           } else {
