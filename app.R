@@ -12411,11 +12411,8 @@ server <- function(input,output,session) {
             abline(v = a, col = SARIcolors[5])
           }
         }
-        if (input$tab == 4 && length(trans[[paste0("mod",component,"y")]]) > 0) {
-          lines(trans[[paste0("res",component,"x")]],trans[[paste0("mod",component,"y")]], col = SARIcolors[2], lwd = 3)
-        }
-        if (input$tab == 4 && length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
-          lines(x1,trans$filter, col = SARIcolors[7], lwd = 3)
+        if (input$tab == 4 && isTruthy(db1[[info$db1]][[paste0("mod",component)]]) > 0) {
+          lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% T],db1[[info$db1]][[paste0("mod",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T], col = SARIcolors[2], lwd = 3)
         }
         if (input$tab == 5 && length(trans[[paste0("offsetEpochs",component)]]) > 0) {
           for (p in trans[[paste0("offsetEpochs",component)]]) {
