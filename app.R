@@ -10303,17 +10303,17 @@ server <- function(input,output,session) {
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              extracted$x2 <- as.numeric(difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-              extracted$x3 <- tableAll[,1]
+              extracted$x1 <- as.numeric(sprintf("%.*f", 5, difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+              extracted$x2 <- mjd2week(extracted$x1)
+              extracted$x3 <- mjd2year(extracted$x1)
             } else if (server == "SONEL") {
               if (series == 1) {
                 info$tunits.known1 <- T
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              extracted$x2 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+              extracted$x1 <- year2mjd(tableAll[,1])
+              extracted$x2 <- year2week(tableAll[,1])
               extracted$x3 <- tableAll[,1]
             } else if (server == "SIRGAS") {
               if (series == 1) {
@@ -10321,27 +10321,27 @@ server <- function(input,output,session) {
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- as.numeric(difftime(as.Date("1980-01-06") + tableAll[,1] * 7 + 3.5, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              extracted$x2 <- tableAll[,1]
-              extracted$x3 <- decimal_date(as.Date("1980-01-06") + tableAll[,1] * 7 + 3.5)
+              extracted$x1 <- as.numeric(sprintf("%.*f", 0, difftime(as.Date("1980-01-06") + tableAll[,1] * 7 + 3, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+              extracted$x2 <- mjd2week(extracted$x1)
+              extracted$x3 <- mjd2year(extracted$x1)
             } else if (server == "IGS") {
               if (series == 1) {
                 info$tunits.known1 <- T
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- tableAll[,1]
-              extracted$x2 <- tableAll[,8] + tableAll[,9]/7
-              extracted$x3 <- decimal_date(as.Date("1980-01-06") + (tableAll[,8] + tableAll[,9]/7) * 7)
+              extracted$x1 <- as.numeric(sprintf("%.*f", 1, tableAll[,1]))
+              extracted$x2 <- as.numeric(sprintf("%.*f", 2, tableAll[,8] + tableAll[,9]/7))
+              extracted$x3 <- mjd2year(extracted$x1)
             } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
               if (series == 1) {
                 info$tunits.known1 <- T
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- tableAll[,1]
-              extracted$x2 <- as.numeric(difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-              extracted$x3 <- tableAll[,9]
+              extracted$x1 <- as.numeric(sprintf("%.*f", 1, tableAll[,1]))
+              extracted$x2 <- as.numeric(sprintf("%.*f", 2, difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
+              extracted$x3 <- as.numeric(sprintf("%.*f", 3, tableAll[,9]))
             } else if (server == "EARTHSCOPE") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -10349,8 +10349,8 @@ server <- function(input,output,session) {
                 info$tunits.known2 <- T
               }
               extracted$x1 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              extracted$x2 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-              extracted$x3 <- decimal_date(as.Date(tableAll[,1]))
+              extracted$x2 <- mjd2week(extracted$x1)
+              extracted$x3 <- mjd2year(extracted$x1)
             } else if (server == "EOSTLS") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -10358,17 +10358,17 @@ server <- function(input,output,session) {
                 info$tunits.known2 <- T
               }
               extracted$x1 <- tableAll[,1]
-              extracted$x2 <- as.numeric(difftime(as.Date.numeric(tableAll[,1]), as.Date.numeric(44244), units = "weeks"))
-              extracted$x3 <- decimal_date(as.Date(tableAll[,1], origin = "1858-11-17"))
+              extracted$x2 <- mjd2week(extracted$x1)
+              extracted$x3 <- mjd2year(extracted$x1)
             } else if (server == "EPOS") {
               if (series == 1) { 
                 info$tunits.known1 <- T
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-              extracted$x2 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-              extracted$x3 <- decimal_date(as.Date(tableAll[,1]))
+              extracted$x1 <- as.numeric(sprintf("%.*f", 0, difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+              extracted$x2 <- mjd2week(extracted$x1)
+              extracted$x3 <- mjd2year(extracted$x1)
             } else { #plain ENU series
               # ISO 8601 dates
               if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[,1], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
@@ -10430,8 +10430,8 @@ server <- function(input,output,session) {
         }
         names(extracted) <- c("y1","y2","y3","sy1","sy2","sy3")
         extracted$x1 <- tableAll[,3]
-        extracted$x2 <- as.numeric(difftime(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"),strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
-        extracted$x3 <- decimal_date(strptime(paste(sprintf("%08d",tableAll[,1]),sprintf("%06d",tableAll[,2])),format = '%Y%m%d %H%M%S', tz = "GMT"))
+        extracted$x2 <- mjd2week(extracted$x1)
+        extracted$x3 <- mjd2year(extracted$x1)
       }
     ## NGL ####
     } else if (format == 3) { #NGL
@@ -10444,8 +10444,8 @@ server <- function(input,output,session) {
           info$tunits.known2 <- T
         }
         extracted <- data.frame(x1 = tableAll[,4])
-        extracted$x2 <- tableAll[,5] + tableAll[,6]/7
-        extracted$x3 <- tableAll[,3]
+        extracted$x2 <- as.numeric(sprintf("%.*f", 2, tableAll[,5] + tableAll[,6]/7))
+        extracted$x3 <- mjd2year(extracted$x1)
         if (isTruthy(swap)) {
           extracted$y2 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East
           extracted$y1 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
@@ -10493,8 +10493,8 @@ server <- function(input,output,session) {
                 } else if (series == 2) {
                   info$tunits.known2 <- T
                 }
-                extracted$x1 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-                extracted$x2 <- as.numeric(difftime(date_decimal(as.numeric(tableAll[,1])), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))
+                extracted$x1 <- year2mjd(tableAll[,1])
+                extracted$x2 <- year2week(tableAll[,1])
                 extracted$x3 <- tableAll[,1]
               } else {
                 if (!isTruthy(input$tunits)) {
@@ -13799,11 +13799,15 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    return((x + offset - 44244)/7)
+    decimals <- decimalplaces(x, "x") + 2
+    decimals <- ifelse(decimals > 0, decimals, 0)
+    return(as.numeric(sprintf("%.*f", decimals, (x + offset - 44244)/7)))
   }
   #
   week2mjd <- function(x) {
-    return(x * 7 + 44244)
+    decimals <- decimalplaces(x, "x") - 2
+    decimals <- ifelse(decimals > 0, decimals, 0)
+    return(as.numeric(sprintf("%.*f", decimals, x * 7 + 44244)))
   }
   #
   mjd2year <- function(x) {
@@ -13811,19 +13815,27 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    return(decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))
+    decimals <- decimalplaces(x, "x") + 3
+    decimals <- ifelse(decimals > 0, decimals, 0)
+    return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))))
   }
   #
   year2mjd <- function(x) {
-    return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+    decimals <- decimalplaces(x, "x") - 3
+    decimals <- ifelse(decimals > 0, decimals, 0)
+    return(as.numeric(sprintf("%.*f", decimals, difftime(date_decimal(x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))))
   }
   #
   week2year <- function(x) {
-    return(decimal_date(as.Date("1980-01-06") + x * 7))
+    decimals <- decimalplaces(x, "x") + 1
+    decimals <- ifelse(decimals > 0, decimals, 0)
+    return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date("1980-01-06") + x * 7))))
   }
   #
   year2week <- function(x) {
-    return(as.numeric(difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
+    decimals <- decimalplaces(x, "x") - 1
+    decimals <- ifelse(decimals > 0, decimals, 0)
+    return(as.numeric(sprintf("%.*f", decimals, difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))))
   }
   #
   printInfo <- function(label) {
