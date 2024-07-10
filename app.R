@@ -2940,15 +2940,12 @@ server <- function(input,output,session) {
     if (!isTruthy(input$tunits) || input$tunits == 3) {
       trans$x0 <- table1$x3
       trans$x2 <- table2$x3
-      info$tunits.label <- "years"
     } else if (input$tunits == 1) {
       trans$x0 <- table1$x1
       trans$x2 <- table2$x1
-      info$tunits.label <- "days"
     } else if (input$tunits == 2) {
       trans$x0 <- table1$x2
       trans$x2 <- table2$x2
-      info$tunits.label <- "weeks"
     }
     
     # extract data for each component
@@ -14513,6 +14510,13 @@ server <- function(input,output,session) {
     times <- round(diff(x)/info$sampling)
     trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
     info$decimalsx <- decimalplaces(x, "x")
+    if (!isTruthy(input$tunits) || input$tunits == 3) {
+      info$tunits.label <- "years"
+    } else if (input$tunits == 1) {
+      info$tunits.label <- "days"
+    } else if (input$tunits == 2) {
+      info$tunits.label <- "weeks"
+    }
   }
 }
 
