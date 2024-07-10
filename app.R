@@ -83,7 +83,7 @@ helpPopup <- function(content, title = NULL, anchor = NULL) {
       icon("circle-question")
     )
   } else {
-    a(href = paste0("about.md#",anchor), target = "_blank",
+    a(href = paste0("https://github.com/alvarosantamariagomez/sari/blob/main/www/about.md#",anchor), target = "_blank",
       class = "popover-link",
       `data-toggle` = "popover",
       `data-title` = title,
