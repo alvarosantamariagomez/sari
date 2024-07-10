@@ -6410,7 +6410,8 @@ server <- function(input,output,session) {
             enable("plotAll")
           }
           if (length(input$plot_brush) > 0 || length(input$res_brush) > 0 || length(input$vondrak_brush) > 0 ||
-              length(input$plot41_brush) > 0 || length(input$plot42_brush) > 0 || length(input$plot43_brush) > 0) {
+              length(input$plot41_brush) > 0 || length(input$plot42_brush) > 0 || length(input$plot43_brush) > 0 ||
+              length(input$plot51_brush) > 0 || length(input$plot52_brush) > 0 || length(input$plot53_brush) > 0) {
             enable("remove")
           } else {
             disable("remove")
@@ -9286,34 +9287,56 @@ server <- function(input,output,session) {
     removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), mySession, "Removing points, manually", "\n")
     excluding_plot <- excluding_plotres <- NULL
-    brush1 <- brush2 <- NULL
-    if (isTruthy(input$plot_brush)) {
-      brush1 <- input$plot_brush
-      series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
-    } else if (isTruthy(input$plot41_brush)) {
-      brush1 <- input$plot41_brush
-      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)]
-      y <- db1[[info$db1]]$y1[!is.na(db1[[info$db1]]$status1)]
-      series <- data.frame(x = x, y = y)
-    } else if (isTruthy(input$plot42_brush)) {
-      brush1 <- input$plot42_brush
-      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)]
-      y <- db1[[info$db1]]$y2[!is.na(db1[[info$db1]]$status2)]
-      series <- data.frame(x = x, y = y)
-    } else if (isTruthy(input$plot43_brush)) {
-      brush1 <- input$plot43_brush
-      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)]
-      y <- db1[[info$db1]]$y3[!is.na(db1[[info$db1]]$status3)]
-      series <- data.frame(x = x, y = y)
-    } else {
-      series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
+    brush1 <- input$plot_brush
+    x <- trans$x0[!is.na(trans$y0)]
+    y <- trans$y0[!is.na(trans$y0)]
+    if (input$tab == 4) {
+      if (isTruthy(input$plot41_brush)) {
+        brush1 <- input$plot41_brush
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$y1)]
+        y <- db1[[info$db1]]$y1[!is.na(db1[[info$db1]]$y1)]
+        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+          y <- y - trans$plate[1]*(x - median(x, na.rm = T)) - median(y, na.rm = T)
+        }
+      } else if (isTruthy(input$plot42_brush)) {
+        brush1 <- input$plot42_brush
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$y2)]
+        y <- db1[[info$db1]]$y2[!is.na(db1[[info$db1]]$y2)]
+        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+          y <- y - trans$plate[2]*(x - median(x, na.rm = T)) - median(y, na.rm = T)
+        }
+      } else if (isTruthy(input$plot43_brush)) {
+        brush1 <- input$plot43_brush
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$y3)]
+        y <- db1[[info$db1]]$y3[!is.na(db1[[info$db1]]$y3)]
+        if (isTruthy(trans$gia) && input$giaType == 2) {
+          y <- y - trans$gia[3]*(x - median(x, na.rm = T)) - median(y, na.rm = T)
+        }
+      }
     }
+    series <- data.frame(x = x, y = y)
+    brush2 <- NULL
     if (isTruthy(input$res_brush) && length(trans$res) > 0) {
       residuals <- data.frame(x = trans$x, y = trans$res)
       brush2 <- input$res_brush
     } else if (isTruthy(input$vondrak_brush) && length(trans$filterRes) > 0) {
       residuals <- data.frame(x = trans$x, y = trans$filterRes)
       brush2 <- input$vondrak_brush
+    } else if (input$tab == 5) {
+      if (isTruthy(input$plot51_brush)) {
+        brush2 <- input$plot51_brush
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T]
+        y <- db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T]
+      } else if (isTruthy(input$plot52_brush)) {
+        brush2 <- input$plot52_brush
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T]
+        y <- db1[[info$db1]]$res2[db1[[info$db1]]$status2 %in% T]
+      } else if (isTruthy(input$plot53_brush)) {
+        brush2 <- input$plot53_brush
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T]
+        y <- db1[[info$db1]]$res3[db1[[info$db1]]$status3 %in% T]
+      }
+      residuals <- data.frame(x = x, y = y)
     }
     if (isTruthy(brush1) || isTruthy(brush2)) {
       if (length(brush1) > 0) {
@@ -12276,9 +12299,11 @@ server <- function(input,output,session) {
           y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
           ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
           if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+            y0 <- y0 - trans$plate[component]*(x0 - median(x0, na.rm = T)) - median(y0, na.rm = T)
             y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
           }
           if (isTruthy(trans$gia) && input$giaType == 2) {
+            y0 <- y0 - trans$gia[component]*(x0 - median(x0, na.rm = T)) - median(y0, na.rm = T)
             y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
           }
           sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
