@@ -12720,58 +12720,68 @@ server <- function(input,output,session) {
         cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
         cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
-    }
-    if (input$tab < 4 && length(trans$offsetEpochs) > 0) {
-      cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
-    }
-    if (input$tab < 4 && isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
-      if (isTruthy(trans$midas_vel2)) {
-        cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# MIDAS:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
-      } else {
-        cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
+      if (length(trans$offsetEpochs) > 0) {
+        cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
-    }
-    if (input$tab < 4 && isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
-      cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,1), '+/-', formatting(trans$entropy_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
-    }
-    if (input$tab < 4 && input$waveform && inputs$waveformPeriod > 0) {
-      cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
-    }
-    if (input$tab < 4 && isTruthy(input$filter)) {
-      if (isTruthy(trans$vondrak) && (isTruthy(inputs$low) || isTruthy(inputs$high))) {
-        if (input$series2filter == 1) {
-          origen <- " from original series"
-        } else if (input$series2filter == 2) {
-          origen <- " from residual series"
-        }
-        if (isTruthy(trans$vondrak[1]) && isTruthy(trans$vondrak[2])) {
-          cat(paste('# Vondrak:', trans$vondrak[1], periods, '(low)', trans$vondrak[2], periods, '(high)', origen), file = file_out, sep = "\n", fill = F, append = T)
-        } else if (isTruthy(trans$vondrak[1])) {
-          cat(paste('# Vondrak:', trans$vondrak[1], periods, '(low)', origen), file = file_out, sep = "\n", fill = F, append = T)
-        } else if (isTruthy(trans$vondrak[2])) {
-          cat(paste('# Vondrak:', trans$vondrak[2], periods, '(high)'), file = file_out, sep = "\n", fill = F, append = T)
+      if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
+        if (isTruthy(trans$midas_vel2)) {
+          cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+        } else {
+          cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
-    }
-    if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
-      if (isTruthy(trans$noise[1])) {
-        cat(paste('# Noise: WH', formatting(trans$noise[1],1), '+/-', formatting(trans$noise[2],1), unit), file = file_out, sep = "\n", fill = F, append = T)
+      if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
+        cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,1), '+/-', formatting(trans$entropy_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (isTruthy(trans$noise[3])) {
-        cat(paste('# Noise: FL', formatting(trans$noise[3],1), '+/-', formatting(trans$noise[4],1), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
+      if (input$waveform && inputs$waveformPeriod > 0) {
+        cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (isTruthy(trans$noise[5])) {
-        cat(paste('# Noise: RW', formatting(trans$noise[5],1), '+/-', formatting(trans$noise[6],1), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
+      if (isTruthy(input$filter)) {
+        if (isTruthy(trans$vondrak) && (isTruthy(inputs$low) || isTruthy(inputs$high))) {
+          if (input$series2filter == 1) {
+            origen <- " from original series"
+          } else if (input$series2filter == 2) {
+            origen <- " from residual series"
+          }
+          if (isTruthy(trans$vondrak[1]) && isTruthy(trans$vondrak[2])) {
+            cat(paste('# Vondrak:', trans$vondrak[1], periods, '(low)', trans$vondrak[2], periods, '(high)', origen), file = file_out, sep = "\n", fill = F, append = T)
+          } else if (isTruthy(trans$vondrak[1])) {
+            cat(paste('# Vondrak:', trans$vondrak[1], periods, '(low)', origen), file = file_out, sep = "\n", fill = F, append = T)
+          } else if (isTruthy(trans$vondrak[2])) {
+            cat(paste('# Vondrak:', trans$vondrak[2], periods, '(high)'), file = file_out, sep = "\n", fill = F, append = T)
+          }
+        }
       }
-      if (isTruthy(trans$noise[7])) {
-        cat(paste('# Noise: PL', formatting(trans$noise[7],1), '+/-', formatting(trans$noise[8],1), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
+      if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
+        if (isTruthy(trans$noise[1])) {
+          cat(paste('# Noise: WH', formatting(trans$noise[1],1), '+/-', formatting(trans$noise[2],1), unit), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        if (isTruthy(trans$noise[3])) {
+          cat(paste('# Noise: FL', formatting(trans$noise[3],1), '+/-', formatting(trans$noise[4],1), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        if (isTruthy(trans$noise[5])) {
+          cat(paste('# Noise: RW', formatting(trans$noise[5],1), '+/-', formatting(trans$noise[6],1), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        if (isTruthy(trans$noise[7])) {
+          cat(paste('# Noise: PL', formatting(trans$noise[7],1), '+/-', formatting(trans$noise[8],1), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        if (isTruthy(trans$noise[9])) {
+          cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, digits = 0, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
+        }
+        if (isTruthy(trans$noise[11])) {
+          cat(sprintf('# Noise: MLE %s', format(trans$noise[11]/-1, nsmall = 2, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
+        }
       }
-      if (isTruthy(trans$noise[9])) {
-        cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, digits = 0, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
+    } else if (input$tab == 5) {
+      if (length(trans$offsetEpochs1) > 0) {
+        cat(paste0('# Discontinuities ', info$components[1], ' at: ',paste(trans$offsetEpochs1, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (isTruthy(trans$noise[11])) {
-        cat(sprintf('# Noise: MLE %s', format(trans$noise[11]/-1, nsmall = 2, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
+      if (length(trans$offsetEpochs2) > 0) {
+        cat(paste0('# Discontinuities ', info$components[2], ' at: ',paste(trans$offsetEpochs2, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
+      }
+      if (length(trans$offsetEpochs3) > 0) {
+        cat(paste0('# Discontinuities ', info$components[3], ' at: ',paste(trans$offsetEpochs3, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (input$tab < 4) {
