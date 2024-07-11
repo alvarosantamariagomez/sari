@@ -2507,7 +2507,8 @@ server <- function(input,output,session) {
         units <- "years"
     }
     if (input$tab > 3) {
-      x <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T || db1[[info$db1]]$status1 %in% T || db1[[info$db1]]$status1 %in% T]
+      statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][statusAll]
       rangex <- range(x)
       seriesInfo(x)
     } else {
@@ -9600,10 +9601,18 @@ server <- function(input,output,session) {
     removeNotification("bad_cut")
     if (isTruthy(inputs$cutStart) || isTruthy(inputs$cutEnd)) {
       if (messages > 0) cat(file = stderr(), mySession, "Cutting series:", inputs$cutStart, "-", inputs$cutEnd, "\n")
-      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, trans$x[1])
-      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, trans$x[length(trans$x)])
-      start <- ifelse(start < trans$x[1], trans$x[1], start)
-      end <- ifelse(end > trans$x[length(trans$x)], trans$x[length(trans$x)], end)
+      if (input$tab < 4) {
+        x <- trans$x
+        x0 <- trans$x0
+      } else {
+        statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
+        x <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(statusAll)]
+        x0 <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(db1[[info$db1]]$y1)]
+      }
+      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, x[1])
+      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, x[length(x)])
+      start <- ifelse(start < x[1], x[1], start)
+      end <- ifelse(end > x[length(x)], x[length(x)], end)
       if (end <= start) {
         shinyjs::delay(500, showNotification(HTML("The End epoch or the end of the series is equal or smaller than the Start epoch or the start of the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
@@ -9612,47 +9621,52 @@ server <- function(input,output,session) {
         if (isTruthy(inputs$cutStart) && isTruthy(inputs$cutEnd)) {
           # NA
         } else if (isTruthy(inputs$cutStart)) {
-          end <- trans$x0[length(trans$x0)]
+          end <- x0[length(x0)]
         } else if (isTruthy(inputs$cutEnd)) {
-          start <- trans$x0
+          start <- x0
         }
         if (isTruthy(input$remove3D)) {
-          db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- NA
-          db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- NA
-          db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- NA
+          db1[[info$db1]]$status1[x0 < start | x0 > end] <- NA
+          db1[[info$db1]]$status2[x0 < start | x0 > end] <- NA
+          db1[[info$db1]]$status3[x0 < start | x0 > end] <- NA
         } else {
           if (input$tab == 1) {
-            db1[[info$db1]]$status1[trans$x0 < start | trans$x0 > end] <- NA
+            db1[[info$db1]]$status1[x0 < start | x0 > end] <- NA
           } else if (input$tab == 2) {
-            db1[[info$db1]]$status2[trans$x0 < start | trans$x0 > end] <- NA
+            db1[[info$db1]]$status2[x0 < start | x0 > end] <- NA
           } else if (input$tab == 3) {
-            db1[[info$db1]]$status3[trans$x0 < start | trans$x0 > end] <- NA
+            db1[[info$db1]]$status3[x0 < start | x0 > end] <- NA
           }
         }
         # setting new axis limits
+        if (input$tab < 4) {
+          valid <- !is.na(db1[[info$db1]][[paste0("status", input$tab)]])
+        } else {
+          valid <- !is.na(colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0)
+        }
         if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
           # show all points from primary & secondary series
-          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])], db2[[info$db2]][[paste0("x",input$tunits)]])
-          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])], db2[[info$db2]][[paste0("x",input$tunits)]])
+          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
+          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
         } else {
           # show all points from primary series only
-          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
-          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid])
+          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid])
         }
         ranges$x1 <- c(info$minx, info$maxx)
         updateCheckboxInput(session, inputId = "permanent", value = F)
       } else {
         if (isTruthy(input$remove3D)) {
-          db1[[info$db1]]$status1[(trans$x0 < start | trans$x0 > end) & !is.na(db1[[info$db1]]$status1)] <- F
-          db1[[info$db1]]$status2[(trans$x0 < start | trans$x0 > end) & !is.na(db1[[info$db1]]$status2)] <- F
-          db1[[info$db1]]$status3[(trans$x0 < start | trans$x0 > end) & !is.na(db1[[info$db1]]$status3)] <- F
+          db1[[info$db1]]$status1[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status1)] <- F
+          db1[[info$db1]]$status2[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status2)] <- F
+          db1[[info$db1]]$status3[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status3)] <- F
         } else {
           if (input$tab == 1) {
-            db1[[info$db1]]$status1[(trans$x0 < start | trans$x0 > end) & !is.na(db1[[info$db1]]$status1)] <- F
+            db1[[info$db1]]$status1[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status1)] <- F
           } else if (input$tab == 2) {
-            db1[[info$db1]]$status2[(trans$x0 < start | trans$x0 > end) & !is.na(db1[[info$db1]]$status2)] <- F
+            db1[[info$db1]]$status2[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status2)] <- F
           } else if (input$tab == 3) {
-            db1[[info$db1]]$status3[(trans$x0 < start | trans$x0 > end) & !is.na(db1[[info$db1]]$status3)] <- F
+            db1[[info$db1]]$status3[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status3)] <- F
           }
         }
       }
