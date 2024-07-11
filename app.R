@@ -12328,16 +12328,21 @@ server <- function(input,output,session) {
             rangeY <- ranges$y1
           }
           if (input$tab == 4 && input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+            if (input$ne && component < 3) {
+              component2 <- as.numeric(chartr("12", "21", as.character(component)))
+            } else {
+              component2 <- component
+            }
             x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
-            y2 <- db2[[info$db2]][[paste0("y",component)]]
+            y2 <- db2[[info$db2]][[paste0("y",component2)]]
             if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
-              y2 <- y2 - trans$plate2[component]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
+              y2 <- y2 - trans$plate2[component2]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
             }
             if (isTruthy(trans$gia2) && input$giaType == 2) {
-              y2 <- y2 - trans$gia2[component]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
+              y2 <- y2 - trans$gia2[component2]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
             }
             y2 <- y2 * inputs$scaleFactor
-            sy2 <- db2[[info$db2]][[paste0("sy",component)]]
+            sy2 <- db2[[info$db2]][[paste0("sy",component2)]]
             if (input$symbol == 0) {
               symbol <- 'p'
             } else if (input$symbol == 1) {
