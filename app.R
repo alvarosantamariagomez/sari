@@ -3961,8 +3961,8 @@ server <- function(input,output,session) {
               updateTextInput(session, "waveformPeriod", value = "")
               updateTextInput(session, "waveformPeriod", value = save_value)
             }
+            # keeping results for the 3D plot
             if (input$format != 4) {
-              
               isolate({
                 if (all(is.na(db1[[info$db1]][[paste0("res", input$tab)]])) ||
                     length(trans$res) != length(db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])]) ||
@@ -4327,6 +4327,22 @@ server <- function(input,output,session) {
                            }
                          }, width = reactive(info$width))
                          trans$model_old <- input$model
+                         # keeping results for the 3D plot
+                         if (input$format != 4) {
+                           isolate({
+                             if (all(is.na(db1[[info$db1]][[paste0("res", input$tab)]])) ||
+                                 length(trans$res) != length(db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])]) ||
+                                 any(trans$res - db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])] != 0)) {
+                               db1[[info$db1]][[paste0("res", input$tab)]] <- NA
+                               db1[[info$db1]][[paste0("mod", input$tab)]] <- NA
+                               db1[[info$db1]][[paste0("reserror", input$tab)]] <- NA
+                               db1[[info$db1]][[paste0("res", input$tab)]][match(x, db1[[info$db1]][[paste0("x", input$tunits)]])] <- trans$res
+                               db1[[info$db1]][[paste0("mod", input$tab)]][match(x, db1[[info$db1]][[paste0("x", input$tunits)]])] <- trans$mod
+                               db1[[info$db1]][[paste0("reserror", input$tab)]][match(x, db1[[info$db1]][[paste0("x", input$tunits)]])] <- trans$sy
+                               trans[[paste0("offsetEpochs", input$tab)]] <- trans$offsetEpochs
+                             }
+                           })
+                         }
                          updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
                        }
                      })
