@@ -340,7 +340,7 @@ tabContents <- function(tabNum) {
              condition = "input.midas == true",
              plotOutput(paste0("midas_hist",tabNum))
            ),
-           div(id = paste0("lomb",tabNum),
+           div(id = paste0("lomb",tabNum), style = "margin-top: 1em",
                conditionalPanel(
                  condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.spectrumResiduals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
@@ -4748,12 +4748,26 @@ server <- function(input,output,session) {
         ylab <- "Power"
       }
       title <- substring(paste(trans$title[!is.na(trans$title)],collapse = ""), 1, nchar(paste(trans$title[!is.na(trans$title)],collapse = "")) - 2)
+      par(mar = c(5.1,4.1,6.1,2.1))
       if (is.null(ranges$x3)) {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, main = title, log = "xy", col = SARIcolors[trans$col], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
+        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[trans$col], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
       } else {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, main = title, log = "xy", col = SARIcolors[trans$col], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
+        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[trans$col], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
       }
-      axis(2,at = marks, labels = marks)
+      title(title, line = 5)
+      axis(2, at = marks, labels = marks)
+      if (input$tunits == 1) {
+        newPeriods <- sprintf('%.*f', 3, axTicks(1)/daysInYear)
+        lab = "Period (years)"
+      } else if (input$tunits == 2) {
+        newPeriods <- sprintf('%.*f', 1, axTicks(1)*7)
+        lab = "Period (days)"
+      } else if (input$tunits == 3) {
+        newPeriods <- sprintf('%.*f', 1, axTicks(1)*daysInYear)
+        lab = "Period (days)"
+      }
+      axis(3, at = axTicks(1), labels = newPeriods)
+      mtext(lab, side = 3, line = 3)
       if (input$spectrumType == 1) {
         if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
           if (input$tunits == 1) { #days
