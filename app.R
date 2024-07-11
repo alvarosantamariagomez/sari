@@ -6119,7 +6119,7 @@ server <- function(input,output,session) {
       ranges$y4 <- NULL
     }
   })
-  observeEvent(c(input$plot41_2click, input$plot42_2click, input$plot43_2click), {
+  observeEvent(c(input$plot41_2click, input$plot42_2click, input$plot43_2click, input$plot51_2click, input$plot52_2click, input$plot53_2click), {
     brush <- NULL
     if (length(input$plot41_brush) > 0) {
       brush <- input$plot41_brush
@@ -6127,6 +6127,12 @@ server <- function(input,output,session) {
       brush <- input$plot42_brush
     } else if (length(input$plot43_brush) > 0) {
       brush <- input$plot43_brush
+    } else if (length(input$plot51_brush) > 0) {
+      brush <- input$plot51_brush
+    } else if (length(input$plot52_brush) > 0) {
+      brush <- input$plot52_brush
+    } else if (length(input$plot53_brush) > 0) {
+      brush <- input$plot53_brush
     }
     values_now <- db1[[info$db1]]$status1
     if (!is.null(brush) && !all(is.na(values_now[trans$x0 > brush$xmin & trans$x0 < brush$xmax]))) {
