@@ -8196,38 +8196,50 @@ server <- function(input,output,session) {
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     updateSelectInput(inputId = "server2", selected = "")
     updateSelectInput(inputId = "product2", selected = "")
-    header <- readLines(input$series2$datapath, n = 1)
-    if (grepl(".tenv3$", file$secondary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
-      updateRadioButtons(inputId = "format2", selected = 3)
-      info$format2 <- 3
-    } else if (grepl(".pos$", file$secondary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
-      updateRadioButtons(inputId = "format2", selected = 2)
-      info$format2 <- 2
-    } else if (grepl(".pos$", file$secondary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
-      updateRadioButtons(inputId = "format2", selected = 1)
-      info$format2 <- 1
-      url$server2 <- "EARTHSCOPE"
-      url$file2 <- file$secondary
-    } else if (grepl(".enu$", file$secondary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
-      updateRadioButtons(inputId = "format2", selected = 1)
-      info$format2 <- 1
-      info$product2 <- "SPOTGINS_POS"
-    } else if (grepl(".PLH$", file$secondary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
-      updateRadioButtons(inputId = "format2", selected = 1)
-      info$format2 <- 1
-      url$server2 <- "SIRGAS"
-      url$file2 <- file$secondary
-    } else if (grepl(".series$", file$secondary$name, perl = T) && grepl(pattern = "\\.00\\s{2}\\d{4}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}$", header, perl = T)) {
-      info$format2 <- 1
-      url$server2 <- "JPL"
-      url$file2 <- file$secondary
-    } else if (as.numeric(input$format) < 4) {
-      updateRadioButtons(inputId = "format2", selected = 1)
-      info$format2 <- 1
+    if (length(input$series2$datapath) == 1) {
+      header <- readLines(input$series2$datapath, n = 1)
+      if (grepl(".tenv3$", file$secondary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
+        updateRadioButtons(inputId = "format2", selected = 3)
+        info$format2 <- 3
+      } else if (grepl(".pos$", file$secondary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
+        updateRadioButtons(inputId = "format2", selected = 2)
+        info$format2 <- 2
+      } else if (grepl(".pos$", file$secondary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        info$format2 <- 1
+        url$server2 <- "EARTHSCOPE"
+        url$file2 <- file$secondary
+      } else if (grepl(".enu$", file$secondary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        info$format2 <- 1
+        info$product2 <- "SPOTGINS_POS"
+      } else if (grepl(".PLH$", file$secondary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        info$format2 <- 1
+        url$server2 <- "SIRGAS"
+        url$file2 <- file$secondary
+      } else if (grepl(".series$", file$secondary$name, perl = T) && grepl(pattern = "\\.00\\s{2}\\d{4}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}$", header, perl = T)) {
+        info$format2 <- 1
+        url$server2 <- "JPL"
+        url$file2 <- file$secondary
+      } else if (as.numeric(input$format) < 4) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        info$format2 <- 1
+      } else {
+        updateRadioButtons(inputId = "format2", selected = 4)
+        info$format2 <- 4
+        disable("format2")
+      }
     } else {
-      updateRadioButtons(inputId = "format2", selected = 4)
-      info$format2 <- 4
-      disable("format2")
+      if (as.numeric(input$format) < 4) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        info$format2 <- 1
+        url$server2 <- "EOSTLS"
+      } else {
+        updateRadioButtons(inputId = "format2", selected = 4)
+        info$format2 <- 4
+        disable("format2")
+      }
     }
     req(input$optionSecondary > 0)
     if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary file\n")
@@ -10024,7 +10036,7 @@ server <- function(input,output,session) {
         table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,url$server2,2)
         removeNotification(paste0("parsing_url2_",i))
         removeNotification("parsing_url2")
-        # starting EOSTLS series at epoch .0
+        # starting EOSTLS series at epoch .0, except for daily series
         if (url$server2 == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
           while (table2$x1[1] %% 1 > 0) {
             table2 <- table2[-1,]
@@ -10144,7 +10156,8 @@ server <- function(input,output,session) {
         }
         table2 <- table_stack
         if (!is.null(table2)) {
-          if (dim(as.matrix(files$datapath))[1] > 1) {
+          # writing the merged series into a file, unless the series were uploaded from local files
+          if (isTruthy(url$station2) && dim(as.matrix(files$datapath))[1] > 1) {
             table_stack <- table_stack[,c("x1","y1","y2","y3")]
             names(table_stack) <- c("# MJD", "East", "North", "Up")
             suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
