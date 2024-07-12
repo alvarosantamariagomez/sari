@@ -10122,9 +10122,7 @@ server <- function(input,output,session) {
                 y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
                 y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
                 y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
-                sy1 <- 1
-                sy2 <- 1
-                sy3 <- 1
+                sy1 <- sy2 <- sy3 <- 1e-9
               })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
             } else {
               table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
@@ -10319,7 +10317,7 @@ server <- function(input,output,session) {
               extracted$sy3 <- tableAll[,7]
             }
           } else {
-            extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1,length(extracted$y1))
+            extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1e-9,length(extracted$y1))
             if (server != "EOSTLS" || series != 2) {
               info$errorbars <- F
             }
