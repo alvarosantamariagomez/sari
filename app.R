@@ -388,7 +388,7 @@ tab3Contents <- function(series) {
                       .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
                       "),
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
-           hidden(div(id = paste0("component",tabNum,1), style = "margin: 2em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1")))),
+           div(style = "margin: 2em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1"))),
            withSpinner(
              plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = paste0("plot",tabNum,"1_2click"), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
@@ -398,7 +398,7 @@ tab3Contents <- function(series) {
              custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
            div(style = "margin-top: 1em;",
-               hidden(div(id = paste0("component",tabNum,2), style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2")))),
+               div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2"))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = paste0("plot",tabNum,"2_2click"), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -409,7 +409,7 @@ tab3Contents <- function(series) {
                )
            ),
            div(style = "margin-top: 1em;",
-               hidden(div(id = paste0("component",tabNum,3), style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3")))),
+               div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3"))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = paste0("plot",tabNum,"3_2click"), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -426,6 +426,7 @@ tab3Contents <- function(series) {
 # Shiny/R general options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 # options(shiny.trace = T)
+devmode(T)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
@@ -514,16 +515,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                 $(document).on("shiny:connected", function(e) {
                                     size[0] = window.outerWidth;
                                     size[1] = window.outerHeight;
+                                    tactile = navigator.maxTouchPoints;
+                                    Shiny.onInputChange("tactile", tactile);
                                     Shiny.onInputChange("size", size);
                                 });
                                 $(window).resize(function(e) {
                                     size[0] = window.outerWidth;
                                     size[1] = window.outerHeight;
                                     Shiny.onInputChange("size", size);
-                                });
-                                $(document).on("shiny:connected", function(e) {
-                                    tactile = navigator.maxTouchPoints;
-                                    Shiny.onInputChange("tactile", tactile);
                                 });
                             '),
                   
@@ -589,7 +588,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ),
                                                                         column(4,
                                                                                withBusyIndicatorUI(
-                                                                                 uiOutput("station1")
+                                                                                 uiOutput("showStation1")
                                                                                )
                                                                         )
                                                                       ),
@@ -1008,7 +1007,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             ),
                                                                             column(4,
                                                                                    withBusyIndicatorUI(
-                                                                                     uiOutput("station2")
+                                                                                     uiOutput("showStation2")
                                                                                    )
                                                                             )
                                                                           ),
@@ -2137,7 +2136,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                       id = "main-panel",
                                       conditionalPanel(
                                         condition = "input.header == true",
-                                        verbatimTextOutput("header", placeholder = F)
+                                        verbatimTextOutput("showHeader", placeholder = F)
                                       ),
                                       fluidPage(
                                         tableOutput('debug')
@@ -2297,9 +2296,9 @@ server <- function(input,output,session) {
   observe({
     inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
     if (length(inputChanged) > 0 && messages > 5) {
-      cat(file = stderr(), mySession, paste("Latest input fired:", paste(input$changed, collapse = ", ")), "\n")
+      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, paste(head(input[[input$changed]]), collapse = ", ")), "\n")
     }
-    req(input$size, info$intro)
+    req(info$intro)
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), mySession, "Mobile connection", "\n")
@@ -2365,13 +2364,13 @@ server <- function(input,output,session) {
           info$welcome <- F
         }
         mySession <<- as.integer(runif(n = 1, min = 1, max = 999999)) # setting anonymous user' session id
-        load_data(2)
+        load_data(4)
       }
       # setting the IU options that are defined at the server side
-      output$station1 <- renderUI({
+      output$showStation1 <- renderUI({
         textInput(inputId = "station1", label = "Station", value = "")
       })
-      output$station2 <- renderUI({
+      output$showStation2 <- renderUI({
         textInput(inputId = "station2", label = "Station", value = "")
       })
       output$fileSeries1 <- renderUI({
@@ -6053,7 +6052,7 @@ server <- function(input,output,session) {
   )
 
   # Control plots ####
-  output$header <- renderText({
+  output$showHeader <- renderText({
     req(input$header, file$primary)
     if (length(trans$x) > 0 && input$format < 4) {
       if (input$sigmas) {
@@ -6481,7 +6480,7 @@ server <- function(input,output,session) {
             } else {
               file$secondary <- NULL
               updateRadioButtons(inputId = "optionSecondary", selected = 0)
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 textInput(inputId = "station2", label = "Station", value = "")
               })
               disable("station2")
@@ -6911,9 +6910,9 @@ server <- function(input,output,session) {
 
   # Observe screen ####
   observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width), {
-    if (messages > 2) cat(file = stderr(), mySession, "Screen size change", "\n")
     info$pixelratio <- session$clientData$pixelratio
     info$width <- session$clientData$output_plot1_width
+    if (messages > 2) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
   }, priority = 2000)
 
   # Observe URL ####
@@ -7109,7 +7108,7 @@ server <- function(input,output,session) {
     } else if (input$server1 == "PSMSL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("RLR"), selected = "RLR")
     }
-    output$station1 <- renderUI({
+    output$showStation1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
     })
   })
@@ -7141,7 +7140,7 @@ server <- function(input,output,session) {
     } else if (input$server2 == "PSMSL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("RLR"), selected = "RLR")
     }
-    output$station2 <- renderUI({
+    output$showStation2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
     })
     if (input$server2 != "") {
@@ -7407,7 +7406,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$station_x, inputs$station_y, inputs$station_z), {
     if (isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z) && (!isTruthy(inputs$station_lat) || !isTruthy(inputs$station_lon))) {
       stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(inputs$station_x,inputs$station_y,inputs$station_z))))
-      coordinates <- c(stationGeo[1] * 180/pi, stationGeo[2] * 180/pi)
+      coordinates <- c(sprintf("%.6f", stationGeo[1] * 180/pi), sprintf("%.6f", stationGeo[2] * 180/pi))
       if (length(coordinates) == 2 && (!isTruthy(inputs$station_lat) || !isTruthy(inputs$station_lon))) {
         updateTextInput(session, inputId = "station_lat", value = coordinates[1])
         updateTextInput(session, inputId = "station_lon", value = coordinates[2])
@@ -7432,7 +7431,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$station_x2, inputs$station_y2, inputs$station_z2), {
     if (isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
       stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(inputs$station_x2,inputs$station_y2,inputs$station_z2))))
-      coordinates <- c(stationGeo[1] * 180/pi, stationGeo[2] * 180/pi)
+      coordinates <- c(sprintf("%.6f", stationGeo[1] * 180/pi), sprintf("%.6f", stationGeo[2] * 180/pi))
       if (length(coordinates) == 2) {
         updateTextInput(session, inputId = "station_lat2", value = coordinates[1])
         updateTextInput(session, inputId = "station_lon2", value = coordinates[2])
@@ -7487,7 +7486,7 @@ server <- function(input,output,session) {
           lon2 <- inputs$station_lon2
           lon2 <- ifelse(lon2 > 180, lon2 - 360, lon2)
           lon2 <- ifelse(lon2 < -180, lon2 + 360, lon2)
-          map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = file$id2)
+          map <- addMarkers(map = map, icon = list(iconUrl = "www/GNSS_marker.png", iconSize = c(25,25)), lng = lon2, lat = lat2, label = isolate(file$id2))
         }
         output$myMap <- renderLeaflet(map)
         output$map <- renderUI({
@@ -8117,7 +8116,7 @@ server <- function(input,output,session) {
   }, priority = 7)
 
   # Observe primary file ####
-  observeEvent(c(input$series), {
+  observeEvent(input$series, {
     file$primary <- isolate(input$series)
     header <- readLines(input$series$datapath, n = 1)
     if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
@@ -10939,15 +10938,15 @@ server <- function(input,output,session) {
           coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-          lat <- stationGeo[1] * 180/pi
-          lon <- stationGeo[2] * 180/pi
+          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "SONEL") {
           coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-          lat <- stationGeo[1] * 180/pi
-          lon <- stationGeo[2] * 180/pi
+          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "IGS") {
           tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
@@ -10962,8 +10961,8 @@ server <- function(input,output,session) {
             coordinates <- tableAll[tableAll$V1 == station, c(2,3,4)]
             shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
             stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-            lat <- stationGeo[1] * 180/pi
-            lon <- stationGeo[2] * 180/pi
+            lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+            lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
             coordinates <- c(coordinates,lat,lon)
           }
         } else if (server == "SIRGAS") {
@@ -10985,8 +10984,8 @@ server <- function(input,output,session) {
           tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
-          lat <- stationGeo[1] * 180/pi
-          lon <- stationGeo[2] * 180/pi
+          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
           coordinates <- c(as.numeric(tableAll[6]),as.numeric(tableAll[8]),as.numeric(tableAll[10]),lat,lon)
         }
       } else if (isTruthy(product) && product == "SPOTGINS_POS") {
@@ -10994,8 +10993,8 @@ server <- function(input,output,session) {
         if (!any(is.na(suppressWarnings(as.numeric(coordinates))))) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-          lat <- stationGeo[1] * 180/pi
-          lon <- stationGeo[2] * 180/pi
+          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
           coordinates <- c(coordinates,lat,lon)
         } else {
           coordinates <- NULL
@@ -11009,8 +11008,8 @@ server <- function(input,output,session) {
         y <- unlist(strsplit(ref_pos, split = " +"))[6]
         z <- unlist(strsplit(ref_pos, split = " +"))[7]
         stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
-        lat <- stationGeo[1] * 180/pi
-        lon <- stationGeo[2] * 180/pi
+        lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+        lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
         coordinates <- c(x,y,z,lat,lon)
       }
     } else if (format == 3) {
@@ -11034,6 +11033,7 @@ server <- function(input,output,session) {
         }
       }
     }
+    return(c(as.numeric(sprintf("%.1f", as.numeric(coordinates[1]))), as.numeric(sprintf("%.1f", as.numeric(coordinates[2]))), as.numeric(sprintf("%.1f", as.numeric(coordinates[3]))), as.numeric(sprintf("%.6f", as.numeric(coordinates[4]))), as.numeric(sprintf("%.6f", as.numeric(coordinates[5])))))
   }
   #
   latlon2xyz <- function(lat,lon,scaling) {
@@ -11041,9 +11041,9 @@ server <- function(input,output,session) {
     b <- 6356752.314140347
     e2 <- (a^2 - b^2) / a^2
     N <- a / sqrt( 1 - e2 * sin(lat)^2)
-    x <- N * cos(lat) * cos(lon)
-    y <- N * cos(lat) * sin(lon)
-    z <- N * (1 - e2) * sin(lat)
+    x <- as.numeric(sprintf("%.1f", N * cos(lat) * cos(lon)))
+    y <- as.numeric(sprintf("%.1f", N * cos(lat) * sin(lon)))
+    z <- as.numeric(sprintf("%.1f", N * (1 - e2) * sin(lat)))
     c(x,y,z) * scaling
   }
   #
@@ -12452,7 +12452,6 @@ server <- function(input,output,session) {
       plot_series(x1,y1,sy1,rangeX,rangeY,sigmas,title,input$symbol,T)
       points(xe, ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
       output[[paste0("component",input$tab,component)]] <- renderText(sub(" component", "", info$components[component]))
-      shinyjs::show(paste0("component",input$tab,component))
       xx <- median(x1[x1 > rangeX[1] & x1 < rangeX[2]], na.rm = T)
       yy <- median(y1[x1 > rangeX[1] & x1 < rangeX[2]], na.rm = T)
       centerx <- which(abs(x1 - xx) == min(abs(x1 - xx)))[1]
@@ -13653,11 +13652,11 @@ server <- function(input,output,session) {
               }
             }
             if (series == 1) {
-              output$station1 <- renderUI({
+              output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 2) {
@@ -13688,11 +13687,11 @@ server <- function(input,output,session) {
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
               if (series == 1) {
-                output$station1 <- renderUI({
+                output$showStation1 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
-                output$station2 <- renderUI({
+                output$showStation2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
@@ -13735,11 +13734,11 @@ server <- function(input,output,session) {
             }
             stations_available <- read.table("www/JPL_database.txt")$V1
             if (series == 1) {
-              output$station1 <- renderUI({
+              output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 2) {
@@ -13774,11 +13773,11 @@ server <- function(input,output,session) {
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
               if (series == 1) {
-                output$station1 <- renderUI({
+                output$showStation1 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
-                output$station2 <- renderUI({
+                output$showStation2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
@@ -13819,11 +13818,11 @@ server <- function(input,output,session) {
               if (code > 0) {
                 stations_available <- dir_contents$stations[[code]]
                 if (series == 1) {
-                  output$station1 <- renderUI({
+                  output$showStation1 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })  
                 } else if (series == 2) {
-                  output$station2 <- renderUI({
+                  output$showStation2 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
                   if (input$sunits == 2) {
@@ -13863,11 +13862,11 @@ server <- function(input,output,session) {
               writeLines(stations_available, "www/UNAVCO_database.txt", sep = "\n")
             }
             if (series == 1) {
-              output$station1 <- renderUI({
+              output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 2) {
@@ -13900,11 +13899,11 @@ server <- function(input,output,session) {
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- sub(pattern, "", grep(pattern, dir_contents, ignore.case = F, value = T))
               if (series == 1) {
-                output$station1 <- renderUI({
+                output$showStation1 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
-                output$station2 <- renderUI({
+                output$showStation2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
@@ -13962,11 +13961,11 @@ server <- function(input,output,session) {
               stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
               if (length(stations_available) > 0) {
                 if (series == 1) {
-                  output$station1 <- renderUI({
+                  output$showStation1 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })  
                 } else if (series == 2) {
-                  output$station2 <- renderUI({
+                  output$showStation2 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
                   if (input$sunits == 2) {
@@ -14026,11 +14025,11 @@ server <- function(input,output,session) {
               }
             }
             if (series == 1) {
-              output$station1 <- renderUI({
+              output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$sunits == 1) {
@@ -14117,11 +14116,11 @@ server <- function(input,output,session) {
           if (file.exists("www/EOSTLS_database.txt")) {
             stations_available <- readLines("www/EOSTLS_database.txt", warn = F)
             if (series == 1) {
-              output$station1 <- renderUI({
+              output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
               if (input$tunits == 1) {
@@ -14167,11 +14166,11 @@ server <- function(input,output,session) {
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
               if (series == 1) {
-                output$station1 <- renderUI({
+                output$showStation1 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })  
               } else if (series == 2) {
-                output$station2 <- renderUI({
+                output$showStation2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                 })
                 if (input$sunits == 2) {
@@ -14183,11 +14182,11 @@ server <- function(input,output,session) {
               if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
                 stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
                 if (series == 1) {
-                  output$station1 <- renderUI({
+                  output$showStation1 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })  
                 } else if (series == 2) {
-                  output$station2 <- renderUI({
+                  output$showStation2 <- renderUI({
                     suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
                   })
                 }
@@ -14230,11 +14229,11 @@ server <- function(input,output,session) {
           if (file.exists("www/PSMSL_database.txt")) {
             stations_available <- do.call(paste, c(read.table("www/PSMSL_database.txt", sep = ";", quote = "@")[,c(1,2)], sep = ": "))
             if (series == 1) {
-              output$station1 <- renderUI({
+              output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })  
             } else if (series == 2) {
-              output$station2 <- renderUI({
+              output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
             }
