@@ -697,20 +697,26 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           div(style = "padding: 0px 0px; margin-top: -1em",
                                                                               tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           ),
+                                                                          checkboxInput(inputId = "showmap",
+                                                                                        div("Show location map",
+                                                                                            helpPopup("If the series header contains the station coordinates, or they are provided by the user in the 'Plate motion model' option, this option will show the location of the station together with the tectocnic plate boundaries.", anchor = "")),
+                                                                                        value = F),
                                                                           conditionalPanel(
-                                                                            condition = "output.location == true",
+                                                                            condition = "input.showmap == false",
+                                                                            div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information2"))
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.showmap == true",
                                                                             fluidRow(
                                                                               column(6,
                                                                                      div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information1"))
                                                                               ),
                                                                               column(6,
-                                                                                     uiOutput("map")
+                                                                                     div(style = "margin-top: -3em;",
+                                                                                         uiOutput("map")
+                                                                                     )
                                                                               )
                                                                             )
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "output.location == false",
-                                                                            div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information2"))
                                                                           )
                                                                         )
                                                                       ),
@@ -2410,11 +2416,6 @@ server <- function(input,output,session) {
     withMathJax(includeMarkdown(file))
   })
   
-  output$location <- reactive({
-    return(exists("leaflet", mode = "function") && (isTruthy(input$station_lat) && isTruthy(input$station_lon)) || (isTruthy(input$station_lat2) && isTruthy(input$station_lon2)))
-  })
-  outputOptions(output, "location", suspendWhenHidden = F)
-  
   output$wavelet <- reactive({
     return(exists("get.nscales", mode = "function"))
   })
@@ -2510,20 +2511,18 @@ server <- function(input,output,session) {
       x <- db1[[info$db1]][[paste0("x",input$tunits)]][statusAll]
       rangex <- range(x)
       seriesInfo(x)
+      removed <- sum(db1[[info$db1]]$status1 %in% F, db1[[info$db1]]$status2 %in% F, db1[[info$db1]]$status3 %in% F)
     } else {
       rangex <- range(trans$x)
+      removed <- info$removed
     }
     line1 <- sprintf("Number of points = %d",info$points)
-    line2 <- sprintf("Number of points removed = %d",info$removed)
+    line2 <- sprintf("Number of points removed = %d",removed)
     line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
     line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
     line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
     line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    if (input$tab > 3) {
-      HTML(paste("", line1, line3, line4, line5, line6, sep = "<br/>"))
-    } else {
-      HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
-    }
+    HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
   })
 
   # Debouncers & checks for user typed inputs ####
@@ -7438,8 +7437,8 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 5)
-  observeEvent(c(inputs$station_lat, inputs$station_lon, inputs$station_lat2, inputs$station_lon2), {
-    if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
+  observeEvent(c(inputs$station_lat, inputs$station_lon, inputs$station_lat2, inputs$station_lon2, input$showmap), {
+    if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon) && input$showmap) {
       # Mapping the station positions
       # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
       if (exists("leaflet", mode = "function") && file.exists("www/PB2002_boundaries.json")) {
@@ -7490,10 +7489,17 @@ server <- function(input,output,session) {
         }
         output$myMap <- renderLeaflet(map)
         output$map <- renderUI({
-          suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = "18vh"))
+          runjs("var h1 = document.getElementById('information1').offsetHeight;
+                var h2 = document.getElementById('showmap').offsetHeight;
+                var h = h1 + h2 + h2;
+                Shiny.onInputChange('hmap', h);")
+          height <- paste0(ifelse(isTruthy(input$hmap),input$hmap,0),"px")
+          suppressWarnings(leafletOutput(outputId = "myMap", width = "100%", height = height))
         })
-        shinyjs::delay(500, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
+        shinyjs::delay(5000, {runjs("document.getElementsByClassName('leaflet-control-attribution')[0].style.visibility = 'hidden';")})
       }
+    } else {
+      output$map <- renderUI({ NULL })
     }
   }, priority = 3)
   observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_lon2), {
