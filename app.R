@@ -6426,6 +6426,11 @@ server <- function(input,output,session) {
           enable("midas")
           enable("entropy")
           enable("reset")
+          if (isTruthy(input$station_lat) && isTruthy(input$station_lon)) {
+            enable("showmap")
+          } else {
+            disable("showmap")
+          }
           enable("average")
           if (!isTruthy(input$average) && length(inputs$step) > 0) {
             updateTextInput(session, inputId = "step", value = "")
@@ -10977,6 +10982,7 @@ server <- function(input,output,session) {
   }
   #
   extract_coordinates <- function(filein,format,server,product,station,skip,sep) {
+    coordinates <- NULL
     if (format == 1) {
       if (isTruthy(server)) {
         if (server == "FORMATER") {
@@ -11078,7 +11084,9 @@ server <- function(input,output,session) {
         }
       }
     }
-    return(c(as.numeric(sprintf("%.1f", as.numeric(coordinates[1]))), as.numeric(sprintf("%.1f", as.numeric(coordinates[2]))), as.numeric(sprintf("%.1f", as.numeric(coordinates[3]))), as.numeric(sprintf("%.6f", as.numeric(coordinates[4]))), as.numeric(sprintf("%.6f", as.numeric(coordinates[5])))))
+    if (isTruthy(coordinates)) {
+      return(c(as.numeric(sprintf("%.1f", as.numeric(coordinates[1]))), as.numeric(sprintf("%.1f", as.numeric(coordinates[2]))), as.numeric(sprintf("%.1f", as.numeric(coordinates[3]))), as.numeric(sprintf("%.6f", as.numeric(coordinates[4]))), as.numeric(sprintf("%.6f", as.numeric(coordinates[5])))))
+    }
   }
   #
   latlon2xyz <- function(lat,lon,scaling) {
