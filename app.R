@@ -713,7 +713,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               ),
                                                                               column(6,
                                                                                      div(style = "margin-top: -3em;",
-                                                                                         uiOutput("map")
+                                                                                         withSpinner(
+                                                                                           uiOutput("map"),
+                                                                                           type = getOption("spinner.type", default = 1),
+                                                                                           color = getOption("spinner.color", default = "#0080ff"),
+                                                                                           size = getOption("spinner.size", default = 2),
+                                                                                           color.background = getOption("spinner.color.background", default = "#ffffff"),
+                                                                                           custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "175px"
+                                                                                         )
                                                                                      )
                                                                               )
                                                                             )
