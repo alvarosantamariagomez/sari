@@ -699,7 +699,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           checkboxInput(inputId = "showmap",
                                                                                         div("Show location map",
-                                                                                            helpPopup("If the series header contains the station coordinates, or they are provided by the user in the 'Plate motion model' option, this option will show the location of the station together with the tectocnic plate boundaries.", anchor = "")),
+                                                                                            helpPopup("If the series header contains the station coordinates, or they are provided by the user in the 'Plate motion model' option, this option will show a map with the station's location together with the tectonic plate boundaries.", anchor = "")),
                                                                                         value = F),
                                                                           conditionalPanel(
                                                                             condition = "input.showmap == false",
@@ -2296,7 +2296,8 @@ server <- function(input,output,session) {
                           plate = NULL, plate2 = NULL, gia = NULL, gia2 = NULL,
                           entropy_vel = NULL, entropy_sig = NULL, offsetEpoch.entropy = NULL,
                           slope = NULL,
-                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, white_sig = NULL, flicker_sig = NULL, randomw_sig = NULL, powerl_sig = NULL)
+                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, white_sig = NULL, flicker_sig = NULL, randomw_sig = NULL, powerl_sig = NULL,
+                          plotInfo1 = NULL, plotInfo2 = NULL, plotInfo3 = NULL)
 
   # 7. output
   OutPut <- reactiveValues(df = NULL)
@@ -3989,6 +3990,12 @@ server <- function(input,output,session) {
               updateTextInput(session, "waveformPeriod", value = "")
               updateTextInput(session, "waveformPeriod", value = save_value)
             }
+            # keeping results for the overview plot
+            if ("Linear" %in% input$model) {
+              trans[[paste0("plotInfo", input$tab)]] <- c(trans$LScoefs[2,1], trans$LScoefs[2,2], sd(trans$res))
+            } else {
+              trans[[paste0("plotInfo", input$tab)]] <- c(0.0, 0.0, sd(trans$res))
+            }
             # keeping results for the 3D plot
             if (input$format != 4) {
               isolate({
@@ -4355,6 +4362,12 @@ server <- function(input,output,session) {
                            }
                          }, width = reactive(info$width))
                          trans$model_old <- input$model
+                         # keeping results for the overview plot
+                         if ("Linear" %in% input$model) {
+                           trans[[paste0("plotInfo", input$tab)]] <- c(mean(trans$kalman[,2]), mean(trans$kalman_unc[,2]), sd(trans$res))
+                         } else {
+                           trans[[paste0("plotInfo", input$tab)]] <- c(0.0, 0.0, sd(trans$res))
+                         }
                          # keeping results for the 3D plot
                          if (input$format != 4) {
                            isolate({
@@ -9030,12 +9043,20 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (input$format < 4) {
       if (messages > 0) cat(file = stderr(), mySession, "Overview plot", "\n")
+      unit <- units <- ""
       if (input$sunits == 1) {
-        unit <- "(m)"
+        unit <- "m"
       } else if (input$sunits == 2) {
-        unit <- "(mm)"
-      } else {
-        unit <- ""
+        unit <- "mm"
+      }
+      if (input$sunits > 0) {
+        if (input$tunits == 1) {
+          units <- paste0(unit,"/day")
+        } else if (input$tunits == 2) {
+          units <- paste0(unit,"/week")
+        } else if (input$tunits == 3) {
+          units <- paste0(unit,"/year")
+        }
       }
       if (input$symbol == 0) {
         symbol <- 'p'
@@ -9116,7 +9137,7 @@ server <- function(input,output,session) {
       par(mai = c(1, 2, 1, 1))
       layout(mat = matrix(data = c(1,2,3), nrow = 3, ncol = 1))
       ## East ####
-      par(mai = c(0.3, 1.2, 0.3, 0.6))
+      par(mai = c(0.3, 1.2, 0.7, 0.6))
       y.range <- range(y1[valid1][x[valid1] >= x.range[1] & x[valid1] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
@@ -9163,14 +9184,14 @@ server <- function(input,output,session) {
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
-          ylab <- paste(gsub("component","",info$components[1]),intToUtf8(8210),abs(const),unit)
+          ylab <- paste0(gsub("component","",info$components[1])," ",intToUtf8(8210)," ",abs(const)," (",unit,")")
         } else {
           const <- as.integer(round(mini))
-          ylab <- paste(gsub("component","",info$components[1]),"+",abs(const),unit)
+          ylab <- paste0(gsub("component","",info$components[1])," + ",abs(const)," (",unit,")")
         }
       } else {
         const <- 0
-        ylab <- gsub("component","",paste(info$components[1], unit))
+        ylab <- gsub("component","",paste0(info$components[1], " (",unit,")"))
       }
       plot(x[valid1], y1[valid1], type = symbol, pch = 20, xlab = NA, xaxt = "n", yaxt = "n", ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
@@ -9193,8 +9214,16 @@ server <- function(input,output,session) {
         centery <- which(abs(y1[valid1] - yy) == min(abs(y1[valid1] - yy)))[1]
         lines(c(x[valid1][1],x[valid1][length(x[valid1])]),c(y1[valid1][centery] + trans$plate[1]*(x[valid1][1] - x[valid1][centerx]), y1[valid1][centery] + trans$plate[1]*(x[valid1][length(x[valid1])] - x[valid1][centerx])), col = SARIcolors[4], lwd = 3)
       }
+      if (isTruthy(db1[[info$db1]]$mod1) > 0) {
+        lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T],db1[[info$db1]]$mod1[db1[[info$db1]]$status1 %in% T], col = SARIcolors[2], lwd = 3)
+        text <- paste("Rate", paste(format(c(trans$plotInfo1[1], trans$plotInfo1[2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo1[3], digits = 2), unit)
+        mtext(text, side = 3, line = 0, cex = 0.75)
+        for (p in trans$offsetEpochs1) {
+          abline(v = p, col = SARIcolors[2], lwd = 2)
+        }
+      }
       # North ####
-      par(mai = c(0.3, 1.2, 0.1, 0.6))
+      par(mai = c(0.3, 1.2, 0.5, 0.6))
       y.range <- range(y2[valid2][x[valid2] >= x.range[1] & x[valid2] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
@@ -9241,14 +9270,14 @@ server <- function(input,output,session) {
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
-          ylab <- paste(gsub("component","",info$components[2]),intToUtf8(8210),abs(const),unit)
+          ylab <- paste0(gsub("component","",info$components[2])," ",intToUtf8(8210)," ",abs(const)," (",unit,")")
         } else {
           const <- as.integer(round(mini))
-          ylab <- paste(gsub("component","",info$components[2]),"+",abs(const),unit)
+          ylab <- paste0(gsub("component","",info$components[2])," + ",abs(const)," (",unit,")")
         }
       } else {
         const <- 0
-        ylab <- gsub("component","",paste(info$components[2], unit))
+        ylab <- gsub("component","",paste(info$components[2], " (",unit,")"))
       }
       plot(x[valid2], y2[valid2], type = symbol, pch = 20, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
@@ -9271,8 +9300,17 @@ server <- function(input,output,session) {
         centery <- which(abs(y2[valid2] - yy) == min(abs(y2[valid2] - yy)))[1]
         lines(c(x[valid2][1],x[valid2][length(x[valid2])]),c(y2[valid2][centery] + trans$plate[2]*(x[valid2][1] - x[valid2][centerx]), y2[valid2][centery] + trans$plate[2]*(x[valid2][length(x[valid2])] - x[valid2][centerx])), col = SARIcolors[4], lwd = 3)
       }
+      if (isTruthy(db1[[info$db1]]$mod2) > 0) {
+        lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T],db1[[info$db1]]$mod2[db1[[info$db1]]$status2 %in% T], col = SARIcolors[2], lwd = 3)
+        text <- paste("Rate", paste(format(c(trans$plotInfo2[1], trans$plotInfo2[2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo2[3], digits = 2), unit)
+        mtext(text, side = 3, line = 0, cex = 0.75)
+        for (p in trans$offsetEpochs2) {
+          abline(v = p, col = SARIcolors[2], lwd = 2)
+        }
+      }
+      mtext(paste("Generated by SARI on", format(Sys.time(), format = "%d %B %Y at %H:%M:%S", usetz = T)), side = 4, line = 1, cex = 0.5)
       # Up ####
-      par(mai = c(1.2, 1.2, 0.1, 0.6))
+      par(mai = c(1.2, 1.2, 0.5, 0.6))
       y.range <- range(y3[valid3][x[valid3] >= x.range[1] & x[valid3] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
@@ -9319,14 +9357,14 @@ server <- function(input,output,session) {
       if ((abs(mini) > 99 || abs(maxi) > 99) && abs(maxi - mini) < 99) {
         if (mini < 0) {
           const <- as.integer(round(maxi))
-          ylab <- paste(gsub("component","",info$components[3]),intToUtf8(8210),abs(const),unit)
+          ylab <- paste0(gsub("component","",info$components[3])," ",intToUtf8(8210)," ",abs(const)," (",unit,")")
         } else {
           const <- as.integer(round(mini))
-          ylab <- paste(gsub("component","",info$components[3]),"+",abs(const),unit)
+          ylab <- paste0(gsub("component","",info$components[3])," + ",abs(const)," (",unit,")")
         }
       } else {
         const <- 0
-        ylab <- gsub("component","",paste(info$components[3], unit))
+        ylab <- gsub("component","",paste(info$components[3], " (",unit,")"))
       }
       plot(x[valid3], y3[valid3], type = symbol, pch = 20, yaxt = "n", xlab = info$tunits.label, ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
@@ -9347,6 +9385,14 @@ server <- function(input,output,session) {
         centerx <- which(abs(x[valid3] - xx) == min(abs(x[valid3] - xx)))[1]
         centery <- which(abs(y3[valid3] - yy) == min(abs(y3[valid3] - yy)))[1]
         lines(c(x[valid3][1],x[valid3][length(x[valid3])]),c(y3[valid3][centery] + trans$gia[3]*(x[valid3][1] - x[valid3][centerx]), y3[valid3][centery] + trans$gia[3]*(x[valid3][length(x[valid3])] - x[valid3][centerx])), col = SARIcolors[4], lwd = 3)
+      }
+      if (isTruthy(db1[[info$db1]]$mod3) > 0) {
+        lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T],db1[[info$db1]]$mod3[db1[[info$db1]]$status3 %in% T], col = SARIcolors[2], lwd = 3)
+        text <- paste("Rate", paste(format(c(trans$plotInfo3[1], trans$plotInfo3[2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo3[3], digits = 2), unit)
+        mtext(text, side = 3, line = 0, cex = 0.75)
+        for (p in trans$offsetEpochs3) {
+          abline(v = p, col = SARIcolors[2], lwd = 2)
+        }
       }
       dev.off()
       info$overview <- T
@@ -12555,6 +12601,14 @@ server <- function(input,output,session) {
         for (p in trans[[paste0("offsetEpochs",component)]]) {
           abline(v = p, col = SARIcolors[2], lwd = 2)
         }
+      }
+      if (component == 3) {
+        js$checkPopup()
+        shinyjs::delay(100, {
+          if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
+            shinyjs::click("plotAll")
+          }
+        })
       }
     }
   }
