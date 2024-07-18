@@ -258,8 +258,10 @@ If the station coordinates are known, the `show location map` option will show a
 
 ## II. Plot controls
 
-Once the format of the series is set, this block allows plotting/resetting the time series with the `plot` button.  
-The button `overview` opens a new browser window containing a PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component. <p id="cut"></p>
+Once the format of the series is set, this block allows plotting/resetting the time series with the `plot` button.
+
+The button `overview` opens a new browser window containing a PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.  
+There is no need to close and reopen the windonw, if the windown is left open, the PNG figure will update automatically each time there is a change in the series or in their fitting. <p id="cut"></p>
 The `truncate` option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the [<a href="#input-format" target="_self">Input data and format</a>](#input-format) section). <p id="threshold"></p>
 Outliers selected manually can be excluded from the analysis with the `toggle` option. Outliers can also be excluded automatically with the `auto toggled` button after providing a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).  
 See more details about removing/restoring points in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section. <p id="3d"></p>

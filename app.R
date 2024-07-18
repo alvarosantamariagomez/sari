@@ -2272,7 +2272,7 @@ server <- function(input,output,session) {
                          step = NULL, step2 = NULL, stepUnit = NULL,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits.label = NULL, tunits.known1 = F, tunits.known2 = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
-                         last_optionSecondary = NULL, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
+                         last_optionSecondary = 0, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
                          product1 = NULL,
                          db1 = "stop", db2 = "stop",
@@ -3393,132 +3393,134 @@ server <- function(input,output,session) {
   # Plot series ####
   output$plot1 <- output$plot2 <- output$plot3 <- renderPlot({
     req(db1[[info$db1]], trans$x, trans$y, trans$sy)
-    removeNotification("wrong_series")
-    if (messages > 0) cat(file = stderr(), mySession, "Plotting the series", "\n")
-    title <- ""
-    sigmas <- F
-    if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
-      sigmas <- T
-    }
-    if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
-      if (input$symbol == 0) {
-        symbol <- 'p'
-      } else if (input$symbol == 1) {
-        symbol <- 'l'
-      } else if (input$symbol == 2) {
-        symbol <- 'o'
+    if (input$tab < 4) {
+      removeNotification("wrong_series")
+      if (messages > 0) cat(file = stderr(), mySession, "Plotting the series", "\n")
+      title <- ""
+      sigmas <- F
+      if (isTruthy(input$sigmas) && ((info$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
+        sigmas <- T
       }
-      if (isTruthy(input$sameScale)) {
-        pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
-        pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
-        pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
-        pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
-        half <- abs(ranges$y1[1] - mean(ranges$y1))
-        middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
-        ranges$y12 <- c(middle - half, middle + half)
-        if (length(pointsX1) == 0 || length(pointsX2) == 0) {
-          # NA
-        } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
-          # NA
-        } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
-          # NA
-        } else {
-          tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
-          tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
-          tie1 <- tie1[1:min(length(tie1),length(tie2))]
-          tie2 <- tie2[1:min(length(tie1),length(tie2))]
-          pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
-          ranges$y12 <- isolate(ranges$y12 + (ranges$y1[1] - ranges$y12[1]) - pointsBias)
+      if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
+        if (input$symbol == 0) {
+          symbol <- 'p'
+        } else if (input$symbol == 1) {
+          symbol <- 'l'
+        } else if (input$symbol == 2) {
+          symbol <- 'o'
         }
-      } else if (isTruthy(input$same_axis)) {
-        ranges$y12 <- ranges$y1
+        if (isTruthy(input$sameScale)) {
+          pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+          pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+          pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+          pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+          half <- abs(ranges$y1[1] - mean(ranges$y1))
+          middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
+          ranges$y12 <- c(middle - half, middle + half)
+          if (length(pointsX1) == 0 || length(pointsX2) == 0) {
+            # NA
+          } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
+            # NA
+          } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
+            # NA
+          } else {
+            tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
+            tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
+            tie1 <- tie1[1:min(length(tie1),length(tie2))]
+            tie2 <- tie2[1:min(length(tie1),length(tie2))]
+            pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
+            ranges$y12 <- isolate(ranges$y12 + (ranges$y1[1] - ranges$y12[1]) - pointsBias)
+          }
+        } else if (isTruthy(input$same_axis)) {
+          ranges$y12 <- ranges$y1
+        } else {
+          ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
+          if (sum(ids) > 0) {
+            ranges$y12 <- range(trans$y2[ids], na.rm = T) 
+          } else {
+            ranges$y12 <- range(trans$y2, na.rm = T)
+          }
+        }
+        plot(trans$x2, trans$y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+        if (isTruthy(sigmas)) {
+          color <- SARIcolors[3]
+          alfa <- 0.2
+          shade <- adjustcolor(color, alpha.f = alfa)
+          ba <- trans$y2 + trans$sy2
+          bb <- trans$y2 - trans$sy2
+          polygon(c(trans$x2, rev(trans$x2)), c(ba, rev(bb)), col = shade, border = NA)
+        }
+        axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
+        par(new = T)
+      }
+      plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T)
+      points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
+      xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+      yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
+      centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
+      centery <- which(abs(trans$y - yy) == min(abs(trans$y - yy)))[1]
+      if (input$tab == 1 || input$tab == 2) {
+        if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+          rate <- trans$plate[as.numeric(input$tab)]
+        }
+        if (input$format == 4 && isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+          rate <- ifelse(exists("rate") && is.numeric(rate), yes = rate + trans$gia[3], no = trans$gia[3])
+        }
+      } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+        rate <- trans$gia[3]
+      }
+      if (exists("rate") && is.numeric(rate)) {
+        lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + rate*(trans$x[1] - trans$x[centerx]),trans$y[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
+      }
+      if (input$traceLog && length(info$log) > 0) {
+        for (r in info$log[[2]]) {
+          abline(v = r, col = SARIcolors[4], lty = 2)
+        }
+        for (a in info$log[[1]]) {
+          abline(v = a, col = SARIcolors[4])
+        }
+      }
+      if (input$traceSinfo && length(info$sinfo) > 0) {
+        for (r in info$sinfo[[2]]) {
+          abline(v = r, col = SARIcolors[6], lty = 2)
+        }
+        for (a in info$sinfo[[1]]) {
+          abline(v = a, col = SARIcolors[6])
+        }
+      }
+      if (input$traceSoln && length(info$soln) > 0) {
+        for (a in info$soln) {
+          abline(v = a, col = SARIcolors[8])
+        }
+      }
+      if (input$traceCustom && length(info$custom) > 0) {
+        for (a in info$custom) {
+          abline(v = a, col = SARIcolors[5])
+        }
+      }
+      if (length(trans$mod) > 0 && isTruthy(info$run)) {
+        lines(trans$x,trans$mod, col = SARIcolors[2], lwd = 3)
+      }
+      if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
+        lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
+      }
+      if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
+        shinyjs::show(paste0("zoomin",input$tab))
       } else {
-        ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
-        if (sum(ids) > 0) {
-          ranges$y12 <- range(trans$y2[ids], na.rm = T) 
-        } else {
-          ranges$y12 <- range(trans$y2, na.rm = T)
+        shinyjs::hide(paste0("zoomin",input$tab))
+      }
+      js$checkPopup()
+      shinyjs::delay(100, {
+        if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
+          shinyjs::click("plotAll")
         }
-      }
-      plot(trans$x2, trans$y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
-      if (isTruthy(sigmas)) {
-        color <- SARIcolors[3]
-        alfa <- 0.2
-        shade <- adjustcolor(color, alpha.f = alfa)
-        ba <- trans$y2 + trans$sy2
-        bb <- trans$y2 - trans$sy2
-        polygon(c(trans$x2, rev(trans$x2)), c(ba, rev(bb)), col = shade, border = NA)
-      }
-      axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
-      par(new = T)
+      })
+      output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
+        if (length(input$plot_1click$x) > 0) {
+          paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
+        }
+      })
     }
-    plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T)
-    points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
-    xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
-    yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
-    centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
-    centery <- which(abs(trans$y - yy) == min(abs(trans$y - yy)))[1]
-    if (input$tab == 1 || input$tab == 2) {
-      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-        rate <- trans$plate[as.numeric(input$tab)]
-      }
-      if (input$format == 4 && isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-        rate <- ifelse(exists("rate") && is.numeric(rate), yes = rate + trans$gia[3], no = trans$gia[3])
-      }
-    } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-      rate <- trans$gia[3]
-    }
-    if (exists("rate") && is.numeric(rate)) {
-      lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + rate*(trans$x[1] - trans$x[centerx]),trans$y[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
-    }
-    if (input$traceLog && length(info$log) > 0) {
-      for (r in info$log[[2]]) {
-        abline(v = r, col = SARIcolors[4], lty = 2)
-      }
-      for (a in info$log[[1]]) {
-        abline(v = a, col = SARIcolors[4])
-      }
-    }
-    if (input$traceSinfo && length(info$sinfo) > 0) {
-      for (r in info$sinfo[[2]]) {
-        abline(v = r, col = SARIcolors[6], lty = 2)
-      }
-      for (a in info$sinfo[[1]]) {
-        abline(v = a, col = SARIcolors[6])
-      }
-    }
-    if (input$traceSoln && length(info$soln) > 0) {
-      for (a in info$soln) {
-        abline(v = a, col = SARIcolors[8])
-      }
-    }
-    if (input$traceCustom && length(info$custom) > 0) {
-      for (a in info$custom) {
-        abline(v = a, col = SARIcolors[5])
-      }
-    }
-    if (length(trans$mod) > 0 && isTruthy(info$run)) {
-      lines(trans$x,trans$mod, col = SARIcolors[2], lwd = 3)
-    }
-    if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
-      lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
-    }
-    if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
-      shinyjs::show(paste0("zoomin",input$tab))
-    } else {
-      shinyjs::hide(paste0("zoomin",input$tab))
-    }
-    js$checkPopup()
-    shinyjs::delay(100, {
-      if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
-        shinyjs::click("plotAll")
-      }
-    })
-    output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
-      if (length(input$plot_1click$x) > 0) {
-        paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
-      }
-    })
   }, width = reactive(info$width))
   output$plot41 <- renderPlot({
     if (input$tab == 4) {
@@ -4008,9 +4010,9 @@ server <- function(input,output,session) {
             }
             # keeping results for the overview plot
             if ("Linear" %in% input$model) {
-              trans[[paste0("plotInfo", input$tab)]] <- c(trans$LScoefs[2,1], trans$LScoefs[2,2], sd(trans$res))
+              trans[[paste0("plotInfo", input$tab)]][[info$db1]] <- c(trans$LScoefs[2,1], trans$LScoefs[2,2], sd(trans$res))
             } else {
-              trans[[paste0("plotInfo", input$tab)]] <- c(0.0, 0.0, sd(trans$res))
+              trans[[paste0("plotInfo", input$tab)]][[info$db1]] <- c(0.0, 0.0, sd(trans$res))
             }
             # keeping results for the 3D plot
             if (input$format != 4) {
@@ -4381,9 +4383,9 @@ server <- function(input,output,session) {
                          trans$model_old <- input$model
                          # keeping results for the overview plot
                          if ("Linear" %in% input$model) {
-                           trans[[paste0("plotInfo", input$tab)]] <- c(mean(trans$kalman[,2]), mean(trans$kalman_unc[,2]), sd(trans$res))
+                           trans[[paste0("plotInfo", input$tab)]][[info$db1]] <- c(mean(trans$kalman[,2]), mean(trans$kalman_unc[,2]), sd(trans$res))
                          } else {
-                           trans[[paste0("plotInfo", input$tab)]] <- c(0.0, 0.0, sd(trans$res))
+                           trans[[paste0("plotInfo", input$tab)]][[info$db1]] <- c(0.0, 0.0, sd(trans$res))
                          }
                          # keeping results for the 3D plot
                          if (input$format != 4) {
@@ -8614,7 +8616,6 @@ server <- function(input,output,session) {
       digest(2)
     }
     req(db2[[info$db2]])
-    removeNotification("in_common")
     if (messages > 0) {
       if (input$optionSecondary == 0) {
         cat(file = stderr(), mySession, "Hidding secondary series", "\n")
@@ -8643,23 +8644,26 @@ server <- function(input,output,session) {
         table2$sy1 <- table2sy_tmp
       }
       if (min(diff(table1$x1)) <= 1 && min(diff(table2$x1)) <= 1) {
-        delta <- as.numeric(names(sort(table(table1$x1 - floor(table1$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
-        if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
+        fraction1 <- as.numeric(names(sort(table(table1$x1 - floor(table1$x1)))))
+        fraction2 <- as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
+        delta <- fraction1 - fraction2
+        if (isTruthy(is.numeric(delta)) && length(delta) == 1) {
           if (delta != 0) {
             table2$x1 <- table2$x1 + delta
             showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
           }
         } else {
-          # if (min(diff(table1$x1)) < min(diff(table2$x1))) {
-          #   showNotification(HTML("The sampling of the primary series is not regular.<br>Consider using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-          # } else {
-          #   showNotification(HTML("The sampling of the secondary series is not regular.<br>It is not possible to correct the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-          # }
-          showNotification(HTML("The sampling of the primary series, or secodary series, or both, is not regular.<br>Consider using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+          if (length(fraction1) > 1 && length(fraction2) > 1) {
+            showNotification(HTML("The sampling of the primary and secondary series is not regular.<br>Consider using the \"Reduce sampling\" and \"Averaging\" options to average both series into a constant sampling.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 15, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+          } else if (length(fraction1) > 1) {
+            showNotification(HTML("The sampling of the primary series is not regular.<br>Consider using the \"Reduce sampling\" option to average the series into a constant sampling.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 15, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+          } else if (length(fraction2) > 1) {
+            showNotification(HTML("The sampling of the secondary series is not regular.<br>Consider using the \"Averaging\" option to average the series into a constant sampling.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 15, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+          }
         }
       } else {
         if (info$format != 4) {
-          showNotification(HTML("The sampling of the primary and/or secondary series is larger than one day.<br>It is not possible to shift the secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
+          showNotification(HTML("The sampling of the primary and/or secondary series is larger than one day.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
         }
       }
       if (input$optionSecondary == 2) {
@@ -8741,14 +8745,38 @@ server <- function(input,output,session) {
       }
       showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       if (nrow(table_common) > 0) {
-        if (isTruthy(db1$merged$status1) && length(db1$merged$status1) == length(table_common$status1)) {
-          table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
-        }
-        if (isTruthy(db1$merged$status2) && length(db1$merged$status2) == length(table_common$status2)) {
-          table_common$status2 <- table_common$status2 + db1$merged$status2 > 1
-        }
-        if (isTruthy(db1$merged$status3) && length(db1$merged$status3) == length(table_common$status3)) {
-          table_common$status3 <- table_common$status3 + db1$merged$status3 > 1
+        # recovering past merged values if possible
+        if (input$optionSecondary > 1 && info$last_optionSecondary < 2) {
+          if (isTruthy(db1$merged$status1) && length(db1$merged$status1) == length(table_common$status1)) {
+            table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
+          }
+          if (isTruthy(db1$merged$status2) && length(db1$merged$status2) == length(table_common$status2)) {
+            table_common$status2 <- table_common$status2 + db1$merged$status2 > 1
+          }
+          if (isTruthy(db1$merged$status3) && length(db1$merged$status3) == length(table_common$status3)) {
+            table_common$status3 <- table_common$status3 + db1$merged$status3 > 1
+          }
+          if (isTruthy(db1$merged$status1) && length(db1$merged$mod1) == length(table_common$status1)) {
+            table_common$mod1 <- db1$merged$mod1
+            table_common$res1 <- db1$merged$res1
+            table_common$reserror1 <- db1$merged$reserror1
+          } else {
+            trans$plotInfo1$merged <- NULL
+          }
+          if (isTruthy(db1$merged$status2) && length(db1$merged$mod2) == length(table_common$status2)) {
+            table_common$mod2 <- db1$merged$mod2
+            table_common$res2 <- db1$merged$res2
+            table_common$reserror2 <- db1$merged$reserror2
+          } else {
+            trans$plotInfo2$merged <- NULL
+          }
+          if (isTruthy(db1$merged$status3) && length(db1$merged$mod3) == length(table_common$status3)) {
+            table_common$mod3 <- db1$merged$mod3
+            table_common$res3 <- db1$merged$res3
+            table_common$reserror3 <- db1$merged$reserror3
+          } else {
+            trans$plotInfo2$merged <- NULL
+          }
         }
         db1$merged <- table_common
         info$db1 <- "merged"
@@ -8759,7 +8787,7 @@ server <- function(input,output,session) {
       } else {
         updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
       }
-    } else if (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1) {
+    } else if (info$last_optionSecondary > 1) {
       if (isTruthy(inputs$step) && isTruthy(db1$resampled$x1)) {
         info$db1 <- "resampled"  
       } else {
@@ -8767,7 +8795,7 @@ server <- function(input,output,session) {
       }
     }
     # Updating plot ranges
-    if (input$optionSecondary > 1 || (isTruthy(info$last_optionSecondary) && info$last_optionSecondary > 1)) {
+    if (input$optionSecondary > 1 || info$last_optionSecondary > 1) {
       # setting new axis limits
       if (input$tab == 4) {
         info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
@@ -9177,10 +9205,10 @@ server <- function(input,output,session) {
         x.range <- c(min(x[valid1], x[valid2], x[valid3], na.rm = T), max(x[valid1], x[valid2], x[valid3], na.rm = T))
       }
       ragg::agg_png(filename = fileout, width = info$width, height = 800, pointsize = 25)
-      par(mai = c(1, 2, 1, 1))
+      par(mai = c(1, 2, 1, 2))
       layout(mat = matrix(data = c(1,2,3), nrow = 3, ncol = 1))
       ## East ####
-      par(mai = c(0.3, 1.2, 0.7, 0.6))
+      par(mai = c(0.3, 1.2, 0.7, 1.2))
       y.range <- range(y1[valid1][x[valid1] >= x.range[1] & x[valid1] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
@@ -9259,14 +9287,14 @@ server <- function(input,output,session) {
       }
       if (isTruthy(db1[[info$db1]]$mod1) > 0) {
         lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T],db1[[info$db1]]$mod1[db1[[info$db1]]$status1 %in% T], col = SARIcolors[2], lwd = 3)
-        text <- paste("Rate", paste(format(c(trans$plotInfo1[1], trans$plotInfo1[2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo1[3], digits = 2), unit)
+        text <- paste("Rate", paste(format(c(trans$plotInfo1[[info$db1]][1], trans$plotInfo1[[info$db1]][2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo1[[info$db1]][3], digits = 2), unit)
         mtext(text, side = 3, line = 0, cex = 0.75)
         for (p in trans$offsetEpochs1) {
           abline(v = p, col = SARIcolors[2], lwd = 2)
         }
       }
       # North ####
-      par(mai = c(0.3, 1.2, 0.5, 0.6))
+      par(mai = c(0.3, 1.2, 0.5, 1.2))
       y.range <- range(y2[valid2][x[valid2] >= x.range[1] & x[valid2] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
@@ -9345,15 +9373,15 @@ server <- function(input,output,session) {
       }
       if (isTruthy(db1[[info$db1]]$mod2) > 0) {
         lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T],db1[[info$db1]]$mod2[db1[[info$db1]]$status2 %in% T], col = SARIcolors[2], lwd = 3)
-        text <- paste("Rate", paste(format(c(trans$plotInfo2[1], trans$plotInfo2[2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo2[3], digits = 2), unit)
+        text <- paste("Rate", paste(format(c(trans$plotInfo2[[info$db1]][1], trans$plotInfo2[[info$db1]][2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo2[[info$db1]][3], digits = 2), unit)
         mtext(text, side = 3, line = 0, cex = 0.75)
         for (p in trans$offsetEpochs2) {
           abline(v = p, col = SARIcolors[2], lwd = 2)
         }
       }
-      mtext(paste("Generated by", version, "on", format(Sys.time(), format = "%d %B %Y at %H:%M:%S", usetz = T)), side = 4, line = 1, cex = 0.5)
+      mtext(paste("Generated by", version, "on", format(Sys.time(), format = "%d %B %Y at %H:%M:%S", usetz = T)), side = 4, line = 3, cex = 0.5)
       # Up ####
-      par(mai = c(1.2, 1.2, 0.5, 0.6))
+      par(mai = c(1.2, 1.2, 0.5, 1.2))
       y.range <- range(y3[valid3][x[valid3] >= x.range[1] & x[valid3] <= x.range[2]], na.rm = T)
       if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
         if (isTruthy(input$sameScale)) {
@@ -9431,7 +9459,7 @@ server <- function(input,output,session) {
       }
       if (isTruthy(db1[[info$db1]]$mod3) > 0) {
         lines(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T],db1[[info$db1]]$mod3[db1[[info$db1]]$status3 %in% T], col = SARIcolors[2], lwd = 3)
-        text <- paste("Rate", paste(format(c(trans$plotInfo3[1], trans$plotInfo3[2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo3[3], digits = 2), unit)
+        text <- paste("Rate", paste(format(c(trans$plotInfo3[[info$db1]][1], trans$plotInfo3[[info$db1]][2]), digits = 2, trim = T), collapse = " +/- "), units, "      Standard deviation", format(trans$plotInfo3[[info$db1]][3], digits = 2), unit)
         mtext(text, side = 3, line = 0, cex = 0.75)
         for (p in trans$offsetEpochs3) {
           abline(v = p, col = SARIcolors[2], lwd = 2)
@@ -10050,7 +10078,7 @@ server <- function(input,output,session) {
     info$rangex <- NULL
     info$sampling <- NULL
     info$errorbars <- T
-    info$last_optionSecondary <- NULL
+    info$last_optionSecondary <- 0
     info$trendRef <- NULL
     info$PolyRef <- NULL
     info$periodRef <- NULL
