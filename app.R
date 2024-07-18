@@ -2263,6 +2263,7 @@ server <- function(input,output,session) {
                          db1 = "stop", db2 = "stop",
                          trendRef = F, PolyRef = F, periodRef = F, noLS = F,
                          plateFile = NULL,
+                         last_eulerType = 0, last_giaType = 0,
                          overview = F)
   
   # 4. database:
@@ -4001,7 +4002,8 @@ server <- function(input,output,session) {
               isolate({
                 if (all(is.na(db1[[info$db1]][[paste0("res", input$tab)]])) ||
                     length(trans$res) != length(db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])]) ||
-                    any(trans$res - db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])] != 0)) {
+                    any(trans$res - db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])] != 0) ||
+                    any(trans$mod - db1[[info$db1]][[paste0("mod", input$tab)]][!is.na(db1[[info$db1]][[paste0("mod", input$tab)]])] != 0)) {
                   db1[[info$db1]][[paste0("res", input$tab)]] <- NA
                   db1[[info$db1]][[paste0("mod", input$tab)]] <- NA
                   db1[[info$db1]][[paste0("reserror", input$tab)]] <- NA
@@ -6095,7 +6097,7 @@ server <- function(input,output,session) {
   # Control plots ####
   output$showHeader <- renderText({
     req(input$header, file$primary)
-    if (length(trans$x) > 0 && input$format < 4) {
+    if (input$tab < 4 && length(trans$x) > 0 && input$format < 4) {
       if (input$sigmas) {
         header <- data.frame(x = sprintf("%.*f", info$decimalsx, trans$x), y = sprintf("%.*f", info$decimalsy, trans$y), sy = sprintf("%.*f", info$decimalsy, trans$sy))[1:input$lines,]
       } else {
@@ -6104,6 +6106,8 @@ server <- function(input,output,session) {
       tmpfile <- tempfile()
       write.table(header, file = tmpfile, append = F, sep = "\t", quote = F, na = "NA", row.names = F, col.names = F)
       noquote(paste(readLines(con = tmpfile, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
+    } else if (input$tab == 5) {
+      NULL
     } else {
       noquote(paste(readLines(con = file$primary$datapath, n = input$lines, ok = T, warn = F, skipNul = F, encoding = "UTF8"), collapse = "\n"))
     }
@@ -7744,6 +7748,14 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 200)
+  observeEvent(input$eulerType, {
+    req(db1[[info$db1]])
+    if (input$eulerType == 2 || info$last_eulerType == 2) {
+      db1[[info$db1]]$mod1 <- db1[[info$db1]]$mod2 <- NULL
+      db1[[info$db1]]$res1 <- db1[[info$db1]]$res2 <- NULL
+    }
+    info$last_eulerType <- input$eulerType
+  })
   
   # Observe GIA ####
   observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2), {
@@ -7848,6 +7860,14 @@ server <- function(input,output,session) {
     } else {
       trans$gia2 <- NULL
     }
+  })
+  observeEvent(input$giaType, {
+    req(db1[[info$db1]])
+    if (input$giaType == 2 || info$last_giaType == 2) {
+      db1[[info$db1]]$mod3 <- NULL
+      db1[[info$db1]]$res3 <- NULL
+    }
+    info$last_giaType <- input$giaType
   })
 
   # Observe wavelet ####
@@ -8329,6 +8349,8 @@ server <- function(input,output,session) {
     trans$mle <- F
     trans$verif <- NULL
     trans$pattern <- NULL
+    db1[[info$db1]]$mod1 <- db1[[info$db1]]$mod2 <- db1[[info$db1]]$mod3 <- NULL
+    db1[[info$db1]]$res1 <- db1[[info$db1]]$res2 <- db1[[info$db1]]$res3 <- NULL
     updateCheckboxInput(session, inputId = "mle", value = F)
     if (isTruthy(input$correct_waveform)) {
       updateCheckboxInput(session, inputId = "correct_waveform", value = F)
@@ -10359,13 +10381,15 @@ server <- function(input,output,session) {
       }
       # Extracting station coordinates
       coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,skip,sep))
-      lat <- coordinates[4]
-      lon <- coordinates[5]
-      shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
-      shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
-      shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
-      shinyjs::delay(100, updateTextInput(session, inputId = "station_lat", value = coordinates[4]))
-      shinyjs::delay(100, updateTextInput(session, inputId = "station_lon", value = coordinates[5]))
+      if (isTruthy(coordinates)) {
+        lat <- coordinates[4]
+        lon <- coordinates[5]
+        shinyjs::delay(100, updateTextInput(session, inputId = "station_x", value = coordinates[1]))
+        shinyjs::delay(100, updateTextInput(session, inputId = "station_y", value = coordinates[2]))
+        shinyjs::delay(100, updateTextInput(session, inputId = "station_z", value = coordinates[3]))
+        shinyjs::delay(100, updateTextInput(session, inputId = "station_lat", value = coordinates[4]))
+        shinyjs::delay(100, updateTextInput(session, inputId = "station_lon", value = coordinates[5]))
+      }
       # Fixing NEU/ENU if known
       if (isTruthy(url$server)) {
         disable("neuenu")
@@ -12442,11 +12466,11 @@ server <- function(input,output,session) {
       y0 <- db1[[info$db1]][[paste0("y",component)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
       y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
       ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
-      if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+      if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
         y0 <- y0 - trans$plate[component]*(x0 - median(x0, na.rm = T)) - median(y0, na.rm = T)
         y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
       }
-      if (isTruthy(trans$gia) && input$giaType == 2) {
+      if (component > 2 && isTruthy(trans$gia) && input$giaType == 2) {
         y0 <- y0 - trans$gia[component]*(x0 - median(x0, na.rm = T)) - median(y0, na.rm = T)
         y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
       }
@@ -12561,15 +12585,11 @@ server <- function(input,output,session) {
       yy <- median(y1[x1 > rangeX[1] & x1 < rangeX[2]], na.rm = T)
       centerx <- which(abs(x1 - xx) == min(abs(x1 - xx)))[1]
       centery <- which(abs(y1 - yy) == min(abs(y1 - yy)))[1]
-      if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+      if (component < 3 && input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
         rate <- trans$plate[component]
       }
-      if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-        if (exists("rate") && is.numeric(rate)) {
-          rate <- rate + trans$gia[component]
-        } else {
-          rate <- trans$gia[component]
-        }
+      if (component > 2 && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+        rate <- trans$gia[component]
       }
       if (input$tab == 4 && exists("rate") && is.numeric(rate)) {
         lines(c(x1[1],x1[length(x1)]),c(y1[centery] + rate*(x1[1] - x1[centerx]),y1[centery] + rate*(x1[length(x1)] - x1[centerx])), col = SARIcolors[4], lwd = 3)
