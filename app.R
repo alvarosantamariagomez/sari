@@ -526,6 +526,21 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                 });
                             '),
                   
+                  # scrolling a block of the left panel to the center of the screen when it is open
+                  tags$script('
+                                document.addEventListener("click", function(event) {
+                                    if (event.target.parentElement) {
+                                            if (event.target.parentElement.getAttribute("data-toggle") === "collapse") {
+                                            const id = event.target.parentElement.href.split("#")[1];
+                                            const target = document.getElementById(id);
+                                            setTimeout(function() {
+                                                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                                            }, 300);
+                                        }
+                                    }
+                                });
+                              '),
+                  
                   # update fileInput file names from URL
                   tags$script(HTML(update_series)),
                   tags$script(HTML(update_series2)),
