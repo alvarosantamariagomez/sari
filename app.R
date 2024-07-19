@@ -397,7 +397,7 @@ tab3Contents <- function(series) {
              color.background = getOption("spinner.color.background", default = "#ffffff"),
              custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
-           div(style = "margin-top: 1em;",
+           div(style = "margin-top: 1.5em;",
                div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2"))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = paste0("plot",tabNum,"2_2click"), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
@@ -408,7 +408,7 @@ tab3Contents <- function(series) {
                  custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
                )
            ),
-           div(style = "margin-top: 1em;",
+           div(style = "margin-top: 1.5em;",
                div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3"))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = paste0("plot",tabNum,"3_2click"), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
@@ -3466,7 +3466,7 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
         par(new = T)
       }
-      plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T)
+      plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T,info$tunits.label)
       points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
       xx <- median(trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
       yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
@@ -4388,7 +4388,7 @@ server <- function(input,output,session) {
                                units <- ""
                              }
                              title <- "Instantaneous linear rate"
-                             plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol,F)
+                             plot_series(trans$x,trans$kalman[,2],trans$kalman_unc[,2],ranges$x2,ranges$y4,T,"",input$symbol,F,"")
                              title(ylab = units)
                              title(title, line = 3)
                            }
@@ -4451,7 +4451,7 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
-    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
+    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol,T,"")
     title(title, line = 3)
     abline(h = 0, col = SARIcolors[2], lwd = 3)
     if (input$traceLog && length(info$log) > 0) {
@@ -5386,12 +5386,12 @@ server <- function(input,output,session) {
           sigmas <- T
         }
         if (input$series2filter == 1) {
-          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
+          plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol,T,"")
         } else if (input$series2filter == 2 && length(trans$res) > 0) {
           if (input$fitType == 1) {
-            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
+            plot_series(trans$x,trans$filterRes,trans$reserror,ranges$x2,ranges$y2,sigmas,"",input$symbol,T,"")
           } else if (input$fitType == 2) {
-            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol,T)
+            plot_series(trans$x,trans$filterRes,trans$sy,ranges$x2,ranges$y2,sigmas,"",input$symbol,T,"")
           }
         }
         title(title, line = 3)
@@ -12479,7 +12479,7 @@ server <- function(input,output,session) {
     return(changes)
   }
   #
-  plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol,unit) {
+  plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol,unit,xlab) {
     if (symbol == 0) {
       s <- 'p'
     } else if (symbol == 1) {
@@ -12509,7 +12509,7 @@ server <- function(input,output,session) {
       const <- 0
       ylab <- units
     }
-    plot(x, y, type = s, pch = 20, lwd = 2, xlab = "", ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
+    plot(x, y, type = s, pch = 20, lwd = 2, xlab = xlab, ylab = ylab, xlim = rangex, ylim = rangey, main = title, yaxt = "n")
     p <- par("usr")[3:4] # min/max Y-axis values
     pout <- base::pretty(p - const) # round new min/max Y-axis values
     pin <- pout + const
@@ -12681,7 +12681,7 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
         par(new = T)
       }
-      plot_series(x1,y1,sy1,rangeX,rangeY,sigmas,title,input$symbol,T)
+      plot_series(x1,y1,sy1,rangeX,rangeY,sigmas,title,input$symbol,T,info$tunits.label)
       points(xe, ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
       output[[paste0("component",input$tab,component)]] <- renderText(sub(" component", "", info$components[component]))
       xx <- median(x1[x1 > rangeX[1] & x1 < rangeX[2]], na.rm = T)
