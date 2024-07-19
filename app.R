@@ -2388,8 +2388,8 @@ server <- function(input,output,session) {
             ))
           }
         })
-        if (messages > 2) cat(file = stderr(), mySession, "Screen size", input$size[1], "x", input$size[2], "\n")
-        if (messages > 2) cat(file = stderr(), mySession, "Pixel ratio", info$pixelratio, "\n")
+        if (messages > 5) cat(file = stderr(), mySession, "Screen size", input$size[1], "x", input$size[2], "\n")
+        if (messages > 5) cat(file = stderr(), mySession, "Pixel ratio", info$pixelratio, "\n")
         if (messages > 2) cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
         shinyjs::hide("localDir")
         # welcome message on screen (deprecated)
@@ -7000,7 +7000,7 @@ server <- function(input,output,session) {
     } else if (input$tab == 5) {
       info$width <- session$clientData$output_plot51_width
     }
-    if (messages > 2) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
+    if (messages > 5) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
   }, priority = 2000)
 
   # Observe URL ####
