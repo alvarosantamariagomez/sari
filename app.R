@@ -2986,13 +2986,13 @@ server <- function(input,output,session) {
       table2$sy1 <- table2sy_tmp
     }
     
-    # trans$y0  = all points from the original input series (including deleted with status NA)
-    # trans$y   = points with TRUE status
-    # trans$sy  = sigmas with TRUE status
-    # trans$ye  = points with FALSE status (excluded)
-    # trans$sye = sigmas with FALSE status (excluded)
-    # trans$y2  = points from secondary series (independent)
-    # trans$sy2 = sigmas from secondary series (independent)
+    # trans$y0  : all points from the original input series (including deleted with status NA)
+    # trans$y   : points with TRUE status
+    # trans$sy  : sigmas with TRUE status
+    # trans$ye  : points with FALSE status (excluded)
+    # trans$sye : sigmas with FALSE status (excluded)
+    # trans$y2  : points from secondary series (independent)
+    # trans$sy2 : sigmas from secondary series (independent)
 
     # set time axis
     if (!isTruthy(input$tunits) || input$tunits == 3) {
@@ -12584,6 +12584,16 @@ server <- function(input,output,session) {
         sigmas <- T
       }
       rangeX <- range(x0)
+      if (input$tab == 4 && input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+        x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
+        if (isTruthy(input$fullSeries)) {
+          info$minx <- min(x0, x2, na.rm = T)
+          info$maxx <- max(x0, x2, na.rm = T)
+          rangeX <- c(info$minx, info$maxx)
+        } else {
+          rangeX <- range(x0)
+        }
+      }
       if (isTruthy(ranges$x1) && (ranges$x1[1] > rangeX[1] || ranges$x1[2] < rangeX[2])) {
         if (any(!is.na(y1[x1 > ranges$x1[1] & x1 < ranges$x1[2]]))) {
           shinyjs::show(paste0("zoomin",input$tab))
@@ -12611,7 +12621,6 @@ server <- function(input,output,session) {
         } else {
           component2 <- component
         }
-        x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
         y2 <- db2[[info$db2]][[paste0("y",component2)]]
         if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
           y2 <- y2 - trans$plate2[component2]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
