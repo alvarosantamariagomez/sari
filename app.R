@@ -2557,6 +2557,19 @@ server <- function(input,output,session) {
       x <- db1[[info$db1]][[paste0("x",input$tunits)]][statusAll]
       rangex <- range(x)
       seriesInfo(x)
+      if (!isTruthy(info$decimalsy)) {
+        info$decimalsy <- decimalplaces(c(db1[[info$db1]]$y1,db1[[info$db1]]$y2,db1[[info$db1]]$y3), "y")  
+        if (!isTruthy(info$decimalsy)) {
+          info$decimalsy <- 4
+        }
+        if (isTruthy(info$scientific)) {
+          info$digits <- info$decimalsy + 1
+          info$nsmall <- 0
+        } else {
+          info$digits <- 0
+          info$nsmall <- info$decimalsy
+        }
+      }
       removed <- sum(db1[[info$db1]]$status1 %in% F, db1[[info$db1]]$status2 %in% F, db1[[info$db1]]$status3 %in% F)
     } else {
       rangex <- range(trans$x)
@@ -8397,19 +8410,34 @@ server <- function(input,output,session) {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = db1$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
                          }
                        } else {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = db1$original$sy1, sy2 = db1$original$sy2, sy3 = db1$original$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
+                           db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
+                           db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
+                           db1$resampled$sy2 <- as.numeric(formatting(db1$resampled$sy2,0))
+                           db1$resampled$sy3 <- as.numeric(formatting(db1$resampled$sy3,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
+                           db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
                          }
-                         
                        }
                      })
         if (input$tunits == 1) {
@@ -8504,7 +8532,6 @@ server <- function(input,output,session) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
                          }
-                         
                        }
                      })
         if (input$tunits == 1) {
@@ -8591,7 +8618,6 @@ server <- function(input,output,session) {
         disable("format2")
       }
     }
-    req(input$optionSecondary > 0)
     if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary file\n")
     digest(2)
   }, priority = 8)
@@ -8675,6 +8701,8 @@ server <- function(input,output,session) {
             sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             status1 <- status1
           })[,c("x1","x2","x3","y1","sy1","status1")])
+          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
         } else {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
             if (info$format2 == 4) {
@@ -8703,6 +8731,12 @@ server <- function(input,output,session) {
               status3 <- status3
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
+          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
+          table_common$y2 <- as.numeric(formatting(table_common$y2,0))
+          table_common$y3 <- as.numeric(formatting(table_common$y3,0))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
+          table_common$sy2 <- as.numeric(formatting(table_common$sy2,0))
+          table_common$sy3 <- as.numeric(formatting(table_common$sy3,0))
         }
       } else if (input$optionSecondary == 3) {
         if (info$format == 4) {
@@ -8713,6 +8747,8 @@ server <- function(input,output,session) {
             sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
             status1 <- status1
           })[,c("x1","x2","x3","y1","sy1")])
+          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
         } else {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
             if (info$format2 == 4) {
@@ -8741,6 +8777,12 @@ server <- function(input,output,session) {
               status3 <- status3
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
+          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
+          table_common$y2 <- as.numeric(formatting(table_common$y2,0))
+          table_common$y3 <- as.numeric(formatting(table_common$y3,0))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
+          table_common$sy2 <- as.numeric(formatting(table_common$sy2,0))
+          table_common$sy3 <- as.numeric(formatting(table_common$sy3,0))
         }
       }
       showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
@@ -9234,13 +9276,16 @@ server <- function(input,output,session) {
         } else if (isTruthy(input$same_axis)) {
           y2.range <- y.range
         } else {
-          y2.range <- range(y12[x2 >= x.range[1] & x2 <= x.range[2]])
+          y2.range <- suppressWarnings(range(y12[x2 >= x.range[1] & x2 <= x.range[2]]))
+        }
+        if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
+          y2.range <- range(y12)
         }
         plot(x2, y12, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
-          shade <- adjustcolor(color, alpha.f = alfa)
+          shade <- adjustcolor(color, alpha.f = alfa) 
           ba <- y12 + sy12
           bb <- y12 - sy12
           polygon(c(x2, rev(x2)), c(ba, rev(bb)), col = shade, border = NA)
@@ -9320,7 +9365,10 @@ server <- function(input,output,session) {
         } else if (isTruthy(input$same_axis)) {
           y2.range <- y.range
         } else {
-          y2.range <- range(y22[x2 >= x.range[1] & x2 <= x.range[2]])
+          y2.range <- suppressWarnings(range(y22[x2 >= x.range[1] & x2 <= x.range[2]]))
+        }
+        if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
+          y2.range <- range(y12)
         }
         plot(x2, y22, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
@@ -9407,7 +9455,10 @@ server <- function(input,output,session) {
         } else if (isTruthy(input$same_axis)) {
           y2.range <- y.range
         } else {
-          y2.range <- range(y32[x2 >= x.range[1] & x2 <= x.range[2]])
+          y2.range <- suppressWarnings(range(y32[x2 >= x.range[1] & x2 <= x.range[2]]))
+        }
+        if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
+          y2.range <- range(y12)
         }
         plot(x2, y32, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
@@ -12955,10 +13006,10 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
         if (isTruthy(trans$midas_vel2)) {
-          cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-          cat(paste('# MIDAS:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
         } else {
-          cat(paste('# MIDAS:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
       if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
