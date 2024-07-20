@@ -3826,6 +3826,7 @@ server <- function(input,output,session) {
               trans$res <- NULL
               trans$mod <- NULL
               trans$LScoefs <- NULL
+              trans$names <- NULL
               showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
             } else {
               info$noLS <- T
@@ -3843,12 +3844,15 @@ server <- function(input,output,session) {
           trans$res <- NULL
           trans$mod <- NULL
           trans$LScoefs <- NULL
+          trans$names <- NULL
         }
       }
     } else {
       trans$results <- NULL
       trans$res <- NULL
       trans$mod <- NULL
+      trans$LScoefs <- NULL
+      trans$names <- NULL
     }
     #
     if (isTruthy(debug)) {
@@ -11307,7 +11311,7 @@ server <- function(input,output,session) {
             if (nchar(refe) > 0 && !is.na(as.numeric(refe))) {
               if (identical(E0,character(0)) || identical(TE0,character(0)) || is.na(E0[i]) || is.na(TE0[i]) || E0[i] == "" || TE0[i] == "" || E0[i] == " " || TE0[i] == " ") {
                 update <- 1
-                if (isTruthy(match(paste0("E",i), trans$names))) {
+                if (isTruthy(trans$LScoefs) && isTruthy(match(paste0("E",i), trans$names))) {
                   E0[i] <- trans$LScoefs[match(paste0("E",i), trans$names),1]
                   TE0[i] <- trans$LScoefs[match(paste0("TauE",i), trans$names),1]
                   eE0[i] <- trans$LScoefs[match(paste0("E",i), trans$names),2]
@@ -11472,7 +11476,7 @@ server <- function(input,output,session) {
             if (nchar(refl) > 0 && !is.na(as.numeric(refl))) {
               if (identical(L0,character(0)) || identical(TL0,character(0)) || is.na(L0[i]) || is.na(TL0[i]) || L0[i] == "" || TL0[i] == "" || L0[i] == " " || TL0[i] == " ") {
                 update <- 1
-                if (isTruthy(match(paste0("L",i), trans$names))) {
+                if (isTruthy(trans$LScoefs) && isTruthy(match(paste0("L",i), trans$names))) {
                   L0[i] <- trans$LScoefs[match(paste0("L",i), trans$names),1]
                   TL0[i] <- trans$LScoefs[match(paste0("TauL",i), trans$names),1]
                   eL0[i] <- abs(as.numeric(trans$LScoefs[match(paste0("L",i), trans$names),2]))
