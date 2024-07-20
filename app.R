@@ -7902,24 +7902,27 @@ server <- function(input,output,session) {
 
   # Observe wavelet ####
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
-    req(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet)
-    removeNotification("bad_wavelet")
-    if (isTruthy(inputs$max_wavelet) && isTruthy(inputs$min_wavelet) && isTruthy(as.numeric(inputs$res_wavelet)) && isTruthy(as.numeric(inputs$loc_wavelet)) && inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && as.numeric(inputs$res_wavelet) > 0 && as.numeric(inputs$loc_wavelet) >= info$sampling && as.numeric(inputs$loc_wavelet) <= info$rangex/2) {
-      removeNotification("time_wavelet")
-      num_scale <- as.integer((inputs$max_wavelet - inputs$min_wavelet)/as.numeric(inputs$res_wavelet))
-      num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
-      time_needed <- ceiling(0.000588*num_scale*num_epochs/60)
-      if (time_needed > 29) {
-        if (isTruthy(info$local)) {
-          shinyjs::delay(500, showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain()))
+    if (isTruthy(inputs$min_wavelet) && isTruthy(inputs$max_wavelet) && isTruthy(inputs$res_wavelet) && isTruthy(inputs$loc_wavelet)) {
+      removeNotification("bad_wavelet")
+      if (isTruthy(inputs$max_wavelet) && isTruthy(inputs$min_wavelet) && isTruthy(as.numeric(inputs$res_wavelet)) && isTruthy(as.numeric(inputs$loc_wavelet)) && inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && as.numeric(inputs$res_wavelet) > 0 && as.numeric(inputs$loc_wavelet) >= info$sampling && as.numeric(inputs$loc_wavelet) <= info$rangex/2) {
+        removeNotification("time_wavelet")
+        num_scale <- as.integer((inputs$max_wavelet - inputs$min_wavelet)/as.numeric(inputs$res_wavelet))
+        num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
+        time_needed <- ceiling(0.000588*num_scale*num_epochs/60)
+        if (time_needed > 29) {
+          if (isTruthy(info$local)) {
+            shinyjs::delay(500, showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain()))
+          } else {
+            shinyjs::delay(500, showNotification(HTML(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min.<br><br>WARNING: the server may kill the connection before the wavelet finishes!")), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "error", session = getDefaultReactiveDomain()))
+          }
         } else {
-          shinyjs::delay(500, showNotification(HTML(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min.<br><br>WARNING: the server may kill the connection before the wavelet finishes!")), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "error", session = getDefaultReactiveDomain()))
+          shinyjs::delay(500, showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain()))
         }
       } else {
-        shinyjs::delay(500, showNotification(paste0("The time needed to compute the wavelet with the current parameters is around ",time_needed," min."), action = NULL, duration = 10, closeButton = T, id = "time_wavelet", type = "warning", session = getDefaultReactiveDomain()))
+        showNotification(HTML(paste0("Invalid bounds to compute the wavelet.<br>Check the input values.")), action = NULL, duration = 10, closeButton = T, id = "bad_wavelet", type = "error", session = getDefaultReactiveDomain())
       }
     } else {
-      showNotification(HTML(paste0("Invalid bounds to compute the wavelet.<br>Check the input values.")), action = NULL, duration = 10, closeButton = T, id = "bad_wavelet", type = "error", session = getDefaultReactiveDomain())
+      updateRadioButtons(session, inputId = "waveletType", selected = 0)
     }
   })
 
