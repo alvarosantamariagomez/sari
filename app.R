@@ -9213,8 +9213,10 @@ server <- function(input,output,session) {
 
   # Observe hide tabs ####
   observeEvent(input$format, {
+    req(db1[[info$db1]])
     if (input$format == 4) { #1D
-      output$tabName1 <- renderText({ "1D series" })
+      updateTabsetPanel(session, inputId = "tab", selected = "1")
+      output$tabName1 <- renderText({ "Series" })
       hideTab(inputId = "tab", target = "2", session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "3", session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "4", session = getDefaultReactiveDomain())
@@ -10514,14 +10516,6 @@ server <- function(input,output,session) {
       } else if (input$separator == "3") {
         sep <- ";"
       }
-      if (isTruthy(info$format)) {
-        if (info$format == 4) {
-          updateTabsetPanel(session, inputId = "tab", selected = "1")
-        } else {
-          updateTabsetPanel(session, inputId = "tab", selected = "4")
-          info$tab <- 4
-        }
-      }
       # Getting primary series
       table <- NULL
       if (isTruthy(url$file)) {
@@ -10533,6 +10527,15 @@ server <- function(input,output,session) {
       }
       # Checking series values and time order
       if (!is.null(table)) {
+        if (isTruthy(info$format)) {
+          if (info$format == 4) {
+            updateTabsetPanel(session, inputId = "tab", selected = "1")
+            info$tab <- 1
+          } else {
+            updateTabsetPanel(session, inputId = "tab", selected = "4")
+            info$tab <- 4
+          }
+        }
         table <- table[order(table$x1),]
         if (any(diff(table$x1) <= 0)) {
           bad_x <- which(diff(table$x1) <= 0)
@@ -10559,8 +10562,8 @@ server <- function(input,output,session) {
       } else {
         shinyjs::delay(500, {
           showNotification("The input series is empty or has wrong format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
-          req(info$stop)
         })
+        req(info$stop)
       }
       if (is.null(table)) {
         showNotification(HTML("All records in the series were removed.<br> Check the series format."), action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
