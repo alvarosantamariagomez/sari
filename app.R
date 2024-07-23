@@ -541,6 +541,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                 });
                               '),
                   
+                  # closing the overview window if left open on exit
+                  tags$script('
+                              window.onbeforeunload = closingCode;
+                              function closingCode(){
+                                  if (typeof overview === "object") {
+                                      if (!overview.closed) {
+                                          overview.close();
+                                      }
+                                  }
+                                  return null;
+                              }
+                              '),
+                  
                   # update fileInput file names from URL
                   tags$script(HTML(update_series)),
                   tags$script(HTML(update_series2)),
@@ -2343,7 +2356,7 @@ server <- function(input,output,session) {
   observe({
     inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
     if (length(inputChanged) > 0 && messages > 5) {
-      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, paste(head(input[[input$changed]]), collapse = ", ")), "\n")
+      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
     }
     req(info$intro)
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
@@ -9522,6 +9535,7 @@ server <- function(input,output,session) {
       dev.off()
       info$overview <- T
       js$showPopup(sub(pattern = "www/", replacement = "", x = fileout))
+      js$checkPopup()
     }
   })
 
@@ -10197,7 +10211,9 @@ server <- function(input,output,session) {
     shinyjs::hide("zoomin2")
     shinyjs::hide("zoomin3")
     updateButton(session, inputId = "runKF", label = " Run KF", icon = icon("filter", class = NULL, lib = "font-awesome"), style = "default")
-    runjs('overview.close();')
+    if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
+      runjs('overview.close();')
+    }
   })
 
   # Observe hide buttons ####
