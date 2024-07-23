@@ -13825,9 +13825,11 @@ server <- function(input,output,session) {
           }
         }
       } else {
+        info$scientific <- F
         return(0)
       }
     } else {
+      info$scientific <- F
       return(0)
     }
   }
