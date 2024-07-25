@@ -12234,7 +12234,7 @@ server <- function(input,output,session) {
                     }
                     x1 <- apriori_x_after[apriori_x_after > forward - sample & apriori_x_after <= forward]
                     y1 <- flat[apriori_x_after > forward - sample & apriori_x_after <= forward]
-                    L0[i] <- coeff * (mean(y1) - mean(y0))
+                    L0[i] <- coeff * (mean(y0) - mean(y1))
                     sampling_tauL <- function(x) {
                       if (length(apriori_x_after[apriori_x_after > (span/x) - sample & apriori_x_after < span/x]) > 3) {
                         mean(apriori_x_after[apriori_x_after > (span/x) - sample & apriori_x_after < span/x])/(exp(mean(flat[apriori_x_after > (span/x) - sample & apriori_x_after < span/x])/as.numeric(L0[i])) - 1)
