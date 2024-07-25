@@ -6060,6 +6060,14 @@ server <- function(input,output,session) {
                   }
                   NULL
                 }
+                trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                # updating the overview plot
+                js$checkPopup()
+                shinyjs::delay(100, {
+                  if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
+                    shinyjs::click("plotAll")
+                  }
+                })
               }
             })
           } else {
