@@ -263,11 +263,10 @@ tabContents <- function(tabNum) {
                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
-           verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F),
            conditionalPanel(
-             condition = "output.rate",
+             condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
              withSpinner(
-               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
+               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -275,10 +274,11 @@ tabContents <- function(tabNum) {
                custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
+           verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F),
            conditionalPanel(
-             condition = "input.filter == true && input.low !== input.high && output.residuals == false && input.series2filter == 1",
+             condition = "output.rate",
              withSpinner(
-               plotOutput(paste0("vondrak",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "vondrak_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
+               plotOutput(paste0("rate",tabNum), click = "plot_1click", dblclick = "rate_2click", brush = brushOpts(id = "rate_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
