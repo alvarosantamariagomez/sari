@@ -3552,12 +3552,7 @@ server <- function(input,output,session) {
         shinyjs::hide(paste0("zoomin",input$tab))
       }
       # updating the overview plot
-      js$checkPopup()
-      shinyjs::delay(100, {
-        if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
-          shinyjs::click("plotAll")
-        }
-      })
+      updateOverview()
       # print clicks on plot
       output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
         if (length(input$plot_1click$x) > 0) {
@@ -6036,6 +6031,8 @@ server <- function(input,output,session) {
                   if (isTruthy(trans$unc)) {
                     if (isTruthy(unc_pl) && unc_pl > 0) {
                       trans$LScoefs[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                      trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                      updateOverview() # updating the overview plot
                       trans$results$coefficients[2,2] <- sqrt(unc_pl^2 + trans$unc^2)
                       trans$results$coefficients[2,3] <- abs(trans$results$coefficients[2,1]) / trans$results$coefficients[2,2]
                       trans$results$coefficients[2,4] <- 2 * pt(abs(trans$results$coefficients[2,3]), trans$results$df , lower.tail = F)[2]
@@ -6051,6 +6048,8 @@ server <- function(input,output,session) {
                   if (isTruthy(trans$unc)) {
                     if (isTruthy(trans$LScoefs[2,2])) {
                       trans$LScoefs[2,2] <- trans$unc
+                      trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                      updateOverview() # updating the overview plot
                     }
                     if (isTruthy(trans$results$coefficients[2,2])) {
                       trans$results$coefficients[2,2] <- trans$unc
@@ -6060,14 +6059,6 @@ server <- function(input,output,session) {
                   }
                   NULL
                 }
-                trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
-                # updating the overview plot
-                js$checkPopup()
-                shinyjs::delay(100, {
-                  if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
-                    shinyjs::click("plotAll")
-                  }
-                })
               }
             })
           } else {
@@ -12836,12 +12827,7 @@ server <- function(input,output,session) {
         }
       }
       if (component == 3) {
-        js$checkPopup()
-        shinyjs::delay(100, {
-          if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
-            shinyjs::click("plotAll")
-          }
-        })
+        updateOverview()
       }
     }
   }
@@ -14951,6 +14937,15 @@ server <- function(input,output,session) {
     } else if (input$tunits == 2) {
       info$tunits.label <- "weeks"
     }
+  }
+  #
+  updateOverview <- function() {
+    js$checkPopup()
+    shinyjs::delay(100, {
+      if (isTruthy(info$overview) && isTRUE(isolate(input$overview))) {
+        shinyjs::click("plotAll")
+      }
+    })
   }
 }
 
