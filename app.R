@@ -8958,7 +8958,7 @@ server <- function(input,output,session) {
     info$last_optionSecondary <- input$optionSecondary
     # providing remote secondary series
     output$fileSeries2 <- renderUI({
-      if (input$optionSecondary == 1 && isTruthy(url$station2) && isTruthy(file$secondary$newname)) {
+      if (input$optionSecondary > 0 && isTruthy(url$station2) && isTruthy(file$secondary$newname)) {
         tags$a(href = sub(pattern = "www/", replacement = "", x = file$secondary$newpath), "Show secondary series file", title = "Open the file of the secondary series in a new tab", target = "_blank", download = file$secondary$newname)
       } else {
         NULL
