@@ -3945,7 +3945,7 @@ server <- function(input,output,session) {
         sy <- trans$sy
         if (any(sy <= 0) || any(is.na(sy))) {
           showNotification(HTML("Some errorbar values are not valid.<br>No weighting applied."), action = NULL, duration = 10, closeButton = T, id = "bad_errorbar", type = "error", session = getDefaultReactiveDomain())
-          sy <- rep(1, length(y))
+          sy <- rep(0.01, length(y))
           updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
         }
         weights <- 1/(sy^2)
@@ -13081,12 +13081,11 @@ server <- function(input,output,session) {
       if (input$fitType == 1 && length(trans$results) > 0) {
         cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
         for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
-          max_decimals <- signifdecimal(trans$LScoefs[i,2], F) + 2
-          cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1],1), '+/-', formatting(trans$LScoefs[i,2],1)), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1],2), '+/-', formatting(trans$LScoefs[i,2],2)), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$results$sinusoidales)) {
           for (i in 1:dim(trans$results$sinusoidales)[1]) {
-            cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],1), '+/-', formatting(trans$results$sinusoidales[i,3],1), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
+            cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],2), '+/-', formatting(trans$results$sinusoidales[i,3],2), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
           } 
         }
       } else if (input$fitType == 2 && length(trans$kalman) > 0) {
@@ -13095,24 +13094,24 @@ server <- function(input,output,session) {
         } else if (input$kf == 2) {
           cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
         }
-        cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),1), '+/-', formatting(colMeans(trans$kalman_unc),1)), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,1), '+/-', formatting(trans$kalman_info$error,1)), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),2), '+/-', formatting(colMeans(trans$kalman_unc),2)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,2), '+/-', formatting(trans$kalman_info$error,2)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),2))), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Measurement noise:', formatting(inputs$ObsError,2), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (length(trans$offsetEpochs) > 0) {
         cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
         if (isTruthy(trans$midas_vel2)) {
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel2,1), '+/-', formatting(trans$midas_sig2,1), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,2), '+/-', formatting(trans$midas_sig,2), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel2,2), '+/-', formatting(trans$midas_sig2,2), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
         } else {
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,1), '+/-', formatting(trans$midas_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,2), '+/-', formatting(trans$midas_sig,2), units), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
       if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
-        cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,1), '+/-', formatting(trans$entropy_sig,1), units), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,2), '+/-', formatting(trans$entropy_sig,2), units), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (input$waveform && inputs$waveformPeriod > 0) {
         cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
@@ -13135,16 +13134,16 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
         if (isTruthy(trans$noise[1])) {
-          cat(paste('# Noise: WH', formatting(trans$noise[1],1), '+/-', formatting(trans$noise[2],1), unit), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: WH', formatting(trans$noise[1],2), '+/-', formatting(trans$noise[2],2), unit), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[3])) {
-          cat(paste('# Noise: FL', formatting(trans$noise[3],1), '+/-', formatting(trans$noise[4],1), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: FL', formatting(trans$noise[3],2), '+/-', formatting(trans$noise[4],2), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[5])) {
-          cat(paste('# Noise: RW', formatting(trans$noise[5],1), '+/-', formatting(trans$noise[6],1), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: RW', formatting(trans$noise[5],2), '+/-', formatting(trans$noise[6],2), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[7])) {
-          cat(paste('# Noise: PL', formatting(trans$noise[7],1), '+/-', formatting(trans$noise[8],1), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: PL', formatting(trans$noise[7],2), '+/-', formatting(trans$noise[8],2), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[9])) {
           cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, digits = 0, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
@@ -13190,11 +13189,6 @@ server <- function(input,output,session) {
       }
     }
     req(OutPut$df)
-    if (isTruthy(info$scientific)) {
-      digits <- info$decimalsy
-    } else {
-      digits <- 0
-    }
     OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx)
     if (input$tab < 4) {
       OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
@@ -13202,9 +13196,9 @@ server <- function(input,output,session) {
         OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
       }
     } else if (input$tab == 5) {
-      OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],0)
+      OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],1)
       if (isTruthy(input$sigmas)) {
-        OutPut$df[,c(5,6,7)] <- formatting(OutPut$df[,c(5,6,7)],0)
+        OutPut$df[,c(5,6,7)] <- formatting(OutPut$df[,c(5,6,7)],1)
       }
     }
     if (input$tab < 4) {
@@ -14891,15 +14885,22 @@ server <- function(input,output,session) {
   }
   #
   formatting <- function(x, y) {
-    # width <- nchar(format(x, nsmall = info$nsmall, digits = info$digits, scientific = info$scientific, trim = F))
-    # width <- max(width + 1 - 1*grepl("^-", x, perl = T, ))
     width <- NULL
+    x <- as.numeric(x)
+    intgr <- as.integer(x)
+    x <- x - intgr
     if (info$scientific) {
       extra_dec <- 0
     } else {
       extra_dec <- y
     }
-    return(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits, scientific = info$scientific, trim = F, width = width))
+    if (length(x) > 1) {
+      extra_dig <- 0
+      return(format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, digits = 0, scientific = info$scientific, trim = F, width = width))
+    } else {
+      extra_dig <- y
+      return(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)))
+    }
   }
   #
   debugMem <- function() {
