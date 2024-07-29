@@ -5712,7 +5712,7 @@ server <- function(input,output,session) {
                              slope <- -4
                            }
                            apriori <- c(apriori, slope) # a priori spectral index (= k - 3)
-                           typsize <- c(typsize, 3)
+                           typsize <- c(typsize, 3) # max step scale: large enough to get the optimum quickly, but not very large to have numerical problems with the hessian; somewhere between 0.5 and 3
                            upper <- c(upper, -3) # max expected spectral index (= k - 3)
                            lower <- c(lower, -7) # min expected spectral index (= k - 3)
                          }
@@ -11027,7 +11027,7 @@ server <- function(input,output,session) {
               }
               extracted$x1 <- as.numeric(sprintf("%.*f", 1, tableAll[,1]))
               extracted$x2 <- as.numeric(sprintf("%.*f", 2, difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
-              extracted$x3 <- as.numeric(sprintf("%.*f", 3, tableAll[,9]))
+              extracted$x3 <- as.numeric(sprintf("%.*f", 4, tableAll[,9]))
             } else if (server == "EARTHSCOPE") {
               if (series == 1) {
                 info$tunits.known1 <- T
