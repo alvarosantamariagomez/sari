@@ -8358,6 +8358,14 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "tunits", selected = 3)
       url$server <- "JPL"
       url$file <- file$primary
+    } else if (grepl("rlrdata", file$primary$name, perl = T) && grepl(";", header, perl = T)) {
+      updateRadioButtons(inputId = "format", selected = 4)
+      updateSelectInput(inputId = "separator", selected = 3)
+      updateCheckboxInput(inputId = "sigmas", value = F)
+      updateRadioButtons(inputId = "sunits", selected = 2)
+      updateRadioButtons(inputId = "tunits", selected = 3)
+      url$server <- "PSMSL"
+      url$file <- file$primary
     } else {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 0)
@@ -11340,12 +11348,18 @@ server <- function(input,output,session) {
       if (isTruthy(server)) {
         if (server == "PSMSL") {
           stationsFromPSMSL <- try(read.table(file = "www/PSMSL_database.txt", sep = ";"), silent = T)
-          tableAll <- stationsFromPSMSL[grepl(station, stationsFromPSMSL$V2), c(3,4)]
-          shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
-          lat <- as.numeric(tableAll[1,1])
-          lon <- as.numeric(tableAll[1,2])
-          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
-          coordinates <- c(coordinates,lat,lon)
+          if (isTruthy(station)) {
+            tableAll <- stationsFromPSMSL[grepl(station, stationsFromPSMSL$V2), c(3,4)]  
+          } else {
+            tableAll <- stationsFromPSMSL[stationsFromPSMSL$V1 == strsplit(file$primary$name, ".rlrdata", fixed = T),c(3,4)]
+          }
+          if (isTruthy(tableAll)) {
+            shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
+            lat <- as.numeric(tableAll[1,1])
+            lon <- as.numeric(tableAll[1,2])
+            coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+            coordinates <- c(coordinates,lat,lon)
+          }
         }
       }
     }
