@@ -6554,7 +6554,11 @@ server <- function(input,output,session) {
           enable("traceCustom")
           enable("permanent")
           enable("cut")
-          enable("loadSARI")
+          if (input$tab == 4 || input$tab == 5) {
+            disable("loadSARI")
+          } else {
+            enable("loadSARI")  
+          }
           enable("midas")
           enable("entropy")
           enable("reset")
