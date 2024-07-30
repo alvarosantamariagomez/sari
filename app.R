@@ -4395,7 +4395,7 @@ server <- function(input,output,session) {
                          trans$kalman_unc0[which(trans$kalman_unc0)] <- trans$kalman_unc
                          trans$kalman_unc0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
                          colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
-                         trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T),1)
+                         trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = T, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), 1)
                          trans$kalman_info <- m
                          trans$equation <- sub("y ~","Model =",m$model)
                          end.time <- Sys.time()
@@ -14899,21 +14899,26 @@ server <- function(input,output,session) {
   #
   formatting <- function(x, y) {
     width <- NULL
-    x <- as.numeric(x)
-    intgr <- as.integer(x)
-    x <- x - intgr
     if (info$scientific) {
       extra_dec <- 0
     } else {
       extra_dec <- y
     }
-    if (length(x) > 1) {
-      extra_dig <- 0
-      return(format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, digits = 0, scientific = info$scientific, trim = F, width = width))
+    if (is.list(x)) {
+      formatted <- format(x, digits = 2, scientific = info$scientific, trim = F, width = width)
     } else {
-      extra_dig <- y
-      return(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)))
+      x <- as.numeric(x)
+      intgr <- as.integer(x)
+      x <- x - intgr
+      if (length(x) > 1) {
+        extra_dig <- 0
+        formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, digits = 0, scientific = info$scientific, trim = F, width = width)
+      } else {
+        extra_dig <- y
+        formatted <- intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width))
+      }
     }
+    return(formatted)
   }
   #
   debugMem <- function() {
