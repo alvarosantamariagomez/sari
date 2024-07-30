@@ -5604,7 +5604,7 @@ server <- function(input,output,session) {
                          if (method == "NLM") {
                            attr(ll, "gradient") <- grad_global(x)  
                          }
-                         if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " Index =", k, " loglik =", sprintf("%f",ll), "\n")
+                         if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
                          ll/-1
                        }
                        grad_global <- function(x) {
@@ -5770,8 +5770,7 @@ server <- function(input,output,session) {
                              method <- "NLM"
                              fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
                                            fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
-                                           stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F
-                             )
+                                           stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F)
                              setProgress(0.75)
                              if (fitmle$code < 4) { # transforming nlm results into optim format
                                fitmle$convergence <- 0
