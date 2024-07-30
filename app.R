@@ -1459,14 +1459,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        conditionalPanel(
                                                                                          condition = "input.fitType == 2",
                                                                                          textInput(inputId = "Intercept0",
-                                                                                                   div("A priori intercept",
+                                                                                                   div("Initial intercept",
                                                                                                        helpPopup("Enter the initial state value for the intercept. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                    value = "")
                                                                                        )
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eIntercept0",
-                                                                                                 div("A priori intercept error",
+                                                                                                 div("Initial intercept error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the intercept.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                  value = "")
@@ -1477,14 +1477,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        conditionalPanel(
                                                                                          condition = "input.fitType == 2",
                                                                                          textInput(inputId = "Trend0",
-                                                                                                   div("A priori rate",
+                                                                                                   div("Initial rate",
                                                                                                        helpPopup("Enter the initial state value for the rate. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                    value = "")
                                                                                        )
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eTrend0",
-                                                                                                 div("A priori rate error",
+                                                                                                 div("Initial rate error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the rate.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                  value = "")
@@ -1518,7 +1518,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 condition = "input.fitType == 2",
                                                                                 column(6,
                                                                                        textInput(inputId = "S0",
-                                                                                                 div("A priori amplitude",
+                                                                                                 div("Initial amplitude",
                                                                                                      helpPopup("Enter the initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                  value = "")
                                                                                 )
@@ -1536,7 +1536,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eS0",
-                                                                                                 div("A priori amplitude error",
+                                                                                                 div("Initial amplitude error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for sine & cosine amplitudes.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                  value = "")
@@ -1566,13 +1566,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               fluidRow(
                                                                                 column(6,
                                                                                        textInput(inputId = "O0",
-                                                                                                 div("A priori offset",
+                                                                                                 div("Initial offset",
                                                                                                      helpPopup("Enter the initial state value for the offsets. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eO0",
-                                                                                                 div("A priori offset error",
+                                                                                                 div("Initial offset error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
                                                                                                  value = "")
                                                                                 )
@@ -1676,14 +1676,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             fluidRow(
                                                                               column(6,
                                                                                      textInput(inputId = "E0",
-                                                                                               div("A priori constant",
+                                                                                               div("Initial constant",
                                                                                                    helpPopup("Enter the initial value for the asymptotic offset for each decay.<br>
                                                                                                            If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "TE0",
-                                                                                               div("A priori decay rate",
+                                                                                               div("Initial decay rate",
                                                                                                    helpPopup("Enter the initial value for each exponential decay rate. If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                value = "")
                                                                               )
@@ -1693,14 +1693,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               fluidRow(
                                                                                 column(6,
                                                                                        textInput(inputId = "eE0",
-                                                                                                 div("A priori constant error",
+                                                                                                 div("Initial constant error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the asymptotic offsets.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eTE0",
-                                                                                                 div("A priori decay rate error",
+                                                                                                 div("Initial decay rate error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the exponential decay rates.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                  value = "")
@@ -1722,14 +1722,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             fluidRow(
                                                                               column(6,
                                                                                      textInput(inputId = "L0",
-                                                                                               div("A priori constant",
+                                                                                               div("Initial constant",
                                                                                                    helpPopup("Enter the initial value for the asymptotic offset of each decay.<br>
                                                                                                            If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                value = "")
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "TL0",
-                                                                                               div("A priori decay rate",
+                                                                                               div("Initial decay rate",
                                                                                                    helpPopup("Enter the initial value for the logarithmic decay rates. If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                value = "")
                                                                               )
@@ -1739,14 +1739,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               fluidRow(
                                                                                 column(6,
                                                                                        textInput(inputId = "eL0",
-                                                                                                 div("A priori constant error",
+                                                                                                 div("Initial constant error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the asymptotic offsets.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eTL0",
-                                                                                                 div("A priori decay rate error",
+                                                                                                 div("Initial decay rate error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the logarithmic decay rates.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
                                                                                                  value = "")
@@ -1781,13 +1781,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               fluidRow(
                                                                                 column(6,
                                                                                        textInput(inputId = "P0",
-                                                                                                 div("A priori polynomial",
+                                                                                                 div("Initial polynomial",
                                                                                                      helpPopup("Enter the initial state value for each polynomial coefficient. If empty, an approximate value will be used.", anchor = NULL)),
                                                                                                  value = "")
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eP0",
-                                                                                                 div("A priori polynomial error",
+                                                                                                 div("Initial polynomial error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for each polynomial coefficient.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = NULL)),
                                                                                                  value = "")
@@ -3220,7 +3220,10 @@ server <- function(input,output,session) {
           model <- grep("^# Model .*KF", comments, ignore.case = F, perl = T, value = T)
           if (nchar(model) > 18) {
             text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
-            aprioris <- grep("^# A priori: ", comments, ignore.case = F, perl = T, value = T)
+            aprioris <- grep("^# Initial: ", comments, ignore.case = F, perl = T, value = T)
+            if (!isTruthy(aprioris)) {
+              aprioris <- grep("^# A priori: ", comments, ignore.case = F, perl = T, value = T)
+            }
             process_noises <- grep("^# Process noise: ", comments, ignore.case = F, perl = T, value = T)
             mn <- strsplit(grep("^# Measurement noise: ", comments, ignore.case = F, perl = T, value = T), ":")
             if (isTruthy(mn) && length(mn) > 0) {
@@ -3263,7 +3266,10 @@ server <- function(input,output,session) {
               index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "PolyRef", value = text[index[1] + 1])
               updateTextInput(session, "PolyCoef", value = text[index[length(index)] + 3])
-              index <- grep(" A priori: P", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep(" Initial: P", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep(" A priori: P", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(inputId = "P0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(inputId = "eP0", value = paste(sapply(values, "[[", 3), collapse = ", "))
@@ -3281,7 +3287,10 @@ server <- function(input,output,session) {
                 units <- "y"
               }
               updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
-              index <- grep(" A priori: S", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep(" Initial: S", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep(" A priori: S", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(inputId = "S0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(inputId = "eS0", value = paste(sapply(values, "[[", 3), collapse = ", "))
@@ -3296,7 +3305,10 @@ server <- function(input,output,session) {
             }
             # Extracting Offset info
             if (grepl(" \\+ O", model, ignore.case = F, perl = T)) {
-              index <- grep("A priori: O", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep("Initial: O", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep("A priori: O", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(inputId = "O0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(inputId = "eO0", value = paste(sapply(values, "[[", 3), collapse = ", "))
@@ -3308,11 +3320,17 @@ server <- function(input,output,session) {
             if (grepl(" \\+ E", model, ignore.case = F, perl = T)) {
               index <- grep(" + E", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "ExponenRef", value = paste(text[index + 1], collapse = ","))
-              index <- grep(" A priori: E", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep(" Initial: E", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep(" A priori: E", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(session, "E0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(session, "eE0", value = paste(sapply(values, "[[", 3), collapse = ", "))
-              index <- grep(" A priori: TauE", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep(" Initial: TauE", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep(" A priori: TauE", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(session, "TE0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(session, "eTE0", value = paste(sapply(values, "[[", 3), collapse = ", "))
@@ -3322,11 +3340,17 @@ server <- function(input,output,session) {
             if (grepl(" \\+ L", model, ignore.case = F, perl = T)) {
               index <- grep(" + L", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "LogariRef", value = paste(text[index + 1], collapse = ","))
-              index <- grep(" A priori: L", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep(" Initial: L", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep(" A priori: L", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(session, "L0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(session, "eL0", value = paste(sapply(values, "[[", 3), collapse = ", "))
-              index <- grep(" A priori: TauL", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              index <- grep(" Initial: TauL", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              if (!isTruthy(index)) {
+                index <- grep(" A priori: TauL", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+              }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
               updateTextInput(session, "TL0", value = paste(sapply(values, "[[", 2), collapse = ", "))
               updateTextInput(session, "eTL0", value = paste(sapply(values, "[[", 3), collapse = ", "))
@@ -11499,7 +11523,7 @@ server <- function(input,output,session) {
         } else {
           ap_rate <- as.numeric(input$Trend0)
           if (input$eTrend0 == 0) {
-            showNotification(HTML("The a priori trend error is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "no_trend_error", type = "error", session = getDefaultReactiveDomain())
+            showNotification(HTML("The initial trend error is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "no_trend_error", type = "error", session = getDefaultReactiveDomain())
             req(info$stop)
           } else {
             sigma_rate <- as.numeric(input$eTrend0)
@@ -11532,7 +11556,7 @@ server <- function(input,output,session) {
           } else {
             ap_intercept <- as.numeric(input$Intercept0)
             if (input$eIntercept0 == 0) {
-              showNotification(HTML("The a priori intercept error is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "no_intercept_error", type = "error", session = getDefaultReactiveDomain())
+              showNotification(HTML("The initial intercept error is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "no_intercept_error", type = "error", session = getDefaultReactiveDomain())
               req(info$stop)
             } else {
               sigma_intercept <- as.numeric(input$eIntercept0)
@@ -11704,7 +11728,7 @@ server <- function(input,output,session) {
               apriori[[label_cos]] <- as.numeric(S0[i])
               if (eS0[i] == 0) {
                 info$run <- F
-                showNotification(HTML("At least one of the a priori sinusoidal amplitude errors is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
+                showNotification(HTML("At least one of the initial sinusoidal amplitude errors is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               } else {
                 error[[label_cos]] <- as.numeric(eS0[i])
@@ -11839,7 +11863,7 @@ server <- function(input,output,session) {
               apriori[[label_cos]] <- as.numeric(S0[i])
               if (eS0[i] == 0) {
                 info$run <- F
-                showNotification(HTML("At least one of the a priori sinusoidal amplitude errors is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
+                showNotification(HTML("At least one of the initial sinusoidal amplitude errors is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               } else {
                 error[[label_cos]] <- as.numeric(eS0[i])
@@ -13112,7 +13136,7 @@ server <- function(input,output,session) {
           cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
         }
         cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),2), '+/-', formatting(colMeans(trans$kalman_unc),2)), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# A priori:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,2), '+/-', formatting(trans$kalman_info$error,2)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Initial:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,2), '+/-', formatting(trans$kalman_info$error,2)), file = file_out, sep = "\n", fill = F, append = T)
         cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),2))), file = file_out, sep = "\n", fill = F, append = T)
         cat(paste('# Measurement noise:', formatting(inputs$ObsError,2), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
