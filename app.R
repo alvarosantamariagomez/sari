@@ -14934,6 +14934,9 @@ server <- function(input,output,session) {
     }
     if (is.list(x)) {
       formatted <- format(x, digits = 2, scientific = info$scientific, trim = F, width = width)
+    } else if (is.matrix(x)) {
+      extra_dig <- 0
+      formatted <- format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)
     } else {
       x <- as.numeric(x)
       intgr <- as.integer(x)
