@@ -1,5 +1,32 @@
 # **SARI changelog**
 
+# agosto 2024 [2024.08]
+
+### Fixed
+- correcting bug when merging two secondary series from local files
+- correcting the primary series with a secondary series, both in 1D format
+- loading a 1D series after a 3D series has been loaded and reset
+- updating the scientific format flag when resetting and loading a new series
+
+### Changed
+- replacing the series names by the product names in case of downloading several EOSTLS secondary series
+- automatically scrolling the blocks of the left panel to the center of the screen when opening them
+- setting the number of decimals in the series after averaging or merging them
+- clicking the tooltips opens the help file in a new browser tab in html format (F. Feriol)
+- adding a secondary time axis with different units to the top of the periodogram
+- deactivating the wavelet option when one of its parameters changes
+- updating the uncertainties on the overview plot when fitting a noise model
+- improving the estimate of the a priori value of the logarithmic offset
+- allowing downloading the file of the remote secondary series even after correcting the primary series
+- 'a priori' labels by 'initial' labels in the KF fit
+
+### Added
+- two new tabs (3D and residuals) in the visualization panel to plot all the coordinate components simultaneously (M. Métois, F. Feriol)
+- plotting the fitted model on the overview plot together with the estimated rate and the dispersion of the model residuals (M. Métois)
+- option to show & hide the location map with a spinner and height fitted to the screen size
+- setting the format of monthly PSMSL RLR series from local files automatically
+
+
 # julio 2024 [2024.07]
 
 ### Fixed
@@ -36,7 +63,7 @@
 - extracting the a priori value of the power-law spectral index from the power spectrum
 
 ### Added
-- separating the residual series into the contribution of the different noise model components with the Wiener filter 
+- separating the residual series into the contribution of the different noise model components with the Wiener filter [P Rebischung]
 - uploading local series in GeoCVS format from EarthScope and in PLH format from SIRGAS
 - converting the CNES Julian days into Modified Julian days
 - adding a random and anonymous session id to the log file

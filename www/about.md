@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version julio 2024'
+title: 'SARI documentation - version agosto 2024'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -59,8 +59,8 @@ This document describes the different options and functionalities implemented in
 * GUI specific input values and files are given in *italics*.  
 * Internal and external links are given in this <a href="#" target="_self">blue</a>.
 
-Further details and some examples can be found in  
-Santamar&#237;a-G&#243;mez, A. (2019) SARI: interactive GNSS position time series analysis software. GPS solutions, 23:52. DOI: [10.1007/s10291-019-0846-y](https://link.springer.com/article/10.1007/s10291-019-0846-y)
+Further details and some examples can be found in the [SARI official website](https://sari-gnss.github.io)  
+and in Santamar&#237;a-G&#243;mez, A. (2019) SARI: interactive GNSS position time series analysis software. GPS solutions, 23:52. DOI: [10.1007/s10291-019-0846-y](https://link.springer.com/article/10.1007/s10291-019-0846-y)
 
 A ~40 min video tutorial is also available on [YouTube](https://youtu.be/Zt61jzehhoc). This tutorial was made with SARI version "mayo 2021" and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.
 
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *julio 2024*  --  "Wait... those look just like GPS coordinates"
+Current SARI version: *agosto 2024*  --  "There's big bugs in there, you know? It's safer over here"
 
 -----------------
 
@@ -84,7 +84,8 @@ Note that some OS and some web browsers apply a display scaling to all web pages
 
 ## I. Input data and format
 
-This block allows uploading and setting the series format, if necessary, before plotting. The input series file must be a text file with standard encoding (ASCII, UTF-8) and organized in columns generally corresponding to the epochs, the observed variables and, optionally, their error bars. The series does not need to be evenly sampled, but only one point per epoch is allowed. While the following instructions are provided mostly for GNSS position time series, they should also work for any type of time series, provided the file format matches the specifications given below.
+This block allows uploading and setting the series format, if necessary, before plotting. The input series file must be a text file with standard encoding (ASCII, UTF-8) and organized in columns generally corresponding to the epochs, the observed variables and, optionally, their error bars. The series does not need to be evenly sampled, but only one point per epoch is allowed.  
+While the following instructions are provided mostly for GNSS position time series, they should also work for any type of time series, provided the file format matches the specifications given below.
 
 There are three different ways to upload a time series on SARI:
 
@@ -351,7 +352,7 @@ This block allows fitting a model to each one of the coordinate component series
 The `Select model components` option allows defining the fitted deterministic model by including any combination of linear trend, higher-degree polynomial, offsets/discontinuities, sinusoidal signals, exponential and logarithmic decays.
 
 Some of these components require additional parameters to be included in the model (e.g., reference epochs, periods, a priori values, etc.). The reference epochs and the a priori values can be left empty and SARI will use some reasonable values automatically. Note that the a priori values can have a strong impact on the quality of non-linear fits, for example the exponential and logarithmic decays (see the [<a href="#notes-on-the-exponential/logarithmic-decay-fitting" target="_self">notes</a>](#notes-on-the-exponential/logarithmic-decay-fitting) below).  
-Additionally, if using a *KF* fit, the a priori state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the [<a href="#notes-on-the-kalman-filter" target="_self">notes</a>](#notes-on-the-kalman-filter) below).
+Additionally, if using a *KF* fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the [<a href="#notes-on-the-kalman-filter" target="_self">notes</a>](#notes-on-the-kalman-filter) below).
 
 The fitted model will be represented by a red line on top of the original series and in the plot of the residuals with a zero value line.  
 The fitted discontinuities will be represented by vertical red lines in the residual plot.
@@ -371,13 +372,13 @@ The `search discontinuities` button provides an automatic guesstimate of the loc
 1. The EKF/UKF fits include both the forward Kalman filter and the backward Kalman smoother using the [Rauch-Tung-Striebel](https://en.wikipedia.org/wiki/Kalman_filter#Rauch%E2%80%93Tung%E2%80%93Striebel) (RTS) algorithm. Only the smoothed solution is kept.  
 2. The UKF implementation is described by [<a href="#references" target="_self">Julier and Uhlmann (2004)</a>](#references) and the unscented RTS smoother is described by [<a href="#references" target="_self">S&#228;rkk&#228; (2008)</a>](#references).  
 3. The KF fit does not include any dynamics (i.e., control inputs) and assumes additive, independent measurement and process noises; the latter for the trend and the sinusoids only. The measurement noise is time invariant, unless the series error bars are in use. In that case, the relative change of the error bars is used to scale the measurement noise. The average of the actual measurement noise level used for the entire series will correspond to the measurement noise value indicated on the left panel. Data gaps are also accounted for by increasing the process noise through the missing observations.  
-4. The user can set the expected (average) measurement noise level and the a priori values and uncertainties of the state for all the parameters being fitted or leave them blank. In the latter case, some values will be proposed. Note that the filter output strongly depends on all the provided a priori values. For instance, an extremely small a priori uncertainty on a parameter would "fix" it to its a priori value; which is useful when we know precisely the magnitude of a discontinuity, for instance.  
+4. The user can set the expected (average) measurement noise level and the initial values and uncertainties of the state for all the parameters being fitted or leave them blank. In the latter case, some values will be proposed. Note that the filter output strongly depends on all the provided initial values. For instance, an extremely small initial uncertainty on a parameter would "fix" it to its initial value; which is useful when we know precisely the magnitude of a discontinuity, for instance.  
 5. The measurement and process noise levels need to be provided with respect to the series sampling that is being used in the fit, which is indicated on the left panel at the bottom of the [<a href="#input-format" target="_self">Input data and format</a>](#i.-input-data-and-format) block.  
 6. The `compute measurement noise` option will provide the most likely measurement noise level, within some bounds provided by the user, and with respect to the process noise also provided by the user. This is done through a maximum likelihood optimization of a preliminary UKF fit with respect to the provided process noises for the trend and sinusoids only. The optimization uses the [<a href="#references" target="_self">Brent (1971)</a>](#references) method, and it may take up to ~20 iterations of a standard UKF fit. The 95 % confidence interval of the estimated measurement noise standard deviation will be shown next to the input bounds on the left panel.  
 7. The process noise values for the trend and sinusoidal variations are zero by defaul. Any positive value will make these parameters to change with time. When fitting a time-variable trend, a plot below the residual series will show the time series of the estimated time-variable trend, which is useful to assess whether the filter is too smooth or not, especially if other parameters were fitted together with the rate.  
 8. When fitting a time-variable sinusoid, there is an option to apply the process noise to the sine component (S) only or to both the sine and cosine (C) components independently. The first option will capture amplitude variations, but also phase and maybe even frequency variations. The second option may only capture amplitude variations, but this is not guaranteed as the estimates of the sine and cosine terms are not constrained to vary the same amount.  
 9. Due to the KF fit being slower than the LS fit (see details in the [<a href="#known-issues" target="_self">Known issues</a>](#known-issues) section), the user has to set all the parameters of the filter first and then push the `run KF` button. This way, the filter is run once and not each time one of the parameters is changed, as for the LS fit. The parameters left blank will be completed automatically (at the user's risk).  
-10. If the user has fitted the same model with LS before fitting it with the KF, some of the LS-estimated values will be used as the a priori state for the KF.  
+10. If the user has fitted the same model with LS before fitting it with the KF, some of the LS-estimated values will be used as the initial state for the KF.  
 
 <h5 id="notes-on-the-sinusoidal-fitting"></h5>
 
@@ -451,12 +452,13 @@ This block allows for additional time series fitting, including:
 
 ##### **Notes on the minimum entropy trend estimates**:
 
-1. The method searches for the linear trend that minimizes the [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)) of the detrended series, i.e., the linear trend that maximizes the predictability of the series. The entropy is approximated with the non-parametric Vasicek estimator based on sample-spacings defined by a window size.  
+1. The method provides the linear trend that minimizes the [Shannon entropy](https://en.wikipedia.org/wiki/Entropy_\(information_theory\)) of the detrended series, i.e., the linear trend that maximizes the predictability of the series. The entropy is approximated by the non-parametric Vasicek estimator based on sample-spacings defined by a window size.  
 2. The implemented algorithm is based on the one proposed by [<a href="#references" target="_self">Saleh et al. (2024)</a>](#references). The main deviations of the algorithm include an adaptive window size and the estimated velocity uncertainty that accounts for the number and location of the discontinuities.  
-3. The algorithm assumes long, near-stationary and [iid](https://en.wikipedia.org/wiki/Independent_and_identically_distributed_random_variables) residual series, which is rather difficult to satisfy with typical GNSS position series. Nevertheless, it seems to provide reasonable linear trend estimates with realistic uncertainties in the presence of unknown colored noise, as long as the noise remains near-stationary, which may be roughly assessed using the `histogram` and `periodogram` options.  
-4. The algorithm is robust against a few outliers and short-period oscillations. However, the epochs of the discontinuities, if any, must be indicated by the user. The algorithm estimates the weighted sum of the entropy for each segment between discontinuities.  
-5. If there are discontinuities already used in a LS fit, they will be automatically included in the entropy estimate. If there is no LS fit or there are missing discontinuities in the LS fit, the user can indicate the epochs of the discontinuities under the `entropy` option on the left panel.  
-6. The discontinuity epochs provided for the entropy estimate will not be used in the LS fit, but any discontinuity in the LS fit will be used in the entropy estimate.
+3. At this moment and because of position discontinuities, the algorithm samples a wide range of possible velocity values with a reasonably high resolution and provides the one with the highest score. In the future, a more efficient algorithm could make use of an optimization method to find the solution faster by minimizing the amount of sampled values.  
+4. The algorithm assumes long, near-stationary and [iid](https://en.wikipedia.org/wiki/Independent_and_identically_distributed_random_variables) residual series, which is rather difficult to satisfy with typical GNSS position series. Nevertheless, it seems to provide reasonable linear trend estimates with realistic uncertainties in the presence of unknown colored noise, as long as the noise remains near-stationary, which may be roughly assessed using the `histogram` and `periodogram` options.  
+5. The algorithm is robust against a few outliers and short-period oscillations. However, the epochs of the discontinuities, if any, must be indicated by the user. The algorithm estimates the weighted sum of the entropy for each segment between discontinuities.  
+6. If there are discontinuities already used in a LS fit, they will be automatically included in the entropy estimate. If there is no LS fit or there are missing discontinuities in the LS fit, the user can indicate the epochs of the discontinuities under the `entropy` option on the left panel.  
+7. The discontinuity epochs provided for the entropy estimate will not be used in the LS fit, but any discontinuity in the LS fit will be used in the entropy estimate.
 
 <h5 id="notes-on-the-waveform"></h5>
 
@@ -562,34 +564,36 @@ A warning should appear on the screen when a very long computation time is expec
 
 This is how I usually estimate the linear trend in a GNSS position time series (the steps may change depending on the series and application):
 
-1) Upload the series file from your computer using `browse file`, or from a web server using the `Station`, `Server` and `Product` options, or via a URL query, or from a Unix-like terminal using the [sari.sh script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
-2) Set the series format and time units if necessary and `Plot` the series with points (default), lines or points & lines. 
-3) Select one of the coordinate components.   
+1) Upload the series file from your computer using the `browse file` button, or from a remote web server using the `Station`, `Server` and `Product` options, or via a URL query, or from a Unix-like terminal using the [sari.sh script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
+2) If loading a series from your computer, set the series format and time units if they are not already set, and `Plot` the series with points (default), lines or points & lines. 
+3) Click on the `overview` button to open a new window with the three coordinate components and then select one of the coordinate components in the upper tabs. Move the overview window to a secondary screen and leave it open there.  
 4) Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.  
-5) If the series is very long (more than 10 years) and has daily sampling, reduce it to weekly sampling using the `reduce sampling` option with a period of *=7/365.25* years (or the equivalent 7 days or 1 week, depending on the series time unit).  
+5) If the series is very long (more than 10 years) and it has daily sampling, reduce it to weekly sampling using the `reduce sampling` option with a period of *=7/365.25* years (or the equivalent 7 days or 1 week, depending on the series time unit).  
 6) Upload a previously unfinished fit or the fit from another series, if comparison is needed, with the `load SARI model` button.  
 7) Upload the *sitelog* and/or *station.info* and/or *soln* and/or *custom offset* files from your computer if available. The *station.info* and *custom offset* files are already loaded if you have done this and did not refresh the page.  
 8) Show the equipment changes by activating `plot changes` next to the input *sitelog*, *station.info*, *soln* and/or *custom* files.  
-9) Fit a low-pass `smoother` (a period of 0.1 years should be enough to fit seasonals) and remove the outliers from the filter residuals manually using the `toggle points` or automatically using a residual threshold and the `auto toggle`. Remember to activate `all components` before removing any outlier if you plan to merge the fitted model of the three coordinate components into a single file later.  
-10) Remove the low-pass smoother and fit a linear trend using weighted LS.  
+9) Fit a low-pass `smoother` (a period of 0.1 years should be enough to fit seasonals) and remove the outliers from the filter residuals manually using the `toggle points` button, or automatically using a residual threshold and the `auto toggle` button. Activate the `all components` option before removing any outlier if you want to have the same points removed from the three coordinate components. If you need to keep track of the removed points, activate the `include in file` option. If any of the points is extremely far from the series and does not allow visualizing them correctly, remove them right after activating the `permanent` option.  
+10) Remove the low-pass smoother (optional) and fit a linear trend using weighted LS.  
 11) Fit position discontinuities due to known equipment changes (dates are available by activating `list` changes next to the input *sitelog*, *station.info* and/or *custom* files) or due to unknown events (dates are available under the plot by zooming in and clicking where a discontinuity is needed).  
 12) Alternatively, if feeling lazy today, you can also try to `search discontinuities` automatically (this is very time-consuming, so do not forget to reduce the sampling to weekly).  
-13) Plot the `periodogram` (power) of the model residuals and check for significant periodic lines.  
-14) Remove sinusoidal variations. The exact periods can be obtained by zooming in and clicking on the periodogram. Rise the oversampling factor after zooming in if necessary, but return to 1 before zooming out. If the periodic variations are not sinusoidal, use the generic `periodic waveform` instead of the LS sinusoidal fit. If the periodic variations are sinusoidal, but their amplitude and/or phase are changing smoothly, use a Kalman filter fit with appropriate process and measurement noise variances. Temporal changes of amplitude and frequency can be assessed using the `wavelet` analysis (this is very time-consuming, so you may need to reduce the period bounds and/or reduce the temporal/frequency resolution of the wavelet).  
-15) Add logarithmic and/or exponential terms to the fitted model if necessary.  
-16) Iterate the steps 11 to 15 while zooming in and out guided by the smoother, the known equipment changes, the other coordinate components, an independent deformation model or the series of a nearby station, which can be uploaded with the *secondary series* feature (if loading corrections were not already uploaded in step 4).  
-17) Check the significance of the fitted model parameters (bearing in mind that formal errors may be too optimistic) and remove unnecessary parameters from the model.  
-18) When the fit of the LS model is finished, run the `noise analysis` using a white + power-law noise model to get a better formal rate uncertainty (this can be very time-consuming, so do not forget to reduce the sampling to weekly).  
+13) Plot the power `periodogram` of the model residuals and look for significant periodic lines.  
+14) Remove sinusoidal variations and check the periodogram. The exact periods can be obtained by zooming in and clicking on the periodogram. Rise the oversampling factor after zooming in if necessary, but return to 1 before zooming out. If the periodic variations are not sinusoidal, use the generic `periodic waveform` instead of the LS sinusoidal fit. If the periodic variations are sinusoidal, but their amplitude and/or phase are changing smoothly, use a Kalman filter fit with appropriate process and measurement noise variances. Temporal changes of amplitude and frequency can be assessed using the `wavelet` analysis (this is very time-consuming, so you may need to reduce the period bounds and/or reduce the temporal/frequency resolution of the wavelet).  
+15) Add logarithmic and/or exponential terms to the fitted model if necessary. Add also a higher-degree polynomial in the extremely unlikely case that this could be explained from a geophysical point of view.  
+16) Iterate the steps 11 to 15 while zooming in and out guided by the smoother, the known equipment changes, the other coordinate components shown in the overview window, an independent deformation model, or the series of a nearby station, which can be uploaded with the *secondary series* option (only if loading corrections were not already uploaded in step 4).  
+17) Check the Student's t-test of significance for each one of the fitted model parameters in the fit summary (bearing in mind that formal errors may be too optimistic) and remove unnecessary parameters from the model.  
+18) When the fit of the LS model is finished, run the `noise analysis` using a white + power-law noise model to get a better formal rate uncertainty (this can be very time-consuming, so do not forget to reduce the sampling to weekly if necessary).  
 19) Check the power `periodogram` (from step 13) to validate that the fitted noise model corresponds to the LS model residuals, or use the estimated log-likelihood to select the best noise model. The parameters of the fitted noise model will be used to estimate a more realistic formal uncertainty of the linear trend.  
-20) Use the estimated noise parameters to check the significance of the estimated offsets using the `offset verification` option and remove offsets from the LS model accordingly.  
-21) Plot the `histogram` if statistics of the model/filter residuals or a stationarity assessment are needed.  
+20) Use the estimated noise parameters to check the significance of the estimated offsets using the `check offsets` option and remove offsets from the LS model if their probability is less than 95 %.  
+21) Plot the `histogram` if statistics of the model residuals or a stationarity assessment are needed. The standard deviation of the residuals is also indicated on the overview figure.  
 22) Run the `MIDAS` and/or the `minimum entropy` estimators for trend comparison.  
-23) Load the parameters of a `plate model` and a `GIA model` to check if the site is located where it should be and it is not moving away from its plate.  
-24) Save the results of each coordinate component on your computer using the `save` icon at the top right corner. If necessary, the periodogram data can be saved by clicking on the `get periodogram data` link below the periodogram.  
-25) Iterate through the different coordinate components and save each one of them. The same component can be saved multiple times, for instance if the model was improved.  
-26) When all the coordinate components are done, click on the *residuals* tab and check if anything else is missing in the fit. If all good, click on the `save` button to download the residual series into a file.
-27) Save a PNG figure of the series fit with the `overview` button to be used in a presentation or in the supplemental material of a paper.
-28) `Reset` before starting a new series. Do not refresh the page.  
+23) Load the parameters of a `plate model` (for horizontal components) or a `GIA model` (for the vertical component) to check if the site is located where it should be and it is not moving away from its plate. The station's tectonic plate can be obtained with the `show location map` option.  
+24) Save the results of each coordinate component on your computer using the `save` icon at the top right corner. This file can be uploaded with the `load SARI model` if you need to redo the same fit later. If necessary, the periodogram data can be saved by clicking on the `get periodogram data` link below the periodogram.  
+25) Iterate through the different coordinate components and save each one of them. The same component can be saved multiple times, for instance if the model was improved. You can also save a full-page screenshot with all the plots and analysis results. To do that it is recommended to deactivate the `scrolling` option first.  
+26) When all the coordinate components are done, click on the *residuals* tab and check if anything else is missing in the fit. Check the residual series and the fitted series in the overview window side to side. If all is good, click on the `save` button to download the residual series into a file.
+27) Right click on the `overview` window and save the PNG figure to be used later in a presentation or in the supplemental material of a paper.
+28) Click on the `reset` button before starting a new series and enjoy!
+
+Do not refresh the page unless you encountered a problem, in which case, I would be interested in knowing more about it.  
 
 -----------------
 
@@ -605,14 +609,14 @@ Contact the [<a href="#author" target="_self">author</a>](#author) for further i
 For the sake of simplicity of the model equation, SARI uses a common nonlinear LS function that most of the time converges in one iteration as expected. On very rare occasions, the fit does not converge, even with very simplistic models that usually include a sinusoid. A *"unable to fit the LS model. Change the model components"* message is shown on the screen. To avoid this problem, changing slightly the reference epoch of one of the model parameters should be enough to reach convergence.  
 Contact the [<a href="#author" target="_self">author</a>](#author) if you encounter this problem.
 
-The Kalman filter/smoother is significantly slower than the least squares fit, at least for typical GNSS position series I have tested and especially if the model has many parameters. Between EKF and UKF, UKF is theoretically more robust against nonlinearity, though this may not represent a big difference for typical GNSS series. Therefore, the UKF is the preferred Kalman flavor by default, and it is the algorithm behind the measurement noise optimization (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block).  
+The Kalman filter/smoother is significantly slower than the least squares fit, at least for typical GNSS position series I have tested and especially if the model has many parameters. Between EKF and UKF, UKF is theoretically more robust against nonlinearity, though this may not represent a big difference for typical GNSS series. Therefore, UKF is the preferred Kalman flavor by default, and it is the algorithm behind the measurement noise optimization as well (see the [<a href="#fit-controls" target="_self">Fit controls</a>](#iv.-fit-controls) block).  
 However, I have noticed that, for some series and depending on the model being fitted, the UKF provides negative variances at some epochs for some of the estimated state parameters.  
 In my tests, the state itself looks good, so at this point, I am not sure what is wrong with the variances, but it may be related to rounding errors or to the unscented transformation of the selected sigma points.  
 The uncertainty of the estimated state parameters at the affected epochs will be set to *NA* in the downloaded file. If you encounter this problem, you can use the EKF implementation.  
 Also, note that EKF and UKF are not necessarily providing the same fit to the series.
 
 At this moment, I have not found a way to select the output directory on the client's side, where the user downloads the processed series, from the online server's side to avoid the repetitive, and sometimes annoying, download prompt. This is related to server/client standard secure browsing. At least, some web browsers provide extensions to automatically download to a specific directory given the file extension or to avoid the unnecessary *(1)*, *(2)*, ... added to the file name if downloaded several times.  
-On the other hand, if running SARI on a local server (RStudio or Docker), there is a sixth block at the bottom of the left panel, hidden for remote connections, that allows setting a directory on your machine and save the results there with just a button click (no download prompt).  
+If running SARI on a local server (RStudio or Docker), there is a sixth block at the bottom of the left panel, hidden for remote connections, that allows setting a directory on your machine and save the results there with just a button click (no download prompt).  
 
 -----------------
 
@@ -622,11 +626,16 @@ On the other hand, if running SARI on a local server (RStudio or Docker), there 
 
 # Acknowledgements
 
-I am thankful to these people that directly or indirectly contributed to improve this software:
+I'm open to any constructive comment or suggestion that could improve this software, including bug repports or missing features.  
+For any comment or question, please open a [github issue](https://github.com/alvarosantamariagomez/sari).  
+
+If you use SARI for your research, I would really appreciate it if you could include [this paper](https://link.springer.com/article/10.1007/s10291-019-0846-y) in your references.  
+
+As for me, I am thankful to these people that directly or indirectly contributed to improve this software (some of them more than once):
 
 Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel.
 
-SARI is accessible from the Shinyapps.io server thanks to the support of the [RENAG National Observing Service](http://renag.resif.fr/en/).
+SARI is accessible to anyone at the Shinyapps server thanks to the financial support of the [RENAG National Observing Service](http://renag.resif.fr/en/).
 
 -----------------
 

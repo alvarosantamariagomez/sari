@@ -432,7 +432,7 @@ options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 
 # version ####
-version <- "SARI julio 2024"
+version <- "SARI agosto 2024"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),

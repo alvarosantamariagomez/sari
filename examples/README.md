@@ -4,7 +4,7 @@
 
 The files contained in this folder were downloaded after the analysis of some real time series.  
 
-Example 1: GNSS & earthquakes  
+Example 1: GNSS & earthquakes (warning: long computation time)  
 <a href="SPOTGINS_CONZ00CHL.enu_East.sari" target="_blank" download>SPOTGINS_CONZ00CHL.enu_East.sari</a>
 
 Example 2: GNSS & mass loading  
@@ -23,10 +23,11 @@ Check the <a href="https://sari-gnss.github.io" target="_blank">official SARI we
 
 These examples can be used to test and validate some of the analysis options of a local installation of SARI.  
 To do so:
-1. upload the files
+1. upload one of the files
 2. select the 1D format
-3. select time units years
-4. click plot
-5. upload the same file in *load SARI model* (Andillary information)
-6. if the loaded file contains a KF model, click on the *run KF* button
-7. compare the estimated values with those indecated in the file header
+3. select the time units years
+4. select the series units m, mm or none, depending on the file uploaded
+5. click plot
+6. upload the same file in the *load SARI model* option (andillary information block)
+7. if the loaded file contains a KF model, click on the *run KF* button
+8. compare the estimated values with those indicated in the header of the uploaded file
