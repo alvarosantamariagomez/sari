@@ -22,8 +22,7 @@ SARI can be run:
 - locally on your machine using a prebuilt Docker image available at https://hub.docker.com/r/alvarosg/sari  
 - locally on your machine after installing R (optionally RStudio) and all the package dependencies given in the [INSTALL](INSTALL) file. Once everything is set up, then just clone, open and run the [source code](app.R) on RStudio or simply execute `library(shiny)` and then `runGitHub("sari","alvarosantamariagomez",launch.browser=T)`  
 
-The [SARI shell script](/scripts/sari.sh) can be used to launch SARI from the command line on Unix-like desktop environments and to create desktop shortcuts on any system. To add the script to the PATH environment variable of your system use this from the SARI Git directory:  
-`sudo ln -s $(realpath scripts/sari.sh) /usr/local/bin/.`
+The [SARI shell script](/scripts/sari.sh) can be used to launch SARI (Shinyapps, Docker or R) from the command line on Unix-like desktop environments and to create desktop shortcuts on any system.
 
 ## Where to find help
 
