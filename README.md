@@ -11,6 +11,8 @@ The app focuses mostly on GNSS position time series, but any other type of time 
 
 ![SARI screenshot](/www/screen_capture.gif)
 
+The app includes a large list of analysis options: fitting polynomial, sinusoidal, exponential, logarithmic models (with least-squares or Kalman filter), power spectrum, noise analysis, Vondrak smoother, wavelet, waveform, automatic offset detection, automatic outlier removal, etc.
+
 Some examples of use can be found on the [SARI Official Website](https://sari-gnss.github.io)
 
 ## How to run and/or install
