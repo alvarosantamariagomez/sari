@@ -11287,18 +11287,26 @@ server <- function(input,output,session) {
       if (isTruthy(server)) {
         if (server == "FORMATER") {
           coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
-          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
-          coordinates <- c(coordinates,lat,lon)
+          if (length(coordinates) == 3) {
+            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+            lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+            lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
+            coordinates <- c(coordinates,lat,lon)
+          } else {
+            coordinates <- NULL
+          }
         } else if (server == "SONEL") {
           coordinates <- unlist(strsplit(grep("^# X : |^# Y : |^# Z : ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,17,30)]
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
-          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
-          coordinates <- c(coordinates,lat,lon)
+          if (length(coordinates) == 3) {
+            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+            lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+            lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
+            coordinates <- c(coordinates,lat,lon)
+          } else {
+            coordinates <- NULL
+          }
         } else if (server == "IGS") {
           tableAll <- try(read.table(text = trimws(readLines(filein, warn = F)[1]), comment.char = "#"), silent = T)
           shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
@@ -11310,11 +11318,15 @@ server <- function(input,output,session) {
           if (isTruthy(station)) {
             tableAll <- read.table("www/JPL_database.txt")
             coordinates <- tableAll[tableAll$V1 == station, c(2,3,4)]
-            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
-            lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
-            lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
-            coordinates <- c(coordinates,lat,lon)
+            if (length(coordinates) == 3) {
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+              stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
+              lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+              lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
+              coordinates <- c(coordinates,lat,lon)
+            } else {
+              coordinates <- NULL
+            }
           }
         } else if (server == "SIRGAS") {
           tableAll <- try(read.table(text = grep(" IGb14 ", readLines(filein, warn = F), value = T, fixed = T)[1], comment.char = "#"), silent = T)
@@ -11333,15 +11345,19 @@ server <- function(input,output,session) {
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "EARTHSCOPE") {
           tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
-          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
-          stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
-          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
-          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
-          coordinates <- c(as.numeric(tableAll[6]),as.numeric(tableAll[8]),as.numeric(tableAll[10]),lat,lon)
+          if (length(tableAll) > 9) {
+            shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
+            stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(tableAll[6],tableAll[8],tableAll[10]))))
+            lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+            lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
+            coordinates <- c(as.numeric(tableAll[6]),as.numeric(tableAll[8]),as.numeric(tableAll[10]),lat,lon)
+          } else {
+            coordinates <- NULL
+          }
         }
       } else if (isTruthy(product) && product == "SPOTGINS_POS") {
         coordinates <- unlist(strsplit(trim(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T)), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
-        if (!any(is.na(suppressWarnings(as.numeric(coordinates))))) {
+        if (!any(is.na(suppressWarnings(as.numeric(coordinates)))) && length(coordinates) == 3) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
           stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(coordinates[1],coordinates[2],coordinates[3]))))
           lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
