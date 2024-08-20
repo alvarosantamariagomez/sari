@@ -6712,7 +6712,7 @@ server <- function(input,output,session) {
             } else {
               disable("ne")
             }
-            if (input$optionSecondary == 0) {
+            if (input$optionSecondary == 0 && info$last_optionSecondary > 0) {
               # setting new axis limits
               if (input$tab == 4 || input$tab == 5) {
                 info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
