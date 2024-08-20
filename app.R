@@ -8825,8 +8825,8 @@ server <- function(input,output,session) {
             sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             status1 <- status1
           })[,c("x1","x2","x3","y1","sy1","status1")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
+          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
         } else {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
             if (info$format2 == 4) {
@@ -8855,12 +8855,12 @@ server <- function(input,output,session) {
               status3 <- status3
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
-          table_common$y2 <- as.numeric(formatting(table_common$y2,0))
-          table_common$y3 <- as.numeric(formatting(table_common$y3,0))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
-          table_common$sy2 <- as.numeric(formatting(table_common$sy2,0))
-          table_common$sy3 <- as.numeric(formatting(table_common$sy3,0))
+          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
+          table_common$y2 <- as.numeric(formatting(table_common$y2,1))
+          table_common$y3 <- as.numeric(formatting(table_common$y3,1))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
+          table_common$sy2 <- as.numeric(formatting(table_common$sy2,1))
+          table_common$sy3 <- as.numeric(formatting(table_common$sy3,1))
         }
       } else if (input$optionSecondary == 3) {
         if (info$format == 4) {
@@ -8868,11 +8868,11 @@ server <- function(input,output,session) {
             x2 <- x2.x
             x3 <- x3.x
             y1 <- (y1.x + y1.y * inputs$scaleFactor) / 2
-            sy1 <- abs(sy1.x - sy1.y * inputs$scaleFactor)/2
+            sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             status1 <- status1
-          })[,c("x1","x2","x3","y1","sy1")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
+          })[,c("x1","x2","x3","y1","sy1","status1")])
+          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
         } else {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
             if (info$format2 == 4) {
@@ -8901,12 +8901,12 @@ server <- function(input,output,session) {
               status3 <- status3
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,0))
-          table_common$y2 <- as.numeric(formatting(table_common$y2,0))
-          table_common$y3 <- as.numeric(formatting(table_common$y3,0))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,0))
-          table_common$sy2 <- as.numeric(formatting(table_common$sy2,0))
-          table_common$sy3 <- as.numeric(formatting(table_common$sy3,0))
+          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
+          table_common$y2 <- as.numeric(formatting(table_common$y2,1))
+          table_common$y3 <- as.numeric(formatting(table_common$y3,1))
+          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
+          table_common$sy2 <- as.numeric(formatting(table_common$sy2,1))
+          table_common$sy3 <- as.numeric(formatting(table_common$sy3,1))
         }
       }
       showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
