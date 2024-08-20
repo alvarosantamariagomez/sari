@@ -51,18 +51,18 @@ check_load <- function(packages) {
 }
 
 # Shinyapps & local version
-# suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-#   library(mvcwt, verbose = F, quietly = T) #v1.3.1
-#   library(leaflet, verbose = F, quietly = T) #v2.1.2
-#   library(geojsonio, verbose = F, quietly = T) #v0.11.3
-# })))
+suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+  library(mvcwt, verbose = F, quietly = T) #v1.3.1
+  library(leaflet, verbose = F, quietly = T) #v2.1.2
+  library(geojsonio, verbose = F, quietly = T) #v0.11.3
+})))
 # GitHub version
-optionalPackages <- c(
-  "mvcwt",
-  "leaflet",
-  "geojsonio"
-)
-check_load(optionalPackages)
+# optionalPackages <- c(
+#   "mvcwt",
+#   "leaflet",
+#   "geojsonio"
+# )
+# check_load(optionalPackages)
 
 # GUI addons ####
 
@@ -427,7 +427,7 @@ tab3Contents <- function(series) {
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 # options(shiny.trace = T)
 # devmode(T)
-# options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 
@@ -8021,7 +8021,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
     if (isTruthy(inputs$min_wavelet) && isTruthy(inputs$max_wavelet) && isTruthy(inputs$res_wavelet) && isTruthy(inputs$loc_wavelet)) {
       removeNotification("bad_wavelet")
-      if (isTruthy(inputs$max_wavelet) && isTruthy(inputs$min_wavelet) && isTruthy(as.numeric(inputs$res_wavelet)) && isTruthy(as.numeric(inputs$loc_wavelet)) && inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && as.numeric(inputs$res_wavelet) > 0 && as.numeric(inputs$loc_wavelet) >= info$sampling && as.numeric(inputs$loc_wavelet) <= info$rangex/2) {
+      if (inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && inputs$res_wavelet > 0 && inputs$loc_wavelet >= info$sampling && inputs$loc_wavelet <= info$rangex/2) {
         removeNotification("time_wavelet")
         num_scale <- as.integer((inputs$max_wavelet - inputs$min_wavelet)/as.numeric(inputs$res_wavelet))
         num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
