@@ -11394,7 +11394,7 @@ server <- function(input,output,session) {
           if (isTruthy(station)) {
             tableAll <- stationsFromPSMSL[grepl(station, stationsFromPSMSL$V2), c(3,4)]  
           } else {
-            tableAll <- stationsFromPSMSL[stationsFromPSMSL$V1 == strsplit(file$primary$name, ".rlrdata", fixed = T),c(3,4)]
+            tableAll <- stationsFromPSMSL[stationsFromPSMSL$V1 == strsplit(file$primary$name, ".rlrdata", fixed = T)[[1]][1],c(3,4)]
           }
           if (isTruthy(tableAll)) {
             shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
