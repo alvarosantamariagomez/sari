@@ -6711,10 +6711,8 @@ server <- function(input,output,session) {
               enable("ne")
             } else {
               disable("ne")
-              updateCheckboxInput(session, inputId = "fullSeries", value = F)
-              updateCheckboxInput(session, inputId = "sameScale", value = F)
-              updateCheckboxInput(session, inputId = "same_axis", value = F)
-              updateCheckboxInput(session, inputId = "ne", value = F)
+            }
+            if (input$optionSecondary == 0) {
               # setting new axis limits
               if (input$tab == 4 || input$tab == 5) {
                 info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)],
@@ -6729,6 +6727,7 @@ server <- function(input,output,session) {
                 info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
               }
               ranges$x1 <- c(info$minx, info$maxx)
+              ranges$y1 <- NULL
             }
             if (input$optionSecondary == 1) {
               enable("fullSeries")
@@ -6744,9 +6743,14 @@ server <- function(input,output,session) {
               }
               enable("swap")
             } else {
+              updateCheckboxInput(session, inputId = "fullSeries", value = F)
+              updateCheckboxInput(session, inputId = "sameScale", value = F)
+              updateCheckboxInput(session, inputId = "same_axis", value = F)
+              updateCheckboxInput(session, inputId = "ne", value = F)
               disable("fullSeries")
               disable("sameScale")
               disable("same_axis")
+              disable("ne")
               disable("swap")
             }
           } else {
