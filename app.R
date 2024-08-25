@@ -738,7 +738,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           checkboxInput(inputId = "showmap",
                                                                                         div("Show location map",
-                                                                                            helpPopup("If the series header contains the station coordinates, or they are provided by the user in the 'Plate motion model' option, this option will show a map with the station's location together with the tectonic plate boundaries.", anchor = "map")),
+                                                                                            helpPopup("If the series header contains the station coordinates, or they are included in a public database, or they are provided by the user in the 'Plate motion model' option, this option will show a map with the station's location together with the tectonic plate boundaries.", anchor = "map")),
                                                                                         value = F),
                                                                           conditionalPanel(
                                                                             condition = "input.showmap == false",
