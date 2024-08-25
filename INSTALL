@@ -64,7 +64,7 @@ devtools::install_github("daattali/shinycssloaders")
 
 
 
-5) In addition, the following packages are optional and allow for extra analysis or visualization features:
+5) In addition, the following packages are optional and allow for extra analysis, visualization features or faster functions:
 
 5.1) The package "mvcwt" allows computing wavelet transforms. The source code of this package can be downloaded from here:  
 https://cran.r-project.org/src/contrib/Archive/mvcwt/  
@@ -82,8 +82,9 @@ install.packages("/path/to/the/mvcwt/tar.gz/file")
 More information on the GDAL library here:  
 https://gdal.org/download.html
 
-
 5.3) The package "geojsonio" allows adding the plate tectonic names on the location map. This package can be installed like the others before, but it requires installing the leaflet package first (see the previous 5.2). Compiling this package alone takes enough time to prepare and drink your favorite tea flavor.
+
+5.4) The packages "Rcpp", "RcppArmadillo" and "RcppEigen" allow using ad hoc C++ functions defined in the 'functions.cpp' file that would speed up the noise analysis on a Windows machine by around 4 times faster . These packages can be compiled and installed like the others before.
 
 
 

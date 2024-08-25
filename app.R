@@ -52,15 +52,21 @@ check_load <- function(packages) {
 
 # Shinyapps & local version
 suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-  library(mvcwt, verbose = F, quietly = T) #v1.3.1
-  library(leaflet, verbose = F, quietly = T) #v2.1.2
-  library(geojsonio, verbose = F, quietly = T) #v0.11.3
+  library(mvcwt, verbose = F, quietly = T)
+  library(leaflet, verbose = F, quietly = T)
+  library(geojsonio, verbose = F, quietly = T)
+  library(Rcpp, verbose = F, quietly = T)
+  library(RcppArmadillo, verbose = F, quietly = T)
+  library(RcppEigen, verbose = F, quietly = T)
 })))
 # GitHub version
 # optionalPackages <- c(
 #   "mvcwt",
 #   "leaflet",
-#   "geojsonio"
+#   "geojsonio",
+#   "Rcpp",
+#   "RcppArmadillo",
+#   "RcppEigen"
 # )
 # check_load(optionalPackages)
 
@@ -224,8 +230,8 @@ Shiny.addCustomMessageHandler('trendRef', function(txt) {
 # Hide loading page splash, from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
   Sys.sleep(seconds)
-  hide("loading_page")
-  show("main_content")
+  shinyjs::hide("loading_page")
+  shinyjs::show("main_content")
 }
 
 # Setting the layout of the plots in the visualization panel
@@ -421,6 +427,11 @@ tab3Contents <- function(series) {
            ),
            verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F)
   )
+}
+
+# Source C++ functions
+if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages())) {
+  sourceCpp('functions.cpp', verbose = F)
 }
 
 # Shiny/R general options
@@ -2256,9 +2267,9 @@ server <- function(input,output,session) {
   ")
 
   # Debugging pit stop (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
-  observeEvent(input$browser,{
-    browser()
-  })
+  # observeEvent(input$browser,{
+  #   browser()
+  # })
 
   # Initialize reactive variables of the global database
   database <- c("file", "ranges", "info", "db1", "db2", "inputs", "trans", "url")
@@ -2345,7 +2356,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -5624,21 +5635,33 @@ server <- function(input,output,session) {
                        grad_global <- function(x) {
                          grad <- NULL
                          h <- 0
-                         trQinv <- t(resS) %*% Qinv
+                         trQinv <- crossprod(resS, Qinv)
                          if (white) {
                            h <- h + 1
                            wh <- exp(x[h])
-                           grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
+                           if (exists("grad_cpp", mode = "function")) {
+                             grad <- grad_cpp(Qinv,QinvR,trQinv,diag(length(resS)),wh)
+                           } else {
+                             grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
+                           }
                          }
                          if (flicker) {
                            h <- h + 1
                            fl <- exp(x[h])
-                           grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
+                           if (exists("grad_cpp", mode = "function")) {
+                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cfl,fl))
+                           } else {
+                             grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
+                           }
                          }
                          if (randomw) {
                            h <- h + 1
                            rw <- exp(x[h])
-                           grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
+                           if (exists("grad_cpp", mode = "function")) {
+                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Crw,rw))
+                           } else {
+                             grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
+                           }
                          }
                          if (powerl) {
                            h <- h + 1
@@ -5648,8 +5671,13 @@ server <- function(input,output,session) {
                            x <- head(x, -1)
                            Cpl <- CPL[[1]]
                            k_deriv <- pl * CPL[[2]]
-                           grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
-                           grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
+                           if (exists("grad_cpp", mode = "function")) {
+                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cpl,pl))
+                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,k_deriv,1))
+                           } else {
+                             grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
+                             grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
+                           }
                          }
                          if (messages > 2) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
                          grad/-1
@@ -14680,8 +14708,9 @@ server <- function(input,output,session) {
   }
   #
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
-    Delta <- 1 # Delta[1]
-    a <- 0 # a[1]
+    a <- Delta <- numeric(n)
+    a[1] <- 0
+    Delta[1] <- 1
     for (i in 2:n) {
       a[i] <- (-k/2 + i - 1 - 1)/(i - 1)
       Delta[i] <- Delta[i - 1] * a[i]
@@ -14691,18 +14720,29 @@ server <- function(input,output,session) {
     # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
     Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     if (deriv) {
-      u <- 0 # u[1]
+      u <- numeric(n)
+      u[1] <- 0
       for (i in 2:n) {
         u[i] <- -1/(2*(i - 1))*Delta[i - 1] + a[i]*u[i - 1]
         # u[i] <- -1/(2*i)*Delta[i - 1] + a[i]*u[i - 1]
       }
       U <- toeplitz(u[gaps])
       U[upper.tri(U)] <- 0
-      derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
-      derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
-      return(list(tcrossprod(Z), derivZ))
+      if (exists("tcrossprod_cpp", mode = "function")) {
+        derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod_cpp(Z,Z) + tcrossprod_cpp(U,Z) + tcrossprod_cpp(Z,U)) # from Gobron 2020
+        derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
+        return(list(tcrossprod_cpp(Z,Z), derivZ))
+      } else {
+        derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
+        derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
+        return(list(tcrossprod(Z), derivZ))
+      }
     } else {
-      return(list(tcrossprod(Z)))
+      if (exists("tcrossprod_cpp", mode = "function")) {
+        return(list(tcrossprod_cpp(Z,Z)))
+      } else {
+        return(list(tcrossprod(Z)))
+      }
     }
   }
   #
@@ -14710,10 +14750,9 @@ server <- function(input,output,session) {
     if (r > 0) {
       return(-0.5*(length(series)*log(2*pi*r) + determinant(M)$modulus[[1]] + length(series)))
     } else {
-      Qinv <- pd.solve(M, log.det = T)
+      Qinv <- pd.solve(M, log.det = T) # this is the slowest step in the whole MLE process when the spectral index is not estimated
       logDet <- attr(Qinv, "log.det")
       QinvR <- Qinv %*% series
-      # return((-0.5*(length(series)*log(2*pi) + determinant(M)$modulus[[1]] + crossprod(series, solve(M, series))))[1])
       ll <- (-0.5*(length(series)*log(2*pi) + logDet + crossprod(series, QinvR)))[1]
       return(list(ll,Qinv,QinvR))
     }
