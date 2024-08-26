@@ -429,15 +429,16 @@ tab3Contents <- function(series) {
   )
 }
 
-# Source C++ functions
-if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages())) {
+# Source C++ functions on a Windows machine
+if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[['sysname']] == "Windows") {
+  cat(file = stderr(), "Compiling C++ functions for Windows\n")
   sourceCpp('functions.cpp', verbose = F)
 }
 
 # Shiny/R general options
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
-# options(shiny.trace = T)
-# devmode(T)
+options(shiny.trace = F)
+devmode(T)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
@@ -2267,11 +2268,11 @@ server <- function(input,output,session) {
   ")
 
   # Debugging pit stop (from https://www.r-bloggers.com/2019/02/a-little-trick-for-debugging-shiny/?msclkid=3fafd7f3bc9911ec9c1253a868203435)
-  # observeEvent(input$browser,{
-  #   browser()
-  # })
+  observeEvent(input$browser,{
+    browser()
+  })
 
-  # Initialize reactive variables of the global database
+  # Initialize reactive variables of the global database only for debugging
   database <- c("file", "ranges", "info", "db1", "db2", "inputs", "trans", "url")
 
   # 1. input files.
@@ -2367,10 +2368,10 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     # This fires each time a reactive input changes
-    # inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
-    # if (length(inputChanged) > 0 && messages > 5) {
-    #   cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
-    # }
+    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
+    if (length(inputChanged) > 0 && messages > 5) {
+      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
+    }
     req(info$intro)
     # next is run only at the start of each session
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
@@ -5811,7 +5812,7 @@ server <- function(input,output,session) {
                              # Quasi-Newton method as in optim, but seems to run faster
                              method <- "NLM"
                              fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                           fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
+                                           fscale = 1, print.level = 2, ndigit = 1, gradtol = 1e-2,
                                            stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F)
                              setProgress(0.75)
                              if (fitmle$code < 4) { # transforming nlm results into optim format
@@ -14719,6 +14720,11 @@ server <- function(input,output,session) {
     Z[upper.tri(Z)] <- 0
     # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
     Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
+    if (exists("tcrossprod_cpp", mode = "function")) {
+      ZZt <- tcrossprod_cpp(Z,Z)
+    } else {
+      ZZt <- tcrossprod(Z)
+    }
     if (deriv) {
       u <- numeric(n)
       u[1] <- 0
@@ -14729,20 +14735,15 @@ server <- function(input,output,session) {
       U <- toeplitz(u[gaps])
       U[upper.tri(U)] <- 0
       if (exists("tcrossprod_cpp", mode = "function")) {
-        derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod_cpp(Z,Z) + tcrossprod_cpp(U,Z) + tcrossprod_cpp(Z,U)) # from Gobron 2020
-        derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
-        return(list(tcrossprod_cpp(Z,Z), derivZ))
+        UZt <- tcrossprod_cpp(U,Z)
       } else {
-        derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*tcrossprod(Z) + tcrossprod(U,Z) + tcrossprod(Z,U)) # from Gobron 2020
-        derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
-        return(list(tcrossprod(Z), derivZ))
+        UZt <- tcrossprod(U,Z)
       }
+      derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*ZZt + UZt + t(UZt)) # from Gobron 2020
+      derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
+      return(list(ZZt, derivZ))
     } else {
-      if (exists("tcrossprod_cpp", mode = "function")) {
-        return(list(tcrossprod_cpp(Z,Z)))
-      } else {
-        return(list(tcrossprod(Z)))
-      }
+      return(list(ZZt))
     }
   }
   #
@@ -14750,7 +14751,7 @@ server <- function(input,output,session) {
     if (r > 0) {
       return(-0.5*(length(series)*log(2*pi*r) + determinant(M)$modulus[[1]] + length(series)))
     } else {
-      Qinv <- pd.solve(M, log.det = T) # this is the slowest step in the whole MLE process when the spectral index is not estimated
+      Qinv <- matInv(M, log.det = T, silent = T) # this is the slowest step in the whole MLE process when the spectral index is not estimated
       logDet <- attr(Qinv, "log.det")
       QinvR <- Qinv %*% series
       ll <- (-0.5*(length(series)*log(2*pi) + logDet + crossprod(series, QinvR)))[1]
@@ -15071,6 +15072,53 @@ server <- function(input,output,session) {
         shinyjs::click("plotAll")
       }
     })
+  }
+  #
+  # based on the pd.solve function of the mnormt package but using a different check for symmetry
+  matInv <- function(x, silent = FALSE, log.det = FALSE) {
+    if (is.null(x)) {
+      return(NULL)
+    }
+    if (any(is.na(x))) {
+      if (silent) {
+        return(NULL)
+      } else {
+        stop("NA's in x")
+      }
+    }
+    if (length(x) == 1) {
+      x <- as.matrix(x)
+    }
+    if (!(inherits(x, "matrix"))) {
+      if (silent) {
+        return(NULL)
+      } else {
+        stop("x is not a matrix")
+      }
+    }
+    if (!isSymmetric(x)) {
+    # if (max(abs(x - t(x))) > .Machine$double.eps) {
+      if (silent) {
+        return(NULL)
+      } else {
+        stop("x appears to be not symmetric")
+      }
+    }
+    x <- (x + t(x))/2
+    u <- try(chol(x, pivot = FALSE), silent = silent)
+    if (inherits(u, "try-error")) {
+      if (silent) {
+        return(NULL)
+      } else {
+        stop("x appears to be not positive definite")
+      }
+    }
+    inv <- chol2inv(u)
+    if (log.det) {
+      attr(inv, "log.det") <- 2 * sum(log(diag(u)))
+    }
+    dimnames(inv) <- rev(dimnames(x))
+    return(inv)
   }
 }
 
