@@ -10622,19 +10622,31 @@ server <- function(input,output,session) {
         table <- table[order(table$x1),]
         if (any(diff(table$x1) <= 0)) {
           bad_x <- which(diff(table$x1) <= 0)
-          showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same day epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          if (length(bad_x) > 10) {
+            showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same day epoch).<br>Check point", bad_x[1], "and many more ...")), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          } else {
+            showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same day epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          }
           req(info$stop)
         }
         table <- table[order(table$x2),]
         if (any(diff(table$x2) <= 0)) {
           bad_x <- which(diff(table$x2) <= 0)
-          showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same week epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          if (length(bad_x) > 10) {
+            showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same week epoch).<br>Check point", bad_x[1], "and many more ...")), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          } else {
+            showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same week epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          }
           req(info$stop)
         }
         table <- table[order(table$x3),]
         if (any(diff(table$x3) <= 0)) {
           bad_x <- which(diff(table$x3) <= 0)
-          showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same year epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          if (length(bad_x) > 10) {
+            showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same year epoch).<br>Check point", bad_x[1], "and many more ...")), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          } else {
+            showNotification(HTML(paste("Negative or null increment in abscissa (probably 2 or more points at the same year epoch).<br>Check points", paste(bad_x, collapse = " "))), action = NULL, duration = 10, closeButton = T, id = "bad_x", type = "error", session = getDefaultReactiveDomain())
+          }
           req(info$stop)
         }
         table <- table[!is.infinite(rowSums(table)),]
