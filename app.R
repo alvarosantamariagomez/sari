@@ -14846,7 +14846,7 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    decimals <- decimalplaces(x, "x") + 3
+    decimals <- decimalplaces(diff(x), "x") + 3
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))))
   }
@@ -14858,7 +14858,7 @@ server <- function(input,output,session) {
   }
   #
   week2year <- function(x) {
-    decimals <- decimalplaces(x, "x") + 1
+    decimals <- decimalplaces(diff(x), "x") + 2
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date("1980-01-06") + x * 7))))
   }
