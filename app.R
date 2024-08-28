@@ -350,7 +350,7 @@ tabContents <- function(tabNum) {
                conditionalPanel(
                  condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.spectrumResiduals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
-                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = "lomb_2click", brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
+                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = dblclickOpts("lomb_2click", delay = 600), brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T, delay = 600)),
                    type = getOption("spinner.type", default = 1),
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
@@ -435,13 +435,14 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
   sourceCpp('functions.cpp', verbose = F)
 }
 
-# Shiny/R general options
+# Shiny/R general options ####
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 options(shiny.trace = F)
 devmode(T)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
+options(shiny.reactlog = F)
 
 # version ####
 version <- "SARI agosto 2024"
@@ -2305,7 +2306,8 @@ server <- function(input,output,session) {
                          trendRef = F, PolyRef = F, periodRef = F, noLS = F,
                          plateFile = NULL,
                          last_eulerType = 0, last_giaType = 0,
-                         overview = F)
+                         overview = F,
+                         clickX = NULL, clickY = NULL, closestX = NULL, closestY = NULL)
   
   # 4. database:
   #   1 = original
@@ -4831,6 +4833,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$spectrum, inputs$short_period, inputs$long_period, inputs$ofac, inputs$step), {
     req(db1[[info$db1]], input$spectrum)
     removeNotification("bad_periods")
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (is.na(inputs$long_period) && input$long_period != "") {
       showNotification(HTML("The longest period is not a numeric value.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_long", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
@@ -4959,6 +4962,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumOriginal), {
     req(db1[[info$db1]])
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[1])) {
       trans$psd[,1] <- NA
       trans$amp[,1] <- NA
@@ -4978,6 +4982,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumModel), {
     req(db1[[info$db1]])
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[2])) {
       trans$psd[,2] <- NA
       trans$amp[,2] <- NA
@@ -4997,6 +5002,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumResiduals), {
     req(db1[[info$db1]])
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[3])) {
       trans$psd[,3] <- NA
       trans$amp[,3] <- NA
@@ -5016,6 +5022,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumFilter), {
     req(db1[[info$db1]])
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[4])) {
       trans$psd[,4] <- NA
       trans$amp[,4] <- NA
@@ -5035,6 +5042,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$spectrumFilterRes), {
     req(db1[[info$db1]])
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[5])) {
       trans$psd[,5] <- NA
       trans$amp[,5] <- NA
@@ -5054,18 +5062,21 @@ server <- function(input,output,session) {
   })
   observeEvent(c(trans$y, trans$sy), {
     req(db1[[info$db1]], input$spectrum)
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (input$spectrumOriginal) {
       periodogram("original")
     }
   })
   observeEvent(c(trans$res, trans$model), {
     req(db1[[info$db1]], input$spectrum)
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (input$spectrumModel || input$spectrumResiduals) {
       periodogram(c("model","residuals"))
     }
   })
   observeEvent(c(trans$filter, trans$filterRes), {
     req(db1[[info$db1]], input$spectrum)
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (input$spectrumFilter || input$spectrumFilterRes) {
       periodogram(c("filter","filterRes"))
     }
@@ -5123,6 +5134,7 @@ server <- function(input,output,session) {
       }
       axis(3, at = axTicks(1), labels = newPeriods)
       mtext(lab, side = 3, line = 3)
+      c <- max(which(trans$spectra_old))
       if (input$spectrumType == 1) {
         if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
           if (input$tunits == 1) { #days
@@ -5191,7 +5203,6 @@ server <- function(input,output,session) {
             }
           })
         } else {
-          c <- max(which(trans$spectra_old))
           p <- trans$psd[,c]
           slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
           if (isTruthy(slope) && !inherits(slope,"try-error")) {
@@ -5210,27 +5221,49 @@ server <- function(input,output,session) {
         }
       }
       grid(nx = NULL, ny = NULL, col = SARIcolors[8], lty = "dashed", lwd = 1, equilogs = T)
-      output$lomb1_info <- output$lomb2_info <- output$lomb3_info <- renderText({
-        if (length(input$lomb_1click$x) > 0) {
-          if (inputs$ofac == 1) {
-            if (input$spectrumType == 0) {
-              amp <- as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)])[,ncol(as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)]))]
-              paste("Periodogram coordinates = ", input$lomb_1click$x, input$lomb_1click$y, "\t", " Series scatter = ",sqrt(0.5*sum(amp[trans$fs > 1/input$lomb_1click$x]^2)), sep = "\t")
-            } else if (input$spectrumType == 1) {
-              psd <- as.matrix(trans$psd[,colSums(is.na(trans$psd)) < nrow(trans$psd)])[,ncol(as.matrix(trans$psd[,colSums(is.na(trans$psd)) < nrow(trans$psd)]))]
-              paste("Periodogram coordinates = ", input$lomb_1click$x, input$lomb_1click$y, "\t", " Series scatter = ",sqrt(sum(psd[trans$fs > 1/input$lomb_1click$x])), sep = "\t")
-            }
-          } else {
-            paste("Periodogram coordinates = ", input$lomb_1click$x, input$lomb_1click$y, sep = "\t")
-          }
-        }
-      })
+      if (isTruthy(info$closestY)) {
+        points(info$closestX, info$closestY, type = "p", col = SARIcolors[c], bg = "white", pch = 21, lwd = 3)
+      }
       #
       if (isTruthy(debug)) {
         debugMem()
       }
     }
   }, width = reactive(info$width))
+  output$lomb1_info <- output$lomb2_info <- output$lomb3_info <- renderText({
+    values <- NULL
+    if (isTruthy(info$clickY)) {
+      values <- c(info$clickX, info$clickY)
+      if (inputs$ofac == 1) {
+        if (input$spectrumType == 0) {
+          amp <- as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)])[,ncol(as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)]))]
+          values <- c(values, sqrt(0.5*sum(amp[trans$fs > 1/info$clickX]^2)))
+        } else if (input$spectrumType == 1) {
+          psd <- as.matrix(trans$psd[,colSums(is.na(trans$psd)) < nrow(trans$psd)])[,ncol(as.matrix(trans$psd[,colSums(is.na(trans$psd)) < nrow(trans$psd)]))]
+          values <- c(values, sqrt(sum(psd[trans$fs > 1/info$clickX])))
+        }
+      }
+      if (isTruthy(info$closestY)) {
+        values <- c(values, info$closestX, info$closestY)
+        if (isTruthy(values)) {
+          strings <- format(c("Clicked periodogram coordinates = ","Closest periodogram point = "), trim = T)
+          values <- format(values, trim = T, digits = 2, nsmall = 2, scientific = F)
+          if (length(values) > 4) {
+            if (input$sunits == 1) {
+              units <- "m"
+            } else if (input$sunits == 2) {
+              units <- "mm"
+            } else {
+              units <- ""
+            }
+            paste0(paste(strings[1],values[1],values[2],"          Series scatter including shorter periods = ",values[3],units),"\n",paste(strings[2],values[4],values[5]))
+          } else {
+            paste0(paste(strings[1],values[1],values[2]),"\n",paste(strings[2],values[3],values[4])) 
+          }
+        }
+      }
+    }
+  })
 
   # Plot wavelet ####
   output$wavelet1 <- output$wavelet2 <- output$wavelet3 <- renderPlot({
@@ -10564,6 +10597,25 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 6)
+  
+  # Observe clicks on the periodogram ####
+  observeEvent(input$lomb_1click, {
+    if (length(input$lomb_1click$x) > 0 && !isTruthy(input$lomb_2click) && !isTruthy(input$lomb_brush)) {
+      isolate({
+        if (messages > 0) cat(file = stderr(), mySession, "Clicking periodogram", "\n")
+        info$clickX <- input$lomb_1click$x
+        info$clickY <- input$lomb_1click$y
+        closestPoint <- which.min(abs(1/trans$fs - input$lomb_1click$x))
+        info$closestX <- 1/trans$fs[closestPoint]
+        c <- max(which(trans$spectra_old))
+        if (input$spectrumType == 0) {
+          info$closestY <- trans$amp[closestPoint,c]
+        } else if (input$spectrumType == 1) {
+          info$closestY <- trans$psd[closestPoint,c]
+        }
+      })
+    }
+  }, priority = 200)
 
 
   # Functions ####
@@ -12953,6 +13005,7 @@ server <- function(input,output,session) {
   periodogram <- function(serie) {
     req(trans$fs)
     if (messages > 0) cat(file = stderr(), mySession, "Computing periodogram", serie, "\n")
+    info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     withProgress(message = 'Computing  periodogram.',
                  detail = 'This may take a while ...', value = 0, {
                    incProgress(0.5)
