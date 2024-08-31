@@ -1,5 +1,25 @@
 # **SARI changelog**
 
+# septiembre 2024 [2024.09]
+
+### Fixed
+- adding checks for the station coordinates in the series file header
+- correcting the extraction of the station coordinates from a local PSMSL file
+- correcting the missing status when averaging two 1D series
+- correcting the use of the fullSeries, sameScale and same_axis options for 1D series
+- correcting the zoom range when loading a secondary series but not using it
+
+### Changed
+- improving the change of time units for ordinal time series in days or weeks
+- updating the plots following changes of the fullSeries option
+- improving the text of the help pop-up of the location map
+- improving the notification on screen about wrong time epochs
+
+### Added
+- new ad hoc C++ functions to optimize the noise analysis on Windows
+- showing the closest point to click on the periodogram (F. Feriol)
+
+
 # agosto 2024 [2024.08]
 
 ### Fixed

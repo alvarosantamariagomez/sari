@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version agosto 2024</title>
+  <title>SARI documentation - version septiembre 2024</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version agosto 2024</h1>
+<h1 class="title">SARI documentation - version septiembre 2024</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -71,7 +71,7 @@ Currently tested in R version 4.1.3.</p>
 <li>Offline, after installing the code available in <a href="https://github.com/alvarosantamariagomez/sari">GitHub</a>.</li>
 </ul>
 <p>Depending on the way SARI is accessed, there are several ways to run SARI: bookmark on web browser, weblink, Docker Desktop, RStudio, R console or a UNIX-like console. The only requirement is to use a desktop environnment where a web browser can run.<br />
-All the different ways to run SARI are implemented in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">SARI shell script</a>. This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click.</p>
+All the different ways to run SARI are implemented in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">SARI shell script</a>. This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click (see an example BAT file <a href="https://github.com/alvarosantamariagomez/sari/tree/main/scripts">here</a>).</p>
 <p>This document describes the different options and functionalities implemented in the current version of SARI. Within this document:<br />
 * GUI options are given in this <code>red lettering</code>.<br />
 * GUI specific input values and files are given in <em>italics</em>.<br />
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>agosto 2024</em> – “There’s big bugs in there, you know? It’s safer over here”</p>
+<p>Current SARI version: <em>septiembre 2024</em> – “Why on Earth did they ever make these abusive and emotionally unstable computers?”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -672,7 +672,7 @@ In case of a <em>KF</em> fit, the summary will include the statistics (mean valu
 </li>
 <li>The implemented algorithm forces the integral of the power spectrum to equal the total variance of the observed series. That is, this is a different normalization compared to the standard Lomb-Scargle periodogram. This allows for a more intuitive and direct comparison of the power spectrum of the different series (e.g., original vs filtered).<br />
 </li>
-<li>In both the amplitude and power spectra, if the user clicks on the periodogram, the coordinates (period &amp; amplitude/power) of the clicked point will be shown under the plot. In addition, if no oversampling is applied (unity value), the scatter (standard deviation) of the series integrated up to the clicked period will also be shown under the plot. For instance, if the user clicks at the longest period of the series or beyond, and the computed periodogram includes all possible periods, the obtained value will nearly correspond to the standard deviation of the series.<br />
+<li>In both the amplitude and power spectra, if the user clicks on the periodogram, the coordinates (period &amp; amplitude/power) of the clicked point will be shown under the plot together with those of the closest estimated period; the latter point will be marked on the periodogram plot. In addition, if no oversampling is applied (unity value), the scatter (standard deviation) of the series integrated up to the clicked period will also be shown under the plot. For instance, if the user clicks at the longest period of the series or beyond, and the computed periodogram includes all possible periods, the obtained value will nearly correspond to the standard deviation of the series.<br />
 </li>
 <li>In case the power spectrum is selected, two lines will pe plotted on top of the periodogram: a pink dashed line representing the slope of a pure flicker noise process commonly seen in residual GNSS series, and a solid line with the same color as the periodogram itself representing the average slope of the rightmost type of periodogram selected amongst the five options (original, model, residuals, etc.). These lines should help the user to roughly assess the level of time correlation of the series. However, if the user runs a <code>Noise analysis</code>, the power spectrum of the estimated noise model will be plotted instead of the aforementioned lines. This will help the user to assess the quality of the estimated noise model and to assess the crossover period between the components of the noise model (if more than one).<br />
 </li>
@@ -730,7 +730,7 @@ In case of a <em>KF</em> fit, the summary will include the statistics (mean valu
 </li>
 <li>Several optimization methods have been implemented, both constrained and unconstrained. At this moment, SARI only uses the unconstrained quasi-Newton method proposed by <a href="#references"><a href="#references" target="_self">Schnabel et al (1985)</a></a>, which was found to be the fastest among those tested.<br />
 </li>
-<li>The processing time of the <em>noise analysis</em> grows considerably for long series with high sampling and complex noise models. An estimate of the expected processing time will be shown on the screen, based on the number of points in the series and the chosen noise model. Note that the expected time is only approximate, as it depends on how well the requested noise model fits the series and on the CPU used for the computations. The expected times shown on screen are those for a typical online SARI session, where a WN+PL model fit to a fifteen-year-long daily series will take more than 10 minutes. Using SARI on a local session should produce faster noise analyses than the online sessions, where resources are shared among users, even CPU in case of many simultaneous users (see details in the <a href="#known-issues"><a href="#known-issues" target="_self">Known issues</a></a> section). For local sessions, compiling the source code of the necessary R packages on a Linux machine produces a significant gain of processing time, somewhere around 10 times faster, compared to installing the package binaries on a Windows machine. There is still room for optimization of the code in future versions, but at this moment, for online SARI sessions, it is recommended to reduce the sampling of the series to the minimum necessary. For instance, the periodogram can be used to assess the period from which the power-law noise starts dominating the variance and then adjust the sampling of the series to half that period; the white noise will be mostly averaged out. For GNSS position time series, a weekly sampling is a reasonable choice. In that case, even a WN+PL model fit (or PL only actually) to a 34-year weekly series on an online session should take less than 1 minute to finish.<br />
+<li>The processing time of the <em>noise analysis</em> grows considerably for long series with high sampling and complex noise models. An estimate of the expected processing time will be shown on the screen, based on the number of points in the series and the chosen noise model. Note that the expected time is only approximate, as it depends on how well the requested noise model fits the series and on the CPU used for the computations. The expected times shown on screen are those for a typical online SARI session, where a WN+PL model fit to a fifteen-year-long daily series will take more than 10 minutes. Using SARI on a local session should produce faster noise analyses than the online sessions, where resources are shared among users, even CPU in case of many simultaneous users (see details in the <a href="#known-issues"><a href="#known-issues" target="_self">Known issues</a></a> section). For local sessions, compiling the source code of the necessary R packages on a Linux machine may produce significant gains of processing time, somewhere around 10 times faster, compared to installing the package binaries on a Windows machine. In addition, for local sessions on a Windows machine, there are optional packages that, when installed, would speed up the noise analysis significantly (see details in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/INSTALL">INSTALL</a> instructions file). There is still room for optimization of the code in future versions, but at this moment, for online SARI sessions, it is recommended to reduce the sampling of the series to the minimum necessary. For instance, the periodogram can be used to assess the period from which the power-law noise starts dominating the variance and then adjust the sampling of the series to half that period; the white noise will be mostly averaged out. For GNSS position time series, a weekly sampling is a reasonable choice. In that case, even a WN+PL model fit (or PL only actually) to a 34-year weekly series on an online session should take less than 1 minute to finish.<br />
 </li>
 <li>For noise models that include more than one component, the uncertainty of the estimated parameters is obtained from a numerical approximation of the <a href="https://en.wikipedia.org/wiki/Hessian_matrix">Hessian</a> of the log-likelihood. If the series is very long, computing the Hessian numerically can take a significant amount of time, so if the uncertainties of the noise parameters are not needed, deactivating the option <code>Noise uncertainty</code> will skip this computation and speed up the noise analysis. For noise models with a single component, the Hessian of the likelihood can be obtained analytically and very quickly, so the <code>Noise uncertainty</code> option will not be available (uncertainty of the noise component computed by default).<br />
 </li>
@@ -880,12 +880,15 @@ For any comment or question, please open a <a href="https://github.com/alvarosan
 <p>Azzalini A, Genz A (2022) The R package ‘mnormt’: The multivariate normal and ‘t’ distributions (version 2.1.1). http://azzalini.stat.unipd.it/SW/Pkg-mnormt/</p>
 <p>Bailey E (2022) shinyBS: Twitter Bootstrap Components for Shiny. R package version 0.61.1. https://CRAN.R-project.org/package=shinyBS</p>
 <p>Barrett T, Dowle M, Srinivasan A, Gorecki J, Chirico M, Hocking T (2024) data.table: Extension of data.frame. R package version 1.15.4. https://CRAN.R-project.org/package=data.table</p>
+<p>Bates D, Eddelbuettel D (2013). Fast and Elegant Numerical Linear Algebra Using the RcppEigen Package. Journal of Statistical Software, 52(5), 1-24. doi: 10.18637/jss.v052.i05 (URL: https://doi.org/10.18637/jss.v052.i05).</p>
 <p>Bengtsson H (2024) matrixStats: Functions that Apply to Rows and Columns of Matrices (and to Vectors). R package version 1.3.0. https://CRAN.R-project.org/package=matrixStats</p>
 <p>Borchers HW (2023) pracma: Practical Numerical Math Functions. R package version 2.4.4. https://CRAN.R-project.org/package=pracma</p>
 <p>Chamberlain S, Teucher A, Mahoney M (2023) geojsonio: Convert Data from and to ‘GeoJSON’ or ‘TopoJSON’. R package version 0.11.3. https://CRAN.R-project.org/package=geojsonio</p>
 <p>Chang W (2021) shinythemes: Themes for Shiny. R package version 1.2.0. https://CRAN.R-project.org/package=shinythemes</p>
 <p>Chang W, Cheng J, Allaire JJ, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2024) shiny: Web Application Framework for R. R package version 1.8.1.1. https://CRAN.R-project.org/package=shiny</p>
 <p>Cheng J, Schloerke B, Karambelkar B, Xie Y (2024) leaflet: Create Interactive Web Maps with the JavaScript ‘Leaflet’ Library. R package version 2.2.2. https://CRAN.R-project.org/package=leaflet</p>
+<p>Eddelbuettel D, Francois R, Allaire J, Ushey K, Kou Q, Russell N, Ucar I, Bates D, Chambers J (2023). Rcpp: Seamless R and C++ Integration. R package version 1.0.11, &lt;URL: https://CRAN.R-project.org/package=Rcpp&gt;.</p>
+<p>Eddelbuettel D, Francois R, Bates D, Ni B, Sanderson C (2024). RcppArmadillo: ‘Rcpp’ Integration for the ‘Armadillo’ Templated Linear Algebra Library. R package version 14.0.0-1, &lt;URL: https://CRAN.R-project.org/package=RcppArmadillo&gt;.</p>
 <p>Gilbert P, Varadhan R (2019) numDeriv: Accurate Numerical Derivatives. R package version 2016.8-1.1. https://CRAN.R-project.org/package=numDeriv</p>
 <p>Grolemund G, Wickham H (2011) Dates and Times Made Easy with lubridate. Journal of Statistical Software, 40(3), 1-25. https://www.jstatsoft.org/v40/i03/</p>
 <p>Keitt TH (2019) mvcwt: Wavelet Analysis of Multiple Time Series. R package version 1.3.1. https://CRAN.R-project.org/package=mvcwt</p>

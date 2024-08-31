@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version agosto 2024'
+title: 'SARI documentation - version septiembre 2024'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -52,7 +52,7 @@ SARI is available on all platforms, except mobile devices, and can be accessed i
 * Offline, after installing the code available in [GitHub](https://github.com/alvarosantamariagomez/sari).
 
 Depending on the way SARI is accessed, there are several ways to run SARI: bookmark on web browser, weblink, Docker Desktop, RStudio, R console or a UNIX-like console. The only requirement is to use a desktop environnment where a web browser can run.  
-All the different ways to run SARI are implemented in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh). This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click.
+All the different ways to run SARI are implemented in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh). This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click (see an example BAT file [here](https://github.com/alvarosantamariagomez/sari/tree/main/scripts)).
 
 This document describes the different options and functionalities implemented in the current version of SARI. Within this document:  
 * GUI options are given in this `red lettering`.  
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *agosto 2024*  --  "There's big bugs in there, you know? It's safer over here"
+Current SARI version: *septiembre 2024*  --  "Why on Earth did they ever make these abusive and emotionally unstable computers?"
 
 -----------------
 
@@ -479,7 +479,7 @@ This block allows for additional time series fitting, including:
 4. In case the series are made up of instantaneous observations (or that could be considered instantaneous) with uneven sampling, rather than being integrated over an observing period, the actual Nyquist period exists even for extremely uneven series and can be much shorter than the typical/average sampling of the series, as proposed by [<a href="#references" target="_self">Eyer and Bartholdi (1999)</a>](#references). It is the user's responsibility to verify and set the minimum period that would allow recovering the maximum of frequency information from the series.  
 5. The user can zoom in on an area of the periodogram (see details in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section) and increase the *oversampling* to get a better resolution of the amplitude/power distribution around specific periods. Note that "better resolution" could be misleading here as there is no new (i.e., independent) information being included in the periodogram when the *oversampling* is increased; the periodogram looks just smoother. If a zoom was applied, the periodogram will be recomputed with the new oversampling for the selected area only, which saves processing time by reducing the number of periods to compute. The *maximum* and *minimum* periods of the new periodogram will change on the left panel. To compute the full periodogram again, the user must delete one of the *maximum* or *minimum* periods, and the full range will be used again. It is recommended to set the *oversampling* back to 1 (default) before computing the full periodogram again.  
 6. The implemented algorithm forces the integral of the power spectrum to equal the total variance of the observed series. That is, this is a different normalization compared to the standard Lomb-Scargle periodogram. This allows for a more intuitive and direct comparison of the power spectrum of the different series (e.g., original vs filtered).  
-7. In both the amplitude and power spectra, if the user clicks on the periodogram, the coordinates (period & amplitude/power) of the clicked point will be shown under the plot. In addition, if no oversampling is applied (unity value), the scatter (standard deviation) of the series integrated up to the clicked period will also be shown under the plot. For instance, if the user clicks at the longest period of the series or beyond, and the computed periodogram includes all possible periods, the obtained value will nearly correspond to the standard deviation of the series.  
+7. In both the amplitude and power spectra, if the user clicks on the periodogram, the coordinates (period & amplitude/power) of the clicked point will be shown under the plot together with those of the closest estimated period; the latter point will be marked on the periodogram plot. In addition, if no oversampling is applied (unity value), the scatter (standard deviation) of the series integrated up to the clicked period will also be shown under the plot. For instance, if the user clicks at the longest period of the series or beyond, and the computed periodogram includes all possible periods, the obtained value will nearly correspond to the standard deviation of the series.  
 8. In case the power spectrum is selected, two lines will pe plotted on top of the periodogram: a pink dashed line representing the slope of a pure flicker noise process commonly seen in residual GNSS series, and a solid line with the same color as the periodogram itself representing the average slope of the rightmost type of periodogram selected amongst the five options (original, model, residuals, etc.). These lines should help the user to roughly assess the level of time correlation of the series. However, if the user runs a `Noise analysis`, the power spectrum of the estimated noise model will be plotted instead of the aforementioned lines. This will help the user to assess the quality of the estimated noise model and to assess the crossover period between the components of the noise model (if more than one).  
 9. If the user wants to use the `Noise analysis` option to fit a power-law noise model, it is highly recommended to compute the power spectrum of the residual series first. This is because the MLE optimization will use the power spectrum slope as the a priori value for the power-law spectral index and, in many cases, this is a reasonably good a priori value that may speed up the MLE fit.
 
@@ -697,6 +697,8 @@ Bailey E (2022) shinyBS: Twitter Bootstrap Components for Shiny. R package versi
 
 Barrett T, Dowle M, Srinivasan A, Gorecki J, Chirico M, Hocking T (2024) data.table: Extension of data.frame. R package version 1.15.4. https://CRAN.R-project.org/package=data.table
 
+Bates D, Eddelbuettel D (2013). Fast and Elegant Numerical Linear Algebra Using the RcppEigen Package. Journal of Statistical Software, 52(5), 1-24. doi: 10.18637/jss.v052.i05 (URL: https://doi.org/10.18637/jss.v052.i05).
+
 Bengtsson H (2024) matrixStats: Functions that Apply to Rows and Columns of Matrices (and to Vectors). R package version 1.3.0. https://CRAN.R-project.org/package=matrixStats
 
 Borchers HW (2023) pracma: Practical Numerical Math Functions. R package version 2.4.4. https://CRAN.R-project.org/package=pracma
@@ -708,6 +710,10 @@ Chang W (2021) shinythemes: Themes for Shiny. R package version 1.2.0. https://C
 Chang W, Cheng J, Allaire JJ, Sievert C, Schloerke B, Xie Y, Allen J, McPherson J, Dipert A, Borges B (2024) shiny: Web Application Framework for R. R package version 1.8.1.1. https://CRAN.R-project.org/package=shiny
 
 Cheng J, Schloerke B, Karambelkar B, Xie Y (2024) leaflet: Create Interactive Web Maps with the JavaScript 'Leaflet' Library. R package version 2.2.2. https://CRAN.R-project.org/package=leaflet
+
+Eddelbuettel D, Francois R, Allaire J, Ushey K, Kou Q, Russell N, Ucar I, Bates D, Chambers J (2023). Rcpp: Seamless R and C++ Integration. R package version 1.0.11, <URL: https://CRAN.R-project.org/package=Rcpp>.
+
+Eddelbuettel D, Francois R, Bates D, Ni B, Sanderson C (2024). RcppArmadillo: 'Rcpp' Integration for the 'Armadillo' Templated Linear Algebra Library. R package version 14.0.0-1, <URL: https://CRAN.R-project.org/package=RcppArmadillo>.
 
 Gilbert P, Varadhan R (2019) numDeriv: Accurate Numerical Derivatives. R package version 2016.8-1.1. https://CRAN.R-project.org/package=numDeriv
 
