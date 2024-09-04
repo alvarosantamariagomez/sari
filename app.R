@@ -11054,10 +11054,16 @@ server <- function(input,output,session) {
         tableAll <- try(read.table(text = sirgas_new)[,c("V3", "V7", "V8", "V9", "V10", "V11", "V12")], silent = T)
         N <- a / sqrt( 1 - e2 * sin(tableAll[,2]*pi/180)^2) + tableAll[,3]
         dn <- N * (tableAll[,2] - tableAll[1,2]) * pi/180
+        dn <- as.numeric(sprintf(fmt = "%.6f", dn))
         sdn <- N * tableAll[,5] * pi/180
+        sdn <- as.numeric(sprintf(fmt = "%.6f", sdn))
         de <- N * (tableAll[,3] - tableAll[1,3]) * pi/180 * cos(tableAll[,2]*pi/180)
+        de <- as.numeric(sprintf(fmt = "%.6f", de))
         sde <- N * tableAll[,6] * pi/180 * cos(tableAll[,2]*pi/180)
+        sde <- as.numeric(sprintf(fmt = "%.6f", sde))
         tableAll <- cbind(de, dn, sde, sdn, tableAll)[,c(5,1,2,8,3,4,11)]
+        tableAll[,4] <- as.numeric(sprintf(fmt = "%.6f", tableAll[,4]))
+        tableAll[,7] <- as.numeric(sprintf(fmt = "%.6f", tableAll[,7]))
       } else if (server == "EARTHSCOPE") { # extracting ENU format from UNAVCO series
         unavco_new <- grep("^Datetime,", grep("^#", readLines(file, warn = F), ignore.case = F, value = T, perl = T, invert = T), ignore.case = F, value = T, perl = T, invert = T)
         tableAll <- try(read.table(text = unavco_new, sep = ",")[,c("V1", "V15", "V14", "V16", "V17", "V18", "V19")], silent = T)
@@ -11086,10 +11092,16 @@ server <- function(input,output,session) {
       if (server == "IGS") {
         N <- a / sqrt( 1 - e2 * sin(tableAll[,5]*pi/180)^2) + tableAll[,7]
         dn <- N * (tableAll[,5] - tableAll[1,5]) * pi/180
+        dn <- as.numeric(sprintf(fmt = "%.6f", dn))
         sdn <- N * tableAll[,8] * pi/180
+        sdn <- as.numeric(sprintf(fmt = "%.6f", sdn))
         de <- N * (tableAll[,6] - tableAll[1,6]) * pi/180 * cos(tableAll[,5]*pi/180)
+        de <- as.numeric(sprintf(fmt = "%.6f", de))
         sde <- N * tableAll[,9] * pi/180 * cos(tableAll[,5]*pi/180)
+        sde <- as.numeric(sprintf(fmt = "%.6f", sde))
         tableAll <- cbind(de, dn, sde, sdn, tableAll)[,c(7,1,2,11,3,4,14,5,6)]
+        tableAll[,4] <- as.numeric(sprintf(fmt = "%.6f", tableAll[,4]))
+        tableAll[,7] <- as.numeric(sprintf(fmt = "%.6f", tableAll[,7]))
       }
       # extracting data in columns
       if (isTruthy(tableAll)) {
