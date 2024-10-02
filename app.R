@@ -8968,8 +8968,18 @@ server <- function(input,output,session) {
           table_common$sy3 <- as.numeric(formatting(table_common$sy3,1))
         }
       }
-      showNotification(paste0("There are ",length(table_common$x1)," epochs in common between the primary and secondary series (before excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
-      if (nrow(table_common) > 0) {
+      numValid1 <- sum(table_common$status1)
+      numValid2 <- sum(table_common$status2)
+      numValid3 <- sum(table_common$status3)
+      if (numValid1 == numValid2 && numValid1 == numValid3) {
+        atLeast <- " "
+        numValid <- numValid1
+      } else {
+        atLeast <- " at least "
+        numValid <- min(numValid1,numValid2,numValid3)
+      }
+      showNotification(paste0("There are",atLeast,numValid," epochs in common between the primary and secondary series (after excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
+      if (numValid > 0) {
         # recovering past merged values if possible
         if (input$optionSecondary > 1 && info$last_optionSecondary < 2) {
           if (isTruthy(db1$merged$status1) && length(db1$merged$status1) == length(table_common$status1)) {
