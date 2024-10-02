@@ -51,24 +51,24 @@ check_load <- function(packages) {
 }
 
 # Shinyapps & local version
-suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-  library(mvcwt, verbose = F, quietly = T)
-  library(leaflet, verbose = F, quietly = T)
-  library(geojsonio, verbose = F, quietly = T)
-  library(Rcpp, verbose = F, quietly = T)
-  library(RcppArmadillo, verbose = F, quietly = T)
-  library(RcppEigen, verbose = F, quietly = T)
-})))
+# suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+#   library(mvcwt, verbose = F, quietly = T)
+#   library(leaflet, verbose = F, quietly = T)
+#   library(geojsonio, verbose = F, quietly = T)
+#   library(Rcpp, verbose = F, quietly = T)
+#   library(RcppArmadillo, verbose = F, quietly = T)
+#   library(RcppEigen, verbose = F, quietly = T)
+# })))
 # GitHub version
-# optionalPackages <- c(
-#   "mvcwt",
-#   "leaflet",
-#   "geojsonio",
-#   "Rcpp",
-#   "RcppArmadillo",
-#   "RcppEigen"
-# )
-# check_load(optionalPackages)
+optionalPackages <- c(
+  "mvcwt",
+  "leaflet",
+  "geojsonio",
+  "Rcpp",
+  "RcppArmadillo",
+  "RcppEigen"
+)
+check_load(optionalPackages)
 
 # GUI addons ####
 
@@ -438,7 +438,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 # Shiny/R general options ####
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 options(shiny.trace = F)
-devmode(T)
+devmode(F)
 options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
@@ -2360,7 +2360,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -2371,10 +2371,10 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     # This fires each time a reactive input changes
-    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
-    if (length(inputChanged) > 0 && messages > 5) {
-      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
-    }
+    # inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
+    # if (length(inputChanged) > 0 && messages > 5) {
+    #   cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
+    # }
     req(info$intro)
     # next is run only at the start of each session
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
@@ -5848,7 +5848,7 @@ server <- function(input,output,session) {
                              # Quasi-Newton method as in optim, but seems to run faster
                              method <- "NLM"
                              fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                           fscale = 1, print.level = 2, ndigit = 1, gradtol = 1e-2,
+                                           fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
                                            stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F)
                              setProgress(0.75)
                              if (fitmle$code < 4) { # transforming nlm results into optim format
