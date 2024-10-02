@@ -14540,7 +14540,7 @@ server <- function(input,output,session) {
               url <- "https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/stations/v2/station/bbox/-25.664/35.60371874069731/27.07/68.0075?with=2"
               stationsFromEPOS.json <- jsonlite::fromJSON(readLines(url, ok = T, warn = F))
               if (isTruthy(stationsFromEPOS.json)) {
-                stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$id, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
+                stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$properties$`GNSS Station ID`, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
                 stationsFromEPOS$provider <- gsub(" ", "|", stationsFromEPOS$provider)
                 stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
                 write.table(stationsFromEPOS, file = "www/EPOS_database.txt", append = F, quote = F, row.names = F)
