@@ -8452,6 +8452,12 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "tunits", selected = 3)
       url$server <- "PSMSL"
       url$file <- file$primary
+    } else if (grepl("_igs.plh$", file$primary$name, perl = T)) {
+      updateRadioButtons(inputId = "format", selected = 1)
+      updateRadioButtons(inputId = "sunits", selected = 1)
+      updateRadioButtons(inputId = "tunits", selected = 3)
+      url$server <- "IGS"
+      url$file <- file$primary
     } else {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 0)
@@ -8781,6 +8787,10 @@ server <- function(input,output,session) {
       } else if (grepl(".series$", file$secondary$name, perl = T) && grepl(pattern = "\\.00\\s{2}\\d{4}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}$", header, perl = T)) {
         info$format2 <- 1
         url$server2 <- "JPL"
+        url$file2 <- file$secondary
+      } else if (grepl("_igs.plh$", file$secondary$name, perl = T)) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        url$server2 <- "IGS"
         url$file2 <- file$secondary
       } else if (as.numeric(input$format) < 4) {
         updateRadioButtons(inputId = "format2", selected = 1)
