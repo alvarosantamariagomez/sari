@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version septiembre 2024'
+title: 'SARI documentation - version octubre 2024'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *septiembre 2024*  --  "Why on Earth did they ever make these abusive and emotionally unstable computers?"
+Current SARI version: *octubre 2024*  --  "Is it shiny? - Pretty shiny"
 
 -----------------
 
@@ -259,16 +259,19 @@ If the station coordinates are known, the `show location map` option will show a
 
 ## II. Plot controls
 
-Once the format of the series is set, this block allows plotting/resetting the time series with the `plot` button.
+This block allows working with the plots of the time series. 
 
-The button `overview` opens a new browser window containing a PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.  
-There is no need to close and reopen the windonw, if the windown is left open, the PNG figure will update automatically each time there is a change in the series or in their fitting. <p id="cut"></p>
+Once the format of the series is set, they be plotted or resetted with the `plot` and `reset` buttons, respectively. The `reset` button will also remove the uploaded series and any other information given by the user (see the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section).
+
+The button `overview` opens a new browser window containing a static PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.  
+There is no need to close and reopen the `overview` window, if the windown is left open, the PNG figure will update automatically each time there is a change in the series or in their fitting. <p id="cut"></p>
 The `truncate` option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the [<a href="#input-format" target="_self">Input data and format</a>](#input-format) section). <p id="threshold"></p>
 Outliers selected manually can be excluded from the analysis with the `toggle` option. Outliers can also be excluded automatically with the `auto toggled` button after providing a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).  
+The `reset toggle` button restores at once all the points that were previously toggled.  
 See more details about removing/restoring points in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section. <p id="3d"></p>
 The `all components` option changes between removing outliers for each coordinate component independently or from all components simultaneously. This option works also when analyzing different columns using the 1D series format. <p id="permanent"></p>
 The `permanent` option will permanently delete the next points to be toggled/truncated from the series. Permanently means the selected points cannot be restored back and they will not be shown again in the current session. This option is intended, for instance, to remove extreme outliers that do not allow visualizing the series correctly.  
-The original series file is not modified and can be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are toggled/truncated in a single action, it will automatically deactivate itself so the next points to be toggled/truncated will be available to be restored. When toggling/truncating points that were already removed, this option will delete them permanently as well, instead of restoring them. <p id="excluded"></p>
+The original series file is not modified and can be reloaded to use all the points again, after resetting the current session with the `reset` button. The `permanent` option is deactivated by default, and once one or more points are toggled/truncated in a single action, it will automatically deactivate itself so the next points to be toggled/truncated will be available to be restored. When toggling/truncating points that were already removed, this option will delete them permanently as well, instead of restoring them. <p id="excluded"></p>
 The `include in file` option will keep the excluded outliers in the downloaded results file as commented lines. No fitting values will be provided for these points.  <p id="scrolling"></p>
 The `scrolling` option enables/disables the vertical scrolling of the left panel. By default the scrolling is enabled. When disabling it, the user will be able to take a screenshot of the full web page with the plots and all the input parameters that were used to make the plots, which is very convenient for sharing and archiving a specific analysis, making reports or marking assignments. The quality of the full page screenshot may depend on the browser/extension used.  
 
@@ -564,7 +567,7 @@ A warning should appear on the screen when a very long computation time is expec
 
 This is how I usually estimate the linear trend in a GNSS position time series (the steps may change depending on the series and application):
 
-1) Upload the series file from your computer using the `browse file` button, or from a remote web server using the `Station`, `Server` and `Product` options, or via a URL query, or from a Unix-like terminal using the [sari.sh script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
+1) Upload the series file from your computer using the `browse file` button, or from a remote web server using the `Server`, `Product` and `Station` options, or via a URL query, or from a Unix-like terminal using the [sari.sh script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
 2) If loading a series from your computer, set the series format and time units if they are not already set, and `Plot` the series with points (default), lines or points & lines. 
 3) Click on the `overview` button to open a new window with the three coordinate components and then select one of the coordinate components in the upper tabs. Move the overview window to a secondary screen and leave it open there.  
 4) Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.  

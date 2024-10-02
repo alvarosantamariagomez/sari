@@ -1,5 +1,17 @@
 # **SARI changelog**
 
+# octubre 2024 [2024.10]
+
+### Fixed
+- checking the amount of valid points after merging with the secondary series
+
+### Changed
+- improving the format of the transformed IGS and SIRGAS series
+
+### Added
+- loading series from local files in the IGS PLH format
+
+
 # septiembre 2024 [2024.09]
 
 ### Fixed

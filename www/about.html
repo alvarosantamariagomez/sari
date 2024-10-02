@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version septiembre 2024</title>
+  <title>SARI documentation - version octubre 2024</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version septiembre 2024</h1>
+<h1 class="title">SARI documentation - version octubre 2024</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>septiembre 2024</em> – “Why on Earth did they ever make these abusive and emotionally unstable computers?”</p>
+<p>Current SARI version: <em>octubre 2024</em> – “Is it shiny? - Pretty shiny”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -386,15 +386,17 @@ If the station coordinates are known, the <code>show location map</code> option 
 </h3>
 <p><a href="#contents"><a href="#contents" target="_self">Go to top of document</a></a></p>
 <h2 id="ii.-plot-controls">II. Plot controls</h2>
-<p>Once the format of the series is set, this block allows plotting/resetting the time series with the <code>plot</code> button.</p>
-The button <code>overview</code> opens a new browser window containing a PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.<br />
-There is no need to close and reopen the windonw, if the windown is left open, the PNG figure will update automatically each time there is a change in the series or in their fitting.
+<p>This block allows working with the plots of the time series.</p>
+<p>Once the format of the series is set, they be plotted or resetted with the <code>plot</code> and <code>reset</code> buttons, respectively. The <code>reset</code> button will also remove the uploaded series and any other information given by the user (see the <a href="#interactive-operation"><a href="#interactive-operation" target="_self">Interactive operation</a></a> section).</p>
+The button <code>overview</code> opens a new browser window containing a static PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.<br />
+There is no need to close and reopen the <code>overview</code> window, if the windown is left open, the PNG figure will update automatically each time there is a change in the series or in their fitting.
 <p id="cut">
 </p>
 The <code>truncate</code> option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the <a href="#input-format"><a href="#input-format" target="_self">Input data and format</a></a> section).
 <p id="threshold">
 </p>
 Outliers selected manually can be excluded from the analysis with the <code>toggle</code> option. Outliers can also be excluded automatically with the <code>auto toggled</code> button after providing a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).<br />
+The <code>reset toggle</code> button restores at once all the points that were previously toggled.<br />
 See more details about removing/restoring points in the <a href="#interactive-operation"><a href="#interactive-operation" target="_self">Interactive operation</a></a> section.
 <p id="3d">
 </p>
@@ -402,7 +404,7 @@ The <code>all components</code> option changes between removing outliers for eac
 <p id="permanent">
 </p>
 The <code>permanent</code> option will permanently delete the next points to be toggled/truncated from the series. Permanently means the selected points cannot be restored back and they will not be shown again in the current session. This option is intended, for instance, to remove extreme outliers that do not allow visualizing the series correctly.<br />
-The original series file is not modified and can be reloaded, after resetting the current session, to use all the points again. This option is deactivated by default, and once one or more points are toggled/truncated in a single action, it will automatically deactivate itself so the next points to be toggled/truncated will be available to be restored. When toggling/truncating points that were already removed, this option will delete them permanently as well, instead of restoring them.
+The original series file is not modified and can be reloaded to use all the points again, after resetting the current session with the <code>reset</code> button. The <code>permanent</code> option is deactivated by default, and once one or more points are toggled/truncated in a single action, it will automatically deactivate itself so the next points to be toggled/truncated will be available to be restored. When toggling/truncating points that were already removed, this option will delete them permanently as well, instead of restoring them.
 <p id="excluded">
 </p>
 The <code>include in file</code> option will keep the excluded outliers in the downloaded results file as commented lines. No fitting values will be provided for these points.
@@ -768,7 +770,7 @@ A warning should appear on the screen when a very long computation time is expec
 <h1 id="example-of-use">Example of use</h1>
 <p>This is how I usually estimate the linear trend in a GNSS position time series (the steps may change depending on the series and application):</p>
 <ol type="1">
-<li>Upload the series file from your computer using the <code>browse file</code> button, or from a remote web server using the <code>Station</code>, <code>Server</code> and <code>Product</code> options, or via a URL query, or from a Unix-like terminal using the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">sari.sh script</a>.<br />
+<li>Upload the series file from your computer using the <code>browse file</code> button, or from a remote web server using the <code>Server</code>, <code>Product</code> and <code>Station</code> options, or via a URL query, or from a Unix-like terminal using the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">sari.sh script</a>.<br />
 </li>
 <li>If loading a series from your computer, set the series format and time units if they are not already set, and <code>Plot</code> the series with points (default), lines or points &amp; lines.</li>
 <li>Click on the <code>overview</code> button to open a new window with the three coordinate components and then select one of the coordinate components in the upper tabs. Move the overview window to a secondary screen and leave it open there.<br />
