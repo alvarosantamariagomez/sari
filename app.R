@@ -2247,7 +2247,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 server <- function(input,output,session) {
   
-  toggleClass( # disabling clicking on the SARI name
+  # disabling clicking on the SARI name
+  toggleClass(
     class = "disabled",
     selector = "#tab li a[data-value=0]"
   )
@@ -2281,9 +2282,9 @@ server <- function(input,output,session) {
 
   # 2. series ranges:
   #   x0 = original time axis
-  #   x1 = series time axis
+  #   x1 = used series time axis
   #   x2 = residual time axis
-  #   x3 = periods time axis
+  #   x3 = periodogram time axis
   #   y1 = primary series values axis
   #   y12 = secondary series values axis
   #   y2 = residual series values axis
@@ -3573,7 +3574,7 @@ server <- function(input,output,session) {
       if (length(trans$filter) > 0 && input$filter == T && input$series2filter == 1) {
         lines(trans$x,trans$filter, col = SARIcolors[7], lwd = 3)
       }
-      # show/hide zoom in tag
+      # show/hide zoom-in tag
       if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
         shinyjs::show(paste0("zoomin",input$tab))
       } else {
@@ -4173,19 +4174,20 @@ server <- function(input,output,session) {
                            y <- y - trans$pattern
                          }
                        }
+                       # checking the series error bars
                        sy <- trans$sy
                        if (any(sy <= 0) || any(is.na(sy))) {
                          showNotification(HTML("Some errorbar values are not valid.<br>No weighting applied."), action = NULL, duration = 10, closeButton = T, id = "no_weighting", type = "error", session = getDefaultReactiveDomain())
                          sy <- rep(1, length(y))
                          updateCheckboxInput(session, inputId = "sigmas", label = NULL, value = F)
                        }
-                       # reset the KF fit
+                       # reset the previous KF fit
                        trans$mod <- trans$mod0 <- NULL
                        trans$res <- trans$res0 <- NULL
                        trans$kalman <- trans$kalman0 <- NULL
                        trans$kalman_unc <- trans$kalman_unc0 <- NULL
                        trans$results <- NULL
-                       # set the model equation and the a priori values
+                       # set the model equation and the a priori state values
                        m <- model(x,y)
                        req(m$model, m$apriori, m$nouns, m$processNoise, m$error)
                        trans$KFnames <- unlist(m$nouns)
@@ -4197,7 +4199,7 @@ server <- function(input,output,session) {
                        if (messages > 1) cat(file = stderr(), mySession, m$model, "\n")
                        apriori <- as.numeric(m$apriori)
                        unc_ini <- as.numeric(m$error)^2
-                       #Measurement function
+                       # Measurement function
                        FFfunction <- function(x,k) {
                          e <- matrix(0, nrow = k, ncol = length(x))
                          e[k,] <- x
@@ -4209,7 +4211,7 @@ server <- function(input,output,session) {
                          }
                          c(obs)
                        }
-                       #State transition
+                       # State transition
                        if ("Linear" %in% input$model && !is.na(as.numeric(input$TrendDev)) && as.numeric(input$TrendDev) > 0) {
                          model_kf <- m$model_kf_inst
                          GGfunction <- function(x, k) {
@@ -4298,7 +4300,7 @@ server <- function(input,output,session) {
                          max_decimals <- signifdecimal(rangoR, F) + 2
                          updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
                        }
-                       # time variable measurement noise based on the errorbars
+                       # time-variable measurement noise values based on the series error bars
                        if (isTruthy(input$sigmas)) {
                          sigmaR <- sigmaR * sy / median(sy)
                        } else {
@@ -4411,6 +4413,7 @@ server <- function(input,output,session) {
                          #   kfs_unc <- cbind(kfs_unc,sapply(mean_rate, "[", 2))
                          #   colnames(kfs_unc) <- c(m$nouns, "MeanRate")
                          # }
+                         # saving KF results
                          colnames(e) <- m$nouns
                          colnames(kfs_unc) <- m$nouns
                          trans$kalman <- e
@@ -11087,18 +11090,16 @@ server <- function(input,output,session) {
       } else if (server == "EARTHSCOPE") { # extracting ENU format from UNAVCO series
         unavco_new <- grep("^Datetime,", grep("^#", readLines(file, warn = F), ignore.case = F, value = T, perl = T, invert = T), ignore.case = F, value = T, perl = T, invert = T)
         tableAll <- try(read.table(text = unavco_new, sep = ",")[,c("V1", "V15", "V14", "V16", "V17", "V18", "V19")], silent = T)
-      } else {
-        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
-      }
-      # extracting series from EPOS format into ENU format
-      if (server == "EPOS") {
-        if (isTruthy(tableAll)) {
-          tableAll$new <- paste(tableAll$V1, tableAll$V2)
-          tableAll <- tableAll[, c("new", "V3", "V4", "V5")]
+      } else if (server == "EPOS") { # extracting ENU format from EPOS JSON series
+        tableAll <- try(fromJSON(txt = file), silent = T)
+        if (isTruthy(tableAll) && !inherits(tableAll,"try-error")) {
+          tableAll <- tableAll$results[, c("epoch", "de", "dn", "du", "se", "sn", "su")]
         } else {
-          showNotification(HTML("The EPOS server is not accessible.<br>Try again a bit later, maybe?"), action = NULL, duration = 10, closeButton = T, id = "no_epos", type = "error", session = getDefaultReactiveDomain())
+          showNotification("No series was downloaded from the EPOS server.", action = NULL, duration = 10, closeButton = T, id = "no_epos", type = "error", session = getDefaultReactiveDomain())
           req(info$stop)
         }
+      } else {
+        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
       }
       # extracting series from SONEL format into ENU format
       if (server == "SONEL") {
@@ -11218,18 +11219,9 @@ server <- function(input,output,session) {
               extracted$x1 <- tableAll[,1]
               extracted$x2 <- mjd2week(extracted$x1)
               extracted$x3 <- mjd2year(extracted$x1)
-            } else if (server == "EPOS") {
-              if (series == 1) { 
-                info$tunits.known1 <- T
-              } else if (series == 2) {
-                info$tunits.known2 <- T
-              }
-              extracted$x1 <- as.numeric(sprintf("%.*f", 0, difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
-              extracted$x2 <- mjd2week(extracted$x1)
-              extracted$x3 <- mjd2year(extracted$x1)
             } else { #plain ENU series
               # ISO 8601 dates
-              if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[,1], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"), exact = T))))) {
+              if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[,1], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S"), exact = T))))) {
                 if (series == 1) {
                   info$tunits.known1 <- T
                 } else if (series == 2) {
@@ -11261,6 +11253,7 @@ server <- function(input,output,session) {
               }
             }
             extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+            extracted <- extracted[!duplicated(extracted),]
           }
         }
       } else {
@@ -14515,17 +14508,8 @@ server <- function(input,output,session) {
       format <- 1
       if (product == "INGV" || product == "SGO-EPND" || product == "UGA-CNRS" || product == "ROB-EUREF") {
         if (isTruthy(station)) {
-          name <- paste0(station,"_",product,".enu")
-          station <- toupper(strtrim(station, 4))
-          if (product == "INGV") {
-            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/INGV/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
-          } else if (product == "SGO-EPND") {
-            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/SGO-EPND/weekly/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
-          } else if (product == "UGA-CNRS") {
-            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/UGA-CNRS/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
-          } else if (product == "ROB-EUREF") {
-            filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/ROB-EUREF/daily/enu/json/?epoch_start=1990-01-01&epoch_end=2099-12-01")
-          }
+          name <- paste0("timeseries", station, "_", product, ".json")
+          filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/", product, "/enu/json/?file=true")
           url_log <- "https://gnss-metadata.eu/data/station/log/"
           found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
           if (isTruthy(found)) {
@@ -14885,40 +14869,26 @@ server <- function(input,output,session) {
   #
   download <- function(server,remote,local) {
     removeNotification("no_cmd")
-    # stream JSON file
-    if (server == "EPOS") {
-      con <- url(remote)
-      json <- suppressWarnings(try(jsonlite::stream_in(con, verbose = F), silent = T))
-      if (isTruthy(json) && !inherits(json,"try-error")) {
-        down <- 0
-        json <- json[,c("epoch","e","n","u")]
-        write.table(json, file = local, append = F, quote = F, row.names = F, col.names = F)
+    # download series using curl or wget
+    if (isTruthy(Sys.which("curl"))) {
+      method <- "curl"
+      if (server == "FORMATER") {
+        extras <- "-u SARI:bwPgzhe4Zu"
       } else {
-        down <- 1
-        close(con)
+        extras <- ""
+      }
+    } else if (isTruthy(Sys.which("wget"))) {
+      method <- "wget"
+      if (server == "FORMATER") {
+        extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
+      } else {
+        extras <- ""
       }
     } else {
-      # download series using curl or wget
-      if (isTruthy(Sys.which("curl"))) {
-        method <- "curl"
-        if (server == "FORMATER") {
-          extras <- "-u SARI:bwPgzhe4Zu"
-        } else {
-          extras <- ""
-        }
-      } else if (isTruthy(Sys.which("wget"))) {
-        method <- "wget"
-        if (server == "FORMATER") {
-          extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
-        } else {
-          extras <- ""
-        }
-      } else {
-        showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
-        return(1)
-      }
-      down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
+      showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
+      return(1)
     }
+    down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
     return(down)
   }
   #
