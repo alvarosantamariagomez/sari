@@ -10756,7 +10756,7 @@ server <- function(input,output,session) {
       }
       # Setting series units if known
       if (isTruthy(url$server)) {
-        if (url$server == "EPOS" || url$server == "EOSTLS" || url$server == "PSMSL") {
+        if (url$server == "EOSTLS" || url$server == "PSMSL") {
           updateRadioButtons(session, inputId = "sunits", selected = 2)
         } else {
           updateRadioButtons(session, inputId = "sunits", selected = 1)
@@ -10889,7 +10889,7 @@ server <- function(input,output,session) {
                                averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                                table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
                              } else {
-                               if (url$server2 == "EOSTLS" || url$server2 == "EPOS") {
+                               if (url$server2 == "EOSTLS") {
                                  averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                                  table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
                                } else {
@@ -10937,7 +10937,7 @@ server <- function(input,output,session) {
                 showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
               }
             }
-            if (url$server2 == "EOSTLS" || url$server2 == "EPOS") {
+            if (url$server2 == "EOSTLS") {
               table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
                 x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
                 x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
@@ -11479,7 +11479,7 @@ server <- function(input,output,session) {
           shinyjs::delay(100, updateRadioButtons(inputId = "station_coordinates", selected = 2))
           lat <- tableAll[1,1]
           lon <- tableAll[1,2]
-          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1000)
+          coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
           coordinates <- c(coordinates,lat,lon)
         } else if (server == "EARTHSCOPE") {
           tableAll <- try(read.table(text = grep("# XYZ Reference Coordinate", readLines(filein, warn = F, n = 10), ignore.case = F, value = T, fixed = T), comment.char = ""), silent = T)
