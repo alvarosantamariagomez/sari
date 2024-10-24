@@ -8194,7 +8194,7 @@ server <- function(input,output,session) {
     if (isTruthy(inputs$periodRef)) {
       info$periodRef <- F
     }
-    if (info$sampling0 > 0) {
+    if (isTruthy(info$sampling0) && info$sampling0 > 0) {
       info$sampling0 <- info$sampling0*scale
     }
     if (length(trans$offsetEpochs) > 0) {
