@@ -240,13 +240,15 @@
  AIRA  A    4 P 11:070:20783 12:214:03600 P - antenna change
  AIRA  A    5 P 12:214:03600 16:106:59106 P - EQ M7.0 - 6 km ESE of Kumamoto, Japan
  AIRA  A    6 P 16:106:59106 19:008:45571 P - EQ M6.3 - 16 km SSE of Nishinoomote, Japan
- AIRA  A    7 P 19:008:45571 00:000:00000 P - 
+ AIRA  A    7 P 19:008:45571 24:221:27775 P - EQ M7.1 - Hyuganada Sea, Japan
+ AIRA  A    8 P 24:221:27775 00:000:00000 P -
  AIRA  A    1 P 00:000:00000 99:297:00000 V - non-linearity
  AIRA  A    2 P 99:297:00000 03:050:32640 V - antenna change
  AIRA  A    3 P 03:050:32640 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  AIRA  A    4 P 11:070:20783 16:106:59106 V - EQ M7.0 - 6 km ESE of Kumamoto, Japan
  AIRA  A    5 P 16:106:59106 19:008:45571 V - EQ M6.3 - 16 km SSE of Nishinoomote, Japan
- AIRA  A    6 P 19:008:45571 00:000:00000 V - 
+ AIRA  A    6 P 19:008:45571 24:221:27775 V - EQ M7.1 - Hyuganada Sea, Japan
+ AIRA  A    7 P 24:221:27775 00:000:00000 V -
 *
  AIS5  A    1 P 00:000:00000 08:226:00000 P - receiver change
  AIS5  A    2 P 08:226:00000 12:302:11049 P - EQ M7.8 - 206 km SW of Prince Rupert, Canada
@@ -512,7 +514,8 @@
 *
  AUKT  A    1 P 00:000:00000 12:019:00000 P - unknown
  AUKT  A    2 P 12:019:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- AUKT  A    3 P 16:318:39776 00:000:00000 P - 
+ AUKT  A    3 P 16:318:39776 24:143:84240 P - antenna change
+ AUKT  A    4 P 24:143:84240 00:000:00000 P -
  AUKT  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  AUKT  A    2 P 16:318:39776 00:000:00000 V - 
 *
@@ -541,6 +544,10 @@
  AV24  A    4 P 20:204:22365 00:000:00000 P - 
  AV24  A    1 P 00:000:00000 14:041:00000 V - unknown
  AV24  A    2 P 14:041:00000 00:000:00000 V - 
+*
+ AZGB  A    1 P 00:000:00000 24:200:50400 P - antenna change
+ AZGB  A    2 P 24:200:50400 00:000:00000 P -
+ AZGB  A    1 P 00:000:00000 00:000:00000 V -
 *
  AZU1  A    1 P 00:000:00000 99:289:35204 P - EQ M7.1 - Hector Mine, CA Earthquake
  AZU1  A    2 P 99:289:35204 04:218:00000 P - antenna change
@@ -963,7 +970,8 @@
  BSMK  A    2 P 09:201:00000 00:000:00000 P - 
  BSMK  A    1 P 00:000:00000 00:000:00000 V - 
 *
- BTNG  A    1 P 00:000:00000 00:000:00000 P - 
+ BTNG  A    1 P 00:000:00000 19:318:58661 P - EQ M7.1 - 141 km NW of Ternate, Indonesia
+ BTNG  A    2 P 19:318:58661 00:000:00000 P -
  BTNG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  BUCU  A    1 P 00:000:00000 99:229:00099 P - EQ M7.6 - 4 km ESE of Derince, Turkey
@@ -1608,7 +1616,8 @@
  CPVG  A    3 P 15:112:00000 15:295:50160 P - receiver change
  CPVG  A    4 P 15:295:50160 23:233:00000 P - unknown
  CPVG  A    5 P 23:233:00000 24:048:00000 P - unknown
- CPVG  A    6 P 24:048:00000 00:000:00000 P -
+ CPVG  A    6 P 24:048:00000 24:230:00000 P - unknown
+ CPVG  A    7 P 24:230:00000 00:000:00000 P -
  CPVG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CRAO  A    1 P 00:000:00000 09:063:00000 P - antenna change
@@ -1995,7 +2004,8 @@
  DUNT  A    3 P 06:293:00000 06:357:00000 P - unknown
  DUNT  A    4 P 06:357:00000 09:196:33749 P - EQ M7.8 - 97 km WSW of Te Anau, New Zealand
  DUNT  A    5 P 09:196:33749 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- DUNT  A    6 P 16:318:39776 00:000:00000 P - 
+ DUNT  A    6 P 16:318:39776 24:213:12360 P - antenna change
+ DUNT  A    7 P 24:213:12360 00:000:00000 P -
  DUNT  A    1 P 00:000:00000 00:000:00000 V - 
 *
  DWH1  A    1 P 00:000:00000 00:000:00000 P - 
@@ -2292,7 +2302,8 @@
  FTNA  A    4 P 09:272:64091 12:141:28800 P - antenna change
  FTNA  A    5 P 12:141:28800 15:044:00000 P - non-linearity
  FTNA  A    6 P 15:044:00000 18:231:01181 P - EQ M8.2 - 267 km E of Levuka, Fiji
- FTNA  A    7 P 18:231:01181 00:000:00000 P - 
+ FTNA  A    7 P 18:231:01181 23:130:57720 P - EQ M7.6 - 82 km WNW of Hihifo, Tonga
+ FTNA  A    8 P 23:130:57720 00:000:00000 P -
  FTNA  A    1 P 00:000:00000 09:272:64091 V - EQ M8.1 - 168 km SSW of Matavai, Samoa
  FTNA  A    2 P 09:272:64091 15:044:00000 V - non-linearity
  FTNA  A    3 P 15:044:00000 00:000:00000 V - 
@@ -5244,7 +5255,8 @@
 *
  P051  A    1 P 00:000:00000 19:038:44160 P - antenna change
  P051  A    2 P 19:038:44160 22:206:00000 P - unknown
- P051  A    3 P 22:206:00000 00:000:00000 P - 
+ P051  A    3 P 22:206:00000 24:208:00000 P - unknown
+ P051  A    4 P 24:208:00000 00:000:00000 P -
  P051  A    1 P 00:000:00000 00:000:00000 V - 
 *
  P053  A    1 P 00:000:00000 19:312:32520 P - antenna change

@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version octubre 2024'
+title: 'SARI documentation - version noviembre 2024'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *octubre 2024*  --  "Is it shiny? - Pretty shiny"
+Current SARI version: *noviembre 2024*  --  "Are you certain there has never been any case of even the most insignificant computer error?"
 
 -----------------
 
