@@ -7077,6 +7077,7 @@ server <- function(input,output,session) {
         updateTextInput(session, "corto_wavelet", value = "")
         updateTextInput(session, "largo_wavelet", value = "")
         enable("series")
+        enable("server1")
         disable("fitType")
         disable("autoDownload")
         disable("white")
