@@ -779,8 +779,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              Outliers can be excluded manually or automatically with the <span class='UIoption'>toggle</span> and <span class='UIoption'>auto toggle</span> buttons.<br><br>
                                                                                              Removed outliers can be restored with the <span class='UIoption'>reset toggle</span> button.<br><br>
                                                                                              The <span class='UIoption'>truncate</span> option removes the beginning and/or end of the series.<br><br>
-                                                                                             The <span class='UIoption'>all components</span> option removes the outliers from all the components (if more than one) simultaneously.<br><br>
-                                                                                             The <span class='UIoption'>permanent</span> option permanently deletes (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
+                                                                                             The <span class='UIoption'>all components</span> option allows removing the outliers from all the components (if more than one) simultaneously or for each component individually.<br><br>
+                                                                                             The <span class='UIoption'>permanent</span> option allows deleting permanently (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
                                                                                              The <span class='UIoption'>include in file</span> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
                                                                                              The <span class='UIoption'>scrolling</span> option enables/disables the vertical scrolling of the left panel.<br><br>
                                                                                              See more details in the <span class='help'>help</span> tab."))
@@ -854,7 +854,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(4,
                                                                                checkboxInput(inputId = "remove3D",
                                                                                              div("All components", align = "right",
-                                                                                                 helpPopup("This option toggles or deletes the points from all the coordinate components at the same time.", anchor = "3d")),
+                                                                                                 helpPopup("This option allows toggling or deleting the points from all the coordinate components at the same time or separately.", anchor = "3d")),
                                                                                              value = T)
                                                                         ),
                                                                         column(4,
