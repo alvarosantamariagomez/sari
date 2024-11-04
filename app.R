@@ -9736,6 +9736,7 @@ server <- function(input,output,session) {
   observeEvent(input$remove, {
     req(db1[[info$db1]])
     removeNotification("no_toggle")
+    removeNotification("bad_toggle")
     removeNotification("no_point_manual")
     if (messages > 0) cat(file = stderr(), mySession, "Removing points, manually", "\n")
     excluding_plot <- excluding_plotres <- NULL
@@ -9805,49 +9806,23 @@ server <- function(input,output,session) {
         excluding_plotres$selected_ <- sapply(1:length(excluding_plotres$x), function(x) if (isTRUE(excluding_plotres$selected_[x])) T else F)
       }
       if ((isTruthy(excluding_plot$selected_) && sum(excluding_plot$selected_) > 0) || (isTruthy(excluding_plotres$selected_) && sum(excluding_plotres$selected_) > 0)) {
-        if (isTruthy(input$remove3D)) {
-          if (length(brush1) > 0) {
-            if (isTruthy(input$permanent)) {
-              db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
-              # setting new axis limits
-              info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
-              info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
-              ranges$x0 <- c(info$minx, info$maxx)
-              if (isTruthy(input$fullSeries) && input$optionSecondary == 1) {
-                # show all points from primary & secondary series
-                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
-                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
-              }
-              ranges$x1 <- c(info$minx, info$maxx)
-              updateCheckboxInput(session, inputId = "permanent", value = F)
-            } else {
-              db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
-            }
-          }
-          if (length(brush2) > 0) {
-            if (isTruthy(input$permanent)) {
-              db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
-              # setting new axis limits
-              info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
-              info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
-              ranges$x0 <- c(info$minx, info$maxx)
-              if (isTruthy(input$fullSeries) && input$optionSecondary == 1) {
-                # show all points from primary & secondary series
-                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
-                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
-              }
-              ranges$x1 <- c(info$minx, info$maxx)
-              updateCheckboxInput(session, inputId = "permanent", value = F)
-            } else {
-              db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
-            }
-          }
-          db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
+        if ((sum(excluding_plot$selected_) == length(trans$x)) || (sum(excluding_plotres$selected_) == length(trans$x))) {
+          showNotification(HTML("All the points were selected to be removed from the series.<br>Check the selected area."), action = NULL, duration = 10, closeButton = T, id = "bad_toggle", type = "warning", session = getDefaultReactiveDomain())
         } else {
-          if (input$tab == 1 || isTruthy(input$plot41_brush) || is.null(input$tab)) {
+          if (isTruthy(input$remove3D)) {
             if (length(brush1) > 0) {
               if (isTruthy(input$permanent)) {
                 db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
+                # setting new axis limits
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                ranges$x0 <- c(info$minx, info$maxx)
+                if (isTruthy(input$fullSeries) && input$optionSecondary == 1) {
+                  # show all points from primary & secondary series
+                  info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+                  info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+                }
+                ranges$x1 <- c(info$minx, info$maxx)
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
                 db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
@@ -9856,43 +9831,73 @@ server <- function(input,output,session) {
             if (length(brush2) > 0) {
               if (isTruthy(input$permanent)) {
                 db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
+                # setting new axis limits
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                ranges$x0 <- c(info$minx, info$maxx)
+                if (isTruthy(input$fullSeries) && input$optionSecondary == 1) {
+                  # show all points from primary & secondary series
+                  info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+                  info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
+                }
+                ranges$x1 <- c(info$minx, info$maxx)
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
                 db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
               }
             }
-          } else if (input$tab == 2 || isTruthy(input$plot42_brush)) {
-            if (length(brush1) > 0) {
-              if (isTruthy(input$permanent)) {
-                db1[[info$db1]]$status2[excluding_plot$selected_] <- NA
-                updateCheckboxInput(session, inputId = "permanent", value = F)
-              } else {
-                db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plot$selected_)
+            db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
+          } else {
+            if (input$tab == 1 || isTruthy(input$plot41_brush) || is.null(input$tab)) {
+              if (length(brush1) > 0) {
+                if (isTruthy(input$permanent)) {
+                  db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
+                  updateCheckboxInput(session, inputId = "permanent", value = F)
+                } else {
+                  db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
+                }
               }
-            }
-            if (length(brush2) > 0) {
-              if (isTruthy(input$permanent)) {
-                db1[[info$db1]]$status2[excluding_plotres$selected_] <- NA
-                updateCheckboxInput(session, inputId = "permanent", value = F)
-              } else {
-                db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plotres$selected_)
+              if (length(brush2) > 0) {
+                if (isTruthy(input$permanent)) {
+                  db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
+                  updateCheckboxInput(session, inputId = "permanent", value = F)
+                } else {
+                  db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
+                }
               }
-            }
-          } else if (input$tab == 3 || isTruthy(input$plot43_brush)) {
-            if (length(brush1) > 0) {
-              if (isTruthy(input$permanent)) {
-                db1[[info$db1]]$status3[excluding_plot$selected_] <- NA
-                updateCheckboxInput(session, inputId = "permanent", value = F)
-              } else {
-                db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding_plot$selected_)
+            } else if (input$tab == 2 || isTruthy(input$plot42_brush)) {
+              if (length(brush1) > 0) {
+                if (isTruthy(input$permanent)) {
+                  db1[[info$db1]]$status2[excluding_plot$selected_] <- NA
+                  updateCheckboxInput(session, inputId = "permanent", value = F)
+                } else {
+                  db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plot$selected_)
+                }
               }
-            }
-            if (length(brush2) > 0) {
-              if (isTruthy(input$permanent)) {
-                db1[[info$db1]]$status3[excluding_plotres$selected_] <- NA
-                updateCheckboxInput(session, inputId = "permanent", value = F)
-              } else {
-                db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding_plotres$selected_)
+              if (length(brush2) > 0) {
+                if (isTruthy(input$permanent)) {
+                  db1[[info$db1]]$status2[excluding_plotres$selected_] <- NA
+                  updateCheckboxInput(session, inputId = "permanent", value = F)
+                } else {
+                  db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding_plotres$selected_)
+                }
+              }
+            } else if (input$tab == 3 || isTruthy(input$plot43_brush)) {
+              if (length(brush1) > 0) {
+                if (isTruthy(input$permanent)) {
+                  db1[[info$db1]]$status3[excluding_plot$selected_] <- NA
+                  updateCheckboxInput(session, inputId = "permanent", value = F)
+                } else {
+                  db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding_plot$selected_)
+                }
+              }
+              if (length(brush2) > 0) {
+                if (isTruthy(input$permanent)) {
+                  db1[[info$db1]]$status3[excluding_plotres$selected_] <- NA
+                  updateCheckboxInput(session, inputId = "permanent", value = F)
+                } else {
+                  db1[[info$db1]]$status3 <- xor(db1[[info$db1]]$status3, excluding_plotres$selected_)
+                }
               }
             }
           }
