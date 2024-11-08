@@ -8809,6 +8809,7 @@ server <- function(input,output,session) {
         updateRadioButtons(inputId = "format2", selected = 1)
         info$format2 <- 1
         url$server2 <- "EOSTLS"
+        updateTextInput(session, inputId = "scaleFactor", value = "0.001")
       } else {
         updateRadioButtons(inputId = "format2", selected = 4)
         info$format2 <- 4
@@ -10866,7 +10867,7 @@ server <- function(input,output,session) {
           }
         }
         # Resampling the secondary series if there are more than one
-        if (dim(as.matrix(files$datapath))[1] > 1) {
+        if (num > 1) {
           if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
             if (is.na(as.numeric(input$step2))) {
               info$step2 <- NULL
@@ -11007,6 +11008,7 @@ server <- function(input,output,session) {
           showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         }
       } else {
+        file$secondary <- NULL
         showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
       }
     }
