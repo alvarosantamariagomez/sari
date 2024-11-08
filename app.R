@@ -10848,14 +10848,14 @@ server <- function(input,output,session) {
         files <- input$series2
       }
       table_stack <- NULL
-      num <- dim(as.matrix(files$datapath))[1]
+      num <- length(files$datapath)
       if (url$server2 == "EOSTLS" && num > 1) {
         showNotification(HTML("Stacking the secondary series into one series."), action = NULL, duration = NULL, closeButton = T, id = "stacking", type = "warning", session = getDefaultReactiveDomain())
         if (any(grepl("ECCO", input$product2)) && any(grepl("TUGO", input$product2))) {
           showNotification(HTML("WARNING: the TUGO and ECCO models have similar forcing, which will be considered twice in the secondary series."), action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
-      for (i in 1:num) {
+      for (i in seq_len(num)) {
         table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,url$server2,2)
         removeNotification(paste0("parsing_url2_",i))
         removeNotification("parsing_url2")
