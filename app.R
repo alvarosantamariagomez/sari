@@ -11129,7 +11129,7 @@ server <- function(input,output,session) {
       if (isTruthy(tableAll)) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
-          extension <- tolower(rev(strsplit(as.character(file), ".", fixed = T)[[1]])[1])
+          extension <- tolower(strsplit(basename(file), ".", fixed = T)[[1]][-1])
           if (server == "" && isTruthy(extension) && extension == "neu") {
             swap <- T
           }
@@ -11240,14 +11240,26 @@ server <- function(input,output,session) {
                 # assuming the time units set by the user are good
                 if (input$tunits == 1) {
                   extracted$x1 <- tableAll[,1]
+                  extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+                  if (nrow(extracted) == 0) {
+                    return(NULL)
+                  }
                   extracted$x2 <- mjd2week(extracted$x1)
                   extracted$x3 <- mjd2year(extracted$x1)
                 } else if (input$tunits == 2) {
                   extracted$x2 <- tableAll[,1]
+                  extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+                  if (nrow(extracted) == 0) {
+                    return(NULL)
+                  }
                   extracted$x1 <- week2mjd(extracted$x2)
                   extracted$x3 <- week2year(extracted$x2)
                 } else if (input$tunits == 3) {
                   extracted$x3 <- tableAll[,1]
+                  extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
+                  if (nrow(extracted) == 0) {
+                    return(NULL)
+                  }
                   extracted$x1 <- year2mjd(extracted$x3)
                   extracted$x2 <- year2week(extracted$x3)
                 }
