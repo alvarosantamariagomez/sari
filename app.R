@@ -12903,15 +12903,11 @@ server <- function(input,output,session) {
         shinyjs::hide(paste0("zoomin",input$tab))
         ranges$x1 <- ranges$x2 <- ranges$x4 <- rangeX
       }
-      if (isTruthy(ranges$y1)) {
-        rangeY <- rangeX <- range(x0)
+      rangeX <- range(x0)
       if (isTruthy(ranges$y1)) {
         rangeY <- ranges$y1
       } else {
-        rangeY <- range(y0[x0 > rangeX[1] & x0 < rangeX[2]])
-      }
-      } else {
-        rangeY <- range(y0[x0 > rangeX[1] & x0 < rangeX[2]])
+        rangeY <- range(y0[x0 >= rangeX[1] & x0 <= rangeX[2]])
       }
       if (input$tab == 4 && input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
         if (input$ne && component < 3) {
