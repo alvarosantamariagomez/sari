@@ -1836,22 +1836,30 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         condition = "output.tab3D == false",
                                                                         
                                                                         ## % MIDAS ####
-                                                                        checkboxInput(inputId = "midas",
-                                                                                      div("MIDAS",
-                                                                                          helpPopup("This option estimates the linear trend value with the Median Interannual Difference Adjusted for Skewness algorithm.", anchor = "notes-on-the-midas-trend-estimates")),
-                                                                                      value = F),
+                                                                        fluidRow(
+                                                                          column(12,
+                                                                                 checkboxInput(inputId = "midas",
+                                                                                               div("MIDAS",
+                                                                                                   helpPopup("This option estimates the linear trend value with the Median Interannual Difference Adjusted for Skewness algorithm.", anchor = "notes-on-the-midas-trend-estimates")),
+                                                                                               value = F)
+                                                                          )
+                                                                        ),
                                                                         
                                                                         ## % Entropy ####
-                                                                        checkboxInput(inputId = "entropy",
-                                                                                      div("Minimum entropy",
-                                                                                          helpPopup("This option estimates the linear rate value with the differential minimum Shannon entropy algorithm.", anchor = "notes-on-the-minimum-entropy")),
-                                                                                      value = F),
-                                                                        conditionalPanel(
-                                                                          condition = "input.entropy == true",
-                                                                          textInput(inputId = "offsetEpoch.entropy",
-                                                                                    div("Offset epochs (entropy)",
-                                                                                        helpPopup("Enter a comma-separated list of offset epochs.", anchor = "notes-on-the-minimum-entropy")),
-                                                                                    value = "")
+                                                                        fluidRow(
+                                                                          column(12,
+                                                                                 checkboxInput(inputId = "entropy",
+                                                                                               div("Minimum entropy",
+                                                                                                   helpPopup("This option estimates the linear rate value with the differential minimum Shannon entropy algorithm.", anchor = "notes-on-the-minimum-entropy")),
+                                                                                               value = F),
+                                                                                 conditionalPanel(
+                                                                                   condition = "input.entropy == true",
+                                                                                   textInput(inputId = "offsetEpoch.entropy",
+                                                                                             div("Offset epochs (entropy)",
+                                                                                                 helpPopup("Enter a comma-separated list of offset epochs.", anchor = "notes-on-the-minimum-entropy")),
+                                                                                             value = "")
+                                                                                 )
+                                                                          )
                                                                         ),
                                                                         
                                                                         ## % Histogram ####
