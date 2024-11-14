@@ -12923,7 +12923,6 @@ server <- function(input,output,session) {
         shinyjs::hide(paste0("zoomin",input$tab))
         ranges$x1 <- ranges$x2 <- ranges$x4 <- rangeX
       }
-      rangeX <- range(x0)
       if (isTruthy(ranges$y1)) {
         rangeY <- ranges$y1
       } else {
