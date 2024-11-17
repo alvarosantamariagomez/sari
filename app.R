@@ -7792,7 +7792,7 @@ server <- function(input,output,session) {
       stationGeo <- c()
       stationGeo2 <- c()
       poleCartesian <- c()
-      if (messages > 0) cat(file = stderr(), mySession, paste0("Compute plate rotation (", input$eulerType, ")"), "\n")
+      if (messages > 0) cat(file = stderr(), mySession, "Compute plate rotation", "\n")
       if (input$sunits == 1) {
         scaling <- 1
       } else if (input$sunits == 2) {
@@ -7974,6 +7974,11 @@ server <- function(input,output,session) {
       db1[[info$db1]]$mod1 <- db1[[info$db1]]$mod2 <- NULL
       db1[[info$db1]]$res1 <- db1[[info$db1]]$res2 <- NULL
     }
+    if (messages > 0) cat(file = stderr(), mySession, paste("Plate rotation option", input$eulerType), "\n")
+    # updating the overview plot only for 3D plots
+    if (input$tab == 4 && info$last_eulerType != input$eulerType) {
+      updateOverview()
+    }
     info$last_eulerType <- input$eulerType
   })
   
@@ -8086,6 +8091,11 @@ server <- function(input,output,session) {
     if (input$giaType == 2 || info$last_giaType == 2) {
       db1[[info$db1]]$mod3 <- NULL
       db1[[info$db1]]$res3 <- NULL
+    }
+    if (messages > 0) cat(file = stderr(), mySession, paste("GIA rate option", input$giaType), "\n")
+    # updating the overview plot only for 3D plots
+    if (input$tab == 4 && info$last_giaType != input$giaType) {
+      updateOverview()
     }
     info$last_giaType <- input$giaType
   })
@@ -13048,9 +13058,6 @@ server <- function(input,output,session) {
         for (p in trans[[paste0("offsetEpochs",component)]]) {
           abline(v = p, col = SARIcolors[2], lwd = 2)
         }
-      }
-      if (component == 3) {
-        updateOverview()
       }
     }
   }
