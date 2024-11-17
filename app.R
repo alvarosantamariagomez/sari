@@ -9830,7 +9830,7 @@ server <- function(input,output,session) {
         excluding_plotres$selected_ <- sapply(1:length(excluding_plotres$x), function(x) if (isTRUE(excluding_plotres$selected_[x])) T else F)
       }
       if ((isTruthy(excluding_plot$selected_) && sum(excluding_plot$selected_) > 0) || (isTruthy(excluding_plotres$selected_) && sum(excluding_plotres$selected_) > 0)) {
-        if ((sum(excluding_plot$selected_) == length(trans$x)) || (sum(excluding_plotres$selected_) == length(trans$x))) {
+        if ((sum(excluding_plot$selected_) == info$points) || (sum(excluding_plotres$selected_) == info$points)) {
           showNotification(HTML("All the points were selected to be removed from the series.<br>Check the selected area."), action = NULL, duration = 10, closeButton = T, id = "bad_toggle", type = "warning", session = getDefaultReactiveDomain())
         } else {
           if (isTruthy(input$remove3D)) {
