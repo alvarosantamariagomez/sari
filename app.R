@@ -3215,6 +3215,9 @@ server <- function(input,output,session) {
     removeNotification("format_not_compatible")
     removeNotification("no_model")
     removeNotification("no_sari")
+    removeNotification("update_model")
+    removeNotification("bad_LS")
+    updateRadioButtons(session, inputId = "fitType", selected = 0)
     # extracting file header
     comments <- grep("^#", readLines(con = input$loadSARI$datapath, n = 100, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T, fixed = F, useBytes = F, invert = F)
     if (isTruthy(comments) && grepl("^# SARI ", comments[1], ignore.case = F, perl = T)) {
@@ -3448,8 +3451,10 @@ server <- function(input,output,session) {
             }
             info$menu <- unique(c(info$menu, 4))
             updateCollapse(session, id = "menu", open = info$menu)
-            shinyjs::delay(1000, updateRadioButtons(session, inputId = "fitType", selected = 1))
-            shinyjs::delay(1100, updateCheckboxGroupInput(session, inputId = "model", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), inline = T, selected = components))
+            showNotification("Updating the model from the uploaded SARI file.", action = NULL, duration = 10, closeButton = T, id = "update_model", type = "warning", session = getDefaultReactiveDomain())
+            shinyjs::delay(2000, updateRadioButtons(session, inputId = "fitType", selected = 1))
+            shinyjs::delay(2100, updateCheckboxGroupInput(session, inputId = "model", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), inline = T, selected = components))
+            shinyjs::delay(3000, removeNotification("update_model"))
           }
         }
       }
