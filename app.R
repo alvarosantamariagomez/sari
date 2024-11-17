@@ -9629,7 +9629,7 @@ server <- function(input,output,session) {
         }
       } else {
         const <- 0
-        ylab <- gsub("component","",paste(info$components[2], " (",unit,")"))
+        ylab <- gsub("component","",paste0(info$components[2], " (",unit,")"))
       }
       plot(x[valid2], y2[valid2], type = symbol, pch = 20, xlab = "", xaxt = "n", yaxt = "n", ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
@@ -9719,7 +9719,7 @@ server <- function(input,output,session) {
         }
       } else {
         const <- 0
-        ylab <- gsub("component","",paste(info$components[3], " (",unit,")"))
+        ylab <- gsub("component","",paste0(info$components[3], " (",unit,")"))
       }
       plot(x[valid3], y3[valid3], type = symbol, pch = 20, yaxt = "n", xlab = info$tunits.label, ylab = ylab, xlim = x.range, ylim = y.range)
       p <- par("usr")[3:4]
