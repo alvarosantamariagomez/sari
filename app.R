@@ -11265,7 +11265,7 @@ server <- function(input,output,session) {
               } else {
                 if (!isTruthy(input$tunits)) {
                   showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
-                  return(NULL)
+                  req(info$stop)
                 }
                 # assuming the time units set by the user are good
                 if (input$tunits == 1) {
@@ -11305,7 +11305,7 @@ server <- function(input,output,session) {
           errorInfo <- paste(errorInfo, "(skipping comment lines)")
         }
         showNotification(HTML(paste("Format error when reading the input NEU/ENU file.<br>", errorInfo)), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
-        return(NULL)
+        req(info$stop)
       }
     # PBO ####
     } else if (format == 2) { #PBO
@@ -11393,7 +11393,7 @@ server <- function(input,output,session) {
               } else {
                 if (!isTruthy(input$tunits)) {
                   showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
-                  return(NULL)
+                  req(info$stop)
                 }
                 # assuming the time units set by the user are good
                 if (all(sapply(tableAll[[epoch]], is.numeric))) {
@@ -11412,7 +11412,7 @@ server <- function(input,output,session) {
                   }
                 } else {
                   showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
-                  return(NULL)
+                  req(info$stop)
                 }
               }
               if (columns > 2) {
@@ -11445,7 +11445,7 @@ server <- function(input,output,session) {
         updateRadioButtons(session, inputId = "tunits", selected = 3)
       } else {
         showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
-        return(NULL)
+        req(info$stop)
       }
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
@@ -11458,7 +11458,7 @@ server <- function(input,output,session) {
       extracted
     } else {
       showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
-      NULL
+      req(info$stop)
     }
   }
   #
