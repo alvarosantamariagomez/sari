@@ -1,96 +1,100 @@
-Instructions to install and run SARI locally on Windows, Linux or MacOS
------------------------------------------------------------------------
+Instructions for installing and running SARI locally on Windows, Linux or MacOS
+-------------------------------------------------------------------------------
 
+Note 1: These instructions describe the steps to install the R environment necessary to run SARI on your machine. There is always a risk that the environment you install will be different from the one I used to develop and test SARI. You can also run SARI on your machine with the expected environment using the SARI Docker image available at:
+https://hub.docker.com/r/alvarosg/sari
 
-Note 1: as a general rule, it is recommended to compile all the R dependencies on your machine, instead of using pre-compiled binaries. It will take more time to install all the packages, but SARI will run faster during the analysis.
+Note 2: If you have the choice between a Windows and a Linux (including WSL) installation, it is recommended to install SARI on a Linux machine as SARI will run much faster. If you are using a Windows machine, it is recommended that you compile all the R dependencies instead of installing the precompiled binaries. It will take longer to install all the packages, but SARI will run faster.
 
-Note 2: if you have the choice between a Windows or a Linux installation (including WSL), it is recommended to install SARI on a Linux machine as it will run much faster.
-
-Note 3: if you want to run SARI from a WSL terminal, for instance by using the sari.sh script, in that case R and all the package dependencies must be installed on WSL. The windows install is not necessary if running SARI only from WSL.
+Note 3: If you want to run SARI from a WSL terminal, for instance by using the sari.sh script, you need to install R and all the package dependencies on WSL. The windows installation is not necessary if you only want to run SARI from WSL.
 
 
 
 1) Install R version 4.1.x following the official R documentation here
 https://cran.r-project.org/
 
-SARI has been tested on R version 4.1 (specifically patch 4.1.3). It is recommended to install this R release.
+If you are installing a newer R version, please note that SARI has been tested on R version 4.1 (specifically patch 4.1.3). It is recommended to install this R release.
 
 
 
-2) It is recommended to install RStudio (free desktop version) if you plan to debug and/or contribute to the code development. It can also be used to run SARI, though this is not mandatory (see options in point 6 below).  
+2) It is recommended to install RStudio (free desktop version) if you plan to debug and/or contribute to the code development. It can also be used to run SARI, although this is not mandatory (see running options in point 6 below).
 https://www.rstudio.com/products/rstudio/download/
 
 
 
-3) With R (and RStudio) installed, some extras may be needed before installing the SARI dependencies
+3) With R (and RStudio) installed, some extras may be required before installing the SARI dependencies
 
 3.1) If using Windows: install Rtools following these instructions  
 https://cran.r-project.org/bin/windows/Rtools/
 
-Once Rtools is installed, in order to use it, you need first to install and load the package devtools.  
-On the R/RStudio console type:    
-`
-install.packages("devtools")  
-library(devtools)
-`
+Once Rtools is installed, to use it, you must first install and load the devtools package.  
+On the R/RStudio console type:
 
-3.2) If using macOS: install Xcode and a GNU Fortran compiler (not fully tested, feedback is welcome) following:  
+install.packages("devtools")
+library(devtools)
+
+
+3.2) If using MacOS: install Xcode and a GNU Fortran compiler (not fully tested, feedback is welcome) following:  
 https://mac.r-project.org/tools/
 
+
 3.3) If using Linux/WSL: install the following packages on your system (it may vary depending on the distro, feedback is welcome):  
-`
+
 sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjpeg-dev libpng-dev libtiff-dev pandoc libicu-dev libxml2-dev git libgit2-dev
-`
 
 
-4) Install all the R packages indicated below and their dependencies from CRAN. 
 
-The two methods indicated below will either install the pre-compiled binaries or compile the packages from source (recommended).
+4) Install all the R packages listed below and their dependencies from CRAN. 
 
-4.1) On Rstudio, go to Tools -> Install Packages  
-Then copy & paste the following list of packages separated by spaces or commas:
+The two methods indicated below will either install the precompiled binaries or compile the packages from source (recommended).
+
+4.1) Precompiled binarise: on Rstudio, go to Tools -> Install Packages  
+Then copy & paste the following list of packages separated by commas:
 
 data.table, devtools, dlm, fields, httr, import, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach, mnormt, ragg
 
-4.2) On the R/RStudio console, the following commands will compile and install all the packages:
+4.2) Source: on the R/RStudio console, the following commands will compile and install all the packages:
 
 options(install.packages.compile.from.source = "always")  
 install.packages(c("data.table", "devtools", "dlm", "fields", "httr", "import", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"), type = "source")
-`
+
 
 If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to update this package from its github repo using:
-`
+
 devtools::install_github("daattali/shinycssloaders")
 
 
 
-5) In addition, the following packages are optional and allow for extra analysis, visualization features or faster functions:
+5) In addition, the following packages are optional and allow for additional analysis, visualization features or faster functions:
 
-5.1) The package "mvcwt" allows computing wavelet transforms. The source code of this package can be downloaded from here:  
+5.1) The "mvcwt" package allows computing wavelet transforms. The source code of this package can be downloaded from here:  
 https://cran.r-project.org/src/contrib/Archive/mvcwt/  
 
-To install this package there are two options:  
+There are two ways to install this package:
 
-5.1.1) On Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file from your machine.
+5.1.1) In Rstudio, go to Tools -> Install Packages and select the downloaded mvcwt tar.gz file on your machine.
 
 5.1.2) On the R/Rstudio console type:  
-`
-install.packages("/path/to/the/mvcwt/tar.gz/file")
-`
 
-5.2) The package "leaflet" allows adding a location map with the plate tectonic boundaries when the station coordinates are known. This package can be installed like the others before, but it requires installing the GDAL library first, at least in order to compile the package on a Linux system. For Windows, this can be avoided if installing the package binary file.  
-More information on the GDAL library here:  
+install.packages("/path/to/the/mvcwt/tar.gz/file")
+
+
+5.2) The "leaflet" package allows you to add a map showing the station location and the nearby plate tectonic boundaries, if the station coordinates are known. This package can be installed like the others before, but it requires the GDAL library to be installed first, at least in order to compile the package on a Linux system. For Windows, this can be avoided by installing the package binary file.  
+
+More information about the GDAL library here:  
 https://gdal.org/download.html
 
-5.3) The package "geojsonio" allows adding the plate tectonic names on the location map. This package can be installed like the others before, but it requires installing the leaflet package first (see the previous 5.2). Compiling this package alone takes enough time to prepare and drink your favorite tea flavor.
 
-5.4) The packages "Rcpp", "RcppArmadillo" and "RcppEigen" allow using ad hoc C++ functions defined in the 'functions.cpp' file that would speed up the noise analysis on a Windows machine by around 4 times faster . These packages can be compiled and installed like the others before.
-
+5.3) The "geojsonio" package allows you to add the names of the tectonic plates on the location map. This package can be installed like the others before, but it requires the leaflet package to be installed first (see the previous section 5.2). Compiling this package alone takes enough time to prepare and drink your favorite tea.
 
 
-6) Once all the packages are installed, there are three ways to run SARI:
+5.4) The "Rcpp", "RcppArmadillo" and "RcppEigen" packages allow you to compile ad hoc C++ functions defined in the 'functions.cpp' file, which would speed up the noise analysis on a Windows machine by about 4 times. These packages can be compiled and installed just like the others before. The ad hoc C++ functions themselves will be compiled each time the SARI app is run and this will take a few seconds.
 
-6.1) On RStudio: clone or download the SARI repo, open the app.R script and use one of these:
+
+
+6) Once all the packages are installed, there are three different ways to run SARI:
+
+6.1) From the RStudio UI, clone or download the SARI repo, open the app.R script and do one of the following:
 
 click on RunApp -> run external
 
@@ -102,27 +106,25 @@ or
 
 Ctrl + Shift + S
 
-6.2) On the R/RStudio console type one of these:
+
+6.2) From the R/RStudio console, type one of these:
 
 To run SARI without cloning the repo:  
-`
+
 library(shiny)    
 runGitHub("sari", "alvarosantamariagomez", launch.browser=T)
-`
 
-or
+or after cloning or downloading the SARI repo:  
 
-After cloning or downloading the SARI repo:  
-`
 runApp("/path/to/the/downloaded/SARI/app.R/file")
-`
+
 
 6.3) On a Unix-like terminal using the sari.sh shell script located in the scripts/ folder of the SARI repo.  
-This shell script can also be used to launch a local SARI session with Docker or a remote SARI session on Shinyapps.io without installing SARI.
+This shell script can also be used to start a local SARI session with Docker or a remote SARI session on Shinyapps.io without installing SARI.
 
 
 
-For any comment or question, open a GitHub issue at  
+For any comments or questions, please open a GitHub issue at  
 https://github.com/alvarosantamariagomez/sari
 
 
