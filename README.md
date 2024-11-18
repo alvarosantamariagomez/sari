@@ -1,4 +1,3 @@
-![twitter](https://img.shields.io/twitter/follow/timeserious?style=social)
 ![license](https://img.shields.io/github/license/alvarosantamariagomez/sari)
 ![version](https://img.shields.io/badge/version-noviembre%202024-blue)
 ![github](https://img.shields.io/github/languages/code-size/alvarosantamariagomez/sari?color=g)
@@ -41,4 +40,4 @@ Any type of contribution is accepted: from changing complex functions in the cod
 
 For changes in the code, plase fork this repository, then clone it, make the modification and finally send a pull request. For a more detailed step-by-step guide, you can check [this repo](https://github.com/firstcontributions/first-contributions).
 
-For bug reports, suggestions or questions, please create an issue using a template.
+For bug reports, suggestions or questions, please create an issue using the template.
