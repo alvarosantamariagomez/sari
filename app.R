@@ -9007,9 +9007,9 @@ server <- function(input,output,session) {
           table_common$sy3 <- as.numeric(formatting(table_common$sy3,1))
         }
       }
-      numValid1 <- sum(table_common$status1)
-      numValid2 <- sum(table_common$status2)
-      numValid3 <- sum(table_common$status3)
+      numValid1 <- sum(table_common$status1, na.rm = T)
+      numValid2 <- sum(table_common$status2, na.rm = T)
+      numValid3 <- sum(table_common$status3, na.rm = T)
       if (numValid1 == numValid2 && numValid1 == numValid3) {
         atLeast <- " "
         numValid <- numValid1
