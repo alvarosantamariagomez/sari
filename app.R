@@ -4069,6 +4069,7 @@ server <- function(input,output,session) {
             trans$res <- res
             trans$mod <- mod
             trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
+            trans$reserror <- rep(NA, length(trans$res))
             if (isTruthy(synthesis$sigma)) {
               if (!any(1/weights < trans$moderror^2)) {
                 trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
