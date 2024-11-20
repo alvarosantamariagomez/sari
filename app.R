@@ -350,7 +350,7 @@ tabContents <- function(tabNum) {
                conditionalPanel(
                  condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.spectrumResiduals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
-                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = dblclickOpts("lomb_2click", delay = 600), brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T, delay = 600)),
+                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = dblclickOpts("lomb_2click", delay = 1000), brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T, delay = 600)),
                    type = getOption("spinner.type", default = 1),
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
