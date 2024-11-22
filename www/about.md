@@ -390,6 +390,7 @@ The `search discontinuities` button provides an automatic guesstimate of the loc
 1. By default, the reference epoch of the sinusoidal fitting is the mean of the available measurement epochs, and phase values are estimated accordingly.  
 2. The sinusoidal model is linearized by separating it into sine and cosine components. The estimated sinusoidal amplitude and phase, including their formal uncertainty, are provided below the correlations of the fitted parameters in the fit summary of the right panel.  
 3. The convention for the sinusoidal phase is that the sine component is positive clockwise.
+4. Below the option to enter the `sinusoidal periods`, the `draconitic harmonics` option automatically adds 4 overtones of the [draconitic orbital period](https://en.wikipedia.org/wiki/Orbital_period#Draconic_period) for each selected GNSS constellation. Choose the constellation(s) that was used to compute the position time series. The number of draconitic harmonics can be modified in the `sinusoidal periods` input.
 
 <h5 id="notes-on-the-exponential/logarithmic-decay-fitting"></h5>
 

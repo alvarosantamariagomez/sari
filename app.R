@@ -1521,10 +1521,30 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   Add xN at the end to fit up to N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.", anchor = "notes-on-the-sinusoidal-fitting")),
                                                                                       value = "1y"),
                                                                             fluidRow(
+                                                                              column(12,
+                                                                                     div(style = "font-weight: bold", "Draconitic harmonics",
+                                                                                         helpPopup("This option automatically adds four draconitic harmonics for each selected GNSS constellation to the sinusoidal model component.", anchor = "notes-on-the-sinusoidal-fitting"))
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              column(3,
+                                                                                     checkboxInput(inputId = "GPSdrac", label = "GPS", value = F)
+                                                                              ),
+                                                                              column(3,
+                                                                                     checkboxInput(inputId = "GALdrac", label = "Galileo", value = F)
+                                                                              ),
+                                                                              column(3,
+                                                                                     checkboxInput(inputId = "BDSdrac", label = "BeiDou", value = F)
+                                                                              ),
+                                                                              column(3,
+                                                                                     checkboxInput(inputId = "GLOdrac", label = "GLONASS", value = F)
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
                                                                               column(6,
                                                                                      textInput(inputId = "periodRef",
                                                                                                div("Ref. epoch periods",
-                                                                                                   helpPopup("Enter the reference epoch for the phase of the periods. If empty, the mean data epoch will be used", anchor = "notes-on-the-sinusoidal-fitting")),
+                                                                                                   helpPopup("Enter the reference epoch for the phase of the sinusoidal periods. If empty, the mean data epoch will be used", anchor = "notes-on-the-sinusoidal-fitting")),
                                                                                                value = "")
                                                                               ),
                                                                               conditionalPanel(
@@ -6589,6 +6609,10 @@ server <- function(input,output,session) {
       disable("step")
       disable("step2")
       disable("scaleFactor")
+      disable("GPSdrac")
+      disable("GALdrac")
+      disable("BDSdrac")
+      disable("GLOdrac")
     } else {
       # if (input$tab == 4 || input$tab == 5) {
         # runjs("document.getElementsByClassName('panel-primary')[3].classList.add('hidden');")
@@ -6849,6 +6873,10 @@ server <- function(input,output,session) {
           }
           enable("fitType")
           enable("model")
+          enable("GPSdrac")
+          enable("GALdrac")
+          enable("BDSdrac")
+          enable("GLOdrac")
           if (input$fitType == 1 || input$fitType == 2) {
             if (length(trans$mod) > 0 && length(trans$res) > 0) {
               enable("spectrumModel")
@@ -6906,6 +6934,10 @@ server <- function(input,output,session) {
             disable("mle")
             disable("spectrumModel")
             disable("spectrumResiduals")
+            disable("GPSdrac")
+            disable("GALdrac")
+            disable("BDSdrac")
+            disable("GLOdrac")
           }
           if (length(trans$filter) > 0) {
             enable("spectrumFilter")
@@ -7177,6 +7209,10 @@ server <- function(input,output,session) {
         disable("server2")
         disable("product2")
         disable("swap")
+        disable("GPSdrac")
+        disable("GALdrac")
+        disable("BDSdrac")
+        disable("GLOdrac")
       }
     }
   }, priority = 100)
@@ -10670,6 +10706,160 @@ server <- function(input,output,session) {
       })
     }
   }, priority = 200)
+  
+  # Observe draconitics ####
+  ## GPS ####
+  observeEvent(input$GPSdrac, {
+    req(db1[[info$db1]])
+    draconiticPeriod <- 350.9
+    text_in_default <- paste0(draconiticPeriod, "dx4")
+    text_in_generic <- paste0(draconiticPeriod, "dx")
+    text_out <- NULL
+    if (grepl(text_in_generic, input$period, perl = F, fixed = T)) {
+      if (input$GPSdrac) {
+        # do nothing
+      } else {
+        # removing the string with the draconitic harmonics
+        splitted <- strsplit(input$period, split = ",")[[1]]
+        text_out <- sub(splitted[grepl(text_in_generic, strsplit(input$period, split = ",")[[1]], perl = F)], "", input$period, fixed = T)
+        # removing the double commas if any
+        text_out <- sub(", *,", ",", text_out, perl = T)
+        # removing the last commas if any
+        text_out <- sub(", *$", "", text_out, perl = T)
+        # removing the first commas if any
+        text_out <- sub("^ *, *", "", text_out, perl = T)
+      }
+    } else {
+      if (input$GPSdrac) {
+        # adding the string with the draconitic harmonics
+        if (nchar(trimws(input$period)) > 0) {
+          text_out <- paste(input$period, text_in_default, sep = ", ")
+        } else {
+          text_out <- text_in_default
+        }
+      } else {
+        # do nothing
+      }
+    }
+    if (!is.null(text_out)) {
+      # updating the string on the UI
+      updateTextInput(session, "period", value = text_out)
+    }
+  })
+  ## Galileo ####
+  observeEvent(input$GALdrac, {
+    req(db1[[info$db1]])
+    draconiticPeriod <- 355.7
+    text_in_default <- paste0(draconiticPeriod, "dx4")
+    text_in_generic <- paste0(draconiticPeriod, "dx")
+    text_out <- NULL
+    if (grepl(text_in_generic, input$period, perl = F, fixed = T)) {
+      if (input$GALdrac) {
+        # do nothing
+      } else {
+        # removing the string with the draconitic harmonics
+        splitted <- strsplit(input$period, split = ",")[[1]]
+        text_out <- sub(splitted[grepl(text_in_generic, strsplit(input$period, split = ",")[[1]], perl = F)], "", input$period, fixed = T)
+        # removing the double commas if any
+        text_out <- sub(", *,", ",", text_out, perl = T)
+        # removing the last commas if any
+        text_out <- sub(", *$", "", text_out, perl = T)
+        # removing the first commas if any
+        text_out <- sub("^ *, *", "", text_out, perl = T)
+      }
+    } else {
+      if (input$GALdrac) {
+        # adding the string with the draconitic harmonics
+        if (nchar(trimws(input$period)) > 0) {
+          text_out <- paste(input$period, text_in_default, sep = ", ")
+        } else {
+          text_out <- text_in_default
+        }
+      } else {
+        # do nothing
+      }
+    }
+    if (!is.null(text_out)) {
+      # updating the string on the UI
+      updateTextInput(session, "period", value = text_out)
+    }
+  })
+  ## BeiDou ####
+  observeEvent(input$BDSdrac, {
+    req(db1[[info$db1]])
+    draconiticPeriod <- 353.1
+    text_in_default <- paste0(draconiticPeriod, "dx4")
+    text_in_generic <- paste0(draconiticPeriod, "dx")
+    text_out <- NULL
+    if (grepl(text_in_generic, input$period, perl = F, fixed = T)) {
+      if (input$BDSdrac) {
+        # do nothing
+      } else {
+        # removing the string with the draconitic harmonics
+        splitted <- strsplit(input$period, split = ",")[[1]]
+        text_out <- sub(splitted[grepl(text_in_generic, strsplit(input$period, split = ",")[[1]], perl = F)], "", input$period, fixed = T)
+        # removing the double commas if any
+        text_out <- sub(", *,", ",", text_out, perl = T)
+        # removing the last commas if any
+        text_out <- sub(", *$", "", text_out, perl = T)
+        # removing the first commas if any
+        text_out <- sub("^ *, *", "", text_out, perl = T)
+      }
+    } else {
+      if (input$BDSdrac) {
+        # adding the string with the draconitic harmonics
+        if (nchar(trimws(input$period)) > 0) {
+          text_out <- paste(input$period, text_in_default, sep = ", ")
+        } else {
+          text_out <- text_in_default
+        }
+      } else {
+        # do nothing
+      }
+    }
+    if (!is.null(text_out)) {
+      # updating the string on the UI
+      updateTextInput(session, "period", value = text_out)
+    }
+  })
+  ## GLONASS ####
+  observeEvent(input$GLOdrac, {
+    req(db1[[info$db1]])
+    draconiticPeriod <- 353.0
+    text_in_default <- paste0(draconiticPeriod, "dx4")
+    text_in_generic <- paste0(draconiticPeriod, "dx")
+    text_out <- NULL
+    if (grepl(text_in_generic, input$period, perl = F, fixed = T)) {
+      if (input$GLOdrac) {
+        # do nothing
+      } else {
+        # removing the string with the draconitic harmonics
+        splitted <- strsplit(input$period, split = ",")[[1]]
+        text_out <- sub(splitted[grepl(text_in_generic, strsplit(input$period, split = ",")[[1]], perl = F)], "", input$period, fixed = T)
+        # removing the double commas if any
+        text_out <- sub(", *,", ",", text_out, perl = T)
+        # removing the last commas if any
+        text_out <- sub(", *$", "", text_out, perl = T)
+        # removing the first commas if any
+        text_out <- sub("^ *, *", "", text_out, perl = T)
+      }
+    } else {
+      if (input$GLOdrac) {
+        # adding the string with the draconitic harmonics
+        if (nchar(trimws(input$period)) > 0) {
+          text_out <- paste(input$period, text_in_default, sep = ", ")
+        } else {
+          text_out <- text_in_default
+        }
+      } else {
+        # do nothing
+      }
+    }
+    if (!is.null(text_out)) {
+      # updating the string on the UI
+      updateTextInput(session, "period", value = text_out)
+    }
+  })
 
 
   # Functions ####
