@@ -7754,6 +7754,7 @@ server <- function(input,output,session) {
     }
   }, priority = 5)
   observeEvent(c(inputs$station_lat, inputs$station_lon, inputs$station_lat2, inputs$station_lon2, input$showmap), {
+    req(db1[[info$db1]])
     if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon) && input$showmap) {
       # Mapping the station positions
       # Plate polygons and boundaries come from Hugo Ahlenius, Nordpil and Peter Bird (https://github.com/fraxen/tectonicplates)
@@ -8090,7 +8091,7 @@ server <- function(input,output,session) {
         }
         if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
           if (inputs$station_lon2 < 0) {
-            x2 <- inputs$station_lon2 + 360 
+            x2 <- inputs$station_lon2 + 360
           } else {
             x2 <- inputs$station_lon2
           }
@@ -8139,6 +8140,7 @@ server <- function(input,output,session) {
 
   # Observe wavelet ####
   observeEvent(c(inputs$min_wavelet, inputs$max_wavelet, inputs$res_wavelet, inputs$loc_wavelet),{
+    req(db1[[info$db1]])
     if (isTruthy(inputs$min_wavelet) && isTruthy(inputs$max_wavelet) && isTruthy(inputs$res_wavelet) && isTruthy(inputs$loc_wavelet)) {
       removeNotification("bad_wavelet")
       if (inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && inputs$res_wavelet > 0 && inputs$loc_wavelet >= info$sampling && inputs$loc_wavelet <= info$rangex/2) {
