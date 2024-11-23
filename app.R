@@ -1364,6 +1364,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   <span class='UIoption'>Extended Kalman filter</span> (EKF)<br>
                                                                                                   <span class='UIoption'>Unscented Kalman filter</span> (UKF)<br><br>
                                                                                                   The fitted model may include any combination of <span class='UIoption'>linear</span> trend, higher-degree <span class='UIoption'>polynomial</span>, <span class='UIoption'>offsets</span>, <span class='UIoption'>sinusoidal</span> periodic signals, <span class='UIoption'>exponential</span> and <span class='UIoption'>logarithmic</span> decays.<br><br>
+                                                                                                  The <span class='UIoption'>click & collect</span> option automatically adds the points clicked on the series plots to the list of offset epochs.<br><br>
                                                                                                   The <span class='UIoption'>search discontinuities</span> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
                                                                                                   The <span class='UIoption'>check offsets</span> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
                                                                                                   See more details in the <span class='help'>help</span> tab."))
@@ -1594,6 +1595,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                       div("Offset epochs",
                                                                                           helpPopup("Enter a comma-separated list of offsets in the same time units as the series.", anchor = NULL)),
                                                                                       value = ""),
+                                                                            checkboxInput(inputId = "click2collect",
+                                                                                          div("Click & collect",
+                                                                                              helpPopup("Click on the series or residual plots to automatically add the epochs to the list of offsets.", anchor = NULL)),
+                                                                                          value = F),
                                                                             conditionalPanel(
                                                                               condition = "input.fitType == 2",
                                                                               fluidRow(
@@ -10863,6 +10868,17 @@ server <- function(input,output,session) {
     }
   })
 
+  # Observe click&collect ####
+  observeEvent(c(input$plot_1click), {
+    req(db1[[info$db1]])
+    if (input$click2collect) {
+      # adding click point to list of offsets
+      allOffsets <- paste(input$offsetEpoch, input$plot_1click$x, sep = ", ")
+      # removing the first commas if any
+      allOffsets <- sub("^ *, *", "", allOffsets, perl = T)
+      updateTextInput(session, inputId = "offsetEpoch", value = allOffsets)
+    }
+  })
 
   # Functions ####
   digest <- function(series) {

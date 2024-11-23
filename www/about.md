@@ -358,7 +358,8 @@ Some of these components require additional parameters to be included in the mod
 Additionally, if using a *KF* fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the [<a href="#notes-on-the-kalman-filter" target="_self">notes</a>](#notes-on-the-kalman-filter) below).
 
 The fitted model will be represented by a red line on top of the original series and in the plot of the residuals with a zero value line.  
-The fitted discontinuities will be represented by vertical red lines in the residual plot.
+The fitted offsets will be represented by vertical red lines in the residual plot.  
+The `click & collect` option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.
 
 A fit summary will be shown on the visualization pannel on the right.  
 In case of a *LS* fit, the summary will include the estimated values of the chosen model components, their formal uncertainty, their absolute [Student's t-test](https://en.wikipedia.org/wiki/Student%27s_t-test) statistic and their associated significance level, i.e., the probability of rejecting a true null hypothesis in which the parameter value is not significancly different from zero. The correlation between the model parameters is also provided on the visualization panel.  
