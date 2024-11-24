@@ -251,7 +251,7 @@ tabContents <- function(tabNum) {
                       "),
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
            withSpinner(
-             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = "plot_2click", brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+             plotOutput(paste0("plot",tabNum), click = "plot_1click", dblclick = dblclickOpts("plot_2click", delay = 1000), brush = brushOpts(id = "plot_brush", resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
              color = getOption("spinner.color", default = "#0080ff"),
              size = getOption("spinner.size", default = 2),
@@ -261,7 +261,7 @@ tabContents <- function(tabNum) {
            conditionalPanel(
              condition = "output.run",
              withSpinner(
-               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = "res_2click", brush = brushOpts(id = "res_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
+               plotOutput(paste0("res",tabNum), click = "plot_1click", dblclick = dblclickOpts("res_2click", delay = 1000), brush = brushOpts(id = "res_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T)),
                type = getOption("spinner.type", default = 1),
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
@@ -396,7 +396,7 @@ tab3Contents <- function(series) {
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
            div(style = "margin: 2em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1"))),
            withSpinner(
-             plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = paste0("plot",tabNum,"1_2click"), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+             plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = dblclickOpts(paste0("plot",tabNum,"1_2click"), delay = 1000), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
              color = getOption("spinner.color", default = "#0080ff"),
              size = getOption("spinner.size", default = 2),
@@ -406,7 +406,7 @@ tab3Contents <- function(series) {
            div(style = "margin-top: 1.5em;",
                div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2"))),
                withSpinner(
-                 plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = paste0("plot",tabNum,"2_2click"), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+                 plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = dblclickOpts(paste0("plot",tabNum,"2_2click"), delay = 1000), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
                  color = getOption("spinner.color", default = "#0080ff"),
                  size = getOption("spinner.size", default = 2),
@@ -417,7 +417,7 @@ tab3Contents <- function(series) {
            div(style = "margin-top: 1.5em;",
                div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3"))),
                withSpinner(
-                 plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = paste0("plot",tabNum,"3_2click"), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
+                 plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = dblclickOpts(paste0("plot",tabNum,"3_2click"), delay = 1000), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
                  color = getOption("spinner.color", default = "#0080ff"),
                  size = getOption("spinner.size", default = 2),
@@ -3622,7 +3622,7 @@ server <- function(input,output,session) {
       updateOverview()
       # print clicks on plot
       output$plot1_info <- output$plot2_info <- output$plot3_info <- renderText({
-        if (length(input$plot_1click$x) > 0) {
+        if (length(input$plot_1click$x) > 0 && length(input$plot_brush) == 0 && length(input$res_brush) == 0) {
           paste("Plot coordinates = ", input$plot_1click$x, input$plot_1click$y, sep = "\t")
         }
       })
@@ -3649,17 +3649,17 @@ server <- function(input,output,session) {
   # Print clicks on the 3D tab
   output$plot4_info <- renderPrint({
     line1 <- line2 <- line3 <- NULL
-    if (length(input$plot41_1click$x) > 0) {
+    if (length(input$plot41_1click$x) > 0 && length(input$plot41_brush) == 0) {
       x <- input$plot41_1click$x
       y <- input$plot41_1click$y
       line1 <- paste("Plot 1 coordinates =", x, y, sep = "\t")
     }
-    if (length(input$plot42_1click$x) > 0) {
+    if (length(input$plot42_1click$x) > 0 && length(input$plot42_brush) == 0) {
       x <- input$plot42_1click$x
       y <- input$plot42_1click$y
       line2 <- paste("Plot 2 coordinates =", x, y, sep = "\t")
     }
-    if (length(input$plot43_1click$x) > 0) {
+    if (length(input$plot43_1click$x) > 0 && length(input$plot43_brush) == 0) {
       x <- input$plot43_1click$x
       y <- input$plot43_1click$y
       line3 <- paste("Plot 3 coordinates =", x, y, sep = "\t")
@@ -4616,17 +4616,17 @@ server <- function(input,output,session) {
   # Print clicks on the residuals tab
   output$plot5_info <- renderPrint({
     line1 <- line2 <- line3 <- NULL
-    if (length(input$plot51_1click$x) > 0) {
+    if (length(input$plot51_1click$x) > 0 && length(input$plot51_brush) == 0) {
       x <- input$plot51_1click$x
       y <- input$plot51_1click$y
       line1 <- paste("Plot 1 coordinates =", x, y, sep = "\t")
     }
-    if (length(input$plot52_1click$x) > 0) {
+    if (length(input$plot52_1click$x) > 0 && length(input$plot52_brush) == 0) {
       x <- input$plot52_1click$x
       y <- input$plot52_1click$y
       line2 <- paste("Plot 2 coordinates =", x, y, sep = "\t")
     }
-    if (length(input$plot53_1click$x) > 0) {
+    if (length(input$plot53_1click$x) > 0 && length(input$plot53_brush) == 0) {
       x <- input$plot53_1click$x
       y <- input$plot53_1click$y
       line3 <- paste("Plot 3 coordinates =", x, y, sep = "\t")
@@ -10871,7 +10871,7 @@ server <- function(input,output,session) {
   # Observe click&collect ####
   observeEvent(c(input$plot_1click), {
     req(db1[[info$db1]])
-    if (input$click2collect) {
+    if (input$click2collect && length(input$plot_brush) == 0 && length(input$res_brush) == 0) {
       # adding click point to list of offsets
       allOffsets <- paste(input$offsetEpoch, input$plot_1click$x, sep = ", ")
       # removing the first commas if any
