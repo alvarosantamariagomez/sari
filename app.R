@@ -522,22 +522,22 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                      .modal { color: #333333; font-weight: bold; text-align: center; padding-right:10px; padding-top: 24px;}"),
                   
                   # Getting user screen size (from https://stackoverflow.com/questions/36995142/get-the-size-of-the-window-in-shiny)
-                  tags$script('
-                                var size = [0, 0];
-                                var tactile = 9;
-                                $(document).on("shiny:connected", function(e) {
-                                    size[0] = window.outerWidth;
-                                    size[1] = window.outerHeight;
-                                    tactile = navigator.maxTouchPoints;
-                                    Shiny.onInputChange("tactile", tactile);
-                                    Shiny.onInputChange("size", size);
-                                });
-                                $(window).resize(function(e) {
-                                    size[0] = window.outerWidth;
-                                    size[1] = window.outerHeight;
-                                    Shiny.onInputChange("size", size);
-                                });
-                            '),
+                  # tags$script('
+                  #               var size = [0, 0];
+                  #               var tactile = 9;
+                  #               $(document).on("shiny:connected", function(e) {
+                  #                   size[0] = window.outerWidth;
+                  #                   size[1] = window.outerHeight;
+                  #                   tactile = navigator.maxTouchPoints;
+                  #                   Shiny.onInputChange("tactile", tactile);
+                  #                   Shiny.onInputChange("size", size);
+                  #               });
+                  #               $(window).resize(function(e) {
+                  #                   size[0] = window.outerWidth;
+                  #                   size[1] = window.outerHeight;
+                  #                   Shiny.onInputChange("size", size);
+                  #               });
+                  #           '),
                   
                   # scrolling a block of the left panel to the center of the screen when it is open
                   tags$script('
@@ -2413,8 +2413,8 @@ server <- function(input,output,session) {
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), mySession, "Mobile connection", "\n")
-      cat(file = stderr(), mySession, "Screen size", input$size[1], "x", input$size[2], "\n")
-      cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
+      # cat(file = stderr(), mySession, "Screen size", input$size[1], "x", input$size[2], "\n")
+      # cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
       shinyjs::hide(id = "menu")
       shinyjs::hide(id = "localDir")
       shinyjs::hide(selector = "#tab li a[data-value=1]")
@@ -2452,26 +2452,26 @@ server <- function(input,output,session) {
             ))
           }
         })
-        if (messages > 5) cat(file = stderr(), mySession, "Screen size", input$size[1], "x", input$size[2], "\n")
-        if (messages > 5) cat(file = stderr(), mySession, "Pixel ratio", info$pixelratio, "\n")
-        if (messages > 2) cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
+        # if (messages > 5) cat(file = stderr(), mySession, "Screen size", input$size[1], "x", input$size[2], "\n")
+        # if (messages > 5) cat(file = stderr(), mySession, "Pixel ratio", info$pixelratio, "\n")
+        # if (messages > 2) cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
         shinyjs::hide("localDir")
         # welcome message on screen (deprecated)
         if (isTRUE(info$welcome)) {
           showNotification("<<< It is strongly recommended to read the help content at least once to avoid mistakes and to make the most of this tool.", action = NULL, duration = 10, closeButton = T, id = "point_to_help", type = "message", session = getDefaultReactiveDomain())
           if (messages > 2) cat(file = stderr(), mySession, "Warning", "\n")
-          if (isTruthy(input$tactile)) {
-            if (input$tactile > 0) {
-              if (messages > 2) cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
-              showModal(modalDialog(
-                title = tags$h3("Dear SARI user"),
-                HTML("It is strongly discouraged to use the touchscreen with SARI.<br>Please, consider using the mouse instead."),
-                size = "m",
-                easyClose = T,
-                fade = F
-              ))
-            }
-          }
+          # if (isTruthy(input$tactile)) {
+          #   if (input$tactile > 0) {
+          #     if (messages > 2) cat(file = stderr(), mySession, "Touchscreen", input$tactile, "\n")
+          #     showModal(modalDialog(
+          #       title = tags$h3("Dear SARI user"),
+          #       HTML("It is strongly discouraged to use the touchscreen with SARI.<br>Please, consider using the mouse instead."),
+          #       size = "m",
+          #       easyClose = T,
+          #       fade = F
+          #     ))
+          #   }
+          # }
           info$welcome <- F
         }
         mySession <<- as.integer(runif(n = 1, min = 1, max = 999999)) # setting anonymous user' session id
@@ -7232,7 +7232,7 @@ server <- function(input,output,session) {
     } else if (input$tab == 5) {
       info$width <- session$clientData$output_plot51_width
     }
-    if (messages > 5) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
+    # if (messages > 5) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
   }, priority = 2000)
 
   # Observe URL ####
