@@ -14205,30 +14205,35 @@ server <- function(input,output,session) {
     setProgress(round(m/info$points, digits = 1))
     vel_f <- -999999
     vel_b <- -999999
-    index_f <- which.min(abs(trans$x - (trans$x[m] + t)))
-    index_b <- which.min(abs(trans$x - (trans$x[m] - t)))
+    if (input$format == 4) {
+      x <- db1$original[[paste0("x",input$tunits)]][db1$original$status1]
+    } else {
+      x <- db1$original[[paste0("x",input$tunits)]][db1$original$status3]
+    }
+    index_f <- which.min(abs(x - (x[m] + t)))
+    index_b <- which.min(abs(x - (x[m] - t)))
     # checking forward pair
-    if (abs(trans$x[index_f] - trans$x[m] - t) < info$tol) {
+    if (abs(x[index_f] - x[m] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(trans$x[m] < as.numeric(trans$offsetEpochs) & trans$x[index_f] > as.numeric(trans$offsetEpochs))) {
-            vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
+          if (!any(x[m] < as.numeric(trans$offsetEpochs) & x[index_f] > as.numeric(trans$offsetEpochs))) {
+            vel_f <- (series[index_f] - series[m]) / (x[index_f] - x[m])
           }
         }
       } else {
-        vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
+        vel_f <- (series[index_f] - series[m]) / (x[index_f] - x[m])
       }
     }
     # checking backward pair
-    if (abs(trans$x[m] - trans$x[index_b] - t) < info$tol) {
+    if (abs(x[m] - x[index_b] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(trans$x[index_b] < as.numeric(trans$offsetEpochs) & trans$x[m] > as.numeric(trans$offsetEpochs))) {
-            vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
+          if (!any(x[index_b] < as.numeric(trans$offsetEpochs) & x[m] > as.numeric(trans$offsetEpochs))) {
+            vel_b <- (series[m] - series[index_b]) / (x[m] - x[index_b])
           }
         }
       } else {
-        vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
+        vel_b <- (series[m] - series[index_b]) / (x[m] - x[index_b])
       }
     }
     return(c(vel_f,vel_b))
