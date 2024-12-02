@@ -10497,12 +10497,13 @@ server <- function(input,output,session) {
     } else {
       hideTab(inputId = "tab", target = "8", session = getDefaultReactiveDomain())
       if (input$tab == 5 ||
-          (length(trans$y) > 0 && 
+          (input$tab < 4 && length(trans$y) > 0 &&
            (  length(trans$filter) > 0 || 
               length(trans$res) > 0 || 
               (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || 
               input$optionSecondary > 1 ||
-              (input$eulerType == 2 && length(trans$plate) > 0) )
+              (input$eulerType == 2 && length(trans$plate) > 0) ||
+              (input$giaType == 2 && length(trans$gia) > 0 && input$tab == 3) )
           )
       ) {
         showTab(inputId = "tab", target = "7", select = F, session = getDefaultReactiveDomain())
@@ -13525,7 +13526,15 @@ server <- function(input,output,session) {
       }
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+      if (input$tab == 5) {
+        cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[1], trans$plate[1]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[2], trans$plate[2]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+      } else {
+        cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+      }
+    }
+    if (input$giaType == 2 && length(trans$gia) > 0 && input$tab > 2) {
+      cat(paste(sprintf('# GIA model uplift removed: %f', trans$gia[3]), units, "from model", input$giaModel), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$tab < 4) {
       if (input$fitType == 1 && length(trans$results) > 0) {
