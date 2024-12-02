@@ -6099,12 +6099,12 @@ server <- function(input,output,session) {
               }
               output$est.index <- renderUI({
                 line1 <- "Spectral index:"
-                line2 <- format(sigmaK, nsmall = 3, digits = 0, trim = F, scientific = F)
+                line2 <- format(sigmaK, nsmall = 3, trim = F, scientific = F)
                 if (input$noise_unc) {
                   if (isTruthy(seParmsK) && seParmsK <= 0.0005) {
                     seParmsK <- 0.001
                   }
-                  line3 <- paste("+/-", format(seParmsK, nsmall = 3, digits = 0, trim = F, scientific = F))
+                  line3 <- paste("+/-", format(seParmsK, nsmall = 3, trim = F, scientific = F))
                 }
                 HTML(paste(line1,'<br/>',line2, '<br/>',line3))
               })
@@ -8680,20 +8680,20 @@ server <- function(input,output,session) {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = db1$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
-                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
                            db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
                            db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
-                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
                            db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
                          }
                        } else {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = db1$original$sy1, sy2 = db1$original$sy2, sy3 = db1$original$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
-                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
                            db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
                            db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
                            db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
@@ -8703,7 +8703,7 @@ server <- function(input,output,session) {
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
-                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
                            db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
                            db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
                            db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
@@ -11229,7 +11229,7 @@ server <- function(input,output,session) {
           if (isTruthy(url$station2) && dim(as.matrix(files$datapath))[1] > 1) {
             table_stack <- table_stack[,c("x1","y1","y2","y3")]
             names(table_stack) <- c("# MJD", "East", "North", "Up")
-            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, digits = 0, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
+            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
           } else {
             # Extracting station coordinates
             coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,skip,sep2)
@@ -12095,7 +12095,7 @@ server <- function(input,output,session) {
             }
             if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
               if (f < 1/abs(info$rangex)) {
-                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex, nsmall = info$decimalsx, digits = 0, scientific = F, trim = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex, nsmall = info$decimalsx, scientific = F, trim = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
               label_sin <- paste0("S",i)
@@ -12230,7 +12230,7 @@ server <- function(input,output,session) {
             }
             if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
               if (f < 1/abs(info$rangex)) {
-                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex, nsmall = info$decimalsx, digits = 0, scientific = F, trim = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex, nsmall = info$decimalsx, scientific = F, trim = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
               label_sin <- paste0("S", i)
@@ -13596,10 +13596,10 @@ server <- function(input,output,session) {
           cat(paste('# Noise: PL', formatting(trans$noise[7],2), '+/-', formatting(trans$noise[8],2), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[9])) {
-          cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, digits = 0, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[11])) {
-          cat(sprintf('# Noise: MLE %s', format(trans$noise[11]/-1, nsmall = 2, digits = 0, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
+          cat(sprintf('# Noise: MLE %s', format(trans$noise[11]/-1, nsmall = 2, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
     } else if (input$tab == 5) {
@@ -13639,7 +13639,7 @@ server <- function(input,output,session) {
       }
     }
     req(OutPut$df)
-    OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F, scientific = F, width = info$decimalsx)
+    OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx)
     if (input$tab < 4) {
       OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
       if (isTruthy(input$sigmas)) {
@@ -13720,7 +13720,7 @@ server <- function(input,output,session) {
           output_excluded$df <- data.frame(x = trans$xe, y = trans$ye)
           names(output_excluded$df) <- c("# Epoch", "Data")
         }
-        output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, digits = 0, trim = F,scientific = F)
+        output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F,scientific = F)
         output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],0)
         if (isTruthy(input$sigmas)) {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
@@ -15346,7 +15346,7 @@ server <- function(input,output,session) {
       x <- x - intgr
       if (length(x) > 1) {
         extra_dig <- 0
-        formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, digits = 0, scientific = info$scientific, trim = F, width = width)
+        formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
       } else {
         extra_dig <- y
         formatted <- intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width))
