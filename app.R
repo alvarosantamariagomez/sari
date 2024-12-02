@@ -3084,9 +3084,11 @@ server <- function(input,output,session) {
         } else {
           trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         }
+        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (input$format == 4 && isTruthy(trans$gia) && input$giaType == 2) {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
+        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         if (input$format2 == 4) {
@@ -3094,9 +3096,11 @@ server <- function(input,output,session) {
         } else {
           trans$y2 <- trans$y2 - trans$plate2[1]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
         }
+        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
       if (input$format2 == 4 && isTruthy(trans$gia2) && input$giaType == 2) {
         trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
     } else if (input$tab == 2) {
       trans$y0 <- as.numeric(table1$y2)
@@ -3106,9 +3110,11 @@ server <- function(input,output,session) {
       status <- table1$status2
       if (isTruthy(trans$plate) && input$eulerType == 2) {
         trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2], na.rm = T)) - median(trans$y0, na.rm = T)
+        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         trans$y2 <- trans$y2 - trans$plate2[2]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
     } else if (input$tab == 3) {
       trans$y0 <- as.numeric(table1$y3)
@@ -3118,15 +3124,19 @@ server <- function(input,output,session) {
       status <- table1$status3
       if (isTruthy(trans$plate) && input$eulerType == 2) {
         trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3], na.rm = T)) - median(trans$y0, na.rm = T)
+        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$gia) && input$giaType == 2) {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
+        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         trans$y2 <- trans$y2 - trans$plate2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
       if (isTruthy(trans$gia2) && input$giaType == 2) {
         trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
+        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
     }
     # getting data range including excluded points
