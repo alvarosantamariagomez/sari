@@ -15321,6 +15321,7 @@ server <- function(input,output,session) {
     width <- NULL
     if (info$scientific) {
       extra_dec <- 0
+      width <- 13
     } else {
       extra_dec <- y
     }
