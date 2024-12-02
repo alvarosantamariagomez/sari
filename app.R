@@ -3025,7 +3025,7 @@ server <- function(input,output,session) {
                  inputs$step, inputs$epoch, inputs$variable, inputs$errorBar, input$separator,
                  inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2, input$format2, input$ne, inputs$scaleFactor,
                  input$fullSeries, info$db1, info$db2,
-                 input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2,
+                 input$eulerType, trans$plate, trans$plate2, input$giaType, trans$gia, trans$gia2, input$neu1D,
                  db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3, db2[[info$db2]]), {
     req(isolate(db1[[info$db1]]))
     removeNotification("kf_not_valid")
@@ -3575,15 +3575,20 @@ server <- function(input,output,session) {
       yy <- median(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]], na.rm = T)
       centerx <- which(abs(trans$x - xx) == min(abs(trans$x - xx)))[1]
       centery <- which(abs(trans$y - yy) == min(abs(trans$y - yy)))[1]
-      if (input$tab == 1 || input$tab == 2) {
+      if (input$format == 4) {
         if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
-          rate <- trans$plate[as.numeric(input$tab)]
+          rate <- trans$plate[as.numeric(input$neu1D)]
+        } else if (isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+          rate <- trans$gia[3]
+        } 
+      } else {
+        if (input$tab == 1 || input$tab == 2) {
+          if (input$eulerType == 1 && length(trans$plate[!is.na(trans$plate)]) == 3) {
+            rate <- trans$plate[as.numeric(input$tab)]
+          }
+        } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
+          rate <- trans$gia[3]
         }
-        if (input$format == 4 && isTruthy(input$gia) && input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-          rate <- ifelse(exists("rate") && is.numeric(rate), yes = rate + trans$gia[3], no = trans$gia[3])
-        }
-      } else if (input$giaType == 1 && length(trans$gia[!is.na(trans$gia)]) == 3) {
-        rate <- trans$gia[3]
       }
       if (exists("rate") && is.numeric(rate)) {
         lines(c(trans$x[1],trans$x[length(trans$x)]),c(trans$y[centery] + rate*(trans$x[1] - trans$x[centerx]),trans$y[centery] + rate*(trans$x[length(trans$x)] - trans$x[centerx])), col = SARIcolors[4], lwd = 3)
@@ -6703,33 +6708,38 @@ server <- function(input,output,session) {
           if (!isTruthy(input$average) && length(inputs$step) > 0) {
             updateTextInput(session, inputId = "step", value = "")
           }
-          enable("gia")
-          if (!isTruthy(input$gia)) {
-            updateRadioButtons(session, inputId = "giaType", selected = 0)
-            updateTextInput(session, inputId = "giaTrend", value = "")
-            updateSelectInput(session, inputId = "giaModel", selected = "")
-            disable("giaType")
-          } else {
-            if (!is.na(inputs$giaTrend)) {
-              enable("giaType")
-            } else {
-              disable("giaType")
-            }
-          }
+          # plate and GIA options
           enable("euler")
-          if (!isTruthy(input$euler)) {
-            enable("neuenu")
-            updateRadioButtons(session, inputId = "eulerType", selected = 0)
-            updateTextInput(inputId = "plate", value = "")
+          enable("gia")
+          if (input$format == 4 && input$eulerType == 1 && input$giaType == 1) {
+            updateRadioButtons(session, inputId = "giaType", selected = 0)
           } else {
-            disable("neuenu")
-            if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
-                 ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)))) &&
-                ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
-              enable("eulerType")
+            if (!isTruthy(input$gia)) {
+              updateRadioButtons(session, inputId = "giaType", selected = 0)
+              updateTextInput(session, inputId = "giaTrend", value = "")
+              updateSelectInput(session, inputId = "giaModel", selected = "")
+              disable("giaType")
             } else {
-              disable("eulerType")
+              if (!is.na(inputs$giaTrend)) {
+                enable("giaType")
+              } else {
+                disable("giaType")
+              }
             }
+            if (!isTruthy(input$euler)) {
+              enable("neuenu")
+              updateRadioButtons(session, inputId = "eulerType", selected = 0)
+              updateTextInput(inputId = "plate", value = "")
+            } else {
+              disable("neuenu")
+              if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
+                   ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)))) &&
+                  ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
+                enable("eulerType")
+              } else {
+                disable("eulerType")
+              }
+            } 
           }
           if (input$format == 4) {
             disable("plotAll")
@@ -7834,8 +7844,9 @@ server <- function(input,output,session) {
       output$map <- renderUI({ NULL })
     }
   }, priority = 3)
-  observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_lon2), {
+  observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_x, inputs$station_y, inputs$station_z, inputs$station_x2, inputs$station_y2, inputs$station_z2), {
     req(db1[[info$db1]], input$euler)
+    removeNotification("no_rotation")
     if (((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
         (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
          ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2))))
@@ -8103,6 +8114,9 @@ server <- function(input,output,session) {
         }
         if (isTruthy(z1)) {
           updateTextInput(session, inputId = "giaTrend", value = sprintf('%.6f', z1))
+          if (input$giaType == 0) {
+            updateRadioButtons(session, inputId = "giaType", selected = 1)
+          }
         }
         if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
           if (inputs$station_lon2 < 0) {
@@ -8118,6 +8132,9 @@ server <- function(input,output,session) {
         }
         if (isTruthy(z2)) {
           updateTextInput(session, inputId = "giaTrend2", value = sprintf('%.6f', z2))
+          if (input$giaType == 0) {
+            updateRadioButtons(session, inputId = "giaType", selected = 1)
+          }
         }
       })
     }
@@ -8126,7 +8143,6 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (isTruthy(inputs$giaTrend)) {
       trans$gia <- c(0,0,inputs$giaTrend)
-      updateRadioButtons(session, inputId = "giaType", selected = 1)
     } else {
       trans$gia <- NULL
     }
@@ -10503,7 +10519,7 @@ server <- function(input,output,session) {
               (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) || 
               input$optionSecondary > 1 ||
               (input$eulerType == 2 && length(trans$plate) > 0) ||
-              (input$giaType == 2 && length(trans$gia) > 0 && input$tab == 3) )
+              (input$giaType == 2 && length(trans$gia) > 0 && (input$format == 4 || input$tab == 3)) )
           )
       ) {
         showTab(inputId = "tab", target = "7", select = F, session = getDefaultReactiveDomain())
@@ -13529,11 +13545,11 @@ server <- function(input,output,session) {
       if (input$tab == 5) {
         cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[1], trans$plate[1]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
         cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[2], trans$plate[2]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
-      } else {
+      } else if (input$format == 4 || input$tab < 3) {
         cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
-    if (input$giaType == 2 && length(trans$gia) > 0 && input$tab > 2) {
+    if (input$giaType == 2 && length(trans$gia) > 0 && (input$format == 4 || input$tab > 2)) {
       cat(paste(sprintf('# GIA model uplift removed: %f', trans$gia[3]), units, "from model", input$giaModel), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$tab < 4) {
