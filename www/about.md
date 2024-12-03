@@ -166,7 +166,7 @@ At this moment, the following servers and products are available:
   <tr>
    <td style="text-align:left;"><a href="https://www.sonel.org/" target="_blank">SONEL</a></td>
    <td style="text-align:center;"> </td>
-   <td style="text-align:left;">4 characters (TLSE)</td>
+   <td style="text-align:left;">9 characters (TLSE00FRA)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">ULR7A</td>
   </tr>
@@ -189,7 +189,7 @@ At this moment, the following servers and products are available:
    <td style="text-align:center;"><sup>2</sup></td>
    <td style="text-align:left;">4 characters (TLSE)</td>
    <td style="text-align:left;"> </td>
-   <td style="text-align:left;">FINAL, RAPID</td>
+   <td style="text-align:left;">IGS20, IGS14, RAPID</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="https://sideshow.jpl.nasa.gov/post/series.html" target="_blank">JPL</a></td>
@@ -232,7 +232,7 @@ At this moment, the following servers and products are available:
 
 Notes:  
 <sup>1</sup> The *LOCAL* server is used only to upload series from local files on a local SARI session (more details in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh)).  
-<sup>2</sup> The NGL series correspond to the *IGS14* solution.  
+<sup>2</sup> The *RAPID NGL* series correspond to the IGS14 solution.  
 <sup>3</sup> The EarthScope (UNAVCO) series correspond to the *IGS14* solution.  
 <sup>4</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with *(d)*, if they are available. Products marked with *(o)* represent old products that are no longer updated.  
 

@@ -7434,7 +7434,7 @@ server <- function(input,output,session) {
     } else if (input$server1 == "EPOS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server1 == "NGL") {
-      updateSelectizeInput(session, inputId = "product1", choices = list("FINAL", "RAPID"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("IGS20", "IGS14", "RAPID"), selected = "")
     } else if (input$server1 == "JPL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server1 == "EOSTLS") {
@@ -7466,7 +7466,7 @@ server <- function(input,output,session) {
     } else if (input$server2 == "EPOS") {
       updateSelectizeInput(session, inputId = "product2", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server2 == "NGL") {
-      updateSelectizeInput(session, inputId = "product2", choices = list("FINAL", "RAPID"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("IGS20", "IGS14", "RAPID"), selected = "")
     } else if (input$server2 == "JPL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server2 == "EOSTLS") {
@@ -14423,54 +14423,57 @@ server <- function(input,output,session) {
     ## NGL ####
     if (server == "NGL") {
       format <- 3
-      if (product == "FINAL") {
+      pattern <- ".tenv3"
+      if (product == "IGS14") {
         url <- "http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/"
+        listFile <- "www/NGL_database_IGS14.txt"
+      } else if (product == "IGS20") {
+        url <- "http://geodesy.unr.edu/gps_timeseries/IGS20/tenv3/IGS20/"
+        listFile <- "www/NGL_database_IGS20.txt"
       } else if (product == "RAPID") {
         url <- "http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/"
-      }
-      if (product == "FINAL" || product == "RAPID") {
-        pattern <- ".tenv3"
-        if (isTruthy(station)) {
-          name <- paste0(toupper(station),pattern)
-          filepath <- paste0(url,name)
-          if (file.exists("www/steps.txt") && series == 1) {
-            file$custom$name <- "steps.txt"
-            file$custom$datapath <- "www/steps.txt"
-            session$sendCustomMessage("custom", "steps.txt")
-            shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
-          }
-        } else {
-          withBusyIndicatorServer(variable, {
-            if (file.exists("www/NGL_database.txt")) {
-              stations_available <- readLines("www/NGL_database.txt", warn = F)
-            } else {
-              dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-              if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-                stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
-                writeLines(stations_available, "www/NGL_database.txt", sep = "\n")
-              } else {
-                showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-                return(NULL)
-              }
-            }
-            if (series == 1) {
-              output$showStation1 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })  
-            } else if (series == 2) {
-              output$showStation2 <- renderUI({
-                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
-              if (input$sunits == 2) {
-                updateTextInput(session, inputId = "scaleFactor", value = "1000")
-              }
-            }
-            return(NULL)
-          })
-        }
+        listFile <- "www/NGL_database_rapid.txt"
       } else {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
+      }
+      if (isTruthy(station)) {
+        name <- paste0(toupper(station),pattern)
+        filepath <- paste0(url,name)
+        if (file.exists("www/steps.txt") && series == 1) {
+          file$custom$name <- "steps.txt"
+          file$custom$datapath <- "www/steps.txt"
+          session$sendCustomMessage("custom", "steps.txt")
+          shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
+        }
+      } else {
+        withBusyIndicatorServer(variable, {
+          if (file.exists(listFile)) {
+            stations_available <- readLines(listFile, warn = F)
+          } else {
+            dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+              stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
+              writeLines(stations_available, listFile, sep = "\n")
+            } else {
+              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              return(NULL)
+            }
+          }
+          if (series == 1) {
+            output$showStation1 <- renderUI({
+              suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+            })  
+          } else if (series == 2) {
+            output$showStation2 <- renderUI({
+              suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+            })
+            if (input$sunits == 2) {
+              updateTextInput(session, inputId = "scaleFactor", value = "1000")
+            }
+          }
+          return(NULL)
+        })
       }
     ## RENAG ####
     } else if (server == "RENAG") {
