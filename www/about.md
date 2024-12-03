@@ -556,7 +556,7 @@ In addition to using the selected areas on the plots, large residuals can be aut
 The `reset` button will erase all the plots and all the parameters from the server memory, except the pointer to the *station.info* and the *custom offset* files, which will remain ready to be used again (even if they may not appear as being uploaded, the `plot` and `list` options will still be available).  
 After finishing a series and before uploading a new one, it is recommended to click the `reset` button instead of refreshing the page.  
 
-Some features require intensive and time-consuming processing (*noise analysis*, *automatic offset detection*, *wavelet*). In order to save server resources and make the app always accessible to anyone, after 25 minutes without client-server interaction, the server will kill the connection, go to sleep, and may even dream of electric sheep like all androids surely do!  
+Some features require intensive and time-consuming processing (*noise analysis*, *automatic offset detection*, *wavelet*). In order to save server resources and make the app always accessible to anyone, after 15 minutes without client-server interaction, the server will kill the connection, go to sleep, and may even dream of electric sheep like all androids surely do!  
 A warning should appear on the screen when a very long computation time is expected.
 
 -----------------
