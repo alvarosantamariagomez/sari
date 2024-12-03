@@ -6,7 +6,7 @@ https://hub.docker.com/r/alvarosg/sari
 
 Note 2: If you have the choice between a Windows and a Linux (including WSL) installation, it is recommended to install SARI on a Linux machine as SARI will run much faster. If you are using a Windows machine, it is recommended that you compile all the R dependencies instead of installing the precompiled binaries. It will take longer to install all the packages, but SARI will run faster.
 
-Note 3: If you want to run SARI from a WSL terminal, for instance by using the sari.sh script, you need to install R and all the package dependencies on WSL. The windows installation is not necessary if you only want to run SARI from WSL.
+Note 3: If you want to run SARI from a WSL terminal, for instance by using the sari.sh script, you need to install R and all the package dependencies on WSL. The Windows installation is not necessary if you only want to run SARI from WSL.
 
 
 
@@ -45,10 +45,9 @@ sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontc
 
 
 4) Install all the R packages listed below and their dependencies from CRAN. 
-
 The two methods indicated below will either install the precompiled binaries or compile the packages from source (recommended).
 
-4.1) Precompiled binarise: on Rstudio, go to Tools -> Install Packages  
+4.1) Precompiled binaries: on Rstudio, go to Tools -> Install Packages  
 Then copy & paste the following list of packages separated by commas:
 
 data.table, devtools, dlm, fields, httr, import, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach, mnormt, ragg

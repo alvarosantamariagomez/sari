@@ -1,5 +1,34 @@
 # **SARI changelog**
 
+# diciembre 2024 [2024.12]
+
+### Fixed
+- correcting the formatting of the series values (D. Rodriguez Collantes)
+- enabling the remote series selector after showing the help page
+- correcting the reading of a neu file that contains alphabetic characters
+- correcting the loading of more than one secondary series file
+- correcting bug when it is not possible to compute the formal error of the fit residuals
+- correcting the difference between primary and secondary series when some points were already deleted
+- avoiding removing all the points of the series manually
+- enabling the removal of points on the 3D plots before selecting any coordinate component
+
+### Changed
+- enabling the series download after correcting a GIA model
+- improving the information of the corrected models in the downloaded file
+- improving the fit of a LS model uploaded from a SARI file
+- improving the zoom-in on the 3D plots
+- updating the overview plot when using a plate or GIA model
+- reducing the number of error messages when the reading of the input series fails
+- adding a one-second buffer from plot clicks to identify double-clicks & drags on touchpads
+- avoiding firing the wavelet and location maps when a new session starts
+- correcting the definition of the data ranges in the 3D plots
+- improving the processing of the plate and gia models for 1D series
+- updating the api of the sonel server (M. Guichard & M. Gravelle)
+
+### Added
+- new option to automatically fit draconitic harmonics by constellation (M. Gravelle)
+- new click & collect option to include the clicked points on the plots to the list of offset epochs (M. Gravelle)
+
 
 # noviembre 2024 [2024.11]
 

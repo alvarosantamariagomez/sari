@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version noviembre 2024</title>
+  <title>SARI documentation - version diciembre 2024</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version noviembre 2024</h1>
+<h1 class="title">SARI documentation - version diciembre 2024</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>noviembre 2024</em> – “Are you certain there has never been any case of even the most insignificant computer error?”</p>
+<p>Current SARI version: <em>diciembre 2024</em> – “I was reading an article the other day that romantic relationships with OS’s are statistically rare”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -455,7 +455,7 @@ The user can upload any combination of the following possibilities:</p>
 </li>
 <li>The <code>Swap</code> button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling, excluded points or plate motion corrections.<br />
 </li>
-<li>When uploading a <em>secondary series</em>, both station IDs will be shown in the <code>series ID</code> box on the left panel, together with a “<em>&amp;</em>” when using the option <code>show</code>, a “–” when using the option <code>correct</code>, or a “+” when using the option <code>average</code>. When the primary series is combined with a <em>secondary series</em> (using <code>correct</code> or <code>average</code>, but not <code>show</code>), the IDs from both series will be extracted from the <em>station.info</em>, <em>soln</em>, and <em>customized offset</em> files. Otherwise only the ID from the primary series will be used.<br />
+<li>When uploading a <em>secondary series</em>, both station IDs will be shown in the <code>series ID</code> box on the left panel, together with a “&amp;” when using the option <code>show</code>, a “–” when using the option <code>correct</code>, or a “+” when using the option <code>average</code>. When the primary series is combined with a <em>secondary series</em> (using <code>correct</code> or <code>average</code>, but not <code>show</code>), the IDs from both series will be extracted from the <em>station.info</em>, <em>soln</em>, and <em>customized offset</em> files. Otherwise only the ID from the primary series will be used.<br />
 </li>
 <li>If the <code>show</code> option is selected, the <em>secondary series</em> will be plotted in green on the right y-axis and will not be included in the processing. This means that the <em>secondary series</em> could have a different sampling than the primary series. In case the <code>correct</code> or the <code>average</code> option is selected, only the common epochs between the primary and the <em>secondary series</em> will be shown. In the latter case, the <em>secondary series</em> must have observations at common epochs with the primary series because the series are neither filled nor interpolated at common epochs.<br />
 </li>
@@ -504,7 +504,8 @@ The user can upload any combination of the following possibilities:</p>
 <p>Some of these components require additional parameters to be included in the model (e.g., reference epochs, periods, a priori values, etc.). The reference epochs and the a priori values can be left empty and SARI will use some reasonable values automatically. Note that the a priori values can have a strong impact on the quality of non-linear fits, for example the exponential and logarithmic decays (see the <a href="#notes-on-the-exponential/logarithmic-decay-fitting"><a href="#notes-on-the-exponential/logarithmic-decay-fitting" target="_self">notes</a></a> below).<br />
 Additionally, if using a <em>KF</em> fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the <a href="#notes-on-the-kalman-filter"><a href="#notes-on-the-kalman-filter" target="_self">notes</a></a> below).</p>
 <p>The fitted model will be represented by a red line on top of the original series and in the plot of the residuals with a zero value line.<br />
-The fitted discontinuities will be represented by vertical red lines in the residual plot.</p>
+The <code>click and collect</code> option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.<br />
+The fitted offsets will be represented by vertical red lines in the residual plot.</p>
 <p>A fit summary will be shown on the visualization pannel on the right.<br />
 In case of a <em>LS</em> fit, the summary will include the estimated values of the chosen model components, their formal uncertainty, their absolute <a href="https://en.wikipedia.org/wiki/Student%27s_t-test">Student’s t-test</a> statistic and their associated significance level, i.e., the probability of rejecting a true null hypothesis in which the parameter value is not significancly different from zero. The correlation between the model parameters is also provided on the visualization panel.<br />
 In case of a <em>KF</em> fit, the summary will include the statistics (mean value, standard deviation, etc.) for each model component included in the estimated state.</p>
@@ -543,6 +544,7 @@ In case of a <em>KF</em> fit, the summary will include the statistics (mean valu
 <li>The sinusoidal model is linearized by separating it into sine and cosine components. The estimated sinusoidal amplitude and phase, including their formal uncertainty, are provided below the correlations of the fitted parameters in the fit summary of the right panel.<br />
 </li>
 <li>The convention for the sinusoidal phase is that the sine component is positive clockwise.</li>
+<li>Below the option to enter the <code>sinusoidal periods</code>, the <code>draconitic harmonics</code> option automatically adds 4 overtones of the <a href="https://en.wikipedia.org/wiki/Orbital_period#Draconic_period">draconitic orbital period</a> for each selected GNSS constellation. Choose the constellation(s) that was used to compute the position time series. The number of draconitic harmonics can be modified in the <code>sinusoidal periods</code> input.</li>
 </ol>
 <h5 id="notes-on-the-exponential/logarithmic-decay-fitting">
 </h5>
@@ -849,7 +851,7 @@ If running SARI on a local server (RStudio or Docker), there is a sixth block at
 For any comment or question, please open a <a href="https://github.com/alvarosantamariagomez/sari">github issue</a>.</p>
 <p>If you use SARI for your research, I would really appreciate it if you could include <a href="https://link.springer.com/article/10.1007/s10291-019-0846-y">this paper</a> in your references.</p>
 <p>As for me, I am thankful to these people that directly or indirectly contributed to improve this software (some of them more than once):</p>
-<p>Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel.</p>
+<p>Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard.</p>
 <p>SARI is accessible to anyone at the Shinyapps server thanks to the financial support of the <a href="http://renag.resif.fr/en/">RENAG National Observing Service</a>.</p>
 <hr />
 <h1 id="references">

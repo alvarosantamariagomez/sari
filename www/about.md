@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version noviembre 2024'
+title: 'SARI documentation - version diciembre 2024'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *noviembre 2024*  --  "Are you certain there has never been any case of even the most insignificant computer error?"
+Current SARI version: *diciembre 2024*  --  "I was reading an article the other day that romantic relationships with OS’s are statistically rare"
 
 -----------------
 
@@ -314,7 +314,7 @@ The user can upload any combination of the following possibilities:
 2. Several loading products can be selected and uploaded directly from the EOSTSL server (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the same ERA5 reanalysis (ERA5HYD(d) label). More details at the [EOSTLS server](http://loading.u-strasbg.fr).  
 3. If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the user's reponsability to verify that they have consistent time units and sampling.  
 4. The `Swap` button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling, excluded points or plate motion corrections.  
-5. When uploading a *secondary series*, both station IDs will be shown in the `series ID` box on the left panel, together with a "*&*" when using the option `show`, a "&ndash;" when using the option `correct`, or a "+" when using the option `average`. When the primary series is combined with a *secondary series* (using `correct` or `average`, but not `show`), the IDs from both series will be extracted from the *station.info*, *soln*, and *customized offset* files. Otherwise only the ID from the primary series will be used.  
+5. When uploading a *secondary series*, both station IDs will be shown in the `series ID` box on the left panel, together with a "&" when using the option `show`, a "&ndash;" when using the option `correct`, or a "+" when using the option `average`. When the primary series is combined with a *secondary series* (using `correct` or `average`, but not `show`), the IDs from both series will be extracted from the *station.info*, *soln*, and *customized offset* files. Otherwise only the ID from the primary series will be used.  
 6. If the `show` option is selected, the *secondary series* will be plotted in green on the right y-axis and will not be included in the processing. This means that the *secondary series* could have a different sampling than the primary series. In case the `correct` or the `average` option is selected, only the common epochs between the primary and the *secondary series* will be shown. In the latter case, the *secondary series* must have observations at common epochs with the primary series because the series are neither filled nor interpolated at common epochs.  
 7. For typical GNSS series with daily sampling, even if the sampling period is constant, very often the epochs will not exactly match between the primary and secondary series, especially if the series are produced by different people. If the primary and secondary series have both a constant sampling of one day, but their epochs do not match, SARI will try to compute the constant fraction of a day shift between both series and apply it to the secondary series to match the epochs of the primary series. This feature will work only if both the primary and *secondary* series have a regular sampling of 1 day or less, independently of their time unit.  
 8. If the *secondary series* does not have the same sampling as the primary series, a warning will be shown on screen. The sampling of the *secondary series* can be reduced with the `averaging` option, which is equivalent to the `reduce sampling` option of the primary series (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block).  
@@ -358,8 +358,8 @@ Some of these components require additional parameters to be included in the mod
 Additionally, if using a *KF* fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the [<a href="#notes-on-the-kalman-filter" target="_self">notes</a>](#notes-on-the-kalman-filter) below).
 
 The fitted model will be represented by a red line on top of the original series and in the plot of the residuals with a zero value line.  
-The fitted offsets will be represented by vertical red lines in the residual plot.  
-The `click & collect` option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.
+The `click and collect` option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.  
+The fitted offsets will be represented by vertical red lines in the residual plot.
 
 A fit summary will be shown on the visualization pannel on the right.  
 In case of a *LS* fit, the summary will include the estimated values of the chosen model components, their formal uncertainty, their absolute [Student's t-test](https://en.wikipedia.org/wiki/Student%27s_t-test) statistic and their associated significance level, i.e., the probability of rejecting a true null hypothesis in which the parameter value is not significancly different from zero. The correlation between the model parameters is also provided on the visualization panel.  
@@ -638,7 +638,7 @@ If you use SARI for your research, I would really appreciate it if you could inc
 
 As for me, I am thankful to these people that directly or indirectly contributed to improve this software (some of them more than once):
 
-Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel.
+Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard.
 
 SARI is accessible to anyone at the Shinyapps server thanks to the financial support of the [RENAG National Observing Service](http://renag.resif.fr/en/).
 
