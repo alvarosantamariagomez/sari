@@ -2296,7 +2296,7 @@ server <- function(input,output,session) {
     var startTime = 0;
     pageAccessedByReload = window.performance.getEntriesByType('navigation')[0].type.includes('reload');
     startTime = window.performance.getEntriesByType('navigation')[0].responseStart;
-    if (pageAccessedByReload === true && startTime > 2500) {
+    if (pageAccessedByReload === true && startTime > 2000) {
       pageAccessedByReload = 'false';
     }
     Shiny.onInputChange('refreshed', pageAccessedByReload);
