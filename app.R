@@ -14602,7 +14602,7 @@ server <- function(input,output,session) {
       if (product == "ULR7A") {
         if (isTruthy(station)) {
           name <- paste0(toupper(station), ".neu")
-          station4 <- substring(stations_available[1], 1, 4)
+          station4 <- substring(station, 1, 4)
           filepath <- paste0("https://api.sonel.org/v1/products/vlm/gnss/timeseries?solution=ULR7A&acro=",station,"&format=neu&sampling=daily")
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
