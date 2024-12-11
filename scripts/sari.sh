@@ -67,7 +67,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         | RENAG      | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
         | FORMATER   | SPOTGINS_POS, UGA                    | 9 char  | https://en.poleterresolide.fr/                 |
         | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  | 9 char  | https://www.epos-eu.org/                       |
-	| SONEL      | ULR7A                                | 4 char  | https://www.sonel.org/                         |
+	| SONEL      | ULR7A                                | 9 char  | https://www.sonel.org/                         |
 	| IGS        | IGS20                                | 4 char  | https://igs.org/products/                      |
         | EUREF      | IGb14                                | 9 char  | https://epncb.eu/_organisation/about.php       |
         | NGL        | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                        |
@@ -158,20 +158,26 @@ fi
 uname -a | grep microsoft > /dev/null 2>&1
 wsl=$?
 
-if [[ $wsl == 0 ]]; then # we are on WSL
+if [[ $wsl == 0 ]]; then
+	browser="cmd.exe /c start"
+else
 	wslview -v > /dev/null 2>&1
 	if [[ $? != 0 ]]; then
-		echo FATAL: wslview is not available.
-		exit 1
+		xdg-open --help > /dev/null 2>&1
+		if [[ $? != 0 ]]; then
+			x-www-browser -h > /dev/null 2>&1
+			if [[ $? != 0 ]]; then
+				echo FATAL: neither wslu nor xdg-utils are available. You must install one of them.
+				exit 1
+			else
+				browser=x-www-browser
+			fi
+		else
+			browser=xdg-open
+		fi
+	else
+		browser=wslview
 	fi
-	browser=wslview
-else
-	xdg-open --help > /dev/null 2>&1
-	if [[ $? != 0 ]]; then
-		echo FATAL: xdg-utils is not available.
-		exit 1
-	fi
-	browser=xdg-open
 fi
 
 if [[ ! -z $local ]]; then
