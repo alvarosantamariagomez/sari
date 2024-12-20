@@ -900,19 +900,37 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       
                                                                       ## % SARI model ####
-                                                                      div(style = "padding: 0px 0px; margin-top:0em",
-                                                                          fluidRow(
-                                                                            column(6,
-                                                                                   div(style = "font-weight: bold", "Load SARI model",
-                                                                                       helpPopup("This option allows loading a file with the model fitted in a previous analysis with SARI.", anchor = "ancillary-information")
-                                                                                   )
+                                                                      conditionalPanel(
+                                                                        condition = "output.tab3D == true",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     div(style = "font-weight: bold", "Load SARI model",
+                                                                                         helpPopup("This option allows loading a file with the model fitted in a previous analysis with SARI.", anchor = "ancillary-information")
+                                                                                     )
+                                                                              )
                                                                             )
-                                                                          ),
-                                                                          fluidRow(
-                                                                            column(8,
-                                                                                   fileInput(inputId = "loadSARI", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                        ),
+                                                                        br(),
+                                                                        div(style = "text-align: center;", "Select the tab of a coordinate component to enable this option."),
+                                                                        br()
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "output.tab3D == false",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     div(style = "font-weight: bold", "Load SARI model",
+                                                                                         helpPopup("This option allows loading a file with the model fitted in a previous analysis with SARI.", anchor = "ancillary-information")
+                                                                                     )
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              column(8,
+                                                                                     fileInput(inputId = "loadSARI", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                              )
                                                                             )
-                                                                          )
+                                                                        )
                                                                       ),
                                                                       
                                                                       ## % sitelog ####
@@ -3245,6 +3263,7 @@ server <- function(input,output,session) {
 
   # Load SARI file ####
   observeEvent(input$loadSARI, {
+print("yes")
     req(db1[[info$db1]])
     removeNotification("sari_version")
     removeNotification("format_not_compatible")
