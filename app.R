@@ -3263,7 +3263,6 @@ server <- function(input,output,session) {
 
   # Load SARI file ####
   observeEvent(input$loadSARI, {
-print("yes")
     req(db1[[info$db1]])
     removeNotification("sari_version")
     removeNotification("format_not_compatible")
@@ -3347,6 +3346,10 @@ print("yes")
             }
             # Extracting Sinusoidal info
             if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
+              updateCheckboxInput(session, inputId = "GPSdrac", value = F)
+              updateCheckboxInput(session, inputId = "GALdrac", value = F)
+              updateCheckboxInput(session, inputId = "GLOdrac", value = F)
+              updateCheckboxInput(session, inputId = "BDSdrac", value = F)
               index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               updateTextInput(session, "periodRef", value = unique(text[index + 1]))
               if (input$tunits == 1) {
@@ -3459,6 +3462,10 @@ print("yes")
             }
             # Extracting Sinusoidal info
             if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
+              updateCheckboxInput(session, inputId = "GPSdrac", value = F)
+              updateCheckboxInput(session, inputId = "GALdrac", value = F)
+              updateCheckboxInput(session, inputId = "GLOdrac", value = F)
+              updateCheckboxInput(session, inputId = "BDSdrac", value = F)
               index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               inputs$periodRef <- unique(text[index + 1])
               updateTextInput(session, "periodRef", value = inputs$periodRef)
