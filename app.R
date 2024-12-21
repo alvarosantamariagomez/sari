@@ -4186,11 +4186,11 @@ server <- function(input,output,session) {
               # trying with a tiny change of the reference period if the LS did not converge
               info$noLS <- T
               if ("Sinusoidal" %in% input$model) {
-                updateTextInput(session, "periodRef", value = inputs$periodRef*1.000001)
+                updateTextInput(session, "periodRef", value = as.numeric(inputs$periodRef)*1.000001)
               } else if ("Linear" %in% input$model) {
-                updateTextInput(session, "trendRef", value = inputs$trendRef*1.000001)
+                updateTextInput(session, "trendRef", value = as.numeric(inputs$trendRef)*1.000001)
               } else if ("Polynomial" %in% input$model) {
-                updateTextInput(session, "PolyRef", value = inputs$PolyRef*1.000001)
+                updateTextInput(session, "PolyRef", value = as.numeric(inputs$PolyRef)*1.000001)
               }
             }
           }
@@ -11955,24 +11955,29 @@ server <- function(input,output,session) {
         model_kf_inst <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k] - x[k-1])"), sep = " ")
         model_kf_mean <- paste(model_kf, paste0("e[k,",j,"] + e[k,",j + 1,"]*(x[k]-",text_rate,")"), sep = " ")
         j <- j + 2
+        if (length(y) > 30) {
+          tenth <- ceiling(length(y)/10)
+        } else {
+          tenth <- ceiling(length(y)/2)
+        }
         if (identical(input$Trend0,character(0)) || is.na(input$Trend0) || input$Trend0 == "" || input$Trend0 == " ") {
-          if (input$fitType == 1) {
-            ap_rate <- sigma_rate <- 0
-          } else {
-            if (length(y) > 30) {
-              tenth <- ceiling(length(y)/10)  
+          # if (isTruthy(match("Rate", trans$names))) {
+          #     ap_rate <- trans$LScoefs[match("Rate", trans$names),1]
+          #     sigma_rate <- trans$LScoefs[match("Rate", trans$names),2]
+          # } else {
+            if (input$fitType == 1) {
+              ap_rate <- sigma_rate <- 0
             } else {
-              tenth <- length(y)
+              fastFit <- try(lm(y[1:tenth]~x[1:tenth]), silent = F)
+              if (isTruthy(fastFit)) {
+                ap_rate <- summary(fastFit)$coefficients[2,1]
+                sigma_rate <- summary(fastFit)$coefficients[2,2] * 3
+              } else {
+                ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
+                sigma_rate <- ap_rate * 5
+              }
             }
-            fastFit <- try(lm(y[1:tenth]~x[1:tenth]), silent = F)
-            if (isTruthy(fastFit)) {
-              ap_rate <- summary(fastFit)$coefficients[2,1]
-              sigma_rate <- summary(fastFit)$coefficients[2,2] * 3
-            } else {
-              ap_rate <- (mean(tail(y, n = tenth), na.rm = T) - mean(y[1:tenth], na.rm = T))/(mean(tail(x, n = tenth), na.rm = T) - mean(x[1:tenth], na.rm = T))
-              sigma_rate <- ap_rate * 5
-            }
-          }
+          # }
           if (input$fitType == 2) {
             max_decimals <- signifdecimal(ap_rate, F) + 2
             updateTextInput(session, "Trend0", value = sprintf("%.*f", max_decimals, ap_rate))
@@ -11990,8 +11995,9 @@ server <- function(input,output,session) {
         }
         if (input$fitType == 1) {
           y_detrend <- y - (x - reft) * ap_rate
-          ap_intercept <- mean(y_detrend, na.rm = T)
-          sigma_intercept <- sd(y_detrend/sqrt(length(y)), na.rm = T)
+          xreft <- which.min(abs(x - reft))
+          ap_intercept <- mean(y_detrend[seq(xreft - tenth,xreft + tenth)], na.rm = T)
+          sigma_intercept <- sd(y_detrend[seq(xreft - tenth,xreft + tenth)], na.rm = T)/sqrt(tenth*2)
           if (!isTruthy(sigma_intercept) || sigma_intercept <= 0) {
             sigma_intercept <- 1
           }
@@ -12052,8 +12058,9 @@ server <- function(input,output,session) {
         periods <- unlist(strsplit(inputs$period, split = ","))
         periods2 <- NULL
         trans$periods <- NULL
-        S0 <- unlist(strsplit(input$S0, split = ","))
+        S0 <- C0 <- unlist(strsplit(input$S0, split = ","))
         eS0 <- unlist(strsplit(input$eS0, split = ","))
+        S0 <- C0 <- eS0 <- eC0 <- ""
         sigamp <- unlist(strsplit(input$SinusoidalDev, split = ","))
         if (isTruthy(info$periodRef)) {
           refs <- inputs$periodRef
@@ -12166,31 +12173,49 @@ server <- function(input,output,session) {
               if (identical(S0,character(0)) || is.na(S0[i]) || S0[i] == "" || S0[i] == " ") {
                 S0[i] <- quantile(y_now, probs = 0.95)/(4*sqrt(2))
                 max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
-                S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
+                S0[i] <- C0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
                 eS0[i] <- as.numeric(S0[i])/2
                 max_decimals <- signifdecimal(as.numeric(eS0[i]), F) + 2
-                eS0[i] <- sprintf("%.*f", max_decimals, as.numeric(eS0[i]))
+                eS0[i] <- eC0[i] <- sprintf("%.*f", max_decimals, as.numeric(eS0[i]))
+                # if (isTruthy(match(paste0("S",i), trans$names)) && sum(grepl(pattern = "^S", trans$names, ignore.case = F, perl = T)) == length(periods)) {
+                #   if (isTruthy(match(paste0("S",i), trans$names))) {
+                #     S0[i] <- trans$LScoefs[match(paste0("S",i), trans$names),1]
+                #     C0[i] <- trans$LScoefs[match(paste0("C",i), trans$names),1]
+                #     max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
+                #     S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
+                #     C0[i] <- sprintf("%.*f", max_decimals, as.numeric(C0[i]))
+                #     eS0[i] <- abs(as.numeric(S0[i]))
+                #   }
+                # } else {
+                  # fixed to zero for the first run because of new draconitic option; need to find something better
+                  S0[i] <- C0[i] <- 0  
+                # }
                 if (input$fitType == 2) {
                   if (isTruthy(match(paste0("S",i), trans$names))) {
-                    s <- trans$LScoefs[match(paste0("S",i), trans$names),1]
-                    c <- trans$LScoefs[match(paste0("C",i), trans$names),1]
-                    S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
+                    # s <- trans$LScoefs[match(paste0("S",i), trans$names),1]
+                    # c <- trans$LScoefs[match(paste0("C",i), trans$names),1]
+                    # S0[i] <- mean(c(as.numeric(s),as.numeric(c)))
+                    S0[i] <- trans$LScoefs[match(paste0("S",i), trans$names),1]
+                    C0[i] <- trans$LScoefs[match(paste0("C",i), trans$names),1]
                     max_decimals <- signifdecimal(as.numeric(S0[i]), F) + 2
                     S0[i] <- sprintf("%.*f", max_decimals, as.numeric(S0[i]))
+                    max_decimals <- signifdecimal(as.numeric(C0[i]), F) + 2
+                    C0[i] <- sprintf("%.*f", max_decimals, as.numeric(C0[i]))
                     eS0[i] <- abs(as.numeric(S0[i]))
+                    eC0[i] <- abs(as.numeric(C0[i]))
                   }
                 }
               }
               apriori[[label_sin]] <- as.numeric(S0[i])
               error[[label_sin]] <- as.numeric(eS0[i])
               nouns <- c(nouns, label_sin)
-              apriori[[label_cos]] <- as.numeric(S0[i])
+              apriori[[label_cos]] <- as.numeric(C0[i])
               if (eS0[i] == 0) {
                 info$run <- F
                 showNotification(HTML("At least one of the initial sinusoidal amplitude errors is zero.<br>Check the input value."), action = NULL, duration = 15, closeButton = T, id = "bad_amplitude_error", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               } else {
-                error[[label_cos]] <- as.numeric(eS0[i])
+                error[[label_cos]] <- as.numeric(eC0[i])
               }
               nouns <- c(nouns, label_cos)
               if (input$fitType == 2) {
