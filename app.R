@@ -4070,7 +4070,7 @@ server <- function(input,output,session) {
           if (messages > 1) cat(file = stderr(), mySession, model, "\n")
           # run fit
           fit <- NULL
-          fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = F, printEval = F)), silent = F)
+          fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(minFactor = 1/8192, warnOnly = T, printEval = F, scaleOffset = 1)), silent = F)
           if (!inherits(fit,"try-error") && !is.null(fit)) {
             info$run <- T
             info$noLS <- F
