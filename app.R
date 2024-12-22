@@ -14660,7 +14660,7 @@ server <- function(input,output,session) {
           url_log <- "ftp://ftp.sonel.org/meta/gpslog/"
           dir_contents <- try(getURL(url_log, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            found <- grep(paste0("^",tolower(station4)), strsplit(dir_contents, "\r*\n")[[1]], perl = T, value = T, fixed = F)
+            found <- grep(paste0("^",tolower(station)), strsplit(dir_contents, "\r*\n")[[1]], perl = T, value = T, fixed = F)
             if (isTruthy(found)) {
               logfile <- paste0(url_log,found)
             }
