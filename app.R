@@ -4018,7 +4018,7 @@ server <- function(input,output,session) {
     output$est.mle <- renderUI({ NULL })
     output$est.unc <- renderUI({ NULL })
     trans$noise <- NULL
-    trans$mle <- 0
+    trans$mle <- F
     if (length(input$model) > 0) {
       if (input$fitType == 1) {
         if (messages > 0) cat(file = stderr(), mySession, "LS fit", "\n")
@@ -4238,9 +4238,8 @@ server <- function(input,output,session) {
     output$est.mle <- renderUI({ NULL })
     output$est.unc <- renderUI({ NULL })
     trans$noise <- NULL
-    trans$mle <- 0
+    trans$mle <- F
     if (input$fitType == 2) {
-      trans$mle <- F
       trans$verif <- NULL
       # run KF button click
       withBusyIndicatorServer("runKF", {
@@ -5958,7 +5957,7 @@ server <- function(input,output,session) {
             if (input$wiener) {
               kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
             }
-            trans$mle <- 1
+            trans$mle <- T
             sd_noises <- NA
             line3 <- NULL
             if (input$noise_unc) {
@@ -6220,7 +6219,7 @@ server <- function(input,output,session) {
               }
             })
           } else {
-            trans$mle <- NULL
+            trans$mle <- F
             showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
           }
         }
@@ -9445,7 +9444,7 @@ server <- function(input,output,session) {
     output$est.mle <- renderUI({ NULL })
     output$est.unc <- renderUI({ NULL })
     trans$noise <- NULL
-    trans$mle <- 0
+    trans$mle <- F
   }, priority = 5)
 
   # Observe hide tabs ####
@@ -10595,7 +10594,7 @@ server <- function(input,output,session) {
     removeNotification("too_long")
     removeNotification("warning_no_slope")
     trans$noise <- NULL
-    trans$mle <- 0
+    trans$mle <- F
     output$est.white <- renderUI({ NULL })
     output$est.flicker <- renderUI({ NULL })
     output$est.randomw <- renderUI({ NULL })
