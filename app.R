@@ -11686,10 +11686,13 @@ server <- function(input,output,session) {
                   }
                 } else {
                   extracted$sy1 <- rep(1,length(extracted$y1))
+                  info$errorbars <- F
+                  disable("sigmas")
                 }
               } else {
                 extracted$sy1 <- rep(1,length(extracted$y1))
                 info$errorbars <- F
+                disable("sigmas")
               }
               if (isTruthy(extracted)) {
                 extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
