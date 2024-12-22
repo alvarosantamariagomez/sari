@@ -11998,8 +11998,10 @@ server <- function(input,output,session) {
         if (input$fitType == 1) {
           y_detrend <- y - (x - reft) * ap_rate
           xreft <- which.min(abs(x - reft))
-          ap_intercept <- mean(y_detrend[seq(xreft - tenth,xreft + tenth)], na.rm = T)
-          sigma_intercept <- sd(y_detrend[seq(xreft - tenth,xreft + tenth)], na.rm = T)/sqrt(tenth*2)
+          xfrom <- ifelse(xreft > tenth, xreft - tenth, xreft)
+          xto <- ifelse(xreft + tenth < length(x), xreft + tenth, length(x))
+          ap_intercept <- mean(y_detrend[seq(xfrom,xto)], na.rm = T)
+          sigma_intercept <- sd(y_detrend[seq(xfrom,xto)], na.rm = T)/sqrt(tenth*2)
           if (!isTruthy(sigma_intercept) || sigma_intercept <= 0) {
             sigma_intercept <- 1
           }
