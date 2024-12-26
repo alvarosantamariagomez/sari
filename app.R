@@ -4037,6 +4037,8 @@ server <- function(input,output,session) {
             trans$model_old <- as.list(input$model)
             req(info$stop)
           }
+        } else {
+          showNotification("Preparing least squares fitting.", action = NULL, duration = 10, closeButton = T, id = "preparingLS", type = "error", session = getDefaultReactiveDomain())
         }
         trans$model_old <- input$model
         x <- trans$x
@@ -4059,6 +4061,7 @@ server <- function(input,output,session) {
         weights <- 1/(sy^2)
         # set model equation and a priori values
         m <- model(x,y)
+        removeNotification("preparingLS")
         if (isTruthy(info$run) && isTruthy(m)) {
           info$run <- F
           trans$mle <- F
