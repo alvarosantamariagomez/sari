@@ -512,6 +512,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .shiny-notification-close:hover { color: #ffffff; }
                       .fa-caret-down { float: right; }
                       .headerIcon { color: #ffffff;}
+                      /*.shiny-text-output { text-wrap-mode: wrap;}*/
                       ")
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
@@ -10926,14 +10927,17 @@ server <- function(input,output,session) {
 
   # Observe click&collect ####
   observeEvent(c(input$plot_1click), {
-    req(db1[[info$db1]])
-    if (input$click2collect && length(input$plot_brush) == 0 && length(input$res_brush) == 0) {
-      # adding click point to list of offsets
-      allOffsets <- paste(input$offsetEpoch, input$plot_1click$x, sep = ", ")
-      # removing the first commas if any
-      allOffsets <- sub("^ *, *", "", allOffsets, perl = T)
-      updateTextInput(session, inputId = "offsetEpoch", value = allOffsets)
-    }
+    req(db1[[info$db1]], input$click2collect)
+    shinyjs::delay(300, {
+      if (!isTruthy(input$plot_brush) && !isTruthy(input$res_brush)) {
+        # adding click point to list of offsets
+        allOffsets <- paste(input$offsetEpoch, input$plot_1click$x, sep = ", ")
+        # removing the first commas if any
+        allOffsets <- sub("^ *, *", "", allOffsets, perl = T)
+        updateTextInput(session, inputId = "offsetEpoch", value = allOffsets)
+        showNotification(HTML(paste("Offset added at:<br>", format(input$plot_1click$x, nsmall = 1, digits = 1))), action = NULL, duration = 5, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+      }
+    })
   })
 
   # Functions ####
