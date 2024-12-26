@@ -4707,7 +4707,6 @@ server <- function(input,output,session) {
       req(info$stop)
     }
     removeNotification("no_histogram")
-    removeNotification("no_histogram")
     if (isTruthy(values) && isTruthy(sd(values)) && length(values) > 1 && sd(values) > 0) {
       if (messages > 0) cat(file = stderr(), mySession, "Plotting histogram", "\n")
       output$hist1 <- output$hist2 <- output$hist3 <- renderPlot({
@@ -4725,7 +4724,9 @@ server <- function(input,output,session) {
       adf <- try(suppressWarnings(adf.test(values, alternative = "stationary")), silent = T)
       kpss <- suppressWarnings(kpss.test(values, null = "Level"))
       # getting the series statistics
-      stats <- psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = T, interp = F, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
+      stats <- as.data.frame(psych::describe(matrix(values, ncol = 1, byrow = T), na.rm = T, interp = F, skew = T, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T))
+      rownames(stats) <- NULL
+      stats <- stats[, !names(stats) %in% "vars"]
       output$stats1 <- output$stats2 <- output$stats3 <- renderPrint({
         if (!inherits(adf,"try-error") && !is.null(adf) && isTruthy(adf$p.value) && isTruthy(kpss$p.value)) {
           cat(paste0("Statistics for the period from ", ranges$x1[1], " to ", ranges$x1[2]), "\n\n")
@@ -4746,8 +4747,8 @@ server <- function(input,output,session) {
         } else if (input$sunits == 2) {
           cat("Series units: mm", "\n\n")
         }
-        print(stats,digits = info$decimalsy)
-      }, width = 180)
+        print(formatting(stats,0), row.names = F)
+      }, width = 280)
     } else {
       showNotification(HTML("Unable to compute the histogram.<br>Check the input series."), action = NULL, duration = 10, closeButton = T, id = "no_histogram", type = "error", session = getDefaultReactiveDomain())
       updateRadioButtons(session, inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, choiceNames = NULL,  choiceValues = NULL)
