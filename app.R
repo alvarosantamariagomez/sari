@@ -4125,6 +4125,12 @@ server <- function(input,output,session) {
               }
               if (isTruthy(info_out)) {
                 synthesis$sinusoidales <- matrix(data = info_out, nrow = ss, ncol = 5, byrow = T)
+                synthesis$sinusoidales[,c(2,3)] <- format(synthesis$sinusoidales[,c(2,3)], digits = 2, nsmall = 2, scientific = F, width = 5)
+                synthesis$sinusoidales[,2] <- format(synthesis$sinusoidales[,2], digits = 2, nsmall = 2, scientific = F, width = max(nchar(synthesis$sinusoidales[,2])))
+                synthesis$sinusoidales[,3] <- format(synthesis$sinusoidales[,3], digits = 2, nsmall = 2, scientific = F, width = max(nchar(synthesis$sinusoidales[,3])))
+                synthesis$sinusoidales[,c(4,5)] <- format(synthesis$sinusoidales[,c(4,5)], digits = 3, nsmall = 3, scientific = F, width = 6)
+                synthesis$sinusoidales[,4] <- format(synthesis$sinusoidales[,4], digits = 2, nsmall = 2, scientific = F, width = max(nchar(synthesis$sinusoidales[,4])))
+                synthesis$sinusoidales[,5] <- format(synthesis$sinusoidales[,5], digits = 2, nsmall = 2, scientific = F, width = max(nchar(synthesis$sinusoidales[,5])))
                 dimnames(synthesis$sinusoidales) <- list(paste0("Sinusoidal ",1:ss), c("Period","Amplitude","Amp. Error","Phase (rad)","Ph. Error (rad)"))
               }
             }
@@ -4818,7 +4824,7 @@ server <- function(input,output,session) {
       if (input$fitType == 1 && isTruthy(trans$results$sinusoidales)) {
         # add transformed sinusoidal estimates
         print(trans$results)
-        trans$results$sinusoidales
+        data.frame(trans$results$sinusoidales, check.names = F)
       } else {
         trans$results
       }
