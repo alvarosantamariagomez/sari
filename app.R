@@ -2696,6 +2696,7 @@ server <- function(input,output,session) {
   observeEvent(periodRef_d(), {
     if (is.na(inputs$periodRef) || is.null(inputs$periodRef) || periodRef_d() != inputs$periodRef) {
       inputs$periodRef <- suppressWarnings(as.numeric(trimws(periodRef_d(), which = "both", whitespace = "[ \t\r\n]")))
+      info$periodRef <- isTruthy(inputs$periodRef)
     }
   }, priority = 1000)
 
