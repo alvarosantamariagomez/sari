@@ -70,7 +70,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 	| SONEL      | ULR7A                                | 9 char  | https://www.sonel.org/                         |
 	| IGS        | IGS20                                | 4 char  | https://igs.org/products/                      |
         | EUREF      | IGb14                                | 9 char  | https://epncb.eu/_organisation/about.php       |
-        | NGL        | FINAL, RAPID                         | 4 char  | http://geodesy.unr.edu/                        |
+        | NGL        | IGS20, IGS14, RAPID                  | 4 char  | http://geodesy.unr.edu/                        |
         | JPL        | REPRO2018A                           | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
         | EARTHSCOPE | CWU, PBO, NMT                        | 4 char  | https://www.earthscope.org                     |
         | SIRGAS     | IGb14                                | 4 char  | https://www.sirgas.org/en/                     |
