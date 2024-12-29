@@ -13625,9 +13625,10 @@ server <- function(input,output,session) {
     if (input$tab < 4) {
       if (input$fitType == 1 && length(trans$results) > 0) {
         cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
-        for (i in seq_len(length(dimnames(trans$LScoefs)[[1]]))) {
-          cat(paste('# Parameter:', dimnames(trans$LScoefs)[[1]][i], '=', formatting(trans$LScoefs[i,1],2), '+/-', formatting(trans$LScoefs[i,2],2)), file = file_out, sep = "\n", fill = F, append = T)
-        }
+        param <- data.frame(formatting(trans$LScoefs,2), check.names = F)[,c(1,2)]
+        param <- cbind(param[1], s = rep("+/-",length(param[1])), param[2])
+        rownames(param) <- format(paste("# Parameter:",rownames(param)), justify = "left")
+        write.table(param, file = file_out, col.names = F, row.names = T, append = T, quote = F)
         if (isTruthy(trans$results$sinusoidales)) {
           for (i in 1:dim(trans$results$sinusoidales)[1]) {
             cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],2), '+/-', formatting(trans$results$sinusoidales[i,3],2), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
