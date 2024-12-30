@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version diciembre 2024'
+title: 'SARI documentation - version enero 2025'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *diciembre 2024*  --  "I was reading an article the other day that romantic relationships with OS’s are statistically rare"
+Current SARI version: *enero 2025*  --  "I've got statistics and graphs. I got all this stuff."
 
 -----------------
 
@@ -217,7 +217,7 @@ At this moment, the following servers and products are available:
    <td style="text-align:center;"><sup>4</sup></td>
    <td style="text-align:left;">14 characters (TLSE_10003M009)</td>
    <td style="text-align:left;"> </td>
-   <td style="text-align:left;">ATMIB, ATMIB(d), ATMMO(o), ECCO(o), ECCO2, ERA5IB, ERA5IB(d), ERA5TUGO, ERA5TUGO(d), ERA5HYD, ERA5HYD(d), GRACE, GLDAS2, GLDAS2(d), GLORYS(o), MERRA2ATM, MERRA2ATM(d), MERRA2HYD, MERRA2HYD(d)</td>
+   <td style="text-align:left;">ATMIB, ATMIB(d), ATMMO(o), ECCO(o), ECCO2, ERA5IB, ERA5IB(d), ERA5TUGO, ERA5TUGO(d), ERA5HYD, ERA5HYD(d), ERA5LAND, GRACE, GLDAS2, GLDAS2(d), GLORYS(o), MERRA2ATM, MERRA2ATM(d), MERRA2HYD, MERRA2HYD(d)</td>
   </tr>
   <tr style="vertical-align: top">
    <td style="text-align:left;"><a href="https://psmsl.org/" target="_blank">PSMSL</a></td>
@@ -311,7 +311,7 @@ The user can upload any combination of the following possibilities:
 ##### **Notes on the secondary series**:
 
 1. The secondary series can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single secondary series. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single secondary series representing the total loading at the site.  
-2. Several loading products can be selected and uploaded directly from the EOSTSL server (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the same ERA5 reanalysis (ERA5HYD(d) label). More details at the [EOSTLS server](http://loading.u-strasbg.fr).  
+2. Several loading products can be selected and uploaded directly from the EOSTSL server (see the [<a href="#input-format" target="_self">Input data and format</a>](#iii.-input-format) block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the ERA5-Land reanalysis (ERA5LAND label). More details at the [EOSTLS server](http://loading.u-strasbg.fr).  
 3. If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the user's reponsability to verify that they have consistent time units and sampling.  
 4. The `Swap` button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling, excluded points or plate motion corrections.  
 5. When uploading a *secondary series*, both station IDs will be shown in the `series ID` box on the left panel, together with a "&" when using the option `show`, a "&ndash;" when using the option `correct`, or a "+" when using the option `average`. When the primary series is combined with a *secondary series* (using `correct` or `average`, but not `show`), the IDs from both series will be extracted from the *station.info*, *soln*, and *customized offset* files. Otherwise only the ID from the primary series will be used.  
@@ -773,6 +773,7 @@ For any comments, suggestions, questions, bugs, unexpected crashes or missing fe
 &nbsp;
 
 ![](get.jpg) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+![](cnes.png) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ![](ups.jpg) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ![](omp.jpg) 
 

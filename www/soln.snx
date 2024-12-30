@@ -945,8 +945,9 @@
  BRST  A    1 P 00:000:00000 00:000:00000 V - 
 *
  BRUN  A    1 P 00:000:00000 18:271:36165 P - EQ M7.5 - 72 km N of Palu, Indonesia
- BRUN  A    2 P 18:271:36165 00:000:00000 P - 
- BRUN  A    1 P 00:000:00000 00:000:00000 V - 
+ BRUN  A    2 P 18:271:36165 24:261:00000 P - unknown
+ BRUN  A    3 P 24:261:00000 00:000:00000 P -
+ BRUN  A    1 P 00:000:00000 00:000:00000 V -
 *
  BRUS  A    1 P 00:000:00000 04:009:00000 P - unknown
  BRUS  A    2 P 04:009:00000 11:204:00000 P - unknown
@@ -1114,9 +1115,7 @@
  CAS1  A    3 P 98:195:00000 99:343:00000 P - receiver change
  CAS1  A    4 P 99:343:00000 10:033:00000 P - non-linearity
  CAS1  A    5 P 10:033:00000 13:345:10800 P - antenna change
- CAS1  A    6 P 13:345:10800 24:146:00000 P - unknown
- CAS1  A    7 P 24:146:00000 24:184:00000 P - unknown
- CAS1  A    8 P 24:184:00000 00:000:00000 P -
+ CAS1  A    6 P 13:345:10800 00:000:00000 P -
  CAS1  A    1 P 00:000:00000 10:033:00000 V - non-linearity
  CAS1  A    2 P 10:033:00000 13:345:10800 V - antenna change
  CAS1  A    3 P 13:345:10800 00:000:00000 V - 
@@ -1782,7 +1781,8 @@
  DAM2  A    3 P 98:100:00000 99:289:35204 P - EQ M7.1 - Hector Mine, CA Earthquake
  DAM2  A    4 P 99:289:35204 12:284:66360 P - antenna change
  DAM2  A    5 P 12:284:66360 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- DAM2  A    6 P 19:187:11993 00:000:00000 P - 
+ DAM2  A    6 P 19:187:11993 23:341:68580 P - antenna change
+ DAM2  A    7 P 23:341:68580 00:000:00000 P -
  DAM2  A    1 P 00:000:00000 00:000:00000 V - 
 *
  DARE  A    1 P 00:000:00000 09:007:39000 P - antenna change
@@ -3664,7 +3664,8 @@
  LAMA  A    1 P 00:000:00000 98:320:00000 P - unknown
  LAMA  A    2 P 98:320:00000 00:280:00000 P - antenna change
  LAMA  A    3 P 00:280:00000 07:321:68400 P - antenna change
- LAMA  A    4 P 07:321:68400 00:000:00000 P - 
+ LAMA  A    4 P 07:321:68400 24:103:36000 P - antenna change
+ LAMA  A    5 P 24:103:36000 00:000:00000 P -
  LAMA  A    1 P 00:000:00000 00:000:00000 V - 
 *
  LAMB  A    1 P 00:000:00000 17:122:00000 P - antenna change
@@ -5362,8 +5363,7 @@
 *
  P777  A    1 P 00:000:00000 21:078:62160 P - antenna change
  P777  A    2 P 21:078:62160 23:106:00000 P - unknown
- P777  A    3 P 23:106:00000 24:131:00000 P - unknown
- P777  A    4 P 24:131:00000 00:000:00000 P -
+ P777  A    3 P 23:106:00000 00:000:00000 P -
  P777  A    1 P 00:000:00000 00:000:00000 V - 
 *
  P804  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6762,7 +6762,8 @@
  SRMP  A    1 P 00:000:00000 11:238:00000 P - non-linearity
  SRMP  A    2 P 11:238:00000 16:311:00000 P - non-linearity
  SRMP  A    3 P 16:311:00000 19:239:45060 P - receiver change
- SRMP  A    4 P 19:239:45060 00:000:00000 P - 
+ SRMP  A    4 P 19:239:45060 24:231:54180 P - antenna change
+ SRMP  A    5 P 24:231:54180 00:000:00000 P -
  SRMP  A    1 P 00:000:00000 11:238:00000 V - non-linearity
  SRMP  A    2 P 11:238:00000 16:311:00000 V - non-linearity
  SRMP  A    3 P 16:311:00000 00:000:00000 V - 
@@ -7208,7 +7209,8 @@
  TMGO  A    2 P 95:277:00000 00:000:00000 P - 
  TMGO  A    1 P 00:000:00000 00:000:00000 V - 
 *
- TN22  A    1 P 00:000:00000 00:000:00000 P - 
+ TN22  A    1 P 00:000:00000 24:144:61560 P - antenna change
+ TN22  A    2 P 24:144:61560 00:000:00000 P -
  TN22  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TN23  A    1 P 00:000:00000 00:000:00000 P - 
@@ -7476,7 +7478,8 @@
  TWTF  A    5 P 13:241:00000 18:037:57043 P - EQ M6.4 - 18 km NNE of Hualien City, Taiwan
  TWTF  A    6 P 18:037:57043 22:261:24253 P - EQ M6.9 - south-east of Lugu, Taiwan
  TWTF  A    7 P 22:261:24253 24:093:86291 P - EQ M7.4 - 15 km S of Hualien City, Taiwan
- TWTF  A    8 P 24:093:86291 00:000:00000 P -
+ TWTF  A    8 P 24:093:86291 24:215:03600 P - antenna change
+ TWTF  A    9 P 24:215:03600 00:000:00000 P -
  TWTF  A    1 P 00:000:00000 04:361:03530 V - EQ M9.1 - 2004 Sumatra - Andaman Islands Earthquake
  TWTF  A    2 P 04:361:03530 07:344:00000 V - non-linearity
  TWTF  A    3 P 07:344:00000 13:241:00000 V - non-linearity

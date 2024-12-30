@@ -1,5 +1,31 @@
 # **SARI changelog**
 
+# enero 2025 [2025.01]
+
+### Fixed
+- deactivating the draconitic option when loading a SARI model with sinusoids (F. Feriol)
+- reducing the sensibility of the click & collect option when zooming in on the series with a touchpad
+- disabling the error bars option when the error bar column is not read in 1D format
+- correcting the computation of the a priori intercept value when changing from a KF to a LS fit
+- updating the reference epoch of the sinusoids automatically if the input value is not valid
+
+### Changed
+- changing the station names of the sonel logfiles from 4 to 9 characters (M. Gravelle)
+- hidding the load SARI model option when showing the 3D plot tab (F. Feriol)
+- fixing the a priori values of the sinusoidal fit to zero (F. Feriol)
+- reducing the sensibility of the LS fit to the a priori values
+- improving the format of the estimated parameters in the downloaded file
+- improving the format of the KF results on screen
+- improving the format of the estimated sinusoidal components on screen
+- improving the format of the series statistics on screen
+
+### Added
+- new ERA5LAND product from the EOSTLS server
+- new IGS20 produt from the NGL server
+- new notification on the screen when compiling the LS model function
+- new notification on the screen when firing the click & collect option
+
+
 # diciembre 2024 [2024.12]
 
 ### Fixed

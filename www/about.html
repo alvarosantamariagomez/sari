@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version diciembre 2024</title>
+  <title>SARI documentation - version enero 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version diciembre 2024</h1>
+<h1 class="title">SARI documentation - version enero 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>diciembre 2024</em> – “I was reading an article the other day that romantic relationships with OS’s are statistically rare”</p>
+<p>Current SARI version: <em>enero 2025</em> – “I’ve got statistics and graphs. I got all this stuff.”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -223,7 +223,7 @@ INGV, SGO-EPND, UGA-CNRS, ROB-EUREF
 <td style="text-align:center;">
 </td>
 <td style="text-align:left;">
-4 characters (TLSE)
+9 characters (TLSE00FRA)
 </td>
 <td style="text-align:left;">
 </td>
@@ -274,7 +274,7 @@ IGB14
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-FINAL, RAPID
+IGS20, IGS14, RAPID
 </td>
 </tr>
 <tr>
@@ -336,7 +336,7 @@ IGB14
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-ATMIB, ATMIB(d), ATMMO(o), ECCO(o), ECCO2, ERA5IB, ERA5IB(d), ERA5TUGO, ERA5TUGO(d), ERA5HYD, ERA5HYD(d), GRACE, GLDAS2, GLDAS2(d), GLORYS(o), MERRA2ATM, MERRA2ATM(d), MERRA2HYD, MERRA2HYD(d)
+ATMIB, ATMIB(d), ATMMO(o), ECCO(o), ECCO2, ERA5IB, ERA5IB(d), ERA5TUGO, ERA5TUGO(d), ERA5HYD, ERA5HYD(d), ERA5LAND, GRACE, GLDAS2, GLDAS2(d), GLORYS(o), MERRA2ATM, MERRA2ATM(d), MERRA2HYD, MERRA2HYD(d)
 </td>
 </tr>
 <tr style="vertical-align: top">
@@ -359,7 +359,7 @@ RLR
 <p></br></p>
 <p>Notes:<br />
 <sup>1</sup> The <em>LOCAL</em> server is used only to upload series from local files on a local SARI session (more details in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">SARI shell script</a>).<br />
-<sup>2</sup> The NGL series correspond to the <em>IGS14</em> solution.<br />
+<sup>2</sup> The <em>RAPID NGL</em> series correspond to the IGS14 solution.<br />
 <sup>3</sup> The EarthScope (UNAVCO) series correspond to the <em>IGS14</em> solution.<br />
 <sup>4</sup> The <em>EOSTLS</em> loading series are those computed in the center of figure (CF) frame. <b><span style="color: #DF536B;">WARNING:</span></b> some of the <em>EOSTLS</em> series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with <em>(d)</em>, if they are available. Products marked with <em>(o)</em> represent old products that are no longer updated.</p>
 <p>Contact the <a href="#author"><a href="#author" target="_self">author</a></a> if more servers or products need to be added.</p>
@@ -449,7 +449,7 @@ The user can upload any combination of the following possibilities:</p>
 <ol type="1">
 <li>The secondary series can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single secondary series. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single secondary series representing the total loading at the site.<br />
 </li>
-<li>Several loading products can be selected and uploaded directly from the EOSTSL server (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the same ERA5 reanalysis (ERA5HYD(d) label). More details at the <a href="http://loading.u-strasbg.fr">EOSTLS server</a>.<br />
+<li>Several loading products can be selected and uploaded directly from the EOSTSL server (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the ERA5-Land reanalysis (ERA5LAND label). More details at the <a href="http://loading.u-strasbg.fr">EOSTLS server</a>.<br />
 </li>
 <li>If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the user’s reponsability to verify that they have consistent time units and sampling.<br />
 </li>
@@ -764,7 +764,7 @@ For the same reason, when previously removed points are included back again into
 <p>In addition to using the selected areas on the plots, large residuals can be automatically excluded using the <code>auto toggle</code> button. Large is defined by providing the absolute <em>residual threshold</em> or the absolute <em>normalized residual</em>, i.e., the residual divided by its own error bar if available. All the points outside the absolute thresholds will be excluded at once.</p>
 <p>The <code>reset</code> button will erase all the plots and all the parameters from the server memory, except the pointer to the <em>station.info</em> and the <em>custom offset</em> files, which will remain ready to be used again (even if they may not appear as being uploaded, the <code>plot</code> and <code>list</code> options will still be available).<br />
 After finishing a series and before uploading a new one, it is recommended to click the <code>reset</code> button instead of refreshing the page.</p>
-<p>Some features require intensive and time-consuming processing (<em>noise analysis</em>, <em>automatic offset detection</em>, <em>wavelet</em>). In order to save server resources and make the app always accessible to anyone, after 25 minutes without client-server interaction, the server will kill the connection, go to sleep, and may even dream of electric sheep like all androids surely do!<br />
+<p>Some features require intensive and time-consuming processing (<em>noise analysis</em>, <em>automatic offset detection</em>, <em>wavelet</em>). In order to save server resources and make the app always accessible to anyone, after 15 minutes without client-server interaction, the server will kill the connection, go to sleep, and may even dream of electric sheep like all androids surely do!<br />
 A warning should appear on the screen when a very long computation time is expected.</p>
 <hr />
 <p id="example-use">
@@ -922,7 +922,7 @@ Observatoire Midi-Pyrénées<br />
 Toulouse</p>
 <p>For any comments, suggestions, questions, bugs, unexpected crashes or missing features, please open a github issue <a href="https://github.com/alvarosantamariagomez/sari">here</a>.</p>
 <p> </p>
-<p><img src="get.jpg" />          <img src="ups.jpg" />          <img src="omp.jpg" /></p>
+<p><img src="get.jpg" />          <img src="cnes.png" />          <img src="ups.jpg" />          <img src="omp.jpg" /></p>
 <p><img src="eposfr-renag.png" /></p>
 <hr />
 <h1 id="policy">
