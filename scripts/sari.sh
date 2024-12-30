@@ -77,7 +77,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         | EOSTLS     | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                   |
         |            | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                |
         |            | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
-        |            | MERRA2ATM, MERRA2HYD                 |         |                                                |
+        |            | MERRA2ATM, MERRA2HYD, ERA5LAND       |         |                                                |
         | PSMSL      | RLR                                  | number  | https://psmsl.org/                             |
         +------------+--------------------------------------+---------+------------------------------------------------+
 	* 1D products must have the epochs in the first column, the data in the second and the errorbars in the third

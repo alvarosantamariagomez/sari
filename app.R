@@ -7475,7 +7475,7 @@ server <- function(input,output,session) {
     } else if (input$server1 == "JPL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server1 == "EOSTLS") {
-      updateSelectizeInput(session, inputId = "product1", choices = list("ATMIB", "ATMIB(d)", "ATMMO(o)", "ECCO(o)", "ECCO2", "ERA5IB", "ERA5IB(d)", "ERA5TUGO", "ERA5TUGO(d)", "ERA5HYD", "ERA5HYD(d)", "GRACE", "GLDAS2", "GLDAS2(d)", "GLORYS(o)", "MERRA2ATM", "MERRA2ATM(d)", "MERRA2HYD", "MERRA2HYD(d)"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("ATMIB", "ATMIB(d)", "ATMMO(o)", "ECCO(o)", "ECCO2", "ERA5IB", "ERA5IB(d)", "ERA5TUGO", "ERA5TUGO(d)", "ERA5HYD", "ERA5HYD(d)", "ERA5LAND", "GRACE", "GLDAS2", "GLDAS2(d)", "GLORYS(o)", "MERRA2ATM", "MERRA2ATM(d)", "MERRA2HYD", "MERRA2HYD(d)"), selected = "")
     } else if (input$server1 == "SONEL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server1 == "SIRGAS") {
@@ -7507,7 +7507,7 @@ server <- function(input,output,session) {
     } else if (input$server2 == "JPL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("REPRO2018A"), selected = "REPRO2018A")
     } else if (input$server2 == "EOSTLS") {
-      updateSelectizeInput(session, inputId = "product2", choices = list("ATMIB", "ATMIB(d)", "ATMMO(o)", "ECCO(o)", "ECCO2", "ERA5IB", "ERA5IB(d)", "ERA5TUGO", "ERA5TUGO(d)", "ERA5HYD", "ERA5HYD(d)", "GRACE", "GLDAS2", "GLDAS2(d)", "GLORYS(o)", "MERRA2ATM", "MERRA2ATM(d)", "MERRA2HYD", "MERRA2HYD(d)"), selected = "", options = list(maxItems = 12))
+      updateSelectizeInput(session, inputId = "product2", choices = list("ATMIB", "ATMIB(d)", "ATMMO(o)", "ECCO(o)", "ECCO2", "ERA5IB", "ERA5IB(d)", "ERA5TUGO", "ERA5TUGO(d)", "ERA5HYD", "ERA5HYD(d)", "ERA5LAND", "GRACE", "GLDAS2", "GLDAS2(d)", "GLORYS(o)", "MERRA2ATM", "MERRA2ATM(d)", "MERRA2HYD", "MERRA2HYD(d)"), selected = "", options = list(maxItems = 12))
     } else if (input$server2 == "SONEL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("ULR7A"), selected = "ULR7A")
     } else if (input$server2 == "SIRGAS") {
@@ -14951,6 +14951,9 @@ server <- function(input,output,session) {
           } else if (tolower(p) == "era5hyd(d)") {
             naming <- paste0(toupper(station),patternd,"era5")
             url <- paste0(url, "ERA5_hydro_daily/")
+          } else if (tolower(p) == "era5land") {
+            naming <- paste0(toupper(station),pattern,"era5land")
+            url <- paste0(url, "ERA5_land/")
           } else if (tolower(p) == "gldas2") {
             url <- paste0(url, "GLDAS2/")
           } else if (tolower(p) == "gldas2(d)") {
