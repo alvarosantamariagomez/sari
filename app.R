@@ -11377,7 +11377,8 @@ server <- function(input,output,session) {
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
       tunitsKnown <- F
-      spotgins <- grepl("# SPOTGINS SOLUTION [POSITION]", readLines(file, n = 1, warn = F), fixed = T)
+      spotgins <- try(grepl("# SPOTGINS SOLUTION [POSITION]", readLines(file, n = 1, warn = F), fixed = T), silent = T)
+      spotgins <- isTruthy(spotgins)
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
