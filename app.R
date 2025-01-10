@@ -3582,7 +3582,7 @@ server <- function(input,output,session) {
             ranges$y12 <- range(trans$y2, na.rm = T)
           }
         }
-        plot(trans$x2, trans$y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+        plot(trans$x2, trans$y2, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
         if (isTruthy(sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.2
@@ -13304,7 +13304,7 @@ server <- function(input,output,session) {
             rangeY2 <- range(y2, na.rm = T)
           }
         }
-        plot(x2, y2, type = symbol, lwd = 2, pch = 20, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = rangeX, ylim = rangeY2)
+        plot(x2, y2, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = rangeX, ylim = rangeY2)
         if (isTruthy(sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.2
