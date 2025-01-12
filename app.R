@@ -336,7 +336,8 @@ tabContents <- function(tabNum) {
            ),
            conditionalPanel(
              condition = "input.printCustom == true",
-             verbatimTextOutput(paste0("changes_ant",tabNum,"c"), placeholder = F)
+             verbatimTextOutput(paste0("changes_ant",tabNum,"c"), placeholder = F),
+             verbatimTextOutput(paste0("changes_rec",tabNum,"c"), placeholder = F)
            ),
            conditionalPanel(
              condition = "input.model.length > 0 || input.midas == true || input.entropy == true || input.optionSecondary == 1",
@@ -3645,12 +3646,18 @@ server <- function(input,output,session) {
         }
       }
       if (input$traceSoln && length(info$soln) > 0) {
-        for (a in info$soln) {
+        for (r in info$soln[[2]]) {
+          abline(v = r, col = SARIcolors[8], lty = 2)
+        }
+        for (a in info$soln[[1]]) {
           abline(v = a, col = SARIcolors[8])
         }
       }
       if (input$traceCustom && length(info$custom) > 0) {
-        for (a in info$custom) {
+        for (r in info$custom[[2]]) {
+          abline(v = r, col = SARIcolors[5], lty = 2)
+        }
+        for (a in info$custom[[1]]) {
           abline(v = a, col = SARIcolors[5])
         }
       }
@@ -10296,7 +10303,7 @@ server <- function(input,output,session) {
     })
     output$changes_rec1s <- output$changes_rec2s <- output$changes_rec3s <- renderText({
       if (length(info$sinfo[[2]]) > 0) {
-        sprintf("Receiver changes from station.info at\n%s",paste(unlist(info$sinfo[[2]]), collapse = ", "))
+        sprintf("Receiver and other changes from station.info at\n%s",paste(unlist(info$sinfo[[2]]), collapse = ", "))
       } else {
         NULL
       }
@@ -10325,8 +10332,15 @@ server <- function(input,output,session) {
   observeEvent(c(input$printSoln),{
     req(file$primary, file$soln)
     output$changes_ant1so <- output$changes_ant2so <- output$changes_ant3so <- renderText({
-      if (length(info$soln) > 0) {
-        sprintf("Discontinuities from soln file at\n%s",paste(unlist(info$soln), collapse = ", "))
+      if (length(info$soln[[1]]) > 0) {
+        sprintf("Antenna changes from soln file at\n%s",paste(unlist(info$soln[[1]]), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+    output$changes_rec1so <- output$changes_rec2so <- output$changes_rec3so <- renderText({
+      if (length(info$soln[[2]]) > 0) {
+        sprintf("Receiver and other changes from soln file at\n%s",paste(unlist(info$soln[[2]]), collapse = ", "))
       } else {
         NULL
       }
@@ -10355,8 +10369,15 @@ server <- function(input,output,session) {
   observeEvent(c(input$printCustom),{
     req(file$primary, file$custom)
     output$changes_ant1c <- output$changes_ant2c <- output$changes_ant3c <- renderText({
-      if (length(info$custom) > 0) {
-        sprintf("Changes from custom file at\n%s",paste(unlist(info$custom), collapse = ", "))
+      if (length(info$custom[[1]]) > 0) {
+        sprintf("Antenna changes from custom file at\n%s",paste(unlist(info$custom[[1]]), collapse = ", "))
+      } else {
+        NULL
+      }
+    })
+    output$changes_rec1c <- output$changes_rec2c <- output$changes_rec3c <- renderText({
+      if (length(info$custom[[2]]) > 0) {
+        sprintf("Receiver and other changes from custom file at\n%s",paste(unlist(info$custom[[2]]), collapse = ", "))
       } else {
         NULL
       }
@@ -10398,7 +10419,7 @@ server <- function(input,output,session) {
     })
     output$changes_rec1 <- output$changes_rec2 <- output$changes_rec3 <- renderText({
       if (length(info$log[[2]]) > 0) {
-        sprintf("Receiver changes from log file at\n%s",paste(unlist(info$log[[2]]), collapse = ", "))
+        sprintf("Receiver and other changes from log file at\n%s",paste(unlist(info$log[[2]]), collapse = ", "))
       } else {
         NULL
       }
@@ -13019,11 +13040,10 @@ server <- function(input,output,session) {
             } else if (input$tunits == 2) {
               e <- time_length(ymd_hms("1980-01-06 00:00:00") %--% t, unit = "second")/604800 # GPS week
             }
-            if (substr(record[[l]],98,168) != substr(record[[l + 1]],98,168)) {
-              reces <- c(reces,e)
-            }
             if (substr(record[[l]],171,213) != substr(record[[l + 1]],171,213)) {
               antes <- c(antes,e)
+            } else {
+              reces <- c(reces,e)
             }
           }
         }
@@ -13049,11 +13069,10 @@ server <- function(input,output,session) {
             } else if (input$tunits == 3) {
               e <- decimal_date(t)
             }
-            if (substr(record[[l]],98,168) != substr(record[[l + 1]],98,168)) {
-              reces <- c(reces,e)
-            }
             if (substr(record[[l]],171,213) != substr(record[[l + 1]],171,213)) {
               antes <- c(antes,e)
+            } else {
+              reces <- c(reces,e)
             }
           }
         }
@@ -13066,30 +13085,44 @@ server <- function(input,output,session) {
   #
   ReadSoln <- function(x,y,z) {
     req(x,z)
-    changes <- c()
+    ante = c()
+    rece = c()
     site <- paste0(" ",x," ")
-    extracted <- substring(grep(' P -',grep(site,readLines(z$datapath, warn = F),value = T), value = T), 17, 28)
+    antes <- substring(grep(' P -', grep("antenna|radome", grep(site,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = F), value = T), 17, 28)
+    reces <- substring(grep(' P -', grep("antenna|radome", grep(site,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = T), value = T), 17, 28)
     if (!is.null(y)) {
       site2 <- paste0(" ",y," ")
-      extracted2 <- substring(grep(' P -',grep(site2,readLines(z$datapath, warn = F),value = T), value = T), 17, 28)
-      extracted <- rbind(extracted,extracted2)
+      antes2 <- substring(grep(' P -', grep("antenna|radome", grep(site2,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = F), value = T), 17, 28)
+      reces2 <- substring(grep(' P -', grep("antenna|radome", grep(site2,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = T), value = T), 17, 28)
+      antes <- rbind(antes,antes2)
+      reces <- rbind(reces,reces2)
     }
-    extracted <- extracted[-which(extracted == "00:000:00000")]
-    if (length(extracted) > 0) {
-      years <- as.numeric(substring(extracted, 1, 2)) + 1900
-      days <- as.numeric(substring(extracted, 4, 6))
-      segs <- as.numeric(substring(extracted, 8, 12))
+    antes[antes != "00:000:00000"]
+    reces[reces != "00:000:00000"]
+    if (length(antes) > 0) {
+      years <- as.numeric(substring(antes, 1, 2)) + 1900
+      days <- as.numeric(substring(antes, 4, 6))
+      segs <- as.numeric(substring(antes, 8, 12))
       years[years < 1950] <- years[years < 1950] + 100
-      changes <- decimal_date(as.Date(days - 1 + segs/86400, origin = paste0(years,"-01-01")))
+      antes <- decimal_date(as.Date(days - 1 + segs/86400, origin = paste0(years,"-01-01")))
     }
-    changes <- na.omit(changes)
-    return(changes)
+    if (length(reces) > 0) {
+      years <- as.numeric(substring(reces, 1, 2)) + 1900
+      days <- as.numeric(substring(reces, 4, 6))
+      segs <- as.numeric(substring(reces, 8, 12))
+      years[years < 1950] <- years[years < 1950] + 100
+      reces <- decimal_date(as.Date(days - 1 + segs/86400, origin = paste0(years,"-01-01")))
+    }
+    antes <- na.omit(antes)
+    reces <- na.omit(reces)
+    return(list(antes,reces))
   }
   #
   ReadCustom <- function(x,y,z) {
     req(x,z)
     removeNotification("bad_custom")
-    changes <- c()
+    ante = c()
+    rece = c()
     cols <- try(range(count.fields(z$datapath, comment.char = "#")), silent = F)
     if (!isTruthy(cols) || inherits(cols,"try-error")) {
       showNotification("Unable to read the input custom discontinuity file.", action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "error", session = getDefaultReactiveDomain())
@@ -13101,44 +13134,51 @@ server <- function(input,output,session) {
       } else {
         col <- 1
       }
-      table <- try(read.table(z$datapath, comment.char = "#", fill = T, col.names = c(1:cols[2]))[,1:col], silent = F)
+      table <- try(read.table(z$datapath, comment.char = "#", fill = T), silent = F)
       if (isTruthy(table) && !inherits(table,"try-error")) {
         if (col == 2) {
-          if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$X2, ignore.case = F, perl = T))) { #NGL steps file
-            table$dyear <- decimal_date(as.Date(ymd(table$X2)))
-            if (any(table$X1 == x)) {
-              changes <- as.numeric(unlist(unique(table$dyear[table$X1 == x])))
+          if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$V2, ignore.case = F, perl = T))) { #NGL steps file
+            table$dyear <- decimal_date(as.Date(ymd(table$V2)))
+            if (any(table$V1 == x)) {
+              antennaChange <- grepl(pattern = "antenna|radome", x = table$V4[table$V1 == x], fixed = F, ignore.case = T, perl = F)
+              ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x][antennaChange])))
+              rece <- as.numeric(unlist(unique(table$dyear[table$V1 == x][!antennaChange])))
             }
             if (!is.null(y)) {
-              if (any(table$X1 == y)) {
-                changes <- unique(c(changes, as.numeric(unlist(table$dyear[table$X1 == y]))))
+              if (any(table$V1 == y)) {
+                ante <- unique(c(ante, as.numeric(unlist(unique(table$dyear[table$V1 == y][antennaChange])))))
+                rece <- unique(c(rece, as.numeric(unlist(unique(table$dyear[table$V1 == y][!antennaChange])))))
               }
             }
           } else if (grepl(pattern = "# Offset file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = F, fixed = T)) { #FORMATER offset file
-            table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + table$X2*86400)
-              changes <- as.numeric(unlist(unique(table$dyear[table$X1 == x])))
-              changes <- unique(c(changes, as.numeric(unlist(unique(table$dyear[table$X1 == y])))))
+            table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + table$V2*86400)
+            antennaChange <- grepl(pattern = "antenna|radome", x = table, fixed = F, ignore.case = T, perl = F)
+            ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x][antennaChange])))
+            rece <- as.numeric(unlist(unique(table$dyear[table$V1 == x][!antennaChange])))
+            ante <- unique(c(ante, as.numeric(unlist(unique(table$dyear[table$V1 == y][antennaChange])))))
+            rece <- unique(c(rece, as.numeric(unlist(unique(table$dyear[table$V1 == y][!antennaChange])))))
           } else {
             if (cols[2] > 2 && info$custom_warn == 0) {
               info$custom_warn <- 1
               showNotification(HTML("The input custom discontinuity file contains more than 2 columns.<br>Only the first 2 will be used."), action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "warning", session = getDefaultReactiveDomain())
             }
-            if (length(table[table$X2 == x]) > 0) {
-              changes <- as.numeric(unique(unlist(table$X1[table$X2 == x])))
+            if (length(table[table$V2 == x]) > 0) {
+              ante <- as.numeric(unique(unlist(table$V1[table$V2 == x])))
             }
             if (!is.null(y)) {
-              if (length(table[table$X2 == y]) > 0) {
-                changes <- unique(c(changes, as.numeric(unlist(table$X1[table$X2 == y]))))
+              if (length(table[table$V2 == y]) > 0) {
+                ante <- unique(c(ante, as.numeric(unlist(table$V1[table$V2 == y]))))
               }
             }
           }
         } else {
-          changes <- as.numeric(unique(unlist(table)))
+          ante <- as.numeric(unique(unlist(table)))
         }
-        changes <- sort(na.omit(changes), decreasing = F)
+        ante <- sort(na.omit(ante), decreasing = F)
+        rece <- sort(na.omit(rece), decreasing = F)
       }
     }
-    return(changes)
+    return(list(ante,rece))
   }
   #
   plot_series <- function(x,y,z,rangex,rangey,sigma,title,symbol,unit,xlab) {
@@ -13371,12 +13411,18 @@ server <- function(input,output,session) {
         }
       }
       if (input$traceSoln && length(info$soln) > 0) {
-        for (a in info$soln) {
+        for (r in info$soln[[2]]) {
+          abline(v = r, col = SARIcolors[8], lty = 2)
+        }
+        for (a in info$soln[[1]]) {
           abline(v = a, col = SARIcolors[8])
         }
       }
       if (input$traceCustom && length(info$custom) > 0) {
-        for (a in info$custom) {
+        for (r in info$custom[[2]]) {
+          abline(v = r, col = SARIcolors[5], lty = 2)
+        }
+        for (a in info$custom[[1]]) {
           abline(v = a, col = SARIcolors[5])
         }
       }
