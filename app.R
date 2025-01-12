@@ -8900,6 +8900,10 @@ server <- function(input,output,session) {
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     updateSelectInput(inputId = "server2", selected = "")
     updateSelectInput(inputId = "product2", selected = "")
+    updateCheckboxInput(session, inputId = "fullSeries", value = F)
+    updateCheckboxInput(session, inputId = "sameScale", value = F)
+    updateCheckboxInput(session, inputId = "same_axis", value = F)
+    updateCheckboxInput(session, inputId = "ne", value = F)
     if (length(input$series2$datapath) == 1) {
       header <- readLines(input$series2$datapath, n = 1)
       if (grepl(".tenv3$", file$secondary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
