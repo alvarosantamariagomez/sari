@@ -185,6 +185,11 @@ color: gray62 !important;
 showPopup <- "shinyjs.showPopup = function(file) { overview = window.open('' + file + '', 'plotAll', 'popup=yes, width=1000, height=800, menubar=no, resizable=yes, status=no, titlebar=no, toolbar=no'); }"
 checkPopup <- "shinyjs.checkPopup = function() { var status = 'FALSE'; if (typeof overview === 'object') { status = !overview.closed; } Shiny.onInputChange('overview', status);}"
 
+# force autocomplete off for Firefox (based on https://github.com/rstudio/shiny/issues/3763)
+autoCompleteOff <- function(x) {
+  tagAppendAttributes(x, .cssSelector = "input", autocomplete = "off")
+}
+
 # Update file names from URL/remote (based on https://stackoverflow.com/questions/62626901/r-shiny-change-text-fileinput-after-upload)
 update_series <- "
 Shiny.addCustomMessageHandler('filename', function(txt) {
@@ -580,6 +585,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   
                   # confirm click on refresh button
                   # uiOutput("refresh")
+
                 ),
                 
                 hidden(
@@ -623,10 +629,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T)
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
-                                                                               selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
+                                                                               selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
                                                                                withBusyIndicatorUI(
@@ -645,7 +651,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                    Edit the station ID(s) if necessary.", anchor = "series-id"))
                                                                               ),
                                                                               column(6, 
-                                                                                     textInput(inputId = "ids", label = NULL, value = "")
+                                                                                     textInput(inputId = "ids", label = NULL, value = "") |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                         ),
@@ -656,7 +662,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          helpPopup("This option sets the series file format. Select 1D if the other file formats are unknown.", anchor = "format"))
                                                                               ),
                                                                               column(8,
-                                                                                     radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                                     radioButtons(inputId = "format", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto") |> autoCompleteOff(),
                                                                               )
                                                                             )
                                                                         ),
@@ -664,7 +670,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           condition = "input.format == 4",
                                                                           fluidRow(
                                                                             column(6,
-                                                                                   selectInput(inputId = "separator", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "separator", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T) |> autoCompleteOff()
                                                                             ),
                                                                             column(6,
                                                                                    div(style = "font-weight: bold", "Column selection",
@@ -673,13 +679,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "margin-top:-1em",
                                                                                        fluidRow(
                                                                                          column(4,
-                                                                                                textInput(inputId = "epoch", label = "", value = "1")
+                                                                                                textInput(inputId = "epoch", label = "", value = "1") |> autoCompleteOff()
                                                                                          ),
                                                                                          column(4, offset = -2,
-                                                                                                textInput(inputId = "variable", label = "", value = "2")
+                                                                                                textInput(inputId = "variable", label = "", value = "2") |> autoCompleteOff()
                                                                                          ),
                                                                                          column(4, offset = -2,
-                                                                                                textInput(inputId = "errorBar", label = "", value = "3")
+                                                                                                textInput(inputId = "errorBar", label = "", value = "3") |> autoCompleteOff()
                                                                                          )
                                                                                        )
                                                                                    )
@@ -693,24 +699,24 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          radioButtons(inputId = "tunits",
                                                                                                       div("Time units",
                                                                                                           helpPopup("This option sets the units of the time axis.<br>These units define the periods of time in several options.", anchor = "tunits")),
-                                                                                                      choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = "", inline = F)
+                                                                                                      choices = list("Days" = 1, "Weeks" = 2, "Years" = 3), selected = "", inline = F) |> autoCompleteOff()
                                                                                      ),
                                                                                      div(
                                                                                        radioButtons(inputId = "sunits",
                                                                                                     div("Series units",
                                                                                                         helpPopup("This option sets the units of the variable in the time series.<br>They are used to define the units of the estimated parameters.", anchor = "tunits")),
-                                                                                                    choices = list("?" = 0, "m" = 1, "mm" = 2), selected = 0, inline = T)
+                                                                                                    choices = list("?" = 0, "m" = 1, "mm" = 2), selected = 0, inline = T) |> autoCompleteOff()
                                                                                      )
                                                                               ),
                                                                               column(6, offset = 1,
-                                                                                     checkboxInput(inputId = "sigmas", label = "Use error bars", value = T),
+                                                                                     checkboxInput(inputId = "sigmas", label = "Use error bars", value = T) |> autoCompleteOff(),
                                                                                      checkboxInput(inputId = "header", 
                                                                                                    div("Show series header",
                                                                                                        helpPopup("Before plotting the series, this option shows the first lines of the series file.<br>After plotting the series, this option shows the first lines of the series data in the plot.", anchor = "header")),
-                                                                                                   value = F),
+                                                                                                   value = F) |> autoCompleteOff(),
                                                                                      conditionalPanel(
                                                                                        condition = "input.header == true",
-                                                                                       sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10))
+                                                                                       sliderInput(inputId = "lines", label = "Number of lines", min = 1, max = 50, value = 10)) |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                         ),
@@ -723,13 +729,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                              The new sampling period must be given in the same units as the time axis of the series.<br>
                                                                                                              Expressions are allowed starting by <span class='UIoption'>=</span>,<br>
                                                                                                              as in <span class='UIoption'>=7/365.25</span>, for a week period in units of years.", anchor = "average")),
-                                                                                               value = F)
+                                                                                               value = F) |> autoCompleteOff()
                                                                           ),
                                                                           column(6,
                                                                                  div(style = "padding: 0px 0px; margin-top:1em",
                                                                                      conditionalPanel(
                                                                                        condition = "input.average == true",
-                                                                                       textInput(inputId = "step", label = "Averaging time period", value = "")
+                                                                                       textInput(inputId = "step", label = "Averaging time period", value = "") |> autoCompleteOff()
                                                                                      )
                                                                                  )
                                                                           )
@@ -742,7 +748,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           checkboxInput(inputId = "showmap",
                                                                                         div("Show location map",
                                                                                             helpPopup("If the series header contains the station coordinates, or they are included in a public database, or they are provided by the user in the 'Plate motion model' option, this option will show a map with the station's location together with the tectonic plate boundaries.", anchor = "map")),
-                                                                                        value = F),
+                                                                                        value = F) |> autoCompleteOff(),
                                                                           conditionalPanel(
                                                                             condition = "input.showmap == false",
                                                                             div(style = "padding: 0px 0px; margin-top: -1em", htmlOutput("information2"))
@@ -809,15 +815,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    checkboxInput(inputId = "cut",
                                                                                                  div("Truncate", style = "font-weight: bold",
                                                                                                      helpPopup("This option reduces the time axis of the series by removing all points before and/or after the provided epochs.", anchor = "cut")),
-                                                                                                 value = F)
+                                                                                                 value = F) |> autoCompleteOff()
                                                                             ),
                                                                             conditionalPanel(
                                                                               condition = "input.cut == true",
                                                                               column(4,
-                                                                                     textInput(inputId = "cutStart", label = "Before", value = "")
+                                                                                     textInput(inputId = "cutStart", label = "Before", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4,
-                                                                                     textInput(inputId = "cutEnd", label = "After", value = "")
+                                                                                     textInput(inputId = "cutEnd", label = "After", value = "") |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                           )
@@ -828,14 +834,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    textInput(inputId = "thresholdRes",
                                                                                              div("Residual",
                                                                                                  helpPopup("Enter the threshold to delete all the points with larger absolute residual.", anchor = "threshold")),
-                                                                                             value = NULL)
+                                                                                             value = NULL) |> autoCompleteOff()
                                                                             ),
                                                                             column(4, style = "padding:0px 10px 0px 0px;", align = "left",
                                                                                    textInput(inputId = "thresholdResN",
                                                                                              div("Norm. residual",
                                                                                                  helpPopup("Enter the threshold to delete all the points with larger normalized absolute residual.<br>
                                                                                                            The residuals values are normalized by their error bars.", anchor = "threshold")),
-                                                                                             value = NULL)
+                                                                                             value = NULL) |> autoCompleteOff()
                                                                             ),
                                                                             column(4, style = "padding:0px 10px 0px 0px; margin-top:1.75em", align = "right",
                                                                                    actionButton(inputId = "removeAuto", label = "Auto toggle", icon =  icon("car", class = NULL, lib = "font-awesome"), style = "font-size: small")
@@ -847,7 +853,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                div(style = "font-weight: bold", "Plot type")
                                                                         ),
                                                                         column(8, 
-                                                                               radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T)
+                                                                               radioButtons(inputId = "symbol", label = NULL, choices = list("Points" = 0, "Lines" = 1, "Points & Lines" = 2), selected = 0, inline = T) |> autoCompleteOff()
                                                                         )
                                                                       ),
                                                                       div(style = "font-weight: bold", "Plot options"),
@@ -856,20 +862,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                checkboxInput(inputId = "remove3D",
                                                                                              div("All components", align = "right",
                                                                                                  helpPopup("This option allows toggling or deleting the points from all the coordinate components at the same time or separately.", anchor = "3d")),
-                                                                                             value = T)
+                                                                                             value = T) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
                                                                                checkboxInput(inputId = "permanent",
                                                                                              div("Permanent", align = "right",
                                                                                                  helpPopup("This option deletes the points from the series permanently.<br>
                                                                                                            Deleted points cannot be restored, unless the series are reset and reloaded.", anchor = "permanent")),
-                                                                                             value = F)
+                                                                                             value = F) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
                                                                                checkboxInput(inputId = "add_excluded",
                                                                                              div("Include in file", align = "right",
                                                                                                  helpPopup("This option includes the removed points in the downloaded file as commented lines.", anchor = "excluded")),
-                                                                                             value = F)
+                                                                                             value = F) |> autoCompleteOff()
                                                                         )
                                                                       ),
                                                                       fluidRow(
@@ -878,7 +884,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              div("Scrolling",
                                                                                                  helpPopup("This options enables or disables the vertical scrolling of the left panel.<br>
                                                                                                            When the scrolling is disabled, the user can take a screenshot of the full web page.", anchor = "scrolling")),
-                                                                                             value = T)
+                                                                                             value = T) |> autoCompleteOff()
                                                                         )
                                                                       ),
                                                                       style = "primary"),
@@ -954,8 +960,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.log",
-                                                                                         checkboxInput(inputId = "traceLog", label = "Plot changes", value = F),
-                                                                                         checkboxInput(inputId = "printLog", label = "List changes", value = F)
+                                                                                         checkboxInput(inputId = "traceLog", label = "Plot changes", value = F) |> autoCompleteOff(),
+                                                                                         checkboxInput(inputId = "printLog", label = "List changes", value = F) |> autoCompleteOff()
                                                                                        )
                                                                                    )
                                                                             )
@@ -982,8 +988,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.sinfo",
-                                                                                         checkboxInput(inputId = "traceSinfo", label = "Plot changes", value = F),
-                                                                                         checkboxInput(inputId = "printSinfo", label = "List changes", value = F)
+                                                                                         checkboxInput(inputId = "traceSinfo", label = "Plot changes", value = F) |> autoCompleteOff(),
+                                                                                         checkboxInput(inputId = "printSinfo", label = "List changes", value = F) |> autoCompleteOff()
                                                                                        )
                                                                                    )
                                                                             )
@@ -1010,8 +1016,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.soln",
-                                                                                         checkboxInput(inputId = "traceSoln", label = "Plot changes", value = F),
-                                                                                         checkboxInput(inputId = "printSoln", label = "List changes", value = F)
+                                                                                         checkboxInput(inputId = "traceSoln", label = "Plot changes", value = F) |> autoCompleteOff(),
+                                                                                         checkboxInput(inputId = "printSoln", label = "List changes", value = F) |> autoCompleteOff()
                                                                                        )
                                                                                    )
                                                                             )
@@ -1038,8 +1044,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.custom",
-                                                                                         checkboxInput(inputId = "traceCustom", label = "Plot changes", value = F),
-                                                                                         checkboxInput(inputId = "printCustom", label = "List changes", value = F)
+                                                                                         checkboxInput(inputId = "traceCustom", label = "Plot changes", value = F) |> autoCompleteOff(),
+                                                                                         checkboxInput(inputId = "printCustom", label = "List changes", value = F) |> autoCompleteOff()
                                                                                        )
                                                                                    )
                                                                             )
@@ -1066,17 +1072,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    div(style = "padding: 0px 0px; margin-top:0em",
                                                                                        conditionalPanel(
                                                                                          condition = "output.series2",
-                                                                                         radioButtons(inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = NULL, inline = F, width = NULL),
+                                                                                         radioButtons(inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = NULL, inline = F, width = NULL) |> autoCompleteOff(),
                                                                                        )
                                                                                    )
                                                                             )
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T)
+                                                                                   selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                             ),
                                                                             column(4,
-                                                                                   selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
+                                                                                   selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
                                                                             ),
                                                                             column(4,
                                                                                    withBusyIndicatorUI(
@@ -1088,14 +1094,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             condition = "output.series2",
                                                                             fluidRow(
                                                                               column(8,
-                                                                                     # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T),
-                                                                                     radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto"),
+                                                                                     # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T) |> autoCompleteOff(),
+                                                                                     radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto") |> autoCompleteOff(),
                                                                                      fluidRow(
                                                                                        column(6,
                                                                                               textInput(inputId = "scaleFactor",
                                                                                                         div("Scale factor",
                                                                                                             helpPopup("Enter the multiplicative coefficient to scale the y-axis of the secondary series.", anchor = "notes-on-the-secondary-series")),
-                                                                                                        value = "1")
+                                                                                                        value = "1") |> autoCompleteOff()
                                                                                        ),
                                                                                        column(6,
                                                                                               textInput(inputId = "step2",
@@ -1103,7 +1109,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                             helpPopup("This option computes the moving average of the secondary series for a given non-overlapping time pediod between the time series sampling and half the time series length.<br>
                                                                                                                       The period must be given in the same units as the time axis in the series.<br>
                                                                                                                       Expressions are allowed starting by <span class='UIoption'>=</span>, as in <span class='UIoption'>=7/365.25</span>.", anchor = "notes-on-the-secondary-series")),
-                                                                                                        value = "")
+                                                                                                        value = "") |> autoCompleteOff()
                                                                                        )
                                                                                      ),
                                                                                      div(style = "margin-right: -1em", uiOutput("fileSeries2"))
@@ -1114,19 +1120,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                        div("Full series",
                                                                                                            helpPopup("This option shows the total length of the secondary series.<br>
                                                                                                                      By default, only the common time period with the primary series will be shown.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F),
+                                                                                                       value = F) |> autoCompleteOff(),
                                                                                          checkboxInput(inputId = "sameScale",
                                                                                                        div("Same scale",
                                                                                                            helpPopup("This option forces the y-axis of the secondary series on the right of the plot to have the same scale as the y-axis of the primary series on the left.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F),
+                                                                                                       value = F) |> autoCompleteOff(),
                                                                                          checkboxInput(inputId = "same_axis",
                                                                                                        div("Same axis",
                                                                                                            helpPopup("This option forces the y-axis of the secondary series on the right of the plot to be the same as the y-axis of the primary series on the left.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F),
+                                                                                                       value = F) |> autoCompleteOff(),
                                                                                          checkboxInput(inputId = "ne",
                                                                                                        div(HTML("N @ E"),
                                                                                                            helpPopup("This option swaps the columns of the North and East components of the secondary series to match those of the primary series.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F)
+                                                                                                       value = F) |> autoCompleteOff()
                                                                                      )
                                                                               )
                                                                             )
@@ -1135,7 +1141,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             conditionalPanel(
                                                                               condition = "input.format2 == 4 && output.series2 == true",
                                                                               column(6,
-                                                                                     selectInput(inputId = "separator2", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T)
+                                                                                     selectInput(inputId = "separator2", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T) |> autoCompleteOff()
                                                                               ),
                                                                               column(6,
                                                                                      div(style = "font-weight: bold", "Column selection",
@@ -1144,13 +1150,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      div(style = "margin-top:-1em",
                                                                                          fluidRow(
                                                                                            column(4,
-                                                                                                  textInput(inputId = "epoch2", label = "", value = "1")
+                                                                                                  textInput(inputId = "epoch2", label = "", value = "1") |> autoCompleteOff()
                                                                                            ),
                                                                                            column(4, offset = -2,
-                                                                                                  textInput(inputId = "variable2", label = "", value = "2")
+                                                                                                  textInput(inputId = "variable2", label = "", value = "2") |> autoCompleteOff()
                                                                                            ),
                                                                                            column(4, offset = -2,
-                                                                                                  textInput(inputId = "errorBar2", label = "", value = "3")
+                                                                                                  textInput(inputId = "errorBar2", label = "", value = "3") |> autoCompleteOff()
                                                                                            )
                                                                                          )
                                                                                      )
@@ -1169,13 +1175,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                checkboxInput(inputId = "euler",
                                                                                              div(style = "font-weight: bold", "Plate motion model",
                                                                                                  helpPopup("This option shows or removes a plate motion model at the series location given the parameters of an Euler pole.", anchor = "notes-on-the-plate-motion-model")),
-                                                                                             value = F)
+                                                                                             value = F) |> autoCompleteOff()
                                                                                ),
                                                                         column(6,
                                                                                conditionalPanel(
                                                                                  condition = "input.euler == true",
                                                                                  div(style = "margin-top: 0.75em",
-                                                                                     radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                     radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                                  )
                                                                                )
                                                                         )
@@ -1187,7 +1193,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  div("Select NEU or ENU format:")
                                                                           ),
                                                                           column(6,
-                                                                                 radioButtons(inputId = "neuenu", label = NULL, choices = list("ENU" = 1, "NEU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
+                                                                                 radioButtons(inputId = "neuenu", label = NULL, choices = list("ENU" = 1, "NEU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL) |> autoCompleteOff()
                                                                           )
                                                                         ),
                                                                         conditionalPanel(
@@ -1196,7 +1202,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  div("Select component of 1D series:")
                                                                           ),
                                                                           column(6,
-                                                                                 radioButtons(inputId = "neu1D", label = NULL, choices = list("North" = 1, "East" = 2, "Up" = 3), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL)
+                                                                                 radioButtons(inputId = "neu1D", label = NULL, choices = list("North" = 1, "East" = 2, "Up" = 3), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL) |> autoCompleteOff()
                                                                           )
                                                                         )
                                                                       ),
@@ -1204,11 +1210,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         condition = "input.euler == true",
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2020", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T),
+                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2020", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T) |> autoCompleteOff(),
                                                                                  div(style = "margin-top: -1em", uiOutput("pmm"))
                                                                           ),
                                                                           column(6,
-                                                                                 selectizeInput(inputId = "plate", label = "Plate name", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1))
+                                                                                 selectizeInput(inputId = "plate", label = "Plate name", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
                                                                           )
                                                                         ),
                                                                         fluidRow(
@@ -1230,29 +1236,29 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                                       Option 2: geographic coordinates in decimal degrees.", anchor = "notes-on-the-plate-motion-model"))
                                                                           ),
                                                                           column(6, align = "right",
-                                                                                 radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                 radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                           )
                                                                         ),
                                                                         fluidRow(
                                                                           conditionalPanel(
                                                                             condition = "input.station_coordinates == 1",
                                                                             column(4,
-                                                                                   textInput(inputId = "station_x", label = "Station X", value = "")
+                                                                                   textInput(inputId = "station_x", label = "Station X", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "station_y", label = "Station Y", value = "")
+                                                                                   textInput(inputId = "station_y", label = "Station Y", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "station_z", label = "Station Z", value = "")
+                                                                                   textInput(inputId = "station_z", label = "Station Z", value = "") |> autoCompleteOff()
                                                                             )
                                                                           ),
                                                                           conditionalPanel(
                                                                             condition = "input.station_coordinates == 2",
                                                                             column(4,
-                                                                                   textInput(inputId = "station_lat", label = "Station latitude", value = "")
+                                                                                   textInput(inputId = "station_lat", label = "Station latitude", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "station_lon", label = "Station longitude", value = "")
+                                                                                   textInput(inputId = "station_lon", label = "Station longitude", value = "") |> autoCompleteOff()
                                                                             )
                                                                           )
                                                                         ),
@@ -1264,29 +1270,29 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                                                   Option 2: geographic coordinates in decimal degrees.", anchor = "notes-on-the-plate-motion-model"))
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   radioButtons(inputId = "station_coordinates2", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                   radioButtons(inputId = "station_coordinates2", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                             )
                                                                           ),
                                                                           fluidRow(
                                                                             conditionalPanel(
                                                                               condition = "input.station_coordinates2 == 1",
                                                                               column(4,
-                                                                                     textInput(inputId = "station_x2", label = "Station X", value = "")
+                                                                                     textInput(inputId = "station_x2", label = "Station X", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4, offset = -2,
-                                                                                     textInput(inputId = "station_y2", label = "Station Y", value = "")
+                                                                                     textInput(inputId = "station_y2", label = "Station Y", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4, offset = -2,
-                                                                                     textInput(inputId = "station_z2", label = "Station Z", value = "")
+                                                                                     textInput(inputId = "station_z2", label = "Station Z", value = "") |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             conditionalPanel(
                                                                               condition = "input.station_coordinates2 == 2",
                                                                               column(4,
-                                                                                     textInput(inputId = "station_lat2", label = "Station latitude", value = "")
+                                                                                     textInput(inputId = "station_lat2", label = "Station latitude", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4, offset = -2,
-                                                                                     textInput(inputId = "station_lon2", label = "Station longitude", value = "")
+                                                                                     textInput(inputId = "station_lon2", label = "Station longitude", value = "") |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                           )
@@ -1297,32 +1303,32 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                                Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma.", anchor = "notes-on-the-plate-motion-model"))
                                                                           ),
                                                                           column(6, align = "right",
-                                                                                 radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                 radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                           )
                                                                         ),
                                                                         fluidRow(
                                                                           conditionalPanel(
                                                                             condition = "input.pole_coordinates == 1",
                                                                             column(4,
-                                                                                   textInput(inputId = "pole_x", label = "Pole rotation X", value = "")
+                                                                                   textInput(inputId = "pole_x", label = "Pole rotation X", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_y", label = "Pole rotation Y", value = "")
+                                                                                   textInput(inputId = "pole_y", label = "Pole rotation Y", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_z", label = "Pole rotation Z", value = "")
+                                                                                   textInput(inputId = "pole_z", label = "Pole rotation Z", value = "") |> autoCompleteOff()
                                                                             )
                                                                           ),
                                                                           conditionalPanel(
                                                                             condition = "input.pole_coordinates == 2",
                                                                             column(4,
-                                                                                   textInput(inputId = "pole_lat", label = "Pole latitude", value = "")
+                                                                                   textInput(inputId = "pole_lat", label = "Pole latitude", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_lon", label = "Pole longitude", value = "")
+                                                                                   textInput(inputId = "pole_lon", label = "Pole longitude", value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_rot", label = "Pole rotation", value = "")
+                                                                                   textInput(inputId = "pole_rot", label = "Pole rotation", value = "") |> autoCompleteOff()
                                                                             )
                                                                           )
                                                                         )
@@ -1334,20 +1340,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                checkboxInput(inputId = "gia",
                                                                                              div(style = "font-weight: bold", "GIA",
                                                                                                  helpPopup("This option shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location.", anchor = "notes-on-the-gia-model")),
-                                                                                             value = F)
+                                                                                             value = F) |> autoCompleteOff()
                                                                         )
                                                                       ),
                                                                       conditionalPanel(
                                                                         condition = "input.gia == true",
                                                                         fluidRow(
                                                                           column(6,
-                                                                                 selectInput(inputId = "giaModel", label = "Select a GIA model", choices = list("", "Caron & Ivins", "ICE-6G-VM5a", "ICE-6G-ANU"), selected = "", multiple = F, selectize = T)
+                                                                                 selectInput(inputId = "giaModel", label = "Select a GIA model", choices = list("", "Caron & Ivins", "ICE-6G-VM5a", "ICE-6G-ANU"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                           ),
                                                                           column(6,
                                                                                  conditionalPanel(
                                                                                    condition = "input.gia == true",
                                                                                    div(style = "margin-top: 2em",
-                                                                                       radioButtons(inputId = "giaType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                       radioButtons(inputId = "giaType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                                    )
                                                                                  )
                                                                           )
@@ -1361,12 +1367,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                            div(style = "font-weight: bold", "Vertical land motion trend",
                                                                                                helpPopup("This text field shows the vertical land motion trend in the same units as the series.<br>
                                                                                                          Modify the value of the VLM trend if necessary.", anchor = "notes-on-the-gia-model")),
-                                                                                           value = "")
+                                                                                           value = "") |> autoCompleteOff()
                                                                           ),
                                                                           conditionalPanel(
                                                                             condition = "output.series2",
                                                                             column(6,
-                                                                                   textInput(inputId = "giaTrend2", "Secondary", value = "")
+                                                                                   textInput(inputId = "giaTrend2", "Secondary", value = "") |> autoCompleteOff()
                                                                             )
                                                                           )
                                                                         )
@@ -1401,7 +1407,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      div(style = "font-weight: bold", "Fit type")
                                                                               ),
                                                                               column(8, 
-                                                                                     radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T)
+                                                                                     radioButtons(inputId = "fitType", label = NULL, choices = list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T) |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             conditionalPanel(
@@ -1411,7 +1417,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        div(style = "font-weight: bold", "KF type")
                                                                                 ),
                                                                                 column(5,
-                                                                                       radioButtons(inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T)
+                                                                                       radioButtons(inputId = "kf", label = NULL, choices = list("EKF" = 1, "UKF" = 2), selected = 2, inline = T) |> autoCompleteOff()
                                                                                 ),
                                                                                 column(width = 4, offset = 0, style = "margin-top:-2em; padding: 0px 40px 0px 0px", align = "right",
                                                                                        withBusyIndicatorUI(
@@ -1423,14 +1429,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                             div("Optimize measurement noise",
                                                                                                 helpPopup("This option estimates the measurement noise within the given bounds and with respect to the provided process noise.<br>
                                                                                                         <span class='warning'>WARNING</span>: several iterations of the KF fit.", anchor = "notes-on-the-kalman-filter")),
-                                                                                            value = F),
+                                                                                            value = F) |> autoCompleteOff(),
                                                                               fluidRow(
                                                                                 column(4,
                                                                                        textInput(inputId = "ObsError",
                                                                                                  div("Measurement noise",
                                                                                                      helpPopup("Enter the measurement standard deviation in the same units as the series.<br>
                                                                                                              If left empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 conditionalPanel(
                                                                                   condition = "input.errorm == true",
@@ -1438,10 +1444,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          textInput(inputId = "min_optirange",
                                                                                                    div("Min bound",
                                                                                                        helpPopup("Lower & upper bounds of the measurement standard deviation in the same units as the series.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   ),
                                                                                   column(4,
-                                                                                         textInput(inputId = "max_optirange", label = "Max bound", value = "")
+                                                                                         textInput(inputId = "max_optirange", label = "Max bound", value = "") |> autoCompleteOff()
                                                                                   )
                                                                                 )
                                                                               )
@@ -1455,7 +1461,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               )
                                                                           ),
                                                                           div(style = "padding: 0px 0px; margin-top:-1em",
-                                                                              checkboxGroupInput(inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+                                                                              checkboxGroupInput(inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T) |> autoCompleteOff()
                                                                           ),
                                                                           
                                                                           ## % Linear fit ####
@@ -1471,7 +1477,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        textInput(inputId = "trendRef",
                                                                                                  div("Ref. epoch rate",
                                                                                                      helpPopup("Enter the reference epoch for the rate. If empty, the mean data epoch will be used.", anchor = NULL)),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                      )
                                                                               ),
                                                                               conditionalPanel(
@@ -1481,7 +1487,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  div("Rate process noise",
                                                                                                      helpPopup("Enter the rate variation (standard deviation) for each observation.<br>
                                                                                                              If a null value is used, a constant linear trend will be estimated.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "0.0")
+                                                                                                 value = "0.0") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             ),
@@ -1494,7 +1500,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          textInput(inputId = "Intercept0",
                                                                                                    div("Initial intercept",
                                                                                                        helpPopup("Enter the initial state value for the intercept. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                        )
                                                                                 ),
                                                                                 column(6,
@@ -1502,7 +1508,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  div("Initial intercept error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the intercept.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               ),
                                                                               fluidRow(
@@ -1512,7 +1518,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          textInput(inputId = "Trend0",
                                                                                                    div("Initial rate",
                                                                                                        helpPopup("Enter the initial state value for the rate. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                        )
                                                                                 ),
                                                                                 column(6,
@@ -1520,7 +1526,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  div("Initial rate error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the rate.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             )
@@ -1539,7 +1545,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   w : for weeks<br/>
                                                                                                   y : for years.<br/>
                                                                                                   Add xN at the end to fit up to N higher harmonics, i.e., 1yx2 includes annual and semi-annual periods.", anchor = "notes-on-the-sinusoidal-fitting")),
-                                                                                      value = "1y"),
+                                                                                      value = "1y") |> autoCompleteOff(),
                                                                             fluidRow(
                                                                               column(12,
                                                                                      div(style = "font-weight: bold", "Draconitic harmonics",
@@ -1548,16 +1554,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             ),
                                                                             fluidRow(
                                                                               column(3,
-                                                                                     checkboxInput(inputId = "GPSdrac", label = "GPS", value = F)
+                                                                                     checkboxInput(inputId = "GPSdrac", label = "GPS", value = F) |> autoCompleteOff()
                                                                               ),
                                                                               column(3,
-                                                                                     checkboxInput(inputId = "GALdrac", label = "Galileo", value = F)
+                                                                                     checkboxInput(inputId = "GALdrac", label = "Galileo", value = F) |> autoCompleteOff()
                                                                               ),
                                                                               column(3,
-                                                                                     checkboxInput(inputId = "BDSdrac", label = "BeiDou", value = F)
+                                                                                     checkboxInput(inputId = "BDSdrac", label = "BeiDou", value = F) |> autoCompleteOff()
                                                                               ),
                                                                               column(3,
-                                                                                     checkboxInput(inputId = "GLOdrac", label = "GLONASS", value = F)
+                                                                                     checkboxInput(inputId = "GLOdrac", label = "GLONASS", value = F) |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             fluidRow(
@@ -1573,7 +1579,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        textInput(inputId = "S0",
                                                                                                  div("Initial amplitude",
                                                                                                      helpPopup("Enter the initial state value for both sine & cosine amplitudes. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             ),
@@ -1585,21 +1591,21 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  div("Amplitude process noise",
                                                                                                      helpPopup("Enter the sine/cosine amplitude variation (standard deviation) for each observation and for each period.<br>
                                                                                                              If a null value is used, a constant sinusoidal oscillation will be estimated.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "0.0")
+                                                                                                 value = "0.0") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eS0",
                                                                                                  div("Initial amplitude error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for sine & cosine amplitudes.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               ),
                                                                               tags$div(id = "inline",
                                                                                        radioButtons(inputId = "SineCosine",
                                                                                                     div("Amplitude process noise on",
                                                                                                         helpPopup("This option allows choosing between varying the sine amplitude only or varying both the sine & cosine amplitudes independently.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                    choices = list("Sine" = 1, "Sine & Cosine" = 2), selected = 2, inline = T)
+                                                                                                    choices = list("Sine" = 1, "Sine & Cosine" = 2), selected = 2, inline = T) |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                           ),
@@ -1613,11 +1619,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             textInput(inputId = "offsetEpoch",
                                                                                       div("Offset epochs",
                                                                                           helpPopup("Enter a comma-separated list of offsets in the same time units as the series.", anchor = NULL)),
-                                                                                      value = ""),
+                                                                                      value = "") |> autoCompleteOff(),
                                                                             checkboxInput(inputId = "click2collect",
                                                                                           div("Click & collect",
                                                                                               helpPopup("Click on the series or residual plots to automatically add the epochs to the list of offsets.", anchor = NULL)),
-                                                                                          value = F),
+                                                                                          value = F) |> autoCompleteOff(),
                                                                             conditionalPanel(
                                                                               condition = "input.fitType == 2",
                                                                               fluidRow(
@@ -1625,13 +1631,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        textInput(inputId = "O0",
                                                                                                  div("Initial offset",
                                                                                                      helpPopup("Enter the initial state value for the offsets. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eO0",
                                                                                                  div("Initial offset error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the offsets. If empty, an approximate value will be used.", anchor = "notes-on-the-kalman-filter")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             ),
@@ -1645,7 +1651,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      sliderInput("segmentLength",
                                                                                                  div("Minimum segment",
                                                                                                      helpPopup("This option sets the minimum segment size given as % of the series length.", anchor = "notes-on-the-discontinuity-detection")),
-                                                                                                 min = 0.1, max = 50, value = 10, step = 1, round = 0, ticks = F, animate = F, width = NULL, sep = "", pre = NULL, post = NULL, timeFormat = NULL, timezone = NULL, dragRange = TRUE)
+                                                                                                 min = 0.1, max = 50, value = 10, step = 1, round = 0, ticks = F, animate = F, width = NULL, sep = "", pre = NULL, post = NULL, timeFormat = NULL, timezone = NULL, dragRange = TRUE) |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             htmlOutput("offsetFound"),
@@ -1655,12 +1661,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                    div("Check offsets",
                                                                                                        helpPopup("This option estimates the probability that the estimated offsets are not generated by random noise variations.<br/>
                                                                                                                If the probability is < 95 %, offsets may be generated by random noise variations.", anchor = "notes-on-the-offset-verification"),
-                                                                                                       value = F))
+                                                                                                       value = F)) |> autoCompleteOff()
                                                                               ),
                                                                               conditionalPanel(
                                                                                 condition = "input.verif_offsets == true",
                                                                                 column(3, style = "margin-top:1em;", align = "left",
-                                                                                       radioButtons(inputId = "typeColor", NULL, choices = list("FL/RW" = 1, "PL" = 2), selected = 2, inline = F, width = "auto")
+                                                                                       radioButtons(inputId = "typeColor", NULL, choices = list("FL/RW" = 1, "PL" = 2), selected = 2, inline = F, width = "auto") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(width = 4, style = "margin-top:1em; padding: 0px 0px 0px 0px", align = "left",
                                                                                        withBusyIndicatorUI(
@@ -1676,7 +1682,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        textInput(inputId = "verif_white",
                                                                                                  div("White noise",
                                                                                                      helpPopup("Enter the standard deviation of the expected white noise in the series.", anchor = "notes-on-the-offset-verification")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 conditionalPanel(
                                                                                   condition = "input.typeColor == 2",
@@ -1684,13 +1690,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          textInput(inputId = "verif_pl",
                                                                                                    div("Power-law",
                                                                                                        helpPopup("Enter the stardard deviation of the expected power-law noise in the series.", anchor = "notes-on-the-offset-verification")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   ),
                                                                                   column(4,
                                                                                          textInput(inputId = "verif_k",
                                                                                                    div("Spectral index",
                                                                                                        helpPopup("Enter the spectral index of the expected power-law noise in the series.", anchor = "notes-on-the-offset-verification")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   )
                                                                                 ),
                                                                                 conditionalPanel(
@@ -1699,13 +1705,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          textInput(inputId = "verif_fl",
                                                                                                    div("Flicker noise",
                                                                                                        helpPopup("Enter the stardard deviation of the expected flicker noise in the series.", anchor = "notes-on-the-offset-verification")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   ),
                                                                                   column(4,
                                                                                          textInput(inputId = "verif_rw",
                                                                                                    div("Random Walk",
                                                                                                        helpPopup("Enter the stardard deviation of the expected random walk noise in the series.", anchor = "notes-on-the-offset-verification")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   )
                                                                                 )
                                                                               )
@@ -1729,20 +1735,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             textInput(inputId = "ExponenRef",
                                                                                       div("Ref. time exponential",
                                                                                           helpPopup("Enter a comma-separated lisf of the starting epoch of the exponential decays.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                      value = ""),
+                                                                                      value = "") |> autoCompleteOff(),
                                                                             fluidRow(
                                                                               column(6,
                                                                                      textInput(inputId = "E0",
                                                                                                div("Initial constant",
                                                                                                    helpPopup("Enter the initial value for the asymptotic offset for each decay.<br>
                                                                                                            If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                               value = "")
+                                                                                               value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "TE0",
                                                                                                div("Initial decay rate",
                                                                                                    helpPopup("Enter the initial value for each exponential decay rate. If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                               value = "")
+                                                                                               value = "") |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             conditionalPanel(
@@ -1753,14 +1759,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  div("Initial constant error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the asymptotic offsets.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eTE0",
                                                                                                  div("Initial decay rate error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the exponential decay rates.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             )
@@ -1775,20 +1781,20 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             textInput(inputId = "LogariRef",
                                                                                       div("Ref. time logarithmic",
                                                                                           helpPopup("Enter a comma-separated lisf of the starting epoch for each logarithmic decay.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                      value = ""),
+                                                                                      value = "") |> autoCompleteOff(),
                                                                             fluidRow(
                                                                               column(6,
                                                                                      textInput(inputId = "L0",
                                                                                                div("Initial constant",
                                                                                                    helpPopup("Enter the initial value for the asymptotic offset of each decay.<br>
                                                                                                            If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                               value = "")
+                                                                                               value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "TL0",
                                                                                                div("Initial decay rate",
                                                                                                    helpPopup("Enter the initial value for the logarithmic decay rates. If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                               value = "")
+                                                                                               value = "") |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             conditionalPanel(
@@ -1799,14 +1805,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  div("Initial constant error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the asymptotic offsets.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eTL0",
                                                                                                  div("Initial decay rate error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for the logarithmic decay rates.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = "notes-on-the-exponential/logarithmic-decay-fitting")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             )
@@ -1823,14 +1829,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      textInput(inputId = "PolyRef",
                                                                                                div("Ref. epoch polynomial",
                                                                                                    helpPopup("Enter the reference epoch for the polynomial. If empty, the rate reference epoch or the mean data epoch will be used.", anchor = NULL)),
-                                                                                               value = "")
+                                                                                               value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(6,
                                                                                      textInput(inputId = "PolyCoef",
                                                                                                div("Polynomial degree",
                                                                                                    helpPopup("Enter the polynomial degree between 2 and 20.<br>
                                                                                                            The degrees 0 (intercept) and 1 (rate) are estimated with the linear component.", anchor = NULL)),
-                                                                                               value = "")
+                                                                                               value = "") |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             conditionalPanel(
@@ -1840,14 +1846,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        textInput(inputId = "P0",
                                                                                                  div("Initial polynomial",
                                                                                                      helpPopup("Enter the initial state value for each polynomial coefficient. If empty, an approximate value will be used.", anchor = NULL)),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "eP0",
                                                                                                  div("Initial polynomial error",
                                                                                                      helpPopup("Enter the initial state uncertainty (standard deviation) for each polynomial coefficient.<br>
                                                                                                              If empty, an approximate value will be used.", anchor = NULL)),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             )
@@ -1885,7 +1891,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  checkboxInput(inputId = "midas",
                                                                                                div("MIDAS",
                                                                                                    helpPopup("This option estimates the linear trend value with the Median Interannual Difference Adjusted for Skewness algorithm.", anchor = "notes-on-the-midas-trend-estimates")),
-                                                                                               value = F)
+                                                                                               value = F) |> autoCompleteOff()
                                                                           )
                                                                         ),
                                                                         
@@ -1895,13 +1901,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  checkboxInput(inputId = "entropy",
                                                                                                div("Minimum entropy",
                                                                                                    helpPopup("This option estimates the linear rate value with the differential minimum Shannon entropy algorithm.", anchor = "notes-on-the-minimum-entropy")),
-                                                                                               value = F),
+                                                                                               value = F) |> autoCompleteOff(),
                                                                                  conditionalPanel(
                                                                                    condition = "input.entropy == true",
                                                                                    textInput(inputId = "offsetEpoch.entropy",
                                                                                              div("Offset epochs (entropy)",
                                                                                                  helpPopup("Enter a comma-separated list of offset epochs.", anchor = "notes-on-the-minimum-entropy")),
-                                                                                             value = "")
+                                                                                             value = "") |> autoCompleteOff()
                                                                                  )
                                                                           )
                                                                         ),
@@ -1909,12 +1915,12 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ## % Histogram ####
                                                                         fluidRow(
                                                                           column(12,
-                                                                                 checkboxInput(inputId = "histogram", label = "Histogram", value = F)
+                                                                                 checkboxInput(inputId = "histogram", label = "Histogram", value = F) |> autoCompleteOff()
                                                                           )
                                                                         ),
                                                                         conditionalPanel(
                                                                           condition = "input.histogram == true",
-                                                                          radioButtons(inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
+                                                                          radioButtons(inputId = "histogramType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff(),
                                                                           div(style = "padding: 0px 0px; margin-top:0em",
                                                                               tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           )
@@ -1926,7 +1932,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  checkboxInput(inputId = "waveform",
                                                                                                div("Periodic waveform",
                                                                                                    helpPopup("This option estimates a periodic waveform that does not have a sinusoidal shape.", anchor = "notes-on-the-waveform")),
-                                                                                               value = F)
+                                                                                               value = F) |> autoCompleteOff()
                                                                           ),
                                                                           column(6,
                                                                                  conditionalPanel(
@@ -1935,7 +1941,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              div("Period",
                                                                                                  helpPopup("Enter the waveform period in the same units as the series.<br>
                                                                                                          The waveform period must be larger than twice the average sampling period and smaller than half the total period of the series.", anchor = "notes-on-the-waveform")),
-                                                                                             value = "")
+                                                                                             value = "") |> autoCompleteOff()
                                                                                  )
                                                                           )
                                                                         ),
@@ -1947,7 +1953,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        checkboxInput(inputId = "correct_waveform",
                                                                                                      div("Remove from series",
                                                                                                          helpPopup("This option removes the estimated periodic waveform from the original series before the model fit.", anchor = "notes-on-the-waveform")),
-                                                                                                     value = F)
+                                                                                                     value = F) |> autoCompleteOff()
                                                                                    )
                                                                             )
                                                                           ),
@@ -1962,13 +1968,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  checkboxInput(inputId = "spectrum",
                                                                                                div("Periodogram",
                                                                                                    helpPopup("This option estimates the Lomb-Scargle periodogram.", anchor = "notes-on-the-periodogram")),
-                                                                                               value = F)
+                                                                                               value = F) |> autoCompleteOff()
                                                                           ),
                                                                           column(6, offset = 1,
                                                                                  div(style = "margin-top:0.6em;",
                                                                                      conditionalPanel(
                                                                                        condition = "input.spectrum == true",
-                                                                                       radioButtons(inputId = "spectrumType", label = NULL, choices = list("Amplitude" = 0, "Power" = 1), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL)
+                                                                                       radioButtons(inputId = "spectrumType", label = NULL, choices = list("Amplitude" = 0, "Power" = 1), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                                      )
                                                                                  )
                                                                           )
@@ -1977,19 +1983,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           condition = "input.spectrum == true",
                                                                           fluidRow(
                                                                             column(2,
-                                                                                   checkboxInput(inputId = "spectrumOriginal", label = "Original", value = F)
+                                                                                   checkboxInput(inputId = "spectrumOriginal", label = "Original", value = F) |> autoCompleteOff()
                                                                             ),
                                                                             column(2,
-                                                                                   checkboxInput(inputId = "spectrumModel", label = "Model", value = F)
+                                                                                   checkboxInput(inputId = "spectrumModel", label = "Model", value = F) |> autoCompleteOff()
                                                                             ),
                                                                             column(3,
-                                                                                   checkboxInput(inputId = "spectrumResiduals", label = "Model res.", value = F)
+                                                                                   checkboxInput(inputId = "spectrumResiduals", label = "Model res.", value = F) |> autoCompleteOff()
                                                                             ),
                                                                             column(2,
-                                                                                   checkboxInput(inputId = "spectrumFilter", label = "Filter", value = F)
+                                                                                   checkboxInput(inputId = "spectrumFilter", label = "Filter", value = F) |> autoCompleteOff()
                                                                             ),
                                                                             column(3,
-                                                                                   checkboxInput(inputId = "spectrumFilterRes", label = "Filter res.", value = F)
+                                                                                   checkboxInput(inputId = "spectrumFilterRes", label = "Filter res.", value = F) |> autoCompleteOff()
                                                                             )
                                                                           )
                                                                         ),
@@ -1997,13 +2003,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           condition = "input.spectrum == true",
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   textInput(inputId = "ofac", label = "Oversampling", value = NULL)
+                                                                                   textInput(inputId = "ofac", label = "Oversampling", value = NULL) |> autoCompleteOff()
                                                                             ),
                                                                             column(4,
-                                                                                   textInput(inputId = "long_period", label = "Longest period", value = NULL)
+                                                                                   textInput(inputId = "long_period", label = "Longest period", value = NULL) |> autoCompleteOff()
                                                                             ),
                                                                             column(4,
-                                                                                   textInput(inputId = "short_period", label = "Shortest period", value = NULL)
+                                                                                   textInput(inputId = "short_period", label = "Shortest period", value = NULL) |> autoCompleteOff()
                                                                             )
                                                                           ),
                                                                           div(style = "padding: 0px 0px; margin-top:-0.5em",
@@ -2020,7 +2026,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        checkboxInput(inputId = "wavelet",
                                                                                                      div("Wavelets",
                                                                                                          helpPopup("This option estimates the wavelet transform.", anchor = "notes-on-the-wavelet-transform")),
-                                                                                                     value = F)
+                                                                                                     value = F) |> autoCompleteOff()
                                                                                 ),
                                                                                 column(4, offset = 4,
                                                                                        conditionalPanel(
@@ -2030,7 +2036,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                        helpPopup("Enter the temporal resolution or time separation between wavelets.<br>
                                                                                                                The maximum valid value is half the total observed period.<br>
                                                                                                                The minimum valid value is the sampling period of the series.", anchor = "notes-on-the-wavelet-transform")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                        )
                                                                                 )
                                                                               ),
@@ -2041,19 +2047,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                          textInput(inputId = "min_wavelet",
                                                                                                    div("Min.",
                                                                                                        helpPopup("Enter the shortest period to compute the transform.<br>The minimum valid value is twice the median sampling period.", anchor = "notes-on-the-wavelet-transform")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   ),
                                                                                   column(4,
                                                                                          textInput(inputId = "max_wavelet",
                                                                                                    div("Max.",
                                                                                                        helpPopup("Enter the longest period to compute the transform.<br>The maximum valid value is half the total observed period.", anchor = "notes-on-the-wavelet-transform")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   ),
                                                                                   column(4,
                                                                                          textInput(inputId = "res_wavelet",
                                                                                                    div("Step",
                                                                                                        helpPopup("Enter the time resolution or separation between the periods to compute the transform.", anchor = "notes-on-the-wavelet-transform")),
-                                                                                                   value = "")
+                                                                                                   value = "") |> autoCompleteOff()
                                                                                   )
                                                                                 )
                                                                               )
@@ -2061,7 +2067,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         ),
                                                                         conditionalPanel(
                                                                           condition = "input.wavelet == true",
-                                                                          radioButtons(inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL),
+                                                                          radioButtons(inputId = "waveletType", label = NULL, choices = list("None" = 0, "Original" = 1, "Model" = 2, "Model res." = 3, "Filter" = 4, "Filter res." = 5), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff(),
                                                                           div(style = "padding: 0px 0px; margin-top:-0.5em",
                                                                               tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
                                                                           )
@@ -2074,14 +2080,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      checkboxInput(inputId = "filter",
                                                                                                    div("Band-pass smoother",
                                                                                                        helpPopup("This option computes the Vondrak smoother for the original or residual series.", anchor = "notes-on-the-vondrak-smoother")),
-                                                                                                   value = F)
+                                                                                                   value = F) |> autoCompleteOff()
                                                                               ),
                                                                               div(style = "padding: 0px 0px; margin-top:1em",
                                                                                   column(6,
                                                                                          conditionalPanel(
                                                                                            condition = "input.filter == true",
                                                                                            div(style = "padding: 0px 0px; margin-top:-0.4em",
-                                                                                               radioButtons(inputId = "series2filter", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T)
+                                                                                               radioButtons(inputId = "series2filter", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T) |> autoCompleteOff()
                                                                                            )
                                                                                          )
                                                                                   )
@@ -2094,13 +2100,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        textInput(inputId = "low",
                                                                                                  div("Low-pass period cutoff",
                                                                                                      helpPopup("Enter the low-pass period. The maximum recommended value is 1/4 of the series length.", anchor = "notes-on-the-vondrak-smoother")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        textInput(inputId = "high",
                                                                                                  div("High-pass period cutoff",
                                                                                                      helpPopup("Enter the high-pass period. The maximum recommended value is 1/4 of the series length.", anchor = "notes-on-the-vondrak-smoother")),
-                                                                                                 value = "")
+                                                                                                 value = "") |> autoCompleteOff()
                                                                                 )
                                                                               ),
                                                                               div(style = "padding: 0px 0px; margin-top:-0.5em",
@@ -2116,7 +2122,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                      checkboxInput(inputId = "mle",
                                                                                                    div("Noise analysis",
                                                                                                        helpPopup("This option estimates the parameters of a covariance model of the residual series.", anchor = "notes-on-the-noise-analysis")),
-                                                                                                   value = F)
+                                                                                                   value = F) |> autoCompleteOff()
                                                                               ),
                                                                               conditionalPanel(
                                                                                 condition = "input.mle == true",
@@ -2137,13 +2143,13 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        checkboxInput(inputId = "noise_unc",
                                                                                                      div("Noise uncertainty",
                                                                                                          helpPopup("This option enables or disables the estimation of the formal uncertainties of the parameters of the estimated noise model.", anchor = "notes-on-the-noise-analysis")),
-                                                                                                     value = T)
+                                                                                                     value = T) |> autoCompleteOff()
                                                                                 ),
                                                                                 column(6,
                                                                                        checkboxInput(inputId = "wiener",
                                                                                                      div("Noise separation",
                                                                                                          helpPopup("This option separates the residual series into the different estimated noise components.", anchor = "notes-on-the-noise-analysis")),
-                                                                                                     value = F)
+                                                                                                     value = F) |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             ),
@@ -2151,16 +2157,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               conditionalPanel(
                                                                                 condition = "input.mle == true",
                                                                                 column(2, style = "padding: 0px 0px 0px 10px;",
-                                                                                       checkboxInput(inputId = "white", label = "White", value = F, width = '25%')
+                                                                                       checkboxInput(inputId = "white", label = "White", value = F, width = '25%') |> autoCompleteOff()
                                                                                 ),
                                                                                 column(2, style = "padding: 0px 0px 0px 0px;",
-                                                                                       checkboxInput(inputId = "flicker", label = "Flicker", value = F, width = '25%')
+                                                                                       checkboxInput(inputId = "flicker", label = "Flicker", value = F, width = '25%') |> autoCompleteOff()
                                                                                 ),
                                                                                 column(4, style = "padding: 0px 0px 0px 0px;",
-                                                                                       checkboxInput(inputId = "randomw", label = "Random walk", value = F, width = '200%')
+                                                                                       checkboxInput(inputId = "randomw", label = "Random walk", value = F, width = '200%') |> autoCompleteOff()
                                                                                 ),
                                                                                 column(4, style = "padding: 0px 10px 0px 10px;",
-                                                                                       checkboxInput(inputId = "powerl", label = "Power-law", value = F, width = '150%')
+                                                                                       checkboxInput(inputId = "powerl", label = "Power-law", value = F, width = '150%') |> autoCompleteOff()
                                                                                 )
                                                                               )
                                                                             ),
@@ -2217,7 +2223,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                downloadButton(outputId = "downloadAs", label = "Save as")
                                                                         ),
                                                                         column(10,
-                                                                               verbatimTextOutput("localDirectory", placeholder = T)
+                                                                               verbatimTextOutput("localDirectory", placeholder = T) |> autoCompleteOff()
                                                                         )
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
@@ -2226,7 +2232,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                    textInput(inputId = "directory",
                                                                                              div("Select directory",
                                                                                                  helpPopup("Enter the full path of the download directory.", anchor = NULL)),
-                                                                                             value = "")
+                                                                                             value = "") |> autoCompleteOff()
                                                                             ),
                                                                             column(4,
                                                                                    div(style = "padding: 0px 0px; margin-top:2em",
