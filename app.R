@@ -7399,7 +7399,6 @@ server <- function(input,output,session) {
                       # if (messages > 0) cat(file = stderr(), mySession, "Secondary series downloaded in", file$secondary$datapath, "\n")
                       info$menu <- unique(c(info$menu, 3))
                       updateCollapse(session, id = "menu", open = info$menu)
-                      shinyjs::delay(100, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
                       if (url$server2 == "LOCAL") {
                         filename2 <- basename(url$file2)
                       } else {
@@ -7650,7 +7649,6 @@ server <- function(input,output,session) {
           }
         }
         if (secondary_files > 0) {
-          shinyjs::delay(1000, updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1))
           if (length(file$secondary$name) > 1) {
             filename2 <- paste0(paste(input$station2, paste(input$product2, collapse = "_"), sep = "_"), ".enu")
             file$secondary$datapath <- as.matrix(file$secondary$datapath)
@@ -10984,7 +10982,13 @@ server <- function(input,output,session) {
       table <- NULL
       if (isTruthy(url$file)) {
         filein <- file$primary$datapath
-        table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
+        # checking downloaded file
+        if (isTruthy(file.exists(filein))) {
+          table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
+        } else {
+          showNotification(paste("Problem downloading the", file$primary$name, "series from the remote server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
       } else {
         filein <- input$series$datapath
         table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"",1)
@@ -11161,121 +11165,129 @@ server <- function(input,output,session) {
         }
       }
       for (i in seq_len(num)) {
-        table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,url$server2,2)
         removeNotification(paste0("parsing_url2_",i))
         removeNotification("parsing_url2")
-        # starting EOSTLS series at epoch .0, except for daily series
-        if (url$server2 == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
-          while (table2$x1[1] %% 1 > 0) {
-            table2 <- table2[-1,]
-          }
-        }
-        # Resampling the secondary series if there are more than one
-        if (num > 1) {
-          if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
-            if (is.na(as.numeric(input$step2))) {
-              info$step2 <- NULL
-              showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-            }
-          } else if (isTruthy(inputs$step2)) {
-            if (input$tunits == 1) {
-              x <- table2$x1
-            } else if (input$tunits == 2) {
-              x <- table2$x2
-            } else if (input$tunits == 3) {
-              x <- table2$x3
-            }
-            if (inputs$step2 >= 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
-              tolerance <- min(diff(x,1))/3
-              info$step2 <- inputs$step2
-              withProgress(message = paste('Averaging the', files$name[i], 'series.'),
-                           detail = 'This may take a while ...', value = 0, {
-                             w <- as.integer((max(x) - min(x))/inputs$step2)
-                             if (info$format2 == 4) {
-                               averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                               table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
-                             } else {
-                               if (url$server2 == "EOSTLS") {
-                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
-                               } else {
-                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
-                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
-                               }
-                             }
-                           })
-              table2 <- na.omit(table2)
-              if (input$tunits == 1) {
-                table2$x2 <- mjd2week(table2$x1)
-                table2$x3 <- mjd2year(table2$x1)
-              } else if (input$tunits == 2) {
-                table2$x2 <- table2$x1
-                table2$x3 <- week2year(table2$x1)
-                table2$x1 <- week2mjd(table2$x1)
-              } else if (input$tunits == 3) {
-                table2$x3 <- table2$x1
-                table2$x2 <- year2week(table2$x1)
-                table2$x1 <- year2mjd(table2$x1)
-              }
-            } else {
-              info$step2 <- NULL
-            }
-          } else {
-            info$step2 <- NULL
-          }
-        }
-        # computing the sum of secondary series
-        if (!is.null(table2)) {
-          if (!is.null(table_stack)) {
-            # shifting the next secondary series if necessary
-            delta <- as.numeric(names(sort(table(table_stack$x1 - floor(table_stack$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
-            if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
-              if (delta != 0) {
-                table2$x1 <- table2$x1 + delta
-                table2$x2 <- mjd2week(table2$x1)
-                table2$x3 <- mjd2year(table2$x1)
-                showNotification(paste("The time axis of the", files$name[i], "series has been shifted by a constant",delta,info$tunits.label), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-              }
-            } else {
-              if (info$sampling < info$sampling_regular) {
-                showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-              } else {
-                showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
-              }
-            }
-            if (url$server2 == "EOSTLS") {
-              table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
-                x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
-                x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
-                y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-                y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-                y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
-                sy1 <- sy2 <- sy3 <- 1e-9
-              })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
-            } else {
-              table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
-                x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
-                x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
-                y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-                y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-                y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
-                sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
-                sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
-                sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
-              })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
-            }
-            table_stack <- na.omit(table_stack_tmp)
-            rm(table_stack_tmp)
-          } else {
-            table_stack <- table2
-          }
+        # checking downloaded file
+        if (!isTruthy(file.exists(files$datapath[i]))) {
+          showNotification(paste("Problem downloading the", files$name[i], "series from the remote server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
         } else {
-          showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,url$server2,2)
+          # starting EOSTLS series at epoch .0, except for daily series
+          if (url$server2 == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
+            while (table2$x1[1] %% 1 > 0) {
+              table2 <- table2[-1,]
+            }
+          }
+          # Resampling the secondary series if there are more than one
+          if (num > 1) {
+            if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
+              if (is.na(as.numeric(input$step2))) {
+                info$step2 <- NULL
+                showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+              }
+            } else if (isTruthy(inputs$step2)) {
+              if (input$tunits == 1) {
+                x <- table2$x1
+              } else if (input$tunits == 2) {
+                x <- table2$x2
+              } else if (input$tunits == 3) {
+                x <- table2$x3
+              }
+              if (inputs$step2 >= 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
+                tolerance <- min(diff(x,1))/3
+                info$step2 <- inputs$step2
+                withProgress(message = paste('Averaging the', files$name[i], 'series.'),
+                             detail = 'This may take a while ...', value = 0, {
+                               w <- as.integer((max(x) - min(x))/inputs$step2)
+                               if (info$format2 == 4) {
+                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
+                               } else {
+                                 if (url$server2 == "EOSTLS") {
+                                   averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                                   table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
+                                 } else {
+                                   averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                                   table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                                 }
+                               }
+                             })
+                table2 <- na.omit(table2)
+                if (input$tunits == 1) {
+                  table2$x2 <- mjd2week(table2$x1)
+                  table2$x3 <- mjd2year(table2$x1)
+                } else if (input$tunits == 2) {
+                  table2$x2 <- table2$x1
+                  table2$x3 <- week2year(table2$x1)
+                  table2$x1 <- week2mjd(table2$x1)
+                } else if (input$tunits == 3) {
+                  table2$x3 <- table2$x1
+                  table2$x2 <- year2week(table2$x1)
+                  table2$x1 <- year2mjd(table2$x1)
+                }
+              } else {
+                info$step2 <- NULL
+              }
+            } else {
+              info$step2 <- NULL
+            }
+          }
+          # computing the sum of secondary series
+          if (!is.null(table2)) {
+            if (!is.null(table_stack)) {
+              # shifting the next secondary series if necessary
+              delta <- as.numeric(names(sort(table(table_stack$x1 - floor(table_stack$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
+              if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
+                if (delta != 0) {
+                  table2$x1 <- table2$x1 + delta
+                  table2$x2 <- mjd2week(table2$x1)
+                  table2$x3 <- mjd2year(table2$x1)
+                  showNotification(paste("The time axis of the", files$name[i], "series has been shifted by a constant",delta,info$tunits.label), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+                }
+              } else {
+                if (info$sampling < info$sampling_regular) {
+                  showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                } else {
+                  showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                }
+              }
+              if (url$server2 == "EOSTLS") {
+                table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
+                  x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
+                  x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
+                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                  sy1 <- sy2 <- sy3 <- 1e-9
+                })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
+              } else {
+                table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
+                  x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
+                  x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
+                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
+                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
+                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                  sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
+                  sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
+                  sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
+                })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
+              }
+              table_stack <- na.omit(table_stack_tmp)
+              rm(table_stack_tmp)
+            } else {
+              table_stack <- table2
+            }
+          } else {
+            showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
+          }
         }
       }
       removeNotification("stacking")
       # create secondary series merged file
       if (!is.null(table_stack)) {
+        if (isTruthy(url$file2) && isTruthy(url$station2)) {
+          updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
+        }
         if (anyNA(table_stack)) {
           table_stack <- na.omit(table_stack)
           showNotification(HTML("The secondary series contains records with NA/NaN values.<br>These records were removed"), action = NULL, duration = 10, closeButton = T, id = "removing_NA", type = "warning", session = getDefaultReactiveDomain())
@@ -13224,7 +13236,7 @@ server <- function(input,output,session) {
         sigmas <- T
       }
       rangeX <- range(x0)
-      if (input$tab == 4 && input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+      if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
         x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
         if (isTruthy(input$fullSeries)) {
           info$minx <- min(x0, x2, na.rm = T)
@@ -13250,7 +13262,7 @@ server <- function(input,output,session) {
       } else {
         rangeY <- range(y0[x0 >= rangeX[1] & x0 <= rangeX[2]])
       }
-      if (input$tab == 4 && input$optionSecondary == 1 && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+      if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
         if (input$ne && component < 3) {
           component2 <- as.numeric(chartr("12", "21", as.character(component)))
         } else {
