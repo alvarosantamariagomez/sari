@@ -797,11 +797,11 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(2, style = 'padding:0px 1px 0px 10px;', align = "left",
                                                                                actionButton(inputId = "plot", label = "Plot", icon = icon("eye", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
-                                                                        column(3, style = 'padding:0px 1px 0px 1px;', align = "left",
-                                                                               actionButton(inputId = "plotAll", label = "Overview", icon = icon("bars", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                        ),
-                                                                        column(2, style = 'padding:0px 1px 0px 1px;', align = "right",
+                                                                        column(2, style = 'padding:0px 1px 0px 1px;', align = "left",
                                                                                actionButton(inputId = "reset", label = "Reset", icon = icon("trash", class = NULL, lib = "font-awesome"), style = "font-size: small; color: #F5C710; font-weight: bold")
+                                                                        ),
+                                                                        column(3, style = 'padding:0px 1px 0px 1px;', align = "right",
+                                                                               actionButton(inputId = "plotAll", label = "Overview", icon = icon("bars", class = NULL, lib = "font-awesome"), style = "font-size: small")
                                                                         ),
                                                                         column(2, style = 'padding:0px 1px 0px 1px;', align = "right",
                                                                                actionButton(inputId = "remove", label = "Toggle", icon =  icon("ban", class = NULL, lib = "font-awesome"), style = "font-size: small")
