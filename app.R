@@ -8399,22 +8399,34 @@ server <- function(input,output,session) {
       updateTextInput(inputId = "high", value = inputs$high)
     }
     if (isTruthy(info$custom) && length(info$custom) > 0) {
-      if (input$tunits == 1) {
-        info$custom <- year2mjd(info$custom_years)
-      } else if (input$tunits == 2) {
-        info$custom <- year2week(info$custom_years)
-      } else if (input$tunits == 3) {
-        info$custom <- info$custom_years
+      tmp_custom <- info$custom
+      for (d in 1:length(info$custom_years)) {
+        if (isTruthy(info$custom_years[[d]])) {
+          if (input$tunits == 1) {
+            tmp_custom[[d]] <- year2mjd(info$custom_years[[d]])
+          } else if (input$tunits == 2) {
+            tmp_custom[[d]] <- year2week(info$custom_years[[d]])
+          } else if (input$tunits == 3) {
+            tmp_custom[[d]] <- info$custom_years[[d]]
+          } 
+        }
       }
+      info$custom <- tmp_custom
     }
     if (isTruthy(info$soln) && length(info$soln) > 0) {
-      if (input$tunits == 1) {
-        info$soln <- year2mjd(info$soln_years)
-      } else if (input$tunits == 2) {
-        info$soln <- year2week(info$soln_years)
-      } else if (input$tunits == 3) {
-        info$soln <- info$soln_years
+      tmp_soln <- info$soln
+      for (d in 1:length(info$soln_years)) {
+        if (isTruthy(info$soln_years[[d]])) {
+          if (input$tunits == 1) {
+            tmp_soln[[d]] <- year2mjd(info$soln_years[[d]])
+          } else if (input$tunits == 2) {
+            tmp_soln[[d]] <- year2week(info$soln_years[[d]])
+          } else if (input$tunits == 3) {
+            tmp_soln[[d]] <- info$soln_years[[d]]
+          } 
+        }
       }
+      info$soln <- tmp_soln
     }
     if (length(info$log) > 0) {
       tmp_log <- info$log
@@ -10287,7 +10299,12 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$sinfo_years <- info$sinfo <- ReadInfo(id1,id2,file$sinfo)
+    info$sinfo <- ReadInfo(id1,id2,file$sinfo)
+    if (any(sapply(info$sinfo, isTruthy))) {
+      info$sinfo_years <- info$sinfo
+    } else {
+      info$sinfo <- NULL
+    }
     output$station.info <- renderUI({
       tags$a(href = basename(file$sinfo$datapath), "Show station.info", title = "Open the station.info file in a new tab", target = "_blank")
     })
@@ -10324,7 +10341,12 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$soln_years <- info$soln <- ReadSoln(id1,id2,file$soln)
+    info$soln <- ReadSoln(id1,id2,file$soln)
+    if (any(sapply(info$soln, isTruthy))) {
+      info$soln_years <- info$soln
+    } else {
+      info$soln <- NULL
+    }
     output$solnFile <- renderUI({
       tags$a(href = basename(file$soln$datapath), "Show soln file", title = "Open the soln file in a new tab", target = "_blank")
     })
@@ -10361,7 +10383,12 @@ server <- function(input,output,session) {
     } else {
       id2 <- NULL
     }
-    info$custom_years <- info$custom <- ReadCustom(id1,id2,file$custom)
+    info$custom <- ReadCustom(id1,id2,file$custom)
+    if (any(sapply(info$custom, isTruthy))) {
+      info$custom_years <- info$custom 
+    } else {
+      info$custom <- NULL
+    }
     output$customFile <- renderUI({
       tags$a(href = basename(file$custom$datapath), "Show custom file", title = "Open the custom file in a new tab", target = "_blank")
     })
