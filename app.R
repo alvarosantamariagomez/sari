@@ -8962,12 +8962,7 @@ server <- function(input,output,session) {
         disable("format2")
       }
     } else {
-      if (as.numeric(input$format) < 4) {
-        updateRadioButtons(inputId = "format2", selected = 1)
-        info$format2 <- 1
-        url$server2 <- "EOSTLS"
-        updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-      } else {
+      if (as.numeric(input$format) == 4) {
         updateRadioButtons(inputId = "format2", selected = 4)
         info$format2 <- 4
         disable("format2")
