@@ -11212,6 +11212,9 @@ server <- function(input,output,session) {
       if (isTruthy(url$file2) && isTruthy(url$station2)) {
         files <- file$secondary
       } else {
+        if (input$optionSecondary < 1) {
+          req(info$stop)
+        }
         files <- input$series2
       }
       table_stack <- NULL
@@ -11222,6 +11225,8 @@ server <- function(input,output,session) {
           showNotification(HTML("WARNING: the TUGO and ECCO models have similar forcing, which will be considered twice in the secondary series."), action = NULL, duration = 15, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
         }
       }
+      maxRows <- 1e0
+      minRows <- 1e10
       for (i in seq_len(num)) {
         removeNotification(paste0("parsing_url2_",i))
         removeNotification("parsing_url2")
@@ -11304,7 +11309,7 @@ server <- function(input,output,session) {
                 }
               } else {
                 if (info$sampling < info$sampling_regular) {
-                  showNotification(HTML("The sampling of the primary series is not regular.<br>Consier using the \"Reduce sampling\" option to average the series to a constant sampling."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
+                  showNotification(paste("The sampling of the secondary series No.",i,"does not match the other secondary series."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
                 } else {
                   showNotification(HTML(paste("The sampling of the", files$name[i], "series is not regular.<br>It is not possible to correct the secondary series.")), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "error", session = getDefaultReactiveDomain())
                 }
@@ -11313,24 +11318,28 @@ server <- function(input,output,session) {
                 table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
                   x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
                   x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
-                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = F)
+                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = F)
+                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = F)
                   sy1 <- sy2 <- sy3 <- 1e-9
                 })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
               } else {
                 table_stack_tmp <- data.frame(within(merge(table_stack,table2, by = "x1", all = T), {
                   x2 <- ifelse(is.na(x2.y),x2.x,x2.y)
                   x3 <- ifelse(is.na(x3.y),x3.x,x3.y)
-                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = T)
-                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = T)
-                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = T)
+                  y1 <- rowSums(cbind(y1.x, y1.y), na.rm = F)
+                  y2 <- rowSums(cbind(y2.x, y2.y), na.rm = F)
+                  y3 <- rowSums(cbind(y3.x, y3.y), na.rm = F)
                   sy1 <- sqrt(rowSums(cbind(sy1.x^2, sy1.y^2), na.rm = T))
                   sy2 <- sqrt(rowSums(cbind(sy2.x^2, sy2.y^2), na.rm = T))
                   sy3 <- sqrt(rowSums(cbind(sy3.x^2, sy3.y^2), na.rm = T))
                 })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3")])
               }
+              nowRows <- nrow(table_stack_tmp)
+              maxRows <- ifelse(maxRows > nowRows, maxRows, nowRows)
               table_stack <- na.omit(table_stack_tmp)
+              nowRows <- nrow(table_stack)
+              minRows <- ifelse(minRows < nowRows, minRows, nowRows)
               rm(table_stack_tmp)
             } else {
               table_stack <- table2
@@ -11341,6 +11350,9 @@ server <- function(input,output,session) {
         }
       }
       removeNotification("stacking")
+      if (maxRows > minRows) {
+        showNotification(paste("There are", minRows, "epochs in common between the secondary series out of", maxRows, "in total."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      }
       # create secondary series merged file
       if (!is.null(table_stack)) {
         if (isTruthy(url$file2) && isTruthy(url$station2)) {
