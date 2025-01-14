@@ -772,12 +772,12 @@ For any comments, suggestions, questions, bugs, unexpected crashes or missing fe
 
 &nbsp;
 
-![](get.jpg) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-![](cnes.png) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-![](ups.jpg) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-![](omp.jpg) 
+[![GET](get.jpg)](https://www.get.omp.eu/en/geosciences-environnement-toulouse-en/) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![CNES](cnes.png)](https://cnes.fr/en) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![UPS](ups.jpg)](https://www.univ-tlse3.fr/home) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![OMP](omp.jpg)](https://www.omp.eu)
 
-![](eposfr-renag.png)
+[![RENAG](eposfr-renag.png)](https://renag.resif.fr/en/)
 
 -----------------
 
