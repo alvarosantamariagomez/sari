@@ -2355,7 +2355,7 @@ server <- function(input,output,session) {
   info <- reactiveValues(points = NULL, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, menu = c(1),
                          decimalsx = NULL, decimalsy = NULL, scientific = F, nsmall = NULL, digits = NULL,
-                         sampling = NULL, sampling0 = NULL, sampling_regular = NULL, rangex = NULL, errorbars = T,
+                         sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), rangex = NULL, errorbars = T,
                          step = NULL, step2 = NULL, stepUnit = NULL,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits.label = NULL, tunits.known1 = F, tunits.known2 = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
@@ -11540,9 +11540,13 @@ server <- function(input,output,session) {
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- as.numeric(sprintf("%.*f", 5, difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+              days <- difftime(strptime(paste(sprintf("%4d",tableAll[,12]),sprintf("%02d",tableAll[,13]),sprintf("%02d",tableAll[,14]),sprintf("%02d",tableAll[,15]),sprintf("%02d",tableAll[,16]),sprintf("%02d",tableAll[,17])), format = '%Y %m %d %H %M %S', tz = "GMT"), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")
+              extracted$x1 <- as.numeric(sprintf("%.*f", 5, days))
               extracted$x2 <- mjd2week(extracted$x1)
               extracted$x3 <- mjd2year(extracted$x1)
+              info$samplingRaw[1] <- min(diff(days,1))
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
+              info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
             } else if (server == "SONEL") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -11552,15 +11556,22 @@ server <- function(input,output,session) {
               extracted$x1 <- year2mjd(tableAll[,1])
               extracted$x2 <- year2week(tableAll[,1])
               extracted$x3 <- tableAll[,1]
+              info$samplingRaw[3] <- min(diff(extracted$x3,1))
+              info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
             } else if (server == "SIRGAS") {
               if (series == 1) {
                 info$tunits.known1 <- T
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
-              extracted$x1 <- as.numeric(sprintf("%.*f", 0, difftime(as.Date("1980-01-06") + tableAll[,1] * 7 + 3, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")))
+              days <- difftime(as.Date("1980-01-06") + tableAll[,1] * 7 + 3, strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)), format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days")
+              extracted$x1 <- as.numeric(sprintf("%.*f", 0, days))
               extracted$x2 <- mjd2week(extracted$x1)
               extracted$x3 <- mjd2year(extracted$x1)
+              info$samplingRaw[1] <- min(diff(days,1))
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
+              info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
             } else if (server == "IGS") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -11570,6 +11581,9 @@ server <- function(input,output,session) {
               extracted$x1 <- as.numeric(sprintf("%.*f", 1, tableAll[,1]))
               extracted$x2 <- as.numeric(sprintf("%.*f", 2, tableAll[,8] + tableAll[,9]/7))
               extracted$x3 <- mjd2year(extracted$x1)
+              info$samplingRaw[1] <- min(diff(tableAll[,1],1))
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
+              info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
             } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -11579,6 +11593,9 @@ server <- function(input,output,session) {
               extracted$x1 <- as.numeric(sprintf("%.*f", 1, tableAll[,1]))
               extracted$x2 <- as.numeric(sprintf("%.*f", 2, difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
               extracted$x3 <- as.numeric(sprintf("%.*f", 4, tableAll[,9]))
+              info$samplingRaw[1] <- min(diff(tableAll[,1],1))
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
+              info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
             } else if (server == "EARTHSCOPE") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -11588,6 +11605,9 @@ server <- function(input,output,session) {
               extracted$x1 <- as.numeric(difftime(as.Date(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
               extracted$x2 <- mjd2week(extracted$x1)
               extracted$x3 <- mjd2year(extracted$x1)
+              info$samplingRaw[1] <- min(diff(extracted$x1,1))
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
+              info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
             } else if (server == "EOSTLS") {
               if (series == 1) {
                 info$tunits.known1 <- T
@@ -11597,6 +11617,9 @@ server <- function(input,output,session) {
               extracted$x1 <- tableAll[,1]
               extracted$x2 <- mjd2week(extracted$x1)
               extracted$x3 <- mjd2year(extracted$x1)
+              info$samplingRaw[1] <- min(diff(tableAll[,1],1))
+              info$samplingRaw[2] <- info$samplingRaw[1]/7
+              info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
             } else { #plain ENU series
               # ISO 8601 dates
               if (all(isTruthy(suppressWarnings(parse_date_time(tableAll[,1], c("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S"), exact = T))))) {
@@ -11609,6 +11632,9 @@ server <- function(input,output,session) {
                 extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
+                info$samplingRaw[1] <- min(diff(extracted$x1,1))
+                info$samplingRaw[2] <- info$samplingRaw[1]/7
+                info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
               } else {
                 if (!isTruthy(input$tunits)) {
                   showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
@@ -11623,6 +11649,9 @@ server <- function(input,output,session) {
                   }
                   extracted$x2 <- mjd2week(extracted$x1)
                   extracted$x3 <- mjd2year(extracted$x1)
+                  info$samplingRaw[1] <- min(diff(extracted$x1,1))
+                  info$samplingRaw[2] <- info$samplingRaw[1]/7
+                  info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
                 } else if (input$tunits == 2) {
                   extracted$x2 <- tableAll[,1]
                   extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
@@ -11631,6 +11660,9 @@ server <- function(input,output,session) {
                   }
                   extracted$x1 <- week2mjd(extracted$x2)
                   extracted$x3 <- week2year(extracted$x2)
+                  info$samplingRaw[2] <- min(diff(extracted$x2,1))
+                  info$samplingRaw[1] <- info$samplingRaw[2]*7
+                  info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
                 } else if (input$tunits == 3) {
                   extracted$x3 <- tableAll[,1]
                   extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
@@ -11639,6 +11671,9 @@ server <- function(input,output,session) {
                   }
                   extracted$x1 <- year2mjd(extracted$x3)
                   extracted$x2 <- year2week(extracted$x3)
+                  info$samplingRaw[3] <- min(diff(extracted$x3,1))
+                  info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
+                  info$samplingRaw[2] <- info$samplingRaw[1]/7
                 }
               }
             }
@@ -11673,6 +11708,9 @@ server <- function(input,output,session) {
         extracted$x1 <- tableAll[,3]
         extracted$x2 <- mjd2week(extracted$x1)
         extracted$x3 <- mjd2year(extracted$x1)
+        info$samplingRaw[1] <- min(diff(tableAll[,3],1))
+        info$samplingRaw[2] <- info$samplingRaw[1]/7
+        info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
       }
     ## NGL ####
     } else if (format == 3) { #NGL
@@ -11687,6 +11725,9 @@ server <- function(input,output,session) {
         extracted <- data.frame(x1 = tableAll[,4])
         extracted$x2 <- as.numeric(sprintf("%.*f", 2, tableAll[,5] + tableAll[,6]/7))
         extracted$x3 <- mjd2year(extracted$x1)
+        info$samplingRaw[1] <- min(diff(extracted$x1,1))
+        info$samplingRaw[2] <- info$samplingRaw[1]/7
+        info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
         if (isTruthy(swap)) {
           extracted$y2 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East
           extracted$y1 <- tableAll[,10] - tableAll[1,10] + tableAll[,11] #North
@@ -11728,6 +11769,9 @@ server <- function(input,output,session) {
                 extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[[epoch]]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
+                info$samplingRaw[1] <- min(diff(extracted$x1,1))
+                info$samplingRaw[2] <- info$samplingRaw[1]/7
+                info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
               } else if (server == "PSMSL") {
                 if (series == 1) {
                   info$tunits.known1 <- T
@@ -11737,6 +11781,9 @@ server <- function(input,output,session) {
                 extracted$x1 <- year2mjd(tableAll[,1])
                 extracted$x2 <- year2week(tableAll[,1])
                 extracted$x3 <- tableAll[,1]
+                info$samplingRaw[3] <- min(diff(extracted$x3,1))
+                info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
+                info$samplingRaw[2] <- info$samplingRaw[1]/7
               } else {
                 if (!isTruthy(input$tunits)) {
                   showNotification("The time units of the series must be set before plotting.", action = NULL, duration = 10, closeButton = T, id = "no_tunits", type = "error", session = getDefaultReactiveDomain())
@@ -11748,14 +11795,23 @@ server <- function(input,output,session) {
                   if (input$tunits == 1) {
                     extracted$x2 <- mjd2week(extracted$x1)
                     extracted$x3 <- mjd2year(extracted$x1)
+                    info$samplingRaw[1] <- min(diff(extracted$x1,1))
+                    info$samplingRaw[2] <- info$samplingRaw[1]/7
+                    info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
                   } else if (input$tunits == 2) {
                     extracted$x2 <- extracted$x1
                     extracted$x1 <- week2mjd(extracted$x2)
                     extracted$x3 <- week2year(extracted$x2)
+                    info$samplingRaw[2] <- min(diff(extracted$x2,1))
+                    info$samplingRaw[1] <- info$samplingRaw[2]*7
+                    info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
                   } else if (input$tunits == 3) {
                     extracted$x3 <- extracted$x1
                     extracted$x1 <- year2mjd(extracted$x3)
                     extracted$x2 <- year2week(extracted$x3)
+                    info$samplingRaw[3] <- min(diff(extracted$x3,1))
+                    info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
+                    info$samplingRaw[2] <- info$samplingRaw[1]/7
                   }
                 } else {
                   showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
@@ -14486,8 +14542,6 @@ server <- function(input,output,session) {
     }
   }
   #
-  trim <- function(x) { gsub("^\\s+|\\s+$", "", x) }
-  #
   average <- function(p,x,y1,y2,y3,sy1,sy2,sy3,tol,w,s,second,sigmas) {
     index <- x >= x[1] + (p - 1)*s - tol & x < x[1] + p*s - tol * 2/3
     x_ <- y1_ <- y2_ <- y3_ <- NULL
@@ -15572,7 +15626,7 @@ server <- function(input,output,session) {
   #
   seriesInfo <- function(x) {
     info$points <- length(x)
-    info$sampling <- min(diff(x,1))
+    info$sampling <- info$samplingRaw[as.numeric(input$tunits)]
     if (!isTruthy(info$step)) {
       info$sampling0 <- info$sampling
     }
