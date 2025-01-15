@@ -400,7 +400,7 @@ tab3Contents <- function(series) {
                       .shiny-html-output {-webkit-user-select: text; -ms-user-select: text; user-select: text;}
                       "),
            hidden(div(id = paste0("zoomin",tabNum), style = "margin-bottom: -3em; margin-top: 2em; color: #DF536B; font-weight: bold; margin-right: 30px; font-size: 10px; text-align: right; position: relative; z-index: 1;", "Zoomed in")),
-           div(style = "margin: 2em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1"))),
+           div(style = "margin: 2em 0em -4em 0em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"1"))),
            withSpinner(
              plotOutput(paste0("plot",tabNum,1), click = paste0("plot",tabNum,"1_1click"), dblclick = dblclickOpts(paste0("plot",tabNum,"1_2click"), delay = 1000), brush = brushOpts(id = paste0("plot",tabNum,"1_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
              type = getOption("spinner.type", default = 1),
@@ -410,7 +410,7 @@ tab3Contents <- function(series) {
              custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
            div(style = "margin-top: 1.5em;",
-               div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2"))),
+               div(style = "margin: 0em 0em -4em 0em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2"))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,2), click = paste0("plot",tabNum,"2_1click"), dblclick = dblclickOpts(paste0("plot",tabNum,"2_2click"), delay = 1000), brush = brushOpts(id = paste0("plot",tabNum,"2_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
@@ -421,7 +421,7 @@ tab3Contents <- function(series) {
                )
            ),
            div(style = "margin-top: 1.5em;",
-               div(style = "margin: 0em 0em -4em 4em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3"))),
+               div(style = "margin: 0em 0em -4em 0em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"3"))),
                withSpinner(
                  plotOutput(paste0("plot",tabNum,3), click = paste0("plot",tabNum,"3_1click"), dblclick = dblclickOpts(paste0("plot",tabNum,"3_2click"), delay = 1000), brush = brushOpts(id = paste0("plot",tabNum,"3_brush"), resetOnNew = T, fill = "#DF536B", stroke = "gray62", opacity = '0.5', clip = T)),
                  type = getOption("spinner.type", default = 1),
