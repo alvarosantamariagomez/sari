@@ -4053,7 +4053,7 @@ server <- function(input,output,session) {
             req(info$stop)
           }
         } else {
-          showNotification("Preparing least squares fitting.", action = NULL, duration = 10, closeButton = T, id = "preparingLS", type = "message", session = getDefaultReactiveDomain())
+          showNotification("Preparing least squares fitting.", action = NULL, duration = 10, closeButton = T, id = "preparingLS", type = "warning", session = getDefaultReactiveDomain())
         }
         trans$model_old <- input$model
         x <- trans$x
