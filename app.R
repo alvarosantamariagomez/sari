@@ -4834,7 +4834,7 @@ server <- function(input,output,session) {
         cat("LS estimate")
         trans$results$formula <- sub("y ~","Model =",trans$results$formula)
       }
-      options(max.print = 1000)
+      options(max.print = 3000)
       if (input$fitType == 1 && isTruthy(trans$results$sinusoidales)) {
         # add transformed sinusoidal estimates
         print(trans$results)
