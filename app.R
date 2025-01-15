@@ -8279,10 +8279,10 @@ server <- function(input,output,session) {
       }
     }
     if (isTruthy(inputs$step)) {
-      session$sendCustomMessage("step", min(diff(x1,1)))
+      session$sendCustomMessage("step", median(diff(x1,1)))
     }
     if (isTruthy(inputs$step2)) {
-      session$sendCustomMessage("step2", min(diff(x2,1)))
+      session$sendCustomMessage("step2", median(diff(x2,1)))
     }
     if (isTruthy(inputs$trendRef)) {
       if (info$tunits.last == 1) {
