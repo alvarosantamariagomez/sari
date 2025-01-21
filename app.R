@@ -341,7 +341,7 @@ tabContents <- function(tabNum) {
            ),
            conditionalPanel(
              condition = "input.model.length > 0 || input.midas == true || input.entropy == true || input.optionSecondary == 1",
-             verbatimTextOutput(paste0("summary",tabNum), placeholder = F)
+             htmlOutput(paste0("summary",tabNum))
            ),
            conditionalPanel(
              condition = "input.histogram == true && input.histogramType > 0",
@@ -4780,15 +4780,16 @@ server <- function(input,output,session) {
   })
 
   # Fit summary ####
-  output$summary1 <- output$summary2 <- output$summary3 <- renderPrint({
+  output$summary1 <- output$summary2 <- output$summary3 <- renderUI({
     req(db1[[info$db1]])
+    listTag <- list()
     # compute correlation between primary and secondary series
     if (input$optionSecondary == 1 && isTruthy(trans$y2)) {
       serie1 <- data.frame(x = trans$x, y = trans$y)
       serie2 <- data.frame(x = trans$x2, y = trans$y2)
       common <- merge(serie1, serie2, by.x = "x", by.y = "x")
       if (length(common$x) > 30) {
-        cat("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs\n\n")
+        listTag <- list(span(paste("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs")))
       }
     }
     if (input$tunits == 1) {
@@ -4808,41 +4809,51 @@ server <- function(input,output,session) {
       unit <- ""
       units <- ""
     }
+    # recall the series units
     if (input$sunits > 0 && isTruthy(info$run) && length(trans$results) > 0) {
-      cat("Parameter units:", unit, "&", units, "\n\n")
+      if (length(listTag) > 0) {
+        listTag <- c(listTag, list(span("")))
+      }
+      listTag <- c(listTag, list(span(paste("Parameter units:", unit, "&", units))))
     }
     # show MIDAS estimate
     if (isTruthy(input$midas)) {
-      cat("MIDAS rate estimate","\n")
-      cat(trans$midas_vel, "+/-", trans$midas_sig, units, "\n\n")
+      if (length(listTag) > 0) {
+        listTag <- c(listTag, list(span("")))
+      }
+      listTag <- c(listTag, list(span("MIDAS rate estimate","\n")))
+      listTag <- c(listTag, list(span(paste(trans$midas_vel, "+/-", trans$midas_sig, units))))
       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
-        cat("MIDAS rate estimate (discontinuities skipped)","\n")
-        cat(trans$midas_vel2, "+/-", trans$midas_sig2, units, "\n\n")
+        listTag <- c(listTag, list(span("")))
+        listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)","\n")))
+        listTag <- c(listTag, list(span(paste(trans$midas_vel2, "+/-", trans$midas_sig2, units))))
       }
     }
     # show entropy estimate
     if (isTruthy(input$entropy) && isTruthy(trans$entropy_vel) && isTruthy(trans$entropy_sig)) {
-      cat("Minimum entropy rate estimate","\n")
-      cat(trans$entropy_vel, "+/-", trans$entropy_sig, units, "\n\n")
+      if (length(listTag) > 0) {
+        listTag <- c(listTag, list(span("")))
+      }
+      listTag <- c(listTag, list(span("Minimum entropy rate estimate","\n")))
+      listTag <- c(listTag, list(span(paste(trans$entropy_vel, "+/-", trans$entropy_sig, units))))
     }
     # show fit estimate
     if (isTruthy(info$run) && length(trans$results) > 0) {
+      if (length(listTag) > 0) {
+        listTag <- c(listTag, list(span("")))
+      }
       if (input$fitType == 2) {
-        cat("KF estimate")
-        cat(paste0("\n",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", trans$equation, perl = T)))))))), "\n\n")
+        listTag <- c(listTag, list(span("KF estimate")))
+        listTag <- c(listTag, list(span(paste0(gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", trans$equation, perl = T)))))))))))
+        listTag <- c(listTag, list(span("")))
       } else if (input$fitType == 1) {
-        cat("LS estimate")
+        listTag <- c(listTag, list(span("LS estimate")))
         trans$results$formula <- sub("y ~","Model =",trans$results$formula)
       }
       options(max.print = 3000)
-      if (input$fitType == 1 && isTruthy(trans$results$sinusoidales)) {
-        # add transformed sinusoidal estimates
-        print(trans$results)
-        data.frame(trans$results$sinusoidales, check.names = F)
-      } else {
-        trans$results
-      }
+      listTag <- c(listTag, list(customPrint(trans$results)))
     }
+    tagList(pre(listTag))
   })
 
   # Periodic waveform ####
@@ -15751,6 +15762,49 @@ server <- function(input,output,session) {
     }
     dimnames(inv) <- rev(dimnames(x))
     return(inv)
+  }
+  #
+  # based on https://forum.posit.co/t/print-colored-correlation-values-from-print-summary-lm-in-a-shiny-app/196994/
+  customPrint <- function(x) {
+    # limit to print red probabilities
+    prRed <- 0.05
+    # limit to print red correlations
+    correlRed <- 0.8
+    # replacing lower than machine precision by zero and adding space at the end
+    summary_output <- paste(as.list(sub(pattern = "< *2e-16", replacement = "      0", x = capture.output(x))), "")
+    # adding html tag to each line
+    summary_output <- lapply(summary_output, function(x) {
+      span(x)
+    })
+    if (input$fitType == 1) {
+      # changing high probabilities into red color and zero if necessary
+      for (i in (which(grepl(pattern = "Parameters:", x = summary_output, ignore.case = F, fixed = T)) + 2):(which(grepl(pattern = "Signif. codes:", x = summary_output, ignore.case = F, fixed = T)) - 2)) {
+        fit_values <- unlist(strsplit(as.character(summary_output[[i]]), "((?<=\\S)(?=\\s)|(?<=\\s)(?=\\S))", perl = T))
+        if (as.numeric(fit_values[9]) > prRed) {
+          fit_values[9] <- HTML(as.character(span(fit_values[9], style = "color: red;")))
+        } else if (as.numeric(fit_values[9]) > 0 & as.numeric(fit_values[9]) < 1e-4) {
+          fit_values[9] <- sprintf(fmt = "%*d", nchar(fit_values[9]), 0)
+        }
+        summary_output[[i]] <- HTML(paste(fit_values, collapse = ""))
+      }
+      # changing high correlations into red color
+      for (i in (which(grepl(pattern = "Correlation of Parameter Estimates:", x = summary_output, ignore.case = F, fixed = T)) + 2):(which(grepl(pattern = "Number of iterations to convergence:", x = summary_output, ignore.case = F, fixed = T)) - 2)) {
+        correl_values <- strsplit(as.character(summary_output[[i]]), "(?<=\\s)|(?=\\s)", perl = T)[[1]]
+        for (j in which(abs(suppressWarnings(as.numeric(correl_values))) > correlRed)) {
+          correl_values[j] <- HTML(as.character(span(correl_values[j], style = "color: red;")))
+        }
+        summary_output[[i]] <- HTML(paste(correl_values, collapse = ""))
+      }
+      # adding the sinusoidal information
+      if (isTruthy(trans$results$sinusoidales)) {
+        sinusoidals <- as.list(sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', capture.output(print(trans$results$sinusoidales)))))))))))
+        sinusoidals <- lapply(sinusoidals, function(x) {
+          span(x)
+        })
+        summary_output <- c(summary_output, sinusoidals)
+      }
+    }
+    tagList(summary_output)
   }
 }
 
