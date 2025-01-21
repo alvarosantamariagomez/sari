@@ -15771,7 +15771,7 @@ server <- function(input,output,session) {
     # limit to print red correlations
     correlRed <- 0.8
     # replacing lower than machine precision by zero and adding space at the end
-    summary_output <- paste(as.list(sub(pattern = "< *2e-16", replacement = "      0", x = capture.output(x))), "")
+    summary_output <- as.list(sub(pattern = "< *2e-16", replacement = "      0", x = capture.output(x)))
     # adding html tag to each line
     summary_output <- lapply(summary_output, function(x) {
       span(x)
@@ -15788,6 +15788,7 @@ server <- function(input,output,session) {
         summary_output[[i]] <- HTML(paste(fit_values, collapse = ""))
       }
       # changing high correlations into red color
+      columnsId <- which(grepl(pattern = "Correlation of Parameter Estimates:", x = summary_output, ignore.case = F, fixed = T)) + 1
       for (i in (which(grepl(pattern = "Correlation of Parameter Estimates:", x = summary_output, ignore.case = F, fixed = T)) + 2):(which(grepl(pattern = "Number of iterations to convergence:", x = summary_output, ignore.case = F, fixed = T)) - 2)) {
         correl_values <- strsplit(as.character(summary_output[[i]]), "(?<=\\s)|(?=\\s)", perl = T)[[1]]
         for (j in which(abs(suppressWarnings(as.numeric(correl_values))) > correlRed)) {
@@ -15795,6 +15796,7 @@ server <- function(input,output,session) {
         }
         summary_output[[i]] <- HTML(paste(correl_values, collapse = ""))
       }
+      summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
       # adding the sinusoidal information
       if (isTruthy(trans$results$sinusoidales)) {
         sinusoidals <- as.list(sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', capture.output(print(trans$results$sinusoidales)))))))))))
