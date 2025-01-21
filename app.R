@@ -15488,7 +15488,7 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    decimals <- decimalplaces(diff(x), "x") + 3
+    decimals <- decimalplaces(diff(x), "x") + 4
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))))
   }
