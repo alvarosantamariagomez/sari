@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version enero 2025</title>
+  <title>SARI documentation - version febrero 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version enero 2025</h1>
+<h1 class="title">SARI documentation - version febrero 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>enero 2025</em> – “I’ve got statistics and graphs. I got all this stuff.”</p>
+<p>Current SARI version: <em>febrero 2025</em> – “I like numbers, because with numbers, truth and beauty are the same thing.”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -97,7 +97,7 @@ While the following instructions are provided mostly for GNSS position time seri
 <p id="format">
 </p>
 <ol type="1">
-<li>The user can upload GNSS series from <ins><strong>local files</strong></ins> using the <code>Input series</code> option.<br />
+<li>The user can upload GNSS series from <ins><strong>local files</strong></ins> using the <code>Input series file</code> option.<br />
 GNSS series are allowed in the <em>NEU/ENU</em> format (North/East, East/North, Up) or in the file formats produced by <em>PBO</em> (with extension <em>.pos</em>, version 1.1.0) and <em>NGL</em> (with extension <em>.tenv3</em>). For series that are not in <em>NEU/ENU</em>, <em>PBO</em> or <em>NGL</em> format, the user must use the <em>1D</em> option, then set the column separator (blanks, commas or semi-colons) and then set the column numbers containing the epochs, the variable and the error bars if available.
 <p id="tunits">
 </p>
@@ -387,9 +387,9 @@ If the station coordinates are known, the <code>show location map</code> option 
 <p><a href="#contents"><a href="#contents" target="_self">Go to top of document</a></a></p>
 <h2 id="ii.-plot-controls">II. Plot controls</h2>
 <p>This block allows working with the plots of the time series.</p>
-<p>Once the format of the series is set, they be plotted or resetted with the <code>plot</code> and <code>reset</code> buttons, respectively. The <code>reset</code> button will also remove the uploaded series and any other information given by the user (see the <a href="#interactive-operation"><a href="#interactive-operation" target="_self">Interactive operation</a></a> section).</p>
+<p>Once the format of the series is set, they can be plotted or resetted with the <code>plot</code> and <code>reset</code> buttons, respectively. The <code>reset</code> button will also remove the uploaded series and any other information given by the user (see the <a href="#interactive-operation"><a href="#interactive-operation" target="_self">Interactive operation</a></a> section).</p>
 The button <code>overview</code> opens a new browser window containing a static PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.<br />
-There is no need to close and reopen the <code>overview</code> window, if the windown is left open, the PNG figure will update automatically each time there is a change in the series or in their fitting.
+There is no need to close and reopen the <code>overview</code> window, if the windown is left open (for instance, on a second screen), the PNG figure will update automatically each time there is a change in the series or in their fitting.
 <p id="cut">
 </p>
 The <code>truncate</code> option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the <a href="#input-format"><a href="#input-format" target="_self">Input data and format</a></a> section).
@@ -433,7 +433,7 @@ The user can upload any combination of the following possibilities:</p>
 </h5>
 <h5 id="notes-on-the-equipment-change-logs"><strong>Notes on the equipment change logs</strong>:</h5>
 <ol type="1">
-<li>The <em>sitelog</em>, <em>station.info</em>, <em>soln</em> and <em>customized</em> files can be uploaded to list/plot equipment changes and help identify position discontinuities. Antenna/receiver changes from the <em>sitelog</em> and <em>station.info</em> files are represented by solid and dashed blue lines, respectively. Changes from the <em>soln</em> file are represented by gray solid lines, and changes from the <em>customized offset</em> file are represented by solid cyan lines.<br />
+<li>The <em>sitelog</em>, <em>station.info</em>, <em>soln</em> and <em>customized</em> files can be uploaded to list/plot equipment changes and help identify position discontinuities. Antenna changes are represented by solid lines. Receiver and other changes represented by dashed lines. Each type of file has a different line color: <em>sitelog</em> in blue, <em>station.info</em> in pink, <em>soln</em> in gray, <em>customized</em> in cyan.<br />
 </li>
 <li>The dates from the <em>sitelog</em>, <em>station.info</em> and <em>soln</em> files will be transformed according to the time unit selected for the series. If the time unit is days, the dates will be transformed into <a href="https://en.wikipedia.org/wiki/Julian_day">Modified Julian Days</a>. If the time unit is weeks, the dates will be transformed into <a href="https://en.wikipedia.org/wiki/GPS_week_number_rollover">GPS weeks</a>.<br />
 </li>
@@ -448,6 +448,8 @@ The user can upload any combination of the following possibilities:</p>
 <h5 id="notes-on-the-secondary-series"><strong>Notes on the secondary series</strong>:</h5>
 <ol type="1">
 <li>The secondary series can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single secondary series. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single secondary series representing the total loading at the site.<br />
+</li>
+<li>When loading several files, only the common epochs among them will be retained. If one epoch is missing in one of the files, it will be skipped.<br />
 </li>
 <li>Several loading products can be selected and uploaded directly from the EOSTSL server (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the ERA5-Land reanalysis (ERA5LAND label). More details at the <a href="http://loading.u-strasbg.fr">EOSTLS server</a>.<br />
 </li>
@@ -507,9 +509,9 @@ Additionally, if using a <em>KF</em> fit, the initial state and the standard dev
 The <code>click and collect</code> option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.<br />
 The fitted offsets will be represented by vertical red lines in the residual plot.</p>
 <p>A fit summary will be shown on the visualization pannel on the right.<br />
-In case of a <em>LS</em> fit, the summary will include the estimated values of the chosen model components, their formal uncertainty, their absolute <a href="https://en.wikipedia.org/wiki/Student%27s_t-test">Student’s t-test</a> statistic and their associated significance level, i.e., the probability of rejecting a true null hypothesis in which the parameter value is not significancly different from zero. The correlation between the model parameters is also provided on the visualization panel.<br />
+In case of a <em>LS</em> fit, the summary includes the estimated values of the chosen model components, their formal uncertainty, their absolute <a href="https://en.wikipedia.org/wiki/Student%27s_t-test">Student’s t-test</a> statistic and their corresponding significance level, i.e., the probability of rejecting a true null hypothesis in which the parameter value is not significantly different from zero; in short, the probability that the model parameter is unnecessary. Probabilities higher than 5 % will be printed in red as a warning. The correlation between the model parameters is also provided on the visualization panel. Similarly, correlations higher than 0.8 will be printed in red as a warning.<br />
 In case of a <em>KF</em> fit, the summary will include the statistics (mean value, standard deviation, etc.) for each model component included in the estimated state.</p>
-<p>When the three coordinate components are fitted (excludig 1D series), a tab <em>residuals</em> will appear at the top. This tab will show the plots of the three coordinate components, as in the 3D tab, but using the fit residual series. By comparing the three residual series at the same time, it should be easier to verify the general quality of the fit. The <code>save</code> button will download the three residual series into the same file.</p>
+<p>When the three coordinate components are fitted (excludig 1D series), the tab <em>residuals</em> will appear at the top. This tab will show the plots of the three coordinate components, as in the 3D tab, but using the fit residual series. By comparing the three residual series at the same time, it should be easier to verify the general quality of the fit. The <code>save</code> button will download the three residual series into a single file.</p>
 <p>The <code>search discontinuities</code> button provides an automatic guesstimate of the location of probable discontinuities in the time series. The algorithm is based on the assessment of deviations from stability in different segments of the series using a classical linear regression model and a <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a> (BIC). The algorithm is described by <a href="#references"><a href="#references" target="_self">Zeileis et al. (2003)</a></a>. <b><span style="color: #DF536B;">WARNING:</span></b> this option is very time-consuming (see the <a href="#notes-on-the-discontinuity-detection"><a href="#notes-on-the-discontinuity-detection" target="_self">notes</a></a> below).</p>
 <h5 id="notes-on-the-kalman-filter">
 </h5>
@@ -917,7 +919,7 @@ For any comment or question, please open a <a href="https://github.com/alvarosan
 <p>This software is developed and is maintained by</p>
 <p><a href="https://www.get.omp.eu/author/ALVARO-SANTAMARIA/"><strong>Alvaro Santamaría</strong></a><br />
 Geosciences Environnement Toulouse<br />
-Université de Toulouse, CNRS, IRD, CNES, UPS<br />
+Université de Toulouse, CNES, CNRS, IRD, UPS<br />
 Observatoire Midi-Pyrénées<br />
 Toulouse</p>
 <p>For any comments, suggestions, questions, bugs, unexpected crashes or missing features, please open a github issue <a href="https://github.com/alvarosantamariagomez/sari">here</a>.</p>

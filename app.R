@@ -451,7 +451,7 @@ Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
 
 # version ####
-version <- "SARI enero 2025"
+version <- "SARI febrero 2025"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
@@ -15796,6 +15796,7 @@ server <- function(input,output,session) {
         }
         summary_output[[i]] <- HTML(paste(correl_values, collapse = ""))
       }
+      # recalling the column names below the correlation matrix
       summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
       # adding the sinusoidal information
       if (isTruthy(trans$results$sinusoidales)) {

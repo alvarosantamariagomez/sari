@@ -1,5 +1,28 @@
 # **SARI changelog**
 
+# febrero 2025 [2025.02]
+
+### Fixed
+- avoiding rounding the series sampling value when changing the time units (F. Feriol)
+- avoiding the primary series sampling being modified by the secondary series sampling and by the average option
+
+### Changed
+- changing the symbol and size of the secondary series (M. Métois)
+- moving the reset button away from the toggle button (F. Feriol)
+- keeping only the common epochs between several uploaded secondary series (F. Feriol)
+- forcing Firefox to not autocomplete the input variables between sessions (F. Feriol)
+- deactivating the secondary axis options when loading a new secondary series
+- improving the change of the averaging period when changing the time units
+- improving the format of the summary of the LS fit results on screen
+- adding one decimal more when transforming day units into year units
+- improving the verification of the downloaded file from the remote server
+- moving the label with the component name to the left on the 3D plots when the time units are not years
+
+### Added
+- allowing the upload of several secondary series of different format simultaneously
+- separation of the antenna and receiver from the soln and custom files
+
+
 # enero 2025 [2025.01]
 
 ### Fixed
