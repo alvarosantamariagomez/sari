@@ -15810,7 +15810,9 @@ server <- function(input,output,session) {
           summary_output[[i]] <- HTML(paste(correl_values, collapse = ""))
         }
         # recalling the column names below the correlation matrix
-        summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
+        if (which(found2) - which(found1) > 6) {
+          summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
+        }
       }
       # adding the sinusoidal information
       if (isTruthy(trans$results$sinusoidales)) {
