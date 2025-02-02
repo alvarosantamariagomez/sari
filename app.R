@@ -15771,33 +15771,41 @@ server <- function(input,output,session) {
     # limit to print red correlations
     correlRed <- 0.8
     # replacing lower than machine precision by zero and adding space at the end
-    summary_output <- as.list(sub(pattern = "< *2e-16", replacement = "      0", x = capture.output(x)))
+    summary_output <- as.list(paste(sub(pattern = "< *2e-16", replacement = "      0", x = capture.output(x)), ""))
     # adding html tag to each line
     summary_output <- lapply(summary_output, function(x) {
       span(x)
     })
     if (input$fitType == 1) {
       # changing high probabilities into red color and zero if necessary
-      for (i in (which(grepl(pattern = "Parameters:", x = summary_output, ignore.case = F, fixed = T)) + 2):(which(grepl(pattern = "Signif. codes:", x = summary_output, ignore.case = F, fixed = T)) - 2)) {
-        fit_values <- unlist(strsplit(as.character(summary_output[[i]]), "((?<=\\S)(?=\\s)|(?<=\\s)(?=\\S))", perl = T))
-        if (as.numeric(fit_values[9]) > prRed) {
-          fit_values[9] <- HTML(as.character(span(fit_values[9], style = "color: red;")))
-        } else if (as.numeric(fit_values[9]) > 0 & as.numeric(fit_values[9]) < 1e-4) {
-          fit_values[9] <- sprintf(fmt = "%*d", nchar(fit_values[9]), 0)
+      found1 <- grepl(pattern = "Parameters:", x = summary_output, ignore.case = F, fixed = T)
+      found2 <- grepl(pattern = "Signif. codes:", x = summary_output, ignore.case = F, fixed = T)
+      if (any(found1) && any(found2)) {
+        for (i in (which(found1) + 2):(which(found2) - 2)) {
+          fit_values <- unlist(strsplit(as.character(summary_output[[i]]), "((?<=\\S)(?=\\s)|(?<=\\s)(?=\\S))", perl = T))
+          if (as.numeric(fit_values[9]) > prRed) {
+            fit_values[9] <- HTML(as.character(span(fit_values[9], style = "color: red;")))
+          } else if (as.numeric(fit_values[9]) > 0 & as.numeric(fit_values[9]) < 1e-4) {
+            fit_values[9] <- sprintf(fmt = "%*d", nchar(fit_values[9]), 0)
+          }
+          summary_output[[i]] <- HTML(paste(fit_values, collapse = ""))
         }
-        summary_output[[i]] <- HTML(paste(fit_values, collapse = ""))
       }
       # changing high correlations into red color
-      columnsId <- which(grepl(pattern = "Correlation of Parameter Estimates:", x = summary_output, ignore.case = F, fixed = T)) + 1
-      for (i in (which(grepl(pattern = "Correlation of Parameter Estimates:", x = summary_output, ignore.case = F, fixed = T)) + 2):(which(grepl(pattern = "Number of iterations to convergence:", x = summary_output, ignore.case = F, fixed = T)) - 2)) {
-        correl_values <- strsplit(as.character(summary_output[[i]]), "(?<=\\s)|(?=\\s)", perl = T)[[1]]
-        for (j in which(abs(suppressWarnings(as.numeric(correl_values))) > correlRed)) {
-          correl_values[j] <- HTML(as.character(span(correl_values[j], style = "color: red;")))
+      found1 <- grepl(pattern = "Correlation of Parameter Estimates:", x = summary_output, ignore.case = F, fixed = T)
+      found2 <- grepl(pattern = "Number of iterations to convergence:", x = summary_output, ignore.case = F, fixed = T)
+      if (any(found1) && any(found2)) {
+        columnsId <- which(found1) + 1
+        for (i in (which(found1) + 2):(which(found2) - 2)) {
+          correl_values <- strsplit(as.character(summary_output[[i]]), "(?<=\\s)|(?=\\s)", perl = T)[[1]]
+          for (j in which(abs(suppressWarnings(as.numeric(correl_values))) > correlRed)) {
+            correl_values[j] <- HTML(as.character(span(correl_values[j], style = "color: red;")))
+          }
+          summary_output[[i]] <- HTML(paste(correl_values, collapse = ""))
         }
-        summary_output[[i]] <- HTML(paste(correl_values, collapse = ""))
+        # recalling the column names below the correlation matrix
+        summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
       }
-      # recalling the column names below the correlation matrix
-      summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
       # adding the sinusoidal information
       if (isTruthy(trans$results$sinusoidales)) {
         sinusoidals <- as.list(sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', sub('\"', '  ', sub('\"', '', capture.output(print(trans$results$sinusoidales)))))))))))
