@@ -15688,6 +15688,7 @@ server <- function(input,output,session) {
   }
   #
   seriesInfo <- function(x) {
+    removeNotification("bad_gaps")
     info$points <- length(x)
     info$sampling <- info$samplingRaw[as.numeric(input$tunits)]
     if (!isTruthy(info$step)) {
@@ -15697,7 +15698,12 @@ server <- function(input,output,session) {
     info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
     info$rangex <- x[length(x)] - x[1]
     times <- round(diff(x)/info$sampling)
-    trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+    if (isTruthy(times) && times > 0) {
+      trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+    } else {
+      showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
+      trans$gaps <- rep(T, length(x))
+    }
     info$decimalsx <- decimalplaces(x, "x")
     if (!isTruthy(input$tunits) || input$tunits == 3) {
       info$tunits.label <- "years"
