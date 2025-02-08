@@ -15447,23 +15447,13 @@ server <- function(input,output,session) {
     # download series using curl or wget
     if (isTruthy(Sys.which("curl"))) {
       method <- "curl"
-      if (server == "FORMATER") {
-        extras <- "-u SARI:bwPgzhe4Zu"
-      } else {
-        extras <- ""
-      }
     } else if (isTruthy(Sys.which("wget"))) {
       method <- "wget"
-      if (server == "FORMATER") {
-        extras <- "--user SARI --password bwPgzhe4Zu --auth-no-challenge"
-      } else {
-        extras <- ""
-      }
     } else {
       showNotification("Neither curl nor wget are available on the system.", action = NULL, duration = 10, closeButton = T, id = "no_cmd", type = "error", session = getDefaultReactiveDomain())
       return(1)
     }
-    down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, extra = extras, quiet = T, mode = "w", cacheOK = T), silent = T))
+    down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, quiet = T, mode = "w", cacheOK = T), silent = T))
     return(down)
   }
   #
