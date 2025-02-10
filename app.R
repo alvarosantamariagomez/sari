@@ -15698,7 +15698,7 @@ server <- function(input,output,session) {
     info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
     info$rangex <- x[length(x)] - x[1]
     times <- round(diff(x)/info$sampling)
-    if (isTruthy(times) && times > 0) {
+    if (isTruthy(times) && length(times) > 1) {
       trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
     } else {
       showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
