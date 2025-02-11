@@ -4827,11 +4827,11 @@ server <- function(input,output,session) {
       if (length(listTag) > 0) {
         listTag <- c(listTag, list(span("")))
       }
-      listTag <- c(listTag, list(span("MIDAS rate estimate","\n")))
+      listTag <- c(listTag, list(span("MIDAS rate estimate")))
       listTag <- c(listTag, list(span(paste(trans$midas_vel, "+/-", trans$midas_sig, units))))
       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
         listTag <- c(listTag, list(span("")))
-        listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)","\n")))
+        listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)")))
         listTag <- c(listTag, list(span(paste(trans$midas_vel2, "+/-", trans$midas_sig2, units))))
       }
     }
@@ -4840,7 +4840,7 @@ server <- function(input,output,session) {
       if (length(listTag) > 0) {
         listTag <- c(listTag, list(span("")))
       }
-      listTag <- c(listTag, list(span("Minimum entropy rate estimate","\n")))
+      listTag <- c(listTag, list(span("Minimum entropy rate estimate")))
       listTag <- c(listTag, list(span(paste(trans$entropy_vel, "+/-", trans$entropy_sig, units))))
     }
     # show fit estimate
