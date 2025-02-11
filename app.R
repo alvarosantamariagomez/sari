@@ -13304,11 +13304,11 @@ server <- function(input,output,session) {
             }
           } else if (grepl(pattern = "# Offset file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = F, fixed = T)) { #FORMATER offset file
             table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + table$V2*86400)
-            antennaChange <- grepl(pattern = "antenna|radome", x = table, fixed = F, ignore.case = T, perl = F)
-            ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x][antennaChange])))
-            rece <- as.numeric(unlist(unique(table$dyear[table$V1 == x][!antennaChange])))
-            ante <- unique(c(ante, as.numeric(unlist(unique(table$dyear[table$V1 == y][antennaChange])))))
-            rece <- unique(c(rece, as.numeric(unlist(unique(table$dyear[table$V1 == y][!antennaChange])))))
+            antennaChange <- apply(table, 1, function(row) any(grepl(pattern = "antenna|radome", x = row, fixed = F, ignore.case = T, perl = F)))
+            ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x & antennaChange])))
+            rece <- as.numeric(unlist(unique(table$dyear[table$V1 == x & !antennaChange])))
+            ante <- unique(c(ante, as.numeric(unlist(unique(table$dyear[table$V1 == y & antennaChange])))))
+            rece <- unique(c(rece, as.numeric(unlist(unique(table$dyear[table$V1 == y & !antennaChange])))))
           } else {
             if (cols[2] > 2 && info$custom_warn == 0) {
               info$custom_warn <- 1
