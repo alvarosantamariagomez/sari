@@ -4643,12 +4643,18 @@ server <- function(input,output,session) {
       }
     }
     if (input$traceSoln && length(info$soln) > 0) {
+      for (r in info$soln[[2]]) {
+        abline(v = r, col = SARIcolors[8], lty = 2)
+      }
       for (a in info$soln[[1]]) {
         abline(v = a, col = SARIcolors[8])
       }
     }
     if (input$traceCustom && length(info$custom) > 0) {
-      for (a in info$custom) {
+      for (r in info$custom[[2]]) {
+        abline(v = r, col = SARIcolors[5], lty = 2)
+      }
+      for (a in info$custom[[1]]) {
         abline(v = a, col = SARIcolors[5])
       }
     }
