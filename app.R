@@ -3898,24 +3898,28 @@ server <- function(input,output,session) {
                      setProgress(0.7)
                      Sys.sleep(0.5)
                      setProgress(1)
-                     Sys.sleep(0.5)
                    })
       # getting the velocity estimate from the minimum entropy
-      minH <- which.min(H)
-      if (minH < 10 || minH > vel_samples - 10) {
-        showNotification(HTML("The minimim entropy value may not be optimal.<br>The series may not be linear or some discontinuities may need to be removed."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "warning", session = getDefaultReactiveDomain())
+      if (H == 0) {
+        trans$entropy_vel <- trans$entropy_sig <- NULL
+        showNotification(HTML("Unable to compute the entropy value.<br>The series may be a constant value."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "error", session = getDefaultReactiveDomain())
+      } else {
+        minH <- which.min(H)
+        if (minH < 10 || minH > vel_samples - 10) {
+          showNotification(HTML("The minimim entropy value may not be optimal.<br>The series may not be linear or some discontinuities may need to be removed."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "warning", session = getDefaultReactiveDomain())
+        }
+        trans$entropy_vel <- aps[minH]
+        # roughly reducing the series length due to offsets
+        n <- 0
+        breaks <- unique(sort(c(trans$x[1],trans$offsetEpochs,offsetEpoch.entropy,trans$x[length(trans$x)])))
+        for (i in seq_len(length(breaks) - 1)) {
+          segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
+          n <- ifelse(sum(segment) > n, sum(segment), n)
+        }
+        l <- (n + 2*info$points) / (3*info$points) # longest segment counts 1/3 of total length
+        # compute the velocity uncertainty
+        trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$rangex * l)
       }
-      trans$entropy_vel <- aps[minH]
-      # roughly reducing the series length due to offsets
-      n <- 0
-      breaks <- unique(sort(c(trans$x[1],trans$offsetEpochs,offsetEpoch.entropy,trans$x[length(trans$x)])))
-      for (i in seq_len(length(breaks) - 1)) {
-        segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
-        n <- ifelse(sum(segment) > n, sum(segment), n)
-      }
-      l <- (n + 2*info$points) / (3*info$points) # longest segment counts 1/3 of total length
-      # compute the velocity uncertainty
-      trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$rangex * l)
     } else {
       trans$entropy_vel <- trans$entropy_sig <- NULL
     }
@@ -15575,6 +15579,9 @@ server <- function(input,output,session) {
       series <- unique(detrended[segment])
       w <- max(table(series)) + 1
       n <- length(series)
+      if (n < 2*w) {
+        next
+      }
       p <- n/ntot
       xord <- sort(series)
       S <- numeric(n)
