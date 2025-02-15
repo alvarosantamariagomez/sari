@@ -14764,6 +14764,8 @@ server <- function(input,output,session) {
             })
             if (input$sunits == 2) {
               updateTextInput(session, inputId = "scaleFactor", value = "1000")
+            } else {
+              updateTextInput(session, inputId = "scaleFactor", value = "1")
             }
           }
           return(NULL)
@@ -14795,6 +14797,8 @@ server <- function(input,output,session) {
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                } else {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1")
                 }
               }
             } else {
@@ -14842,6 +14846,8 @@ server <- function(input,output,session) {
               })
               if (input$sunits == 2) {
                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
+              } else {
+                updateTextInput(session, inputId = "scaleFactor", value = "1")
               }
             }
             return(NULL)
@@ -14881,6 +14887,8 @@ server <- function(input,output,session) {
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                } else {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1")
                 }
               }
             } else {
@@ -14927,6 +14935,8 @@ server <- function(input,output,session) {
                   })
                   if (input$sunits == 2) {
                     updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                  } else {
+                    updateTextInput(session, inputId = "scaleFactor", value = "1")
                   }
                 }
               }
@@ -14971,6 +14981,8 @@ server <- function(input,output,session) {
               })
               if (input$sunits == 2) {
                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
+              } else {
+                updateTextInput(session, inputId = "scaleFactor", value = "1")
               }
             }
             return(NULL)
@@ -15008,6 +15020,8 @@ server <- function(input,output,session) {
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                } else {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1")
                 }
               }
             } else {
@@ -15070,6 +15084,8 @@ server <- function(input,output,session) {
                   })
                   if (input$sunits == 2) {
                     updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                  } else {
+                    updateTextInput(session, inputId = "scaleFactor", value = "1")
                   }
                 }
               } else {
@@ -15125,6 +15141,8 @@ server <- function(input,output,session) {
               })
               if (input$sunits == 1) {
                 updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+              } else {
+                updateTextInput(session, inputId = "scaleFactor", value = "1")
               }
             }
             return(NULL)
@@ -15227,6 +15245,8 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "step2", value = step)
               if (input$sunits == 1) {
                 updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+              } else {
+                updateTextInput(session, inputId = "scaleFactor", value = "1")
               }
             }
           } else {
@@ -15269,6 +15289,8 @@ server <- function(input,output,session) {
                 })
                 if (input$sunits == 2) {
                   updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                } else {
+                  updateTextInput(session, inputId = "scaleFactor", value = "1")
                 }
               }
             } else {
