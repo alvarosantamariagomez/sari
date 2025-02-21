@@ -2644,7 +2644,7 @@ server <- function(input,output,session) {
     }
     if (input$tab > 3) {
       statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
-      x <- db1[[info$db1]][[paste0("x",input$tunits)]][statusAll]
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
       rangex <- range(x)
       seriesInfo(x)
       if (!isTruthy(info$decimalsy)) {
@@ -15719,7 +15719,7 @@ server <- function(input,output,session) {
     if (!isTruthy(info$step)) {
       info$sampling0 <- info$sampling
     }
-    info$sampling_regular <- median(diff(x))
+    info$sampling_regular <- median(diff(x), na.rm = T)
     info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
     info$rangex <- x[length(x)] - x[1]
     times <- round(diff(x)/info$sampling)
