@@ -233,6 +233,12 @@ if [[ ! -z $local ]]; then
 		sed 's/devmode(TRUE)/devmode(FALSE)/' $saridir/app.R > $saridir/app_$now.R
 	fi
 fi
+# Removing the pipe operator for compatibility with R v3
+if [[ ! -z $local ]]; then
+	if [[ -f $saridir/app_$now.R ]]; then
+		sed -i 's/|> autoCompleteOff()//g' $saridir/app_$now.R
+	fi
+fi
 
 # Setting the listening port for local sessions
 if [[ ! -z $local ]]; then
