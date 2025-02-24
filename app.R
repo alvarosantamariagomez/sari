@@ -13144,7 +13144,7 @@ server <- function(input,output,session) {
   ReadLog <- function(x) {
     removeNotification("bad_sitelog")
     antrec <- grep("^[34].[x0-9]+ ",readLines(con = x, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
-    dates <- grep(" Date Removed ",readLines(con = x, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+    dates <- grep(" Date Removed             :",readLines(con = x, n = -1L, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
     if (length(antrec) > 0 && length(dates) > 0) {
       ante = c()
       rece = c()
