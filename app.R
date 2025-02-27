@@ -13318,11 +13318,11 @@ server <- function(input,output,session) {
               info$custom_warn <- 1
               showNotification(HTML("The input custom discontinuity file contains more than 2 columns.<br>Only the first 2 will be used."), action = NULL, duration = 15, closeButton = T, id = "bad_custom", type = "warning", session = getDefaultReactiveDomain())
             }
-            if (length(table[table$V2 == x]) > 0) {
+            if (length(table[table$V2 == x,]) > 0) {
               ante <- as.numeric(unique(unlist(table$V1[table$V2 == x])))
             }
             if (!is.null(y)) {
-              if (length(table[table$V2 == y]) > 0) {
+              if (length(table[table$V2 == y,]) > 0) {
                 ante <- unique(c(ante, as.numeric(unlist(table$V1[table$V2 == y]))))
               }
             }
