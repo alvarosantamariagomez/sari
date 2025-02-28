@@ -3149,17 +3149,9 @@ server <- function(input,output,session) {
       trans$y2 <- as.numeric(table2$y3) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy3) * inputs$scaleFactor
       status <- table1$status3
-      if (isTruthy(trans$plate) && input$eulerType == 2) {
-        trans$y0 <- trans$y0 - trans$plate[3]*(trans$x0 - median(trans$x0[table1$status3], na.rm = T)) - median(trans$y0, na.rm = T)
-        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
-      }
       if (isTruthy(trans$gia) && input$giaType == 2) {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
-      }
-      if (isTruthy(trans$plate2) && input$eulerType == 2) {
-        trans$y2 <- trans$y2 - trans$plate2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
-        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
       if (isTruthy(trans$gia2) && input$giaType == 2) {
         trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
