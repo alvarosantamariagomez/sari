@@ -1,5 +1,27 @@
 # **SARI changelog**
 
+# marzo 2025 [2025.03]
+
+### Fixed
+- improving the parsing of sitelog files (F. Feriol)
+- checking the validity of the significance of the estimated parameters
+- correction when some points are deleted on the 3D tab before selecting a coordinate
+- resetting the scale factor of the secondary series after loading a series from the EOSTLS server
+- correcting the dates of the antenna changes extracted from the spotgins discontinuity file
+- checking if data gaps can be flagged
+
+### Changed
+- avoiding removing the median value from the vertical series when correcting for the horizontal plate motion
+- avoiding computing the minimum entropy from series with a constant value
+- improving the format of the results of the midas and minimum entropy estimates on screen
+- removing the authentication for the formater server
+- adding the column names of the correlation matrix at the bottom only with many parameters
+- checking the LS summary output before changing the colors
+
+### Added
+- plotting the receiver changes from the soln and custom files with dashed lines on the residuals plot
+
+
 # febrero 2025 [2025.02]
 
 ### Fixed

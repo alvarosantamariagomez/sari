@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version febrero 2025'
+title: 'SARI documentation - version marzo 2025'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *febrero 2025*  --  "I like numbers, because with numbers, truth and beauty are the same thing."
+Current SARI version: *marzo 2025*  --  "The problem is the machine has a hundred and fifty million, million, million ways of doing it, according to how you set these three rotors, and how you connect these plugs."
 
 -----------------
 

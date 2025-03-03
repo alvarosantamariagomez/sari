@@ -451,7 +451,7 @@ Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
 
 # version ####
-version <- "SARI febrero 2025"
+version <- "SARI marzo 2025"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
