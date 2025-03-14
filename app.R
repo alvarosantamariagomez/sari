@@ -14563,28 +14563,35 @@ server <- function(input,output,session) {
   }
   #Based on https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
   decimalplaces <- function(x,axis) {
-    if (any(abs(x - round(x)) > .Machine$double.eps)) {
-      d <- quantile(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), probs = 0.95)
-      if (isTruthy(d) && d > 0) {
-        if (axis == "x") {
-          return(d)
-        } else if (d < 7) {
-          info$scientific <- F
-          return(d)
-        } else {
-          info$scientific <- T
-          d <- quantile(na.omit(nchar(sub(pattern = "^.*\\.0*([1-9])", replacement = "\\1", x = x))), probs = 0.05)
-          if (isTruthy(d) && d > 0) {
+    if (all(is.numeric(x))) {
+      if (any(abs(x - round(x)) > .Machine$double.eps)) {
+        d <- quantile(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), probs = 0.95)
+        if (isTruthy(d) && d > 0) {
+          if (axis == "x") {
+            return(d)
+          } else if (d < 7) {
+            info$scientific <- F
             return(d)
           } else {
-            return(0)
+            info$scientific <- T
+            d <- quantile(na.omit(nchar(sub(pattern = "^.*\\.0*([1-9])", replacement = "\\1", x = x))), probs = 0.05)
+            if (isTruthy(d) && d > 0) {
+              return(d)
+            } else {
+              return(0)
+            }
           }
+        } else {
+          info$scientific <- F
+          return(0)
         }
       } else {
         info$scientific <- F
         return(0)
       }
     } else {
+      if (messages > 2) cat(file = stderr(), mySession, "Bad series:", head(x), "\n")
+      showNotification("Unable to obtain the appropriate number of decimal places of the series.", action = NULL, duration = 10, closeButton = T, id = "bad_decimalplaces", type = "error", session = getDefaultReactiveDomain())
       info$scientific <- F
       return(0)
     }
