@@ -15817,8 +15817,8 @@ server <- function(input,output,session) {
             fit_values[9] <- HTML(as.character(span(fit_values[9], style = "color: red;")))
           } else if (!is.na(suppressWarnings(as.numeric(fit_values[9]))) && as.numeric(fit_values[9]) >= 0 & as.numeric(fit_values[9]) < 1e-4) {
             fit_values[9] <- sprintf(fmt = "%*d", nchar(fit_values[9]), 0)
-          } else {
-            if (messages > 0) cat(file = stderr(), mySession, "Error with the probability of the fit values = ", fit_values[9], "\n")
+          # } else {
+          #   if (messages > 0) cat(file = stderr(), mySession, "Error with the probability of the fit values = ", fit_values[9], "\n")
           }
           summary_output[[i]] <- HTML(paste(fit_values, collapse = ""))
         }
