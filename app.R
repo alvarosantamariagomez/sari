@@ -12596,6 +12596,7 @@ server <- function(input,output,session) {
         }
         # loop for each frequency
         if (length(periodsOut) > 0) {
+          periodsOut <- unique(periodsOut)
           i <- 0
           for (p in periodsOut) {
             f <- NULL
