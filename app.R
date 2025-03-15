@@ -13410,13 +13410,15 @@ server <- function(input,output,session) {
       y0 <- db1[[info$db1]][[paste0("y",component)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
       y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
       ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
+      centerx <- median(x0, na.rm = T)
+      centery <- median(y0, na.rm = T)
       if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
-        y0 <- y0 - trans$plate[component]*(x0 - median(x0, na.rm = T)) - median(y0, na.rm = T)
-        y1 <- y1 - trans$plate[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
+        y0 <- y0 - trans$plate[component]*(x0 - centerx) - centery
+        y1 <- y1 - trans$plate[component]*(x1 - centerx) - centery
       }
       if (component > 2 && isTruthy(trans$gia) && input$giaType == 2) {
-        y0 <- y0 - trans$gia[component]*(x0 - median(x0, na.rm = T)) - median(y0, na.rm = T)
-        y1 <- y1 - trans$gia[component]*(x1 - median(x1, na.rm = T)) - median(y1, na.rm = T)
+        y0 <- y0 - trans$gia[component]*(x0 - centerx) - centery
+        y1 <- y1 - trans$gia[component]*(x1 - centerx) - centery
       }
       sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
     } else if (input$tab == 5) {
@@ -13467,11 +13469,11 @@ server <- function(input,output,session) {
           component2 <- component
         }
         y2 <- db2[[info$db2]][[paste0("y",component2)]]
-        if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
-          y2 <- y2 - trans$plate2[component2]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
+        if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
+          y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
         }
-        if (isTruthy(trans$gia2) && input$giaType == 2) {
-          y2 <- y2 - trans$gia2[component2]*(x2 - median(x2, na.rm = T)) - median(y2, na.rm = T)
+        if (component2 > 2  && isTruthy(trans$gia2) && input$giaType == 2) {
+          y2 <- y2 - trans$gia2[component2]*(x2 - centerx) - centery
         }
         y2 <- y2 * inputs$scaleFactor
         sy2 <- db2[[info$db2]][[paste0("sy",component2)]]
