@@ -363,7 +363,9 @@ tabContents <- function(tabNum) {
                    color.background = getOption("spinner.color.background", default = "#ffffff"),
                    custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
                  ),
-                 downloadLink(paste0("downloadSpectrum",tabNum), div(id = paste0("downloadlink",tabNum), style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data")),
+                 div(style = "width: 15%; margin-left: 85%;",
+                   downloadLink(paste0("downloadSpectrum",tabNum), div(id = paste0("downloadlink",tabNum), style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data"))
+                 ),
                  verbatimTextOutput(paste0("lomb",tabNum,"_info"), placeholder = F)
                )
            ),
