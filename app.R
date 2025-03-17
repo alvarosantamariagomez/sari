@@ -4212,8 +4212,9 @@ server <- function(input,output,session) {
           }
           if (!inherits(fit,"try-error") && !is.null(fit)) {
             if (!"Logarithmic" %in% input$model && !"Exponential" %in% input$model) {
-              names(fit$coefficients) <- info$parameters
-              if (fit$rank != length(info$parameters)) {
+              if (fit$rank == length(info$parameters)) {
+                names(fit$coefficients) <- info$parameters
+              } else {
                 showNotification(paste0("Problem computing the parameters: ",names(which(is.na(fit$coefficients)))), action = NULL, duration = 10, closeButton = T, id = "bad_rank", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               }
