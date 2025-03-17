@@ -3521,15 +3521,27 @@ server <- function(input,output,session) {
               updateTextInput(session, inputId = "breakEpoch", value = breakpoints)
               if (trendType) {
                 updateRadioButtons(session, inputId = "trendType", selected = 1)
+              } else {
+                updateRadioButtons(session, inputId = "trendType", selected = 0)
               }
               if (polyType) {
                 model <- gsub("P..\\*\\(\\(x-\\d+\\.\\d+\\)\\^\\d+\\)\\*if\\(x\\>\\d+\\.\\d+", "", model, perl = T)
                 updateRadioButtons(session, inputId = "polyType", selected = 1)
+              } else {
+                updateRadioButtons(session, inputId = "polyType", selected = 0)
               }
               if (sinusoidType) {
                 model <- gsub("...\\*...\\(2\\*pi\\*\\(x-\\d+\\.\\d+\\)\\*\\d+\\)\\*if\\(x>\\d+\\.\\d+", "", model, perl = T)
                 updateRadioButtons(session, inputId = "sinusoidType", selected = 1)
+              } else {
+                updateRadioButtons(session, inputId = "sinusoidType", selected = 0)
               }
+            } else {
+              updateRadioButtons(session, inputId = "trendType", selected = 0)
+              updateRadioButtons(session, inputId = "polyType", selected = 0)
+              updateRadioButtons(session, inputId = "sinusoidType", selected = 0)
+              updateTextInput(session, inputId = "breakEpoch", value = "")
+              updateCheckboxInput(session, inputId = "breaking", value = F)
             }
             text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
             parameters <- grep("^# Parameter: ", comments, ignore.case = F, perl = T, value = T)
