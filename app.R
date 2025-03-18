@@ -15078,7 +15078,7 @@ server <- function(input,output,session) {
               if (isTruthy(found)) {
                 logfile <- paste0(url_log,found)
               }
-            } else if (product == "IGS") {
+            } else if (product == "IGS20") {
               url_log <- "https://files.igs.org/pub/station/log/"
               found <- unlist(strsplit(grep(station, readLines(url_log), ignore.case = T, value = T), "<|>"))[5]
               if (isTruthy(found)) {
