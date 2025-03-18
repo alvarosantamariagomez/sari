@@ -14722,13 +14722,13 @@ server <- function(input,output,session) {
       format <- 3
       pattern <- ".tenv3"
       if (product == "IGS14") {
-        url <- "http://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/"
+        url <- "https://geodesy.unr.edu/gps_timeseries/tenv3/IGS14/"
         listFile <- "www/NGL_database_IGS14.txt"
       } else if (product == "IGS20") {
-        url <- "http://geodesy.unr.edu/gps_timeseries/IGS20/tenv3/IGS20/"
+        url <- "https://geodesy.unr.edu/gps_timeseries/IGS20/tenv3/IGS20/"
         listFile <- "www/NGL_database_IGS20.txt"
       } else if (product == "RAPID") {
-        url <- "http://geodesy.unr.edu/gps_timeseries/rapids/tenv3/"
+        url <- "https://geodesy.unr.edu/gps_timeseries/rapids/tenv3/"
         listFile <- "www/NGL_database_rapid.txt"
       } else {
         showNotification(HTML(paste0("Unknown product ",product,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
