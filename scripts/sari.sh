@@ -65,7 +65,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         +------------+--------------------------------------+---------+------------------------------------------------+
         | LOCAL      | ENU, NEU, PBO, NGL, 1D*              | path    |                                                |
         | RENAG      | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
-        | FORMATER   | SPOTGINS_POS, UGA                    | 9 char  | https://en.poleterresolide.fr/                 |
+        | FORMATER   | SPOTGINS, UGA, IGS20, ENS            | 9 char  | https://en.poleterresolide.fr/                 |
         | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  | 9 char  | https://www.epos-eu.org/                       |
 	| SONEL      | ULR7A                                | 9 char  | https://www.sonel.org/                         |
 	| IGS        | IGS20                                | 4 char  | https://igs.org/products/                      |
@@ -110,7 +110,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 
 # Setting list of available URL parameters
 servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas eostls psmsl "
-products=" enu neu pbo ngl uga spotgins_pos ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd rlr "
+products=" enu neu pbo ngl uga spotgins ens ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd rlr "
 products_local=" enu neu pbo ngl 1d "
 
 # Setting a trap to do a clean exit

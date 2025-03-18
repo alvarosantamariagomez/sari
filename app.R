@@ -7490,7 +7490,7 @@ server <- function(input,output,session) {
     if (input$server1 == "RENAG") {
       updateSelectizeInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
     } else if (input$server1 == "FORMATER") {
-      updateSelectizeInput(session, inputId = "product1", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+      updateSelectizeInput(session, inputId = "product1", choices = list("SPOTGINS", "UGA", "IGS20", "ENS"), selected = "")
     } else if (input$server1 == "IGS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
     } else if (input$server1 == "EUREF") {
@@ -7522,7 +7522,7 @@ server <- function(input,output,session) {
     if (input$server2 == "RENAG") {
       updateSelectizeInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
     } else if (input$server2 == "FORMATER") {
-      updateSelectizeInput(session, inputId = "product2", choices = list("SPOTGINS_POS", "UGA_POS"), selected = "")
+      updateSelectizeInput(session, inputId = "product2", choices = list("SPOTGINS", "UGA", "IGS20", "ENS"), selected = "")
     } else if (input$server2 == "IGS") {
       updateSelectizeInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
     } else if (input$server2 == "EUREF") {
@@ -8603,7 +8603,7 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
-      info$product1 <- "SPOTGINS_POS"
+      info$product1 <- "SPOTGINS"
     } else if (grepl(".PLH$", file$primary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
@@ -8963,7 +8963,7 @@ server <- function(input,output,session) {
       } else if (grepl(".enu$", file$secondary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
         updateRadioButtons(inputId = "format2", selected = 1)
         info$format2 <- 1
-        info$product2 <- "SPOTGINS_POS"
+        info$product2 <- "SPOTGINS"
       } else if (grepl(".PLH$", file$secondary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
         updateRadioButtons(inputId = "format2", selected = 1)
         info$format2 <- 1
@@ -12009,7 +12009,7 @@ server <- function(input,output,session) {
             coordinates <- NULL
           }
         }
-      } else if (isTruthy(product) && product == "SPOTGINS_POS") {
+      } else if (isTruthy(product) && product == "SPOTGINS") {
         coordinates <- unlist(strsplit(trim(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T)), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
         if (!any(is.na(suppressWarnings(as.numeric(coordinates)))) && length(coordinates) == 3) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
@@ -15039,32 +15039,48 @@ server <- function(input,output,session) {
       }
     ## FORMATER ####
     } else if (server == "FORMATER") {
-      if (product == "SPOTGINS_POS") {
+      if (product == "SPOTGINS") {
         format <- 1
         pattern1 <- "SPOTGINS_"
         pattern2 <- ".enu"
         name <- paste0(pattern1,toupper(station),pattern2)
-      } else if (product == "UGA_POS") {
+      } else if (product == "UGA") {
         format <- 2
         pattern1 <- "UGA_"
         pattern2 <- ".pos"
         name <- paste0(pattern1,toupper(station),pattern2)
+      } else if (product == "IGS20") {
+        format <- 2
+        pattern1 <- "IGS_"
+        pattern2 <- ".pos"
+        name <- paste0(pattern1,toupper(station),pattern2)
+      } else if (product == "ENS") {
+        format <- 2
+        pattern1 <- "ENS_"
+        pattern2 <- ".pos"
+        name <- paste0(pattern1,toupper(station),pattern2)
       }
       url <- "https://geodesy-plotter.ipgp.fr/"
-      if (product == "SPOTGINS_POS" || product == "UGA_POS") {
+      if (product == "SPOTGINS" || product == "UGA" || product == "IGS20" || product == "ENS") {
         if (isTruthy(station)) {
           filepath <- paste0(url,"data/",toupper(station),"/",name)
           if (series == 1) {
-            if (product == "SPOTGINS_POS") {
+            if (product == "SPOTGINS") {
               if (file.exists("www/formater_offset.dat")) {
                 file$custom$name <- "formater_offset.dat"
                 file$custom$datapath <- "www/formater_offset.dat"
                 session$sendCustomMessage("custom", "formater_offset.dat")
                 shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
               }
-            } else if (product == "UGA_POS") {
+            } else if (product == "UGA") {
               url_log <- "https://gnss-metadata.eu/data/station/log/"
               found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
+              if (isTruthy(found)) {
+                logfile <- paste0(url_log,found)
+              }
+            } else if (product == "IGS") {
+              url_log <- "https://files.igs.org/pub/station/log/"
+              found <- unlist(strsplit(grep(station, readLines(url_log), ignore.case = T, value = T), "<|>"))[5]
               if (isTruthy(found)) {
                 logfile <- paste0(url_log,found)
               }
