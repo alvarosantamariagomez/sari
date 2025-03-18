@@ -6758,8 +6758,16 @@ server <- function(input,output,session) {
           enable("cut")
           if (input$tab == 4 || input$tab == 5) {
             disable("loadSARI")
+            disable("printLog")
+            disable("printSinfo")
+            disable("printSoln")
+            disable("printCustom")
           } else {
-            enable("loadSARI")  
+            enable("loadSARI")
+            enable("printLog")
+            enable("printSinfo")
+            enable("printSoln")
+            enable("printCustom")
           }
           enable("midas")
           enable("entropy")
