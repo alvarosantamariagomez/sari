@@ -12030,7 +12030,7 @@ server <- function(input,output,session) {
         }
       }
     } else if (format == 2) {
-      ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 10, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
+      ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 20, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
       if (length(ref_pos) > 0) {
         shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T))
         x <- unlist(strsplit(ref_pos, split = " +"))[5]
