@@ -15056,7 +15056,7 @@ server <- function(input,output,session) {
         format <- 2
         pattern1 <- "UGA_"
         pattern2 <- ".pos"
-        name <- paste0(pattern1,toupper(station),pattern2)
+        name <- paste0(pattern1,toupper(station),"_01D",pattern2)
       } else if (product == "IGS20") {
         format <- 2
         pattern1 <- "IGS_"
