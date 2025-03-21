@@ -835,6 +835,25 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
                                                                           fluidRow(
                                                                             column(4,
+                                                                                   checkboxInput(inputId = "strip",
+                                                                                                 div("Remove period", style = "font-weight: bold",
+                                                                                                     helpPopup("This option removes points from the series between the provided epochs.", anchor = "strip")),
+                                                                                                 value = F) |> autoCompleteOff()
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.strip == true",
+                                                                              column(4,
+                                                                                     textInput(inputId = "stripStart", label = "From", value = "") |> autoCompleteOff()
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "stripEnd", label = "To", value = "") |> autoCompleteOff()
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                      ),
+                                                                      div(style = "padding: 0px 0px; margin-top:1em",
+                                                                          fluidRow(
+                                                                            column(4,
                                                                                    textInput(inputId = "thresholdRes",
                                                                                              div("Residual",
                                                                                                  helpPopup("Enter the threshold to delete all the points with larger absolute residual.", anchor = "threshold")),
@@ -3098,6 +3117,16 @@ server <- function(input,output,session) {
   cutEnd_d <- reactive(input$cutEnd) %>% debounce(1000, priority = 1000)
   observeEvent(cutEnd_d(), {
     inputs$cutEnd <- suppressWarnings(as.numeric(trimws(cutEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  stripStart_d <- reactive(input$stripStart) %>% debounce(1000, priority = 1000)
+  observeEvent(stripStart_d(), {
+    inputs$stripStart <- suppressWarnings(as.numeric(trimws(stripStart_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  stripEnd_d <- reactive(input$stripEnd) %>% debounce(1000, priority = 1000)
+  observeEvent(stripEnd_d(), {
+    inputs$stripEnd <- suppressWarnings(as.numeric(trimws(stripEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
   giaTrend_d <- reactive(input$giaTrend) %>% debounce(1000, priority = 1000)
@@ -10497,6 +10526,81 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "cutEnd", value = "")
     }
   })
+  
+  # Observe strip ####
+  observeEvent(c(inputs$stripStart, inputs$stripEnd), {
+    req(db1[[info$db1]], input$strip)
+    removeNotification("bad_strip")
+    if (isTruthy(inputs$stripStart) && isTruthy(inputs$stripEnd)) {
+      if (messages > 0) cat(file = stderr(), mySession, "Stripping series:", inputs$stripStart, "-", inputs$stripEnd, "\n")
+      if (input$tab < 4) {
+        x <- trans$x
+        x0 <- trans$x0
+      } else {
+        statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
+        x <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(statusAll)]
+        x0 <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(db1[[info$db1]]$y1)]
+      }
+      if (isTruthy(input$permanent)) {
+        start <- ifelse(inputs$stripStart < x0[1], x0[1], inputs$stripStart)
+        end <- ifelse(inputs$stripEnd > x0[length(x0)], x0[length(x0)], inputs$stripEnd)
+      } else {
+        start <- ifelse(inputs$stripStart < x[1], x[1], inputs$stripStart)
+        end <- ifelse(inputs$stripEnd > x[length(x)], x[length(x)], inputs$stripEnd)
+      }
+      if (end <= start) {
+        shinyjs::delay(500, showNotification(HTML("The 'To' epoch or the end of the series is equal or smaller than the 'From' epoch or the start of the series.<br>Check the provided epochs of the remove period option."), action = NULL, duration = 10, closeButton = T, id = "bad_strip", type = "error", session = getDefaultReactiveDomain()))
+        req(info$stop)
+      }
+      if (isTruthy(input$permanent)) {
+        if (isTruthy(input$remove3D)) {
+          db1[[info$db1]]$status1[x0 > start & x0 < end] <- NA
+          db1[[info$db1]]$status2[x0 > start & x0 < end] <- NA
+          db1[[info$db1]]$status3[x0 > start & x0 < end] <- NA
+        } else {
+          if (input$tab == 1) {
+            db1[[info$db1]]$status1[x0 > start & x0 < end] <- NA
+          } else if (input$tab == 2) {
+            db1[[info$db1]]$status2[x0 > start & x0 < end] <- NA
+          } else if (input$tab == 3) {
+            db1[[info$db1]]$status3[x0 > start & x0 < end] <- NA
+          }
+        }
+        # setting new axis limits
+        if (input$tab < 4) {
+          valid <- !is.na(db1[[info$db1]][[paste0("status", input$tab)]])
+        } else {
+          valid <- !is.na(colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0)
+        }
+        info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid])
+        info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid])
+        ranges$x0 <- c(info$minx, info$maxx)
+        if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+          # show all points from primary & secondary series
+          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
+          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
+        }
+        ranges$x1 <- c(info$minx, info$maxx)
+        updateCheckboxInput(session, inputId = "permanent", value = F)
+      } else {
+        if (isTruthy(input$remove3D)) {
+          db1[[info$db1]]$status1[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status1)] <- F
+          db1[[info$db1]]$status2[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status2)] <- F
+          db1[[info$db1]]$status3[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status3)] <- F
+        } else {
+          if (input$tab == 1) {
+            db1[[info$db1]]$status1[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status1)] <- F
+          } else if (input$tab == 2) {
+            db1[[info$db1]]$status2[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status2)] <- F
+          } else if (input$tab == 3) {
+            db1[[info$db1]]$status3[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status3)] <- F
+          }
+        }
+      }
+      updateTextInput(session, inputId = "stripStart", value = "")
+      updateTextInput(session, inputId = "stripEnd", value = "")
+    }
+  })
 
   # Observe restore removed ####
   observeEvent(input$delete_excluded, {
@@ -10518,6 +10622,8 @@ server <- function(input,output,session) {
     updateTextInput(session, "thresholdResN", value = "")
     updateTextInput(session, "cutStart", value = "")
     updateTextInput(session, "cutEnd", value = "")
+    updateTextInput(session, "stripStart", value = "")
+    updateTextInput(session, "stripEnd", value = "")
   }, priority = 4)
 
   # Observe station.info ####
