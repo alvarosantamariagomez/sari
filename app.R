@@ -13740,10 +13740,12 @@ server <- function(input,output,session) {
       if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
         y0 <- y0 - trans$plate[component]*(x0 - centerx) - centery
         y1 <- y1 - trans$plate[component]*(x1 - centerx) - centery
+        ye <- ye - trans$plate[component]*(xe - centerx) - centery
       }
       if (component > 2 && isTruthy(trans$gia) && input$giaType == 2) {
         y0 <- y0 - trans$gia[component]*(x0 - centerx) - centery
         y1 <- y1 - trans$gia[component]*(x1 - centerx) - centery
+        ye <- ye - trans$gia[component]*(xe - centerx) - centery
       }
       sy1 <- db1[[info$db1]][[paste0("sy",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
     } else if (input$tab == 5) {
