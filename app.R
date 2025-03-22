@@ -832,24 +832,22 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             )
                                                                           )
                                                                       ),
-                                                                      div(style = "padding: 0px 0px; margin-top:1em",
-                                                                          fluidRow(
-                                                                            column(4,
-                                                                                   checkboxInput(inputId = "strip",
-                                                                                                 div("Remove period", style = "font-weight: bold",
-                                                                                                     helpPopup("This option removes points from the series between the provided epochs.", anchor = "strip")),
-                                                                                                 value = F) |> autoCompleteOff()
-                                                                            ),
-                                                                            conditionalPanel(
-                                                                              condition = "input.strip == true",
-                                                                              column(4,
-                                                                                     textInput(inputId = "stripStart", label = "From", value = "") |> autoCompleteOff()
-                                                                              ),
-                                                                              column(4,
-                                                                                     textInput(inputId = "stripEnd", label = "To", value = "") |> autoCompleteOff()
-                                                                              )
-                                                                            )
+                                                                      fluidRow(
+                                                                        column(4, style = "padding-right: 0;",
+                                                                               checkboxInput(inputId = "strip",
+                                                                                             div("Remove period", style = "font-weight: bold",
+                                                                                                 helpPopup("This option removes points from the series between the provided epochs.", anchor = "strip")),
+                                                                                             value = F) |> autoCompleteOff()
+                                                                        ),
+                                                                        conditionalPanel(
+                                                                          condition = "input.strip == true",
+                                                                          column(4,
+                                                                                 textInput(inputId = "stripStart", label = "From", value = "") |> autoCompleteOff()
+                                                                          ),
+                                                                          column(4,
+                                                                                 textInput(inputId = "stripEnd", label = "To", value = "") |> autoCompleteOff()
                                                                           )
+                                                                        )
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:1em",
                                                                           fluidRow(
@@ -881,7 +879,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       div(style = "font-weight: bold", "Plot options"),
                                                                       fluidRow(
-                                                                        column(4,
+                                                                        column(4, style = "padding-right: 0;",
                                                                                checkboxInput(inputId = "remove3D",
                                                                                              div("All components", align = "right",
                                                                                                  helpPopup("This option allows toggling or deleting the points from all the coordinate components at the same time or separately.", anchor = "3d")),
@@ -6820,6 +6818,7 @@ server <- function(input,output,session) {
       disable("white")
       disable("reset")
       disable("cut")
+      disable("strip")
       disable("delete_excluded")
       disable("loadSARI")
       disable("ids")
@@ -6867,6 +6866,7 @@ server <- function(input,output,session) {
       disable("add_excluded")
       disable("permanent")
       disable("cut")
+      disable("strip")
       disable("powerl")
       disable("randomw")
       disable("runVerif")
@@ -6955,6 +6955,7 @@ server <- function(input,output,session) {
           disable("separator")
           enable("overflow")
           enable("cut")
+          enable("strip")
           enable("log")
           enable("sinfo")
           enable("soln")
@@ -6968,7 +6969,6 @@ server <- function(input,output,session) {
           enable("traceSoln")
           enable("traceCustom")
           enable("permanent")
-          enable("cut")
           if (input$tab == 4 || input$tab == 5) {
             disable("loadSARI")
             disable("printLog")
@@ -7427,6 +7427,7 @@ server <- function(input,output,session) {
           disable("spectrumFilterRes")
           enable("plot")
           disable("cut")
+          disable("strip")
           disable("plotAll")
           enable("series")
           disable("series2")
@@ -7469,6 +7470,7 @@ server <- function(input,output,session) {
         disable("remove3D")
         disable("add_excluded")
         disable("cut")
+        disable("strip")
         disable("permanent")
         disable("removeAuto")
         disable("filter")
@@ -9809,31 +9811,31 @@ server <- function(input,output,session) {
         x2 <- db2[[info$db2]]$x3
       }
       if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
-        y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
-        y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
-        y3 <- db1[[info$db1]]$y3 - trans$plate[3]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y3, na.rm = T)
+        y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x[db1[[info$db1]]$status1], na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
+        y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x[db1[[info$db1]]$status2], na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
+        y3 <- db1[[info$db1]]$y3
       } else {
         y1 <- db1[[info$db1]]$y1
         y2 <- db1[[info$db1]]$y2
         y3 <- db1[[info$db1]]$y3
       }
       if (isTruthy(trans$gia) && input$giaType == 2) {
-        y1 <- y1 - trans$gia[1]*(x - median(x, na.rm = T)) - median(y1, na.rm = T)
-        y2 <- y2 - trans$gia[2]*(x - median(x, na.rm = T)) - median(y2, na.rm = T)
-        y3 <- y3 - trans$gia[3]*(x - median(x, na.rm = T)) - median(y3, na.rm = T)
+        # y1 <- y1 - trans$gia[1]*(x - median(x[db1[[info$db1]]$status1], na.rm = T)) - median(y1, na.rm = T)
+        # y2 <- y2 - trans$gia[2]*(x - median(x[db1[[info$db1]]$status2], na.rm = T)) - median(y2, na.rm = T)
+        y3 <- y3 - trans$gia[3]*(x - median(x[db1[[info$db1]]$status3], na.rm = T)) - median(y3, na.rm = T)
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
         y12 <- db2[[info$db2]]$y1 - trans$plate2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
         y22 <- db2[[info$db2]]$y2 - trans$plate2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
-        y32 <- db2[[info$db2]]$y3 - trans$plate2[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
+        y32 <- db2[[info$db2]]$y3
       } else {
         y12 <- db2[[info$db2]]$y1
         y22 <- db2[[info$db2]]$y2
         y32 <- db2[[info$db2]]$y3
       }
       if (isTruthy(trans$gia2) && input$giaType == 2) {
-        y12 <- y12 - trans$gia2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
-        y22 <- y22 - trans$gia2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
+        # y12 <- y12 - trans$gia2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
+        # y22 <- y22 - trans$gia2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
         y32 <- y32 - trans$gia2[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
       }
       y12 <- y12 * inputs$scaleFactor
@@ -10558,16 +10560,16 @@ server <- function(input,output,session) {
       }
       if (isTruthy(input$permanent)) {
         if (isTruthy(input$remove3D)) {
-          db1[[info$db1]]$status1[x0 > start & x0 < end] <- NA
-          db1[[info$db1]]$status2[x0 > start & x0 < end] <- NA
-          db1[[info$db1]]$status3[x0 > start & x0 < end] <- NA
+          db1[[info$db1]]$status1[x0 >= start & x0 <= end] <- NA
+          db1[[info$db1]]$status2[x0 >= start & x0 <= end] <- NA
+          db1[[info$db1]]$status3[x0 >= start & x0 <= end] <- NA
         } else {
           if (input$tab == 1) {
-            db1[[info$db1]]$status1[x0 > start & x0 < end] <- NA
+            db1[[info$db1]]$status1[x0 >= start & x0 <= end] <- NA
           } else if (input$tab == 2) {
-            db1[[info$db1]]$status2[x0 > start & x0 < end] <- NA
+            db1[[info$db1]]$status2[x0 >= start & x0 <= end] <- NA
           } else if (input$tab == 3) {
-            db1[[info$db1]]$status3[x0 > start & x0 < end] <- NA
+            db1[[info$db1]]$status3[x0 >= start & x0 <= end] <- NA
           }
         }
         # setting new axis limits
