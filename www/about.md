@@ -265,7 +265,8 @@ Once the format of the series is set, they can be plotted or resetted with the `
 
 The button `overview` opens a new browser window containing a static PNG figure with the series of the three coordinate components taking into account the current state of the series (zoom, removed points, plate motion correction and fitted model). If the series have been fitted, this figure will also include the estimated linear trend and the standard deviation of the model residuals for each fitted component.  
 There is no need to close and reopen the `overview` window, if the windown is left open (for instance, on a second screen), the PNG figure will update automatically each time there is a change in the series or in their fitting. <p id="cut"></p>
-The `truncate` option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the [<a href="#input-format" target="_self">Input data and format</a>](#input-format) section). <p id="threshold"></p>
+The `truncate` option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the [<a href="#input-format" target="_self">Input data and format</a>](#input-format) section). <p id="strip"></p>
+The `remove period` option allows removing all the points inside the given *from* and *to* epochs. The epochs must be given in the same time units of the series. <p id="threshold"></p>
 Outliers selected manually can be excluded from the analysis with the `toggle` option. Outliers can also be excluded automatically with the `auto toggled` button after providing a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).  
 The `reset toggle` button restores at once all the points that were previously toggled.  
 See more details about removing/restoring points in the [<a href="#interactive-operation" target="_self">Interactive operation</a>](#interactive-operation) section. <p id="3d"></p>
@@ -573,7 +574,7 @@ A warning should appear on the screen when a very long computation time is expec
 This is how I usually estimate the linear trend in a GNSS position time series (the steps may change depending on the series and application):
 
 1) Upload the series file from your computer using the `browse file` button, or from a remote web server using the `Server`, `Product` and `Station` options, or via a URL query, or from a Unix-like terminal using the [sari.sh script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh).  
-2) If loading a series from your computer, set the series format and time units if they are not already set, and `Plot` the series with points (default), lines or points & lines. 
+2) If loading a series from your computer, set the series format and time units if they are not already set, and `Plot` the series with points (default), lines or points & lines.  
 3) Click on the `overview` button to open a new window with the three coordinate components and then select one of the coordinate components in the upper tabs. Move the overview window to a secondary screen and leave it open there.  
 4) Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.  
 5) If the series is very long (more than 10 years) and it has daily sampling, reduce it to weekly sampling using the `reduce sampling` option with a period of *=7/365.25* years (or the equivalent 7 days or 1 week, depending on the series time unit).  

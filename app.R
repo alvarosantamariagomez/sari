@@ -836,7 +836,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                         column(4, style = "padding-right: 0;",
                                                                                checkboxInput(inputId = "strip",
                                                                                              div("Remove period", style = "font-weight: bold",
-                                                                                                 helpPopup("This option removes points from the series between the provided epochs.", anchor = "strip")),
+                                                                                                 helpPopup("This option removes all the points from the series between the provided epochs.", anchor = "strip")),
                                                                                              value = F) |> autoCompleteOff()
                                                                         ),
                                                                         conditionalPanel(
