@@ -11348,6 +11348,7 @@ server <- function(input,output,session) {
   # Observe offset epochs ####
   observeEvent(c(inputs$offsetEpoch, trans$x), {
     req(db1[[info$db1]])
+    trans$offsetEpochs <- NULL
     offsetEpochs <- trimws(unlist(strsplit(inputs$offsetEpoch, split = ",")))
     offsetEpochs <- extractEpochList(trans$x, offsetEpochs, "offset")
     if (length(offsetEpochs) > 0) {
