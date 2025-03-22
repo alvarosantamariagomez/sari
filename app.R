@@ -13740,8 +13740,8 @@ server <- function(input,output,session) {
       y0 <- db1[[info$db1]][[paste0("y",component)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
       y1 <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
       ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
-      centerx <- median(x0, na.rm = T)
-      centery <- median(y0, na.rm = T)
+      centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]]], na.rm = T)
+      centery <- median(db1[[info$db1]][[paste0("y",component)]], na.rm = T)
       if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
         y0 <- y0 - trans$plate[component]*(x0 - centerx) - centery
         y1 <- y1 - trans$plate[component]*(x1 - centerx) - centery
