@@ -6569,7 +6569,9 @@ server <- function(input,output,session) {
   output$download <- output$downloadAs <- downloadHandler(
     filename = function() {
       if (input$format != 4) {
-        if (input$tab == 5) {
+        if (input$tab == 4) {
+          paste0(file$primary$name, "_detrend.sari")
+        } else if (input$tab == 5) {
           paste0(file$primary$name, "_res.sari")
         } else {
           if (any(grepl("East", info$components))) {
@@ -10946,7 +10948,7 @@ server <- function(input,output,session) {
   })
 
   # Observe hide buttons ####
-  observeEvent(c(input$tab, trans$filter, trans$res, trans$y, inputs$step, input$optionSecondary), {
+  observeEvent(c(input$tab, trans$filter, trans$res, trans$y, inputs$step, input$optionSecondary, input$eulerType, input$giaType), {
     if (input$tab == 6) {
       showTab(inputId = "tab", target = "8", select = F, session = getDefaultReactiveDomain())
       hideTab(inputId = "tab", target = "7", session = getDefaultReactiveDomain())
@@ -10960,6 +10962,10 @@ server <- function(input,output,session) {
               input$optionSecondary > 1 ||
               (input$eulerType == 2 && length(trans$plate) > 0) ||
               (input$giaType == 2 && length(trans$gia) > 0 && (input$format == 4 || input$tab == 3)) )
+          ) ||
+          (input$tab == 4 &&
+           (  (input$eulerType == 2 || input$giaType == 2) &&
+              (isTruthy(trans$plate) || isTruthy(trans$gia))  )
           )
       ) {
         showTab(inputId = "tab", target = "7", select = F, session = getDefaultReactiveDomain())
@@ -14177,9 +14183,14 @@ server <- function(input,output,session) {
       }
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
-      if (input$tab == 5) {
-        cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[1], trans$plate[1]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[2], trans$plate[2]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+      if (input$tab == 4 || input$tab == 5) {
+        if (isTruthy(input$plateModel) && isTruthy(input$plate)) {
+          cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[1], trans$plate[1]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[2], trans$plate[2]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
+        } else {
+          cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[1], trans$plate[1]), units), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste(sprintf('# Plate model rate removed %s: %f', info$components[2], trans$plate[2]), units), file = file_out, sep = "\n", fill = F, append = T)
+        }
       } else if (input$format == 4 || input$tab < 3) {
         cat(paste(sprintf('# Plate model rate removed: %f', trans$plate[as.numeric(input$tab)]), units, "from model", input$plateModel, "and plate", input$plate), file = file_out, sep = "\n", fill = F, append = T)
       }
@@ -14285,6 +14296,52 @@ server <- function(input,output,session) {
         OutPut$df <- data.frame(x = trans$x, y = trans$y)
         names(OutPut$df) <- c("# Epoch", "Data")
       }
+    } else if (input$tab == 4) {
+      if (isTruthy(input$sigmas)) {
+        if (isTruthy(trans$plate)) {
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
+          centery <- median(db1[[info$db1]]$y1, na.rm = T)
+          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T] - centerx) - centery, sy = db1[[info$db1]]$sy1[db1[[info$db1]]$status1 %in% T])
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
+          centery <- median(db1[[info$db1]]$y2, na.rm = T)
+          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T] - centerx) - centery, sy = db1[[info$db1]]$sy2[db1[[info$db1]]$status2 %in% T])
+        } else {
+          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T], sy = db1[[info$db1]]$sy1[db1[[info$db1]]$status1 %in% T])
+          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T], sy = db1[[info$db1]]$sy2[db1[[info$db1]]$status2 %in% T])
+        }
+        if (isTruthy(trans$gia)) {
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
+          centery <- median(db1[[info$db1]]$y3, na.rm = T)
+          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T] - centerx) - centery, sy = db1[[info$db1]]$sy3[db1[[info$db1]]$status3 %in% T])
+        } else {
+          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T], sy = db1[[info$db1]]$sy3[db1[[info$db1]]$status3 %in% T])
+        }
+        component_list <- list(component1, component2, component3)
+        OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
+        names(OutPut$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
+      } else {
+        if (isTruthy(trans$plate)) {
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
+          centery <- median(db1[[info$db1]]$y1, na.rm = T)
+          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T] - centerx) - centery)
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
+          centery <- median(db1[[info$db1]]$y2, na.rm = T)
+          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T] - centerx) - centery)
+        } else {
+          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T])
+          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T])
+        }
+        if (isTruthy(trans$gia)) {
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
+          centery <- median(db1[[info$db1]]$y3, na.rm = T)
+          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T] - centerx) - centery)
+        } else {
+          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T])
+        }
+        component_list <- list(component1, component2, component3)
+        OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)
+        names(OutPut$df) <- c("# Epoch", sub(" component",info$components[1]), sub(" component",info$components[2]), sub(" component",info$components[3]))
+      }
     } else if (input$tab == 5) {
       if (isTruthy(input$sigmas)) {
         component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T], sy = db1[[info$db1]]$reserror1[db1[[info$db1]]$status1 %in% T])
@@ -14309,10 +14366,16 @@ server <- function(input,output,session) {
       if (isTruthy(input$sigmas)) {
         OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
       }
-    } else if (input$tab == 5) {
-      OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],1)
+    } else if (input$tab == 4 || input$tab == 5) {
+      # OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],1)
+      OutPut$df[,2] <- formatting(OutPut$df[,2],1)
+      OutPut$df[,3] <- formatting(OutPut$df[,3],1)
+      OutPut$df[,4] <- formatting(OutPut$df[,4],1)
       if (isTruthy(input$sigmas)) {
-        OutPut$df[,c(5,6,7)] <- formatting(OutPut$df[,c(5,6,7)],1)
+        # OutPut$df[,c(5,6,7)] <- formatting(OutPut$df[,c(5,6,7)],1)
+        OutPut$df[,5] <- formatting(OutPut$df[,5],1)
+        OutPut$df[,6] <- formatting(OutPut$df[,6],1)
+        OutPut$df[,7] <- formatting(OutPut$df[,7],1)
       }
     }
     if (input$tab < 4) {
