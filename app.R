@@ -8588,6 +8588,10 @@ server <- function(input,output,session) {
       inputs$offsetEpoch <- paste(sapply(trans$offsetEpochs, fun), collapse = ", ")
       updateTextInput(inputId = "offsetEpoch", value = inputs$offsetEpoch)
     }
+    if (length(trans$breakEpochs) > 0) {
+      inputs$breakEpoch <- paste(sapply(trans$breakEpochs, fun), collapse = ", ")
+      updateTextInput(inputId = "breakEpoch", value = inputs$breakEpoch)
+    }
     if (length(inputs$ExponenRef) > 0) {
       inputs$ExponenRef <- paste(sapply(as.numeric(unlist(strsplit(inputs$ExponenRef,","))), fun), collapse = ", ")
       inputs$TE0 <- paste(as.numeric(unlist(strsplit(inputs$TE0,",")))*scale, collapse = ", ")
