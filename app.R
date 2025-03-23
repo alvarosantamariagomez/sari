@@ -9398,6 +9398,7 @@ server <- function(input,output,session) {
         }
       }
       numValid1 <- sum(table_common$status1, na.rm = T)
+      if (input$format != 4 && input$format2 != 4) {
       numValid2 <- sum(table_common$status2, na.rm = T)
       numValid3 <- sum(table_common$status3, na.rm = T)
       if (numValid1 == numValid2 && numValid1 == numValid3) {
@@ -9406,6 +9407,10 @@ server <- function(input,output,session) {
       } else {
         atLeast <- " at least "
         numValid <- min(numValid1,numValid2,numValid3)
+      }
+      } else {
+        atLeast <- " "
+        numValid <- numValid1
       }
       showNotification(paste0("There are",atLeast,numValid," epochs in common between the primary and secondary series (after excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       if (numValid > 0) {
