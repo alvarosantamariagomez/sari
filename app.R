@@ -3116,12 +3116,12 @@ server <- function(input,output,session) {
   observeEvent(cutEnd_d(), {
     inputs$cutEnd <- suppressWarnings(as.numeric(trimws(cutEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
-  
+
   stripStart_d <- reactive(input$stripStart) %>% debounce(1000, priority = 1000)
   observeEvent(stripStart_d(), {
     inputs$stripStart <- suppressWarnings(as.numeric(trimws(stripStart_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
-  
+
   stripEnd_d <- reactive(input$stripEnd) %>% debounce(1000, priority = 1000)
   observeEvent(stripEnd_d(), {
     inputs$stripEnd <- suppressWarnings(as.numeric(trimws(stripEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
@@ -10534,7 +10534,7 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "cutEnd", value = "")
     }
   })
-  
+
   # Observe strip ####
   observeEvent(c(inputs$stripStart, inputs$stripEnd), {
     req(db1[[info$db1]], input$strip)
