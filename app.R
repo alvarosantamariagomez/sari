@@ -8344,7 +8344,7 @@ server <- function(input,output,session) {
   })
 
   # Observe GIA ####
-  observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2), {
+  observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2, input$tunits), {
     req(db1[[info$db1]])
     if (isTruthy(input$gia) || isTruthy(trans$gia)) {
       if (messages > 0) cat(file = stderr(), mySession, "GIA model:", input$giaModel, "\n")
@@ -13630,8 +13630,8 @@ server <- function(input,output,session) {
         if (col == 2) {
           if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$V2, ignore.case = F, perl = T))) { #NGL steps file
             table$dyear <- decimal_date(as.Date(ymd(table$V2)))
+            antennaChange <- grepl(pattern = "antenna|radome", x = table$V4[table$V1 == x], fixed = F, ignore.case = T, perl = F)
             if (any(table$V1 == x)) {
-              antennaChange <- grepl(pattern = "antenna|radome", x = table$V4[table$V1 == x], fixed = F, ignore.case = T, perl = F)
               ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x][antennaChange])))
               rece <- as.numeric(unlist(unique(table$dyear[table$V1 == x][!antennaChange])))
             }
