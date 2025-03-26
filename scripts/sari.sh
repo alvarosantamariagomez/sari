@@ -158,26 +158,22 @@ fi
 uname -a | grep microsoft > /dev/null 2>&1
 wsl=$?
 
-if [[ $wsl == 0 ]]; then
-	browser="cmd.exe /c start"
-else
-	wslview -v > /dev/null 2>&1
+wslview -v > /dev/null 2>&1
+if [[ $? != 0 ]]; then
+	xdg-open --help > /dev/null 2>&1
 	if [[ $? != 0 ]]; then
-		xdg-open --help > /dev/null 2>&1
+		x-www-browser -h > /dev/null 2>&1
 		if [[ $? != 0 ]]; then
-			x-www-browser -h > /dev/null 2>&1
-			if [[ $? != 0 ]]; then
-				echo FATAL: neither wslu nor xdg-utils are available. You must install one of them.
-				exit 1
-			else
-				browser=x-www-browser
-			fi
+			echo FATAL: neither wslu nor xdg-utils are available. You must install one of them.
+			exit 1
 		else
-			browser=xdg-open
+			browser=x-www-browser
 		fi
 	else
-		browser=wslview
+		browser=xdg-open
 	fi
+else
+	browser=wslview
 fi
 
 if [[ ! -z $local ]]; then
