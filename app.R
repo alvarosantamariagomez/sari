@@ -4075,9 +4075,9 @@ server <- function(input,output,session) {
       C <- matrix(0,n,n)
       scaling <- 10^signifdecimal(sd(trans$res), T)
       if (isTruthy(inputs$verif_fl) || isTruthy(inputs$verif_rw) || isTruthy(inputs$verif_pl)) {
-        estimatedTime <- as.integer(ceiling(1.3547*exp(0.0007*n)/60))
+        estimatedTime <- as.integer(ceiling((1.3547*exp(0.0007*n) + 10*length(trans$offsetEpochs))/60))
       } else {
-        estimatedTime <- as.integer(ceiling(1.3988*exp(0.0006*n)/60))
+        estimatedTime <- as.integer(ceiling((1.3988*exp(0.0006*n) + 10*length(trans$offsetEpochs))/60))
       }
       withBusyIndicatorServer("runVerif", {
         withProgress(message = 'Verifying offset values.',
@@ -4103,15 +4103,13 @@ server <- function(input,output,session) {
                          updateTextInput(session, inputId = "verif_pl", value = "")
                          updateTextInput(session, inputId = "verif_k", value = "")
                        }
-                       Sys.sleep(1)
                        setProgress(0.2)
                        if (!all(C == 0)) {
                          trans$verif <- F
                          y0 <- (trans$res - mean(trans$res)) * scaling
                          line <- c()
-                         setProgress(0.9)
-                         Sys.sleep(1)
                          for (i in seq_len(length(trans$offsetEpochs))) {
+                           setProgress(0.2 + ((i - 1)*0.8/length(trans$offsetEpochs)))
                            # adding the estimated offsets to the residual series
                            if (input$fitType == 1) {
                              offsets <- grep(pattern = "O", rownames(trans$LScoefs), ignore.case = F, perl = F, fixed = T)
@@ -4124,6 +4122,8 @@ server <- function(input,output,session) {
                            Tq <- crossprod(ya, solve(C, ya)) - crossprod(y0, solve(C, y0))
                            line <- c(line, paste("Offset",i,"significance:", sprintf("%.0f",pchisq(Tq, df = 1)*100),"%", sep = " "))
                          }
+                         setProgress(1)
+                         Sys.sleep(1)
                          if (isTruthy(Tq)) {
                            trans$verif <- T
                          }
