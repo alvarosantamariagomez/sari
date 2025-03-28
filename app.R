@@ -4075,9 +4075,9 @@ server <- function(input,output,session) {
       C <- matrix(0,n,n)
       scaling <- 10^signifdecimal(sd(trans$res), T)
       if (isTruthy(inputs$verif_fl) || isTruthy(inputs$verif_rw) || isTruthy(inputs$verif_pl)) {
-        estimatedTime <- as.integer(ceiling((1.3547*exp(0.0007*n) + 10*length(trans$offsetEpochs))/60))
+        estimatedTime <- as.integer(ceiling((1.3547*exp(0.0007*n) + 7*length(trans$offsetEpochs))/60))
       } else {
-        estimatedTime <- as.integer(ceiling((1.3988*exp(0.0006*n) + 10*length(trans$offsetEpochs))/60))
+        estimatedTime <- as.integer(ceiling((1.3988*exp(0.0006*n) + 7*length(trans$offsetEpochs))/60))
       }
       withBusyIndicatorServer("runVerif", {
         withProgress(message = 'Verifying offset values.',
@@ -9453,6 +9453,9 @@ server <- function(input,output,session) {
         if (input$eulerType > 1) {
           updateRadioButtons(session, inputId = "eulerType", selected = 0)
         }
+        if (input$giaType > 1) {
+          updateRadioButtons(session, inputId = "giaType", selected = 0)
+        }
       } else {
         updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
       }
@@ -10655,7 +10658,19 @@ server <- function(input,output,session) {
     }
     info$sinfo <- ReadInfo(id1,id2,file$sinfo)
     if (any(sapply(info$sinfo, isTruthy))) {
-      info$sinfo_years <- info$sinfo
+      tmp_log <- info$sinfo
+      for (d in 1:length(info$sinfo)) {
+        if (isTruthy(info$sinfo[[d]])) {
+          if (input$tunits == 1) {
+            tmp_log[[d]] <- mjd2year(info$sinfo[[d]])
+          } else if (input$tunits == 2) {
+            tmp_log[[d]] <- week2year(info$sinfo[[d]])
+          } else if (input$tunits == 3) {
+            tmp_log[[d]] <- info$sinfo[[d]]
+          }
+        }
+      }
+      info$sinfo_years <- tmp_log
     } else {
       info$sinfo <- NULL
     }
@@ -10697,7 +10712,20 @@ server <- function(input,output,session) {
     }
     info$soln <- ReadSoln(id1,id2,file$soln)
     if (any(sapply(info$soln, isTruthy))) {
+      tmp_soln <- info$soln
       info$soln_years <- info$soln
+      for (d in 1:length(info$soln_years)) {
+        if (isTruthy(info$soln_years[[d]])) {
+          if (!isTruthy(input$tunits) || input$tunits == 3) {
+            tmp_soln[[d]] <- info$soln_years[[d]]
+          } else if (input$tunits == 1) {
+            tmp_soln[[d]] <- year2mjd(info$soln_years[[d]])
+          } else if (input$tunits == 2) {
+            tmp_soln[[d]] <- year2week(info$soln_years[[d]])
+          }
+        }
+      }
+      info$soln <- tmp_soln
     } else {
       info$soln <- NULL
     }
@@ -10739,7 +10767,20 @@ server <- function(input,output,session) {
     }
     info$custom <- ReadCustom(id1,id2,file$custom)
     if (any(sapply(info$custom, isTruthy))) {
+      tmp_custom <- info$custom
       info$custom_years <- info$custom
+      for (d in 1:length(info$custom_years)) {
+        if (isTruthy(info$custom_years[[d]])) {
+          if (!isTruthy(input$tunits) || input$tunits == 3) {
+            tmp_custom[[d]] <- info$custom_years[[d]]
+          } else if (input$tunits == 1) {
+            tmp_custom[[d]] <- year2mjd(info$custom_years[[d]])
+          } else if (input$tunits == 2) {
+            tmp_custom[[d]] <- year2week(info$custom_years[[d]])
+          }
+        }
+      }
+      info$custom <- tmp_custom
     } else {
       info$custom <- NULL
     }
@@ -10784,7 +10825,19 @@ server <- function(input,output,session) {
       })
     }
     if (any(!sapply(info$log, is.null))) {
-      info$log_years <- info$log
+      tmp_log <- info$log
+      for (d in 1:length(info$log)) {
+        if (isTruthy(info$log[[d]])) {
+          if (!isTruthy(input$tunits) || input$tunits == 3) {
+            tmp_log[[d]] <- info$log[[d]]
+          } else if (input$tunits == 1) {
+            tmp_log[[d]] <- mjd2year(info$log[[d]])
+          } else if (input$tunits == 2) {
+            tmp_log[[d]] <- week2year(info$log[[d]])
+          }
+        }
+      }
+      info$log_years <- tmp_log
     } else {
       info$log <- NULL
     }
@@ -15458,21 +15511,25 @@ server <- function(input,output,session) {
         format <- 1
         pattern1 <- "SPOTGINS_"
         pattern2 <- ".enu"
+        solution <- "SPOTGINS"
         name <- paste0(pattern1,toupper(station),pattern2)
       } else if (product == "UGA") {
         format <- 2
         pattern1 <- "UGA_"
         pattern2 <- ".pos"
+        solution <- "UGA_Epos-Fr_GG"
         name <- paste0(pattern1,toupper(station),"_01D",pattern2)
       } else if (product == "IGS20") {
         format <- 2
         pattern1 <- "IGS_"
         pattern2 <- ".pos"
+        solution <- "IGS"
         name <- paste0(pattern1,toupper(station),pattern2)
       } else if (product == "ENS") {
         format <- 2
         pattern1 <- "ENS_"
         pattern2 <- ".pos"
+        solution <- "SOAM_GNSS_solENS"
         name <- paste0(pattern1,toupper(station),pattern2)
       }
       url <- "https://geodesy-plotter.ipgp.fr/"
@@ -15506,7 +15563,7 @@ server <- function(input,output,session) {
             url <- paste0(url,"api/1.0/products/?output=csv")
             dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-              stations_available <- sub(pattern1, "", sub(pattern2, "", grep(pattern1, dir_contents$NAME, fixed = T, value = T), ignore.case = T), ignore.case = T)
+              stations_available <- sort(as.character(dir_contents$STATION[dir_contents$SOLUTION == solution]))
               if (length(stations_available) > 0) {
                 if (series == 1) {
                   output$showStation1 <- renderUI({
