@@ -7701,7 +7701,7 @@ server <- function(input,output,session) {
                 })
               } else {
                 removeNotification("parsing_url1")
-                showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(query[['server']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                showNotification(HTML(paste0("File ",file$primary$name," is empty or is not found in ",toupper(query[['server']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                 url$station <- NULL
                 url$file <- NULL
               }
@@ -7846,7 +7846,7 @@ server <- function(input,output,session) {
           })
         } else {
           removeNotification("parsing_url1")
-          showNotification(HTML(paste0("File ",file$primary$name," not found in ",toupper(input$server1),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+          showNotification(HTML(paste0("File ",file$primary$name," is empty or is not found in ",toupper(input$server1),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           updateSelectInput(session, inputId = "station1", selected = "")
           file$primary <- NULL
         }
