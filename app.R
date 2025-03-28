@@ -11024,7 +11024,8 @@ server <- function(input,output,session) {
           (input$tab == 4 &&
            (  (input$eulerType == 2 || input$giaType == 2) &&
               (isTruthy(trans$plate) || isTruthy(trans$gia))  )
-          )
+          ) ||
+          (input$tab == 4 && input$optionSecondary > 1)
       ) {
         showTab(inputId = "tab", target = "7", select = F, session = getDefaultReactiveDomain())
       } else {
