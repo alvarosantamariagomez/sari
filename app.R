@@ -2499,7 +2499,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -2510,10 +2510,10 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     # This fires each time a reactive input changes
-    # inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
-    # if (length(inputChanged) > 0 && messages > 5) {
-    #   cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
-    # }
+    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
+    if (length(inputChanged) > 0 && messages > 5) {
+      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
+    }
     req(info$intro)
     # next is run only at the start of each session
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
@@ -8948,7 +8948,7 @@ server <- function(input,output,session) {
       updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
     }
   }, priority = 6)
-  observeEvent(c(inputs$epoch2, inputs$variable2, inputs$errorBar2, input$separator2), {
+  observeEvent(c(inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(db2[[info$db2]])
     if (messages > 4) cat(file = stderr(), mySession, "From: observe format 1D secondary\n")
     digest(2)
@@ -9178,7 +9178,6 @@ server <- function(input,output,session) {
       url$logfile2 <- info$log <- NULL
       session$sendCustomMessage("log", "")
     }
-    updateRadioButtons(inputId = "optionSecondary", selected = 0)
     updateSelectInput(inputId = "server2", selected = "")
     updateSelectInput(inputId = "product2", selected = "")
     updateCheckboxInput(session, inputId = "fullSeries", value = F)
@@ -9230,27 +9229,35 @@ server <- function(input,output,session) {
         disable("format2")
       }
     }
-    if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary file\n")
-    digest(2)
+    if (input$optionSecondary > 0) {
+      if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary file\n")
+      digest(2) 
+    }
   }, priority = 8)
 
-  observeEvent(c(input$format2), {
-    req(db2[[info$db2]])
-    if (info$format2 != input$format2) {
-      updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
+  observeEvent(input$format2, {
+    req(db1[[info$db1]])
+    # if (info$format2 != input$format2) {
+      # updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
+    # }
+    if (input$optionSecondary > 0) {
+      if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary format\n")
+      digest(2)
     }
   }, priority = 6)
 
-  observeEvent(c(input$separator2), {
-    req(db2[[info$db2]])
-    if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary series (2)\n")
-    digest(2)
+  observeEvent(input$separator2, {
+    req(db1[[info$db1]])
+    if (input$optionSecondary > 0) {
+      if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary separator\n")
+      digest(2)
+    }
   }, priority = 6)
 
   observeEvent(input$optionSecondary, {
     req(db1[[info$db1]])
-    if (!isTruthy(db2[[info$db2]])) {
-      if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary option (2)\n")
+    if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
+      if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary option\n")
       digest(2)
     }
     req(db2[[info$db2]])
@@ -9506,6 +9513,12 @@ server <- function(input,output,session) {
       }
     })
   }, priority = 6)
+  observeEvent(c(input$series2, input$separator2, input$format2, input$optionSecondary), {
+    req(db1[[info$db1]])
+    if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
+      updateRadioButtons(inputId = "optionSecondary", selected = 0)
+    }
+  }, priority = 0)
 
   # Observe swap ####
   observeEvent(input$swap, {
@@ -9884,7 +9897,7 @@ server <- function(input,output,session) {
       ## East ####
       par(mai = c(0.3, 1.2, 0.7, 1.2))
       y.range <- range(y1[valid1][x[valid1] >= x.range[1] & x[valid1] <= x.range[2]], na.rm = T)
-      if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
+      if (input$optionSecondary == 1 && isTruthy(db2[[info$db2]])) {
         if (isTruthy(input$sameScale)) {
           x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
           y2.common <- y12[x2 > x.range[1] & x2 < x.range[2]]
@@ -9978,7 +9991,7 @@ server <- function(input,output,session) {
       # North ####
       par(mai = c(0.3, 1.2, 0.5, 1.2))
       y.range <- range(y2[valid2][x[valid2] >= x.range[1] & x[valid2] <= x.range[2]], na.rm = T)
-      if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
+      if (input$optionSecondary == 1 && isTruthy(db2[[info$db2]])) {
         if (isTruthy(input$sameScale)) {
           x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
           y2.common <- y22[x2 > x.range[1] & x2 < x.range[2]]
@@ -10073,7 +10086,7 @@ server <- function(input,output,session) {
       # Up ####
       par(mai = c(1.2, 1.2, 0.5, 1.2))
       y.range <- range(y3[valid3][x[valid3] >= x.range[1] & x[valid3] <= x.range[2]], na.rm = T)
-      if (isTruthy(db2[[info$db2]]) && input$optionSecondary == 1) {
+      if (input$optionSecondary == 1 && isTruthy(db2[[info$db2]])) {
         if (isTruthy(input$sameScale)) {
           x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
           y2.common <- y32[x2 > x.range[1] & x2 < x.range[2]]
@@ -11646,7 +11659,6 @@ server <- function(input,output,session) {
       db1$original$status1 <- db1$original$status2 <- db1$original$status3 <- rep(T, length(table$x1))
     ## secondary series ####
     } else if (series == 2) {
-      if (messages > 0) cat(file = stderr(), mySession, "Reading secondary series file", "\n")
       # Setting column separation
       if (input$separator2 == "1") {
         sep2 <- ""
@@ -11665,6 +11677,8 @@ server <- function(input,output,session) {
         }
         files <- input$series2
       }
+      if (messages > 0) cat(file = stderr(), mySession, "Reading secondary series file", "\n")
+      db2$original <- db2$resampled <- NULL
       table_stack <- NULL
       num <- length(files$datapath)
       if (url$server2 == "EOSTLS" && num > 1) {
@@ -11845,6 +11859,7 @@ server <- function(input,output,session) {
         file$secondary <- NULL
         showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
       }
+print(head(db2[[info$db2]]))
     }
     # Setting station IDs
     removes <- "^SPOTGINS_|^UGA_"
@@ -11988,7 +12003,8 @@ server <- function(input,output,session) {
             }
           } else {
             extracted$sy1 <- extracted$sy2 <- extracted$sy3 <- rep(1e-9,length(extracted$y1))
-            if (server != "EOSTLS" || series != 2) {
+            # if (server != "EOSTLS" || series != 2) {
+            if (series != 2) {
               info$errorbars <- F
             }
           }
@@ -12323,14 +12339,22 @@ server <- function(input,output,session) {
                     req(info$stop)
                   }
                 } else {
-                  extracted$sy1 <- rep(1,length(extracted$y1))
+                  extracted$sy1 <- rep(1e-9,length(extracted$y1))
+                  if (series != 2) {
+                    info$errorbars <- F
+                    disable("sigmas")
+                  }
+                }
+              } else {
+                if (input$sigmas == T) {
+                  showNotification(HTML("Invalid column number for the series error bars.<br>Provide a valid column number or uncheck the error bars option."), action = NULL, duration = 10, closeButton = T, id = "no_error_bars", type = "error", session = getDefaultReactiveDomain())
+                  req(info$stop)
+                }
+                extracted$sy1 <- rep(1e-9,length(extracted$y1))
+                if (series != 2) {
                   info$errorbars <- F
                   disable("sigmas")
                 }
-              } else {
-                extracted$sy1 <- rep(1,length(extracted$y1))
-                info$errorbars <- F
-                disable("sigmas")
               }
               if (isTruthy(extracted)) {
                 extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
