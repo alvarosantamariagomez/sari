@@ -2499,7 +2499,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -2510,10 +2510,10 @@ server <- function(input,output,session) {
   # Welcome ####
   observe({
     # This fires each time a reactive input changes
-    inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
-    if (length(inputChanged) > 0 && messages > 5) {
-      cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
-    }
+    # inputChanged <- input$changed[lapply(input$changed, function(x) length(grep("clientdata|shinyjs-delay|shinyjs-resettable|undefined_", x, value = F))) == 0]
+    # if (length(inputChanged) > 0 && messages > 5) {
+    #   cat(file = stderr(), mySession, paste("Latest input fired:", input$changed, Sys.time(), paste(head(input[[input$changed]]), collapse = ", ")), "\n")
+    # }
     req(info$intro)
     # next is run only at the start of each session
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
@@ -7080,6 +7080,7 @@ server <- function(input,output,session) {
               enable("station2")
             } else {
               file$secondary <- NULL
+              info$last_optionSecondary <- 0
               updateRadioButtons(inputId = "optionSecondary", selected = 0)
               output$showStation2 <- renderUI({
                 textInput(inputId = "station2", label = "Station", value = "")
@@ -7752,6 +7753,7 @@ server <- function(input,output,session) {
   })
   observeEvent(input$server2, {
     req(db1[[info$db1]])
+    info$last_optionSecondary <- 0
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     if (input$server2 == "RENAG") {
       updateSelectizeInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
@@ -7862,6 +7864,7 @@ server <- function(input,output,session) {
     removeNotification("bad_url")
     removeNotification("no_answer")
     file$secondary <- NULL
+    info$last_optionSecondary <- 0
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     req(input$product2)
     get_URL_info(input$server2,NULL,input$product2,2)
@@ -9237,9 +9240,6 @@ server <- function(input,output,session) {
 
   observeEvent(input$format2, {
     req(db1[[info$db1]])
-    # if (info$format2 != input$format2) {
-      # updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
-    # }
     if (input$optionSecondary > 0) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary format\n")
       digest(2)
@@ -9516,6 +9516,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$series2, input$separator2, input$format2, input$optionSecondary), {
     req(db1[[info$db1]])
     if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
+      info$last_optionSecondary <- 0
       updateRadioButtons(inputId = "optionSecondary", selected = 0)
     }
   }, priority = 0)
