@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version marzo 2025</title>
+  <title>SARI documentation - version abril 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version marzo 2025</h1>
+<h1 class="title">SARI documentation - version abril 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>marzo 2025</em> – “The problem is the machine has a hundred and fifty million, million, million ways of doing it, according to how you set these three rotors, and how you connect these plugs.”</p>
+<p>Current SARI version: <em>abril 2025</em> – “Are you an effective team?”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -393,6 +393,9 @@ There is no need to close and reopen the <code>overview</code> window, if the wi
 <p id="cut">
 </p>
 The <code>truncate</code> option allows removing the beginning and/or end of the series up to/from a given time epoch. The epochs must be given in the same time units as those selected for the series (see the <a href="#input-format"><a href="#input-format" target="_self">Input data and format</a></a> section).
+<p id="strip">
+</p>
+The <code>remove period</code> option allows removing all the points inside the given <em>from</em> and <em>to</em> epochs. The epochs must be given in the same time units of the series.
 <p id="threshold">
 </p>
 Outliers selected manually can be excluded from the analysis with the <code>toggle</code> option. Outliers can also be excluded automatically with the <code>auto toggled</code> button after providing a residual threshold or a normalized residual threshold (i.e., times above the error bar, if provided).<br />
@@ -503,8 +506,11 @@ The user can upload any combination of the following possibilities:</p>
 <li><a href="https://en.wikipedia.org/wiki/Kalman_filter#Unscented_Kalman_filter">Unscented Kalman filter/smoother (UKF)</a></li>
 </ul>
 <p>The <code>Select model components</code> option allows defining the fitted deterministic model by including any combination of linear trend, higher-degree polynomial, offsets/discontinuities, sinusoidal signals, exponential and logarithmic decays.</p>
-<p>Some of these components require additional parameters to be included in the model (e.g., reference epochs, periods, a priori values, etc.). The reference epochs and the a priori values can be left empty and SARI will use some reasonable values automatically. Note that the a priori values can have a strong impact on the quality of non-linear fits, for example the exponential and logarithmic decays (see the <a href="#notes-on-the-exponential/logarithmic-decay-fitting"><a href="#notes-on-the-exponential/logarithmic-decay-fitting" target="_self">notes</a></a> below).<br />
-Additionally, if using a <em>KF</em> fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the <a href="#notes-on-the-kalman-filter"><a href="#notes-on-the-kalman-filter" target="_self">notes</a></a> below).</p>
+Some of these components require additional parameters to be included in the model (e.g., reference epochs, periods, a priori values, etc.). The reference epochs and the a priori values can be left empty and SARI will use some reasonable values automatically. Note that the a priori values can have a strong impact on the quality of non-linear fits, for example the exponential and logarithmic decays (see the <a href="#notes-on-the-exponential/logarithmic-decay-fitting"><a href="#notes-on-the-exponential/logarithmic-decay-fitting" target="_self">notes</a></a> below).<br />
+Additionally, if using a <em>KF</em> fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the <a href="#notes-on-the-kalman-filter"><a href="#notes-on-the-kalman-filter" target="_self">notes</a></a> below).
+<p id="notes-on-the-model-breaks">
+</p>
+<p>If using a <em>LS</em> fit, the <code>segmented model</code> option allows fitting the linear rate, sinusoidal and polynomial components to different segments of the series, which are defined by a comma-separated list of <em>break epochs</em>. If the input list of <em>break epochs</em> is not empty, a new option allows fitting a <em>continuous</em> or <em>segmented</em> linar rate, sinusoidal variation or higher-degree polynomial. In case the <em>continuous</em> option is selected, the break epochs will be ignored for a specific component. For instance, a continuous sinusoidal variation can be fitted together with a segmented linear rate. In case the <em>segmented</em> option is selected, the estimated model components will not be constrained between the different segments.</p>
 <p>The fitted model will be represented by a red line on top of the original series and in the plot of the residuals with a zero value line.<br />
 The <code>click and collect</code> option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.<br />
 The fitted offsets will be represented by vertical red lines in the residual plot.</p>
@@ -776,7 +782,8 @@ A warning should appear on the screen when a very long computation time is expec
 <ol type="1">
 <li>Upload the series file from your computer using the <code>browse file</code> button, or from a remote web server using the <code>Server</code>, <code>Product</code> and <code>Station</code> options, or via a URL query, or from a Unix-like terminal using the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">sari.sh script</a>.<br />
 </li>
-<li>If loading a series from your computer, set the series format and time units if they are not already set, and <code>Plot</code> the series with points (default), lines or points &amp; lines.</li>
+<li>If loading a series from your computer, set the series format and time units if they are not already set, and <code>Plot</code> the series with points (default), lines or points &amp; lines.<br />
+</li>
 <li>Click on the <code>overview</code> button to open a new window with the three coordinate components and then select one of the coordinate components in the upper tabs. Move the overview window to a secondary screen and leave it open there.<br />
 </li>
 <li>Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.<br />
@@ -805,13 +812,13 @@ A warning should appear on the screen when a very long computation time is expec
 </li>
 <li>Iterate the steps 11 to 15 while zooming in and out guided by the smoother, the known equipment changes, the other coordinate components shown in the overview window, an independent deformation model, or the series of a nearby station, which can be uploaded with the <em>secondary series</em> option (only if loading corrections were not already uploaded in step 4).<br />
 </li>
-<li>Check the Student’s t-test of significance for each one of the fitted model parameters in the fit summary (bearing in mind that formal errors may be too optimistic) and remove unnecessary parameters from the model.<br />
+<li>Check the Student’s t-test of significance for each one of the fitted model parameters in the fit summary (bearing in mind that formal errors may be too optimistic) and remove unnecessary discontinuities from the model.<br />
 </li>
 <li>When the fit of the LS model is finished, run the <code>noise analysis</code> using a white + power-law noise model to get a better formal rate uncertainty (this can be very time-consuming, so do not forget to reduce the sampling to weekly if necessary).<br />
 </li>
 <li>Check the power <code>periodogram</code> (from step 13) to validate that the fitted noise model corresponds to the LS model residuals, or use the estimated log-likelihood to select the best noise model. The parameters of the fitted noise model will be used to estimate a more realistic formal uncertainty of the linear trend.<br />
 </li>
-<li>Use the estimated noise parameters to check the significance of the estimated offsets using the <code>check offsets</code> option and remove offsets from the LS model if their probability is less than 95 %.<br />
+<li>Use the estimated noise parameters to iteratively check the significance of the estimated offsets using the <code>check offsets</code> option and remove offsets from the LS model one by one if their probability is less than 95 %.<br />
 </li>
 <li>Plot the <code>histogram</code> if statistics of the model residuals or a stationarity assessment are needed. The standard deviation of the residuals is also indicated on the overview figure.<br />
 </li>
@@ -853,7 +860,7 @@ If running SARI on a local server (RStudio or Docker), there is a sixth block at
 For any comment or question, please open a <a href="https://github.com/alvarosantamariagomez/sari">github issue</a>.</p>
 <p>If you use SARI for your research, I would really appreciate it if you could include <a href="https://link.springer.com/article/10.1007/s10291-019-0846-y">this paper</a> in your references.</p>
 <p>As for me, I am thankful to these people that directly or indirectly contributed to improve this software (some of them more than once):</p>
-<p>Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard.</p>
+<p>Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard, Joëlle Nicolas.</p>
 <p>SARI is accessible to anyone at the Shinyapps server thanks to the financial support of the <a href="http://renag.resif.fr/en/">RENAG National Observing Service</a>.</p>
 <hr />
 <h1 id="references">

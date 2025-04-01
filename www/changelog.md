@@ -1,5 +1,35 @@
 # **SARI changelog**
 
+
+# abril 2025 [2025.04]
+
+### Fixed
+- changing the epochs extracted from the sitelog, station.info, soln and custum files when the series time units are not years
+- correcting the merging of the primary and secondary series in 1D format
+- centering the series of the overview plot on the estimated 1D models when removing a plate/gia model
+- centering the series of the 3D plot on the estimated 1D models when removing a plate/gia model
+- removing the plate/gia model also from the toggled points
+- increasing the number of header lines read from a PBO file
+
+### Changed
+- improving the uploading of secondary series
+- updating the break epochs with changes of the time units
+- updating the gia correction when changing the time units
+- removing duplicated sinudoidal periods
+- disabling all the metadata prints on screen for the 3D tabs
+- correcting the IGS20 product name when downloading the sitelog files
+- updating the NLG server address
+- updating the names of the UGA series files
+
+### Added
+- adding a new option to fit segmented models with LS between break epochs (J. Nicolas)
+- adding a new option to remove a portion of the series between two epochs
+- adding the IGS20 and ENS solutions from the Formater server
+- allowing the download of all the coordinate components at once when correcting with a secondary series
+- allowing the download of all the coordinate components at one when removing a plate or gia model
+- adding information on screen about an empty file on a remote server
+
+
 # marzo 2025 [2025.03]
 
 ### Fixed
