@@ -11863,7 +11863,7 @@ server <- function(input,output,session) {
 print(head(db2[[info$db2]]))
     }
     # Setting station IDs
-    removes <- "^SPOTGINS_|^UGA_"
+    removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
     if (isTruthy(url$station)) {
       file$id1 <- toupper(url$station)
     } else {
@@ -12463,7 +12463,7 @@ print(head(db2[[info$db2]]))
             coordinates <- NULL
           }
         }
-      } else if (isTruthy(product) && product == "SPOTGINS") {
+      } else if (isTruthy(product) && (product == "SPOTGINS" || product == "SPOTGINS_POS")) {
         coordinates <- unlist(strsplit(trim(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T)), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
         if (!any(is.na(suppressWarnings(as.numeric(coordinates)))) && length(coordinates) == 3) {
           shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
@@ -15533,13 +15533,13 @@ print(head(db2[[info$db2]]))
       }
     ## FORMATER ####
     } else if (server == "FORMATER") {
-      if (product == "SPOTGINS") {
+      if (product == "SPOTGINS" || product == "SPOTGINS_POS") {
         format <- 1
         pattern1 <- "SPOTGINS_"
         pattern2 <- ".enu"
         solution <- "SPOTGINS"
         name <- paste0(pattern1,toupper(station),pattern2)
-      } else if (product == "UGA") {
+      } else if (product == "UGA" || product == "UGA_POS") {
         format <- 2
         pattern1 <- "UGA_"
         pattern2 <- ".pos"
@@ -15559,18 +15559,18 @@ print(head(db2[[info$db2]]))
         name <- paste0(pattern1,toupper(station),pattern2)
       }
       url <- "https://geodesy-plotter.ipgp.fr/"
-      if (product == "SPOTGINS" || product == "UGA" || product == "IGS20" || product == "ENS") {
+      if (product == "SPOTGINS" || product == "SPOTGINS_POS" || product == "UGA" || product == "UGA_POS" || product == "IGS20" || product == "ENS") {
         if (isTruthy(station)) {
           filepath <- paste0(url,"data/",toupper(station),"/",name)
           if (series == 1) {
-            if (product == "SPOTGINS") {
+            if (product == "SPOTGINS" || product == "SPOTGINS_POS") {
               if (file.exists("www/formater_offset.dat")) {
                 file$custom$name <- "formater_offset.dat"
                 file$custom$datapath <- "www/formater_offset.dat"
                 session$sendCustomMessage("custom", "formater_offset.dat")
                 shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
               }
-            } else if (product == "UGA") {
+            } else if (product == "UGA" || product == "UGA_POS") {
               url_log <- "https://gnss-metadata.eu/data/station/log/"
               found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
               if (isTruthy(found)) {
@@ -15892,7 +15892,7 @@ print(head(db2[[info$db2]]))
       }
       name <- basename(station)
       filepath <- station
-      removes <- "^SPOTGINS_|^UGA_"
+      removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
       station <- strsplit(gsub(pattern = removes, replacement = "", x = name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1]
       #
     } else {
