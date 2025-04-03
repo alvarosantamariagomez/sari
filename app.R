@@ -13655,11 +13655,19 @@ print(head(db2[[info$db2]]))
   #
   ReadSoln <- function(x,y,z) {
     req(x,z)
+    removeNotification("bad_id9")
     ante = c()
     rece = c()
     site <- paste0(" ",x," ")
     antes <- substring(grep(' P -', grep("antenna|radome", grep(site,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = F), value = T), 17, 28)
     reces <- substring(grep(' P -', grep("antenna|radome", grep(site,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = T), value = T), 17, 28)
+    if (length(antes) + length(reces) == 0 && nchar(x) == 9) {
+      antes_4char <- substring(grep(' P -', grep("antenna|radome", grep(paste0(" ",substr(x, 1, 4)," "),readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = F), value = T), 17, 28)
+      reces_4char <- substring(grep(' P -', grep("antenna|radome", grep(paste0(" ",substr(x, 1, 4)," "),readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = T), value = T), 17, 28)
+      if (length(antes_4char) + length(reces_4char) != 0) {
+        showNotification(HTML(paste("WARNING: the station",x,"was not found in the soln file, but the station",substr(x, 1, 4),"was found.<br>Change the series ID on the left panel if you are sure it corresponds to the same station.")), action = NULL, duration = 10, closeButton = T, id = "bad_id9", type = "warning", session = getDefaultReactiveDomain())
+      }
+    }
     if (!is.null(y)) {
       site2 <- paste0(" ",y," ")
       antes2 <- substring(grep(' P -', grep("antenna|radome", grep(site2,readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = F), value = T), 17, 28)
@@ -13720,8 +13728,8 @@ print(head(db2[[info$db2]]))
                 rece <- unique(c(rece, as.numeric(unlist(unique(table$dyear[table$V1 == y][!antennaChange])))))
               }
             }
-          } else if (grepl(pattern = "# Offset file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = F, fixed = T)) { #FORMATER offset file
-            table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + table$V2*86400)
+          } else if (grepl(pattern = "# Offset file|# Events file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = T, fixed = F)) { #FORMATER offset file
+            table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + as.numeric(table$V2)*86400)
             antennaChange <- apply(table, 1, function(row) any(grepl(pattern = "antenna|radome", x = row, fixed = F, ignore.case = T, perl = F)))
             ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x & antennaChange])))
             rece <- as.numeric(unlist(unique(table$dyear[table$V1 == x & !antennaChange])))
@@ -15564,10 +15572,11 @@ print(head(db2[[info$db2]]))
           filepath <- paste0(url,"data/",toupper(station),"/",name)
           if (series == 1) {
             if (product == "SPOTGINS" || product == "SPOTGINS_POS") {
-              if (file.exists("www/formater_offset.dat")) {
-                file$custom$name <- "formater_offset.dat"
-                file$custom$datapath <- "www/formater_offset.dat"
-                session$sendCustomMessage("custom", "formater_offset.dat")
+              # url_log <- "https://geodesy-plotter.ipgp.fr/api/1.0/solutions/SPOTGINS/offsets"
+              if (file.exists("www/SPOTGINS_events.dat")) {
+                file$custom$name <- "SPOTGINS_events.dat"
+                file$custom$datapath <- "www/SPOTGINS_events.dat"
+                session$sendCustomMessage("custom", "SPOTGINS_events.dat")
                 shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
               }
             } else if (product == "UGA" || product == "UGA_POS") {
@@ -15577,10 +15586,19 @@ print(head(db2[[info$db2]]))
                 logfile <- paste0(url_log,found)
               }
             } else if (product == "IGS20") {
-              url_log <- "https://files.igs.org/pub/station/log/"
-              found <- unlist(strsplit(grep(station, readLines(url_log), ignore.case = T, value = T), "<|>"))[5]
-              if (isTruthy(found)) {
-                logfile <- paste0(url_log,found)
+              if (file.exists("www/soln.snx") && series == 1) {
+                file$soln$name <- "soln.snx"
+                file$soln$datapath <- "www/soln.snx"
+                session$sendCustomMessage("soln", "soln.snx")
+                shinyjs::delay(100, updateCheckboxInput(inputId = "traceSoln", value = T))
+              }
+            } else if (product == "ENS") {
+              # url_log <- "https://geodesy-plotter.ipgp.fr/api/1.0/solutions/SOAM_GNSS_solENS/offsets"
+              if (file.exists("www/SOAM_GNSS_solENS_offset.dat")) {
+                file$custom$name <- "SOAM_GNSS_solENS_offset.dat"
+                file$custom$datapath <- "www/SOAM_GNSS_solENS_offset.dat"
+                session$sendCustomMessage("custom", "SOAM_GNSS_solENS_offset.dat")
+                shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
               }
             }
           }
