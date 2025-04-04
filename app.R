@@ -9049,7 +9049,7 @@ server <- function(input,output,session) {
           db1$resampled$x2 <- mjd2week(db1$resampled$x1)
           db1$resampled$x3 <- mjd2year(db1$resampled$x1)
         } else if (input$tunits == 2) {
-          info$samplingRaw[2] <- min(diff(db1$resampled$x2,1))
+          info$samplingRaw[2] <- min(diff(db1$resampled$x1,1))
           info$samplingRaw[1] <- info$samplingRaw[2]*7
           info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
           db1$resampled$x2 <- db1$resampled$x1
@@ -10957,6 +10957,9 @@ server <- function(input,output,session) {
     info$periodRef <- NULL
     info$tunits.known1 <- F
     info$tunits.known2 <- F
+    info$step <- NULL
+    info$step2 <- NULL
+    info$stepUnit <- NULL
     url$file <- NULL
     url$file2 <- NULL
     url$logfile <- NULL
