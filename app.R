@@ -10916,6 +10916,7 @@ server <- function(input,output,session) {
     file$id1 <- NULL
     file$id2 <- NULL
     file$sitelog <- NULL
+    file$soln <- NULL
     trans$x <- NULL
     trans$y <- NULL
     trans$sy <- NULL
