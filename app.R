@@ -13676,8 +13676,8 @@ print(head(db2[[info$db2]]))
       antes <- rbind(antes,antes2)
       reces <- rbind(reces,reces2)
     }
-    antes[antes != "00:000:00000"]
-    reces[reces != "00:000:00000"]
+    antes <- antes[antes != "00:000:00000"]
+    reces <- reces[reces != "00:000:00000"]
     if (length(antes) > 0) {
       years <- as.numeric(substring(antes, 1, 2)) + 1900
       days <- as.numeric(substring(antes, 4, 6))
