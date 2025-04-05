@@ -2894,7 +2894,7 @@ server <- function(input,output,session) {
     inputs$high <- suppressWarnings(as.numeric(trimws(high_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
-  step_d <- reactive(input$step) %>% debounce(2000, priority = 1000)
+  step_d <- reactive(input$step) %>% debounce(1000, priority = 1000)
   observeEvent(c(step_d()), {
     if (grepl("^=", trimws(step_d()), perl = T)) {
       step <- try(eval(parse(text = sub("=", "", trimws(step_d())))), silent = T)
