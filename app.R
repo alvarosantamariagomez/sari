@@ -447,7 +447,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 options(shiny.trace = F)
 devmode(F)
-# options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
@@ -9282,7 +9282,16 @@ server <- function(input,output,session) {
     }
     # merging primary and secondary series
     if (input$optionSecondary > 1) {
-      table1 <- db1[[info$db1]]
+      if (info$db1 == "merged") {
+        if (isTruthy(db1$resampled)) {
+          type1 <- "resampled"
+        } else {
+          type1 <- "original"
+        }
+      } else {
+        type1 <- info$db1
+      }
+      table1 <- db1[[type1]]
       table2 <- db2[[info$db2]]
       if (isTruthy(input$ne)) {
         table2y_tmp <- table2$y2
