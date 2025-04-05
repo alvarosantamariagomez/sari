@@ -9135,17 +9135,33 @@ server <- function(input,output,session) {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = db2$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
                          }
                        } else {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = db2$original$sy1, sy2 = db2$original$sy2, sy3 = db2$original$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
+                           db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
+                           db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
+                           db2$resampled$sy2 <- as.numeric(formatting(db2$resampled$sy2,0))
+                           db2$resampled$sy3 <- as.numeric(formatting(db2$resampled$sy3,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
+                           db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
                          }
                        }
                      })
@@ -9301,29 +9317,30 @@ server <- function(input,output,session) {
         table2$y1 <- table2y_tmp
         table2$sy1 <- table2sy_tmp
       }
-      if (min(diff(table1$x1)) <= 1 && min(diff(table2$x1)) <= 1) {
-        fraction1 <- as.numeric(names(sort(table(table1$x1 - floor(table1$x1)))))
-        fraction2 <- as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
-        delta <- fraction1 - fraction2
-        if (isTruthy(is.numeric(delta)) && length(delta) == 1) {
-          if (delta != 0) {
-            table2$x1 <- table2$x1 + delta
-            showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-          }
-        } else {
-          if (length(fraction1) > 1 && length(fraction2) > 1) {
-            showNotification(HTML("The sampling of the primary and secondary series is not regular.<br>Consider using the \"Reduce sampling\" and \"Averaging\" options to average both series into a constant sampling.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 15, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
-          } else if (length(fraction1) > 1) {
-            showNotification(HTML("The sampling of the primary series is not regular.<br>Consider using the \"Reduce sampling\" option to average the series into a constant sampling.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 15, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
-          } else if (length(fraction2) > 1) {
-            showNotification(HTML("The sampling of the secondary series is not regular.<br>Consider using the \"Averaging\" option to average the series into a constant sampling.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 15, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
-          }
-        }
+      # computing the shift period between the primary and secondary series
+      xmin <- max(c(table1$x1[1],table2$x1[1]))
+      xmax <- min(c(table1$x1[length(table1$x1)],table2$x1[length(table2$x1)]))
+      x1 <- table1$x1[table1$x1 >= xmin & table1$x1 <= xmax]
+      x2 <- table2$x1[table2$x1 >= xmin & table2$x1 <= xmax]
+      if (length(x1) < length(x2)) {
+        closest_values <- sapply(x1, function(x) { x2[which.min(abs(x2 - x))] })
+        deltas <- abs(closest_values - x1)
       } else {
-        if (info$format != 4) {
-          showNotification(HTML("The sampling of the primary and/or secondary series is larger than one day.<br>The time axis of the secondary series was not shifted, but used as is."), action = NULL, duration = 10, closeButton = T, id = "bad_time_shift", type = "warning", session = getDefaultReactiveDomain())
-        }
+        closest_values <- sapply(x2, function(x) { x1[which.min(abs(x1 - x))] })
+        deltas <- abs(x2 - closest_values)
       }
+      if (isTruthy(deltas)) {
+        if (length(deltas) > 10) {
+          delta <- median(deltas)
+        } else {
+          delta <- min(deltas)
+        }
+        if (isTruthy(is.numeric(delta)) && delta > 0 && delta <= info$samplingRaw[1]) {
+          table2$x1 <- table2$x1 + delta
+          showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+        }  
+      }
+      # merging the primary and secondary series
       if (input$optionSecondary == 2) {
         if (info$format == 4) {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
