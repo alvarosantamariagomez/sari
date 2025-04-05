@@ -11483,6 +11483,7 @@ server <- function(input,output,session) {
     removeNotification("time_shift")
     removeNotification("parsing_url1")
     lat <- lon <- lat2 <- lon2 <- NULL
+    removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
     ## primary series ####
     if (series == 1) {
       if (messages > 0) cat(file = stderr(), mySession, "Reading primary series file", "\n")
@@ -11666,6 +11667,12 @@ server <- function(input,output,session) {
       info$db1 <- "original"
       db1$original <- as.data.frame(table)
       db1$original$status1 <- db1$original$status2 <- db1$original$status3 <- rep(T, length(table$x1))
+      # Setting primary station ID
+      if (isTruthy(url$station)) {
+        file$id1 <- toupper(url$station)
+      } else {
+        file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
+      }
     ## secondary series ####
     } else if (series == 2) {
       # Setting column separation
@@ -11861,31 +11868,22 @@ server <- function(input,output,session) {
               NULL
             }
           })
+          # Setting secondary station ID
+          if (isTruthy(url$station2)) {
+            file$id2 <- toupper(url$station2)
+          } else {
+            file$id2 <- try(toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1]), silent = T)
+            if (inherits(file$id2,"try-error") || file$id2 == "") {
+              file$id2 <- NULL
+              showNotification(HTML("Problem extracting the series ID from the secondary file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
+            }
+          }
         } else {
           showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         }
       } else {
         file$secondary <- NULL
         showNotification("The secondary series is empty or it does not match the requested format.", action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
-      }
-print(head(db2[[info$db2]]))
-    }
-    # Setting station IDs
-    removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
-    if (isTruthy(url$station)) {
-      file$id1 <- toupper(url$station)
-    } else {
-      file$id1 <- toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1])
-    }
-    if (length(file$secondary) > 0) {
-      if (isTruthy(url$station2)) {
-        file$id2 <- toupper(url$station2)
-      } else {
-        file$id2 <- try(toupper(strsplit(gsub(pattern = removes, replacement = "", x = input$series2$name, ignore.case = T, perl = T, fixed = F), "\\.|_|\\s|-|\\(")[[1]][1]), silent = T)
-        if (inherits(file$id2,"try-error") || file$id2 == "") {
-          file$id2 <- NULL
-          showNotification(HTML("Problem extracting the series ID from the secondary file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
-        }
       }
     }
     # Updating station IDs
