@@ -9043,22 +9043,13 @@ server <- function(input,output,session) {
                        }
                      })
         if (input$tunits == 1) {
-          info$samplingRaw[1] <- min(diff(db1$resampled$x1,1))
-          info$samplingRaw[2] <- info$samplingRaw[1]/7
-          info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
           db1$resampled$x2 <- mjd2week(db1$resampled$x1)
           db1$resampled$x3 <- mjd2year(db1$resampled$x1)
         } else if (input$tunits == 2) {
-          info$samplingRaw[2] <- min(diff(db1$resampled$x1,1))
-          info$samplingRaw[1] <- info$samplingRaw[2]*7
-          info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
           db1$resampled$x2 <- db1$resampled$x1
           db1$resampled$x3 <- week2year(db1$resampled$x1)
           db1$resampled$x1 <- week2mjd(db1$resampled$x1)
         } else if (input$tunits == 3) {
-          info$samplingRaw[3] <- min(diff(db1$resampled$x1,1))
-          info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
-          info$samplingRaw[2] <- info$samplingRaw[1]/7
           db1$resampled$x3 <- db1$resampled$x1
           db1$resampled$x2 <- year2week(db1$resampled$x1)
           db1$resampled$x1 <- year2mjd(db1$resampled$x1)
@@ -9076,6 +9067,19 @@ server <- function(input,output,session) {
       info$db1 <- "original"
       updateTextInput(session, inputId = "step", value = "")
       info$step <- NULL
+    }
+    if (input$tunits == 1) {
+      info$samplingRaw[1] <- min(diff(db1[[info$db1]]$x1,1))
+      info$samplingRaw[2] <- info$samplingRaw[1]/7
+      info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+    } else if (input$tunits == 2) {
+      info$samplingRaw[2] <- min(diff(db1[[info$db1]]$x2,1))
+      info$samplingRaw[1] <- info$samplingRaw[2]*7
+      info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+    } else if (input$tunits == 3) {
+      info$samplingRaw[3] <- min(diff(db1[[info$db1]]$x3,1))
+      info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
+      info$samplingRaw[2] <- info$samplingRaw[1]/7
     }
   }, priority = 6)
 
