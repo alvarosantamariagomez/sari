@@ -4,20 +4,20 @@ Instructions for installing and running SARI locally on Windows, Linux or MacOS
 Note 1: These instructions describe the steps to install the R environment necessary to run SARI on your machine. There is always a risk that the environment you install will be different from the one I used to develop and test SARI. You can also run SARI on your machine with the expected environment using the SARI Docker image available at:
 https://hub.docker.com/r/alvarosg/sari
 
-Note 2: If you have the choice between a Windows and a Linux (including WSL) installation, it is recommended to install SARI on a Linux machine as SARI will run much faster. If you are using a Windows machine, it is recommended that you compile all the R dependencies instead of installing the precompiled binaries. It will take longer to install all the packages, but SARI will run faster.
+Note 2: If you have the choice between a Windows and a Linux (including WSL) installation, it is recommended to install SARI on a Linux/WSL machine as SARI may run faster.
 
 Note 3: If you want to run SARI from a WSL terminal, for instance by using the sari.sh script, you need to install R and all the package dependencies on WSL. The Windows installation is not necessary if you only want to run SARI from WSL.
 
 
 
-1) Install R version 4.1.x following the official R documentation here
-https://cran.r-project.org/
+1) Install R version 4.4.3 (Trophy Case) following the official R documentation here
+https://cran.rstudio.com/bin/windows/base/
 
-If you are installing a newer R version, please note that SARI has been tested on R version 4.1 (specifically patch 4.1.3). It is recommended to install this R release.
+If you are installing a newer R version, please note that SARI has been tested on R version 4.4.3. It is recommended to install specific R release.
 
 
 
-2) It is recommended to install RStudio (free desktop version) if you plan to debug and/or contribute to the code development. It can also be used to run SARI, although this is not mandatory (see running options in point 6 below).
+2) It is recommended to install RStudio if you plan to debug and/or contribute to the code development. It can also be used to run SARI, although this is not mandatory (see running options in point 6 below).
 https://www.rstudio.com/products/rstudio/download/
 
 
@@ -25,7 +25,7 @@ https://www.rstudio.com/products/rstudio/download/
 3) With R (and RStudio) installed, some extras may be required before installing the SARI dependencies
 
 3.1) If using Windows: install Rtools following these instructions  
-https://cran.r-project.org/bin/windows/Rtools/
+https://cran.r-project.org/bin/windows/Rtools/rtools44/rtools.html
 
 Once Rtools is installed, to use it, you must first install and load the devtools package.  
 On the R/RStudio console type:
@@ -38,24 +38,23 @@ library(devtools)
 https://mac.r-project.org/tools/
 
 
-3.3) If using Linux/WSL: install the following packages on your system (it may vary depending on the distro, feedback is welcome):  
+3.3) If using Linux/WSL: install the following packages on your system (it may vary depending on the Linux distro, feedback is welcome):  
 
 sudo apt-get install -y make zlib1g-dev libcurl4-openssl-dev libssl-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev libjpeg-dev libpng-dev libtiff-dev pandoc libicu-dev libxml2-dev git libgit2-dev
 
 
 
 4) Install all the R packages listed below and their dependencies from CRAN. 
-The two methods indicated below will either install the precompiled binaries or compile the packages from source (recommended).
+The two methods indicated below will install the precompiled binaries for each package and their dependencies.
 
-4.1) Precompiled binaries: on Rstudio, go to Tools -> Install Packages  
+4.1) On Rstudio, go to Tools -> Install Packages  
 Then copy & paste the following list of packages separated by commas:
 
 data.table, devtools, dlm, fields, httr, import, lubridate, magrittr, markdown, matrixStats, numDeriv, pracma, psych, RColorBrewer, RCurl, XML, jsonlite, shinyBS, shinycssloaders, shinyjs, shinythemes, shiny, spectral, strucchange, tseries, foreach, mnormt, ragg
 
-4.2) Source: on the R/RStudio console, the following commands will compile and install all the packages:
-
-options(install.packages.compile.from.source = "always")  
-install.packages(c("data.table", "devtools", "dlm", "fields", "httr", "import", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"), type = "source")
+4.2) On the R/RStudio console, use the following command:
+ 
+install.packages(c("data.table", "devtools", "dlm", "fields", "httr", "import", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"))
 
 
 If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to update this package from its github repo using:
@@ -84,10 +83,10 @@ More information about the GDAL library here:
 https://gdal.org/download.html
 
 
-5.3) The "geojsonio" package allows you to add the names of the tectonic plates on the location map. This package can be installed like the others before, but it requires the leaflet package to be installed first (see the previous section 5.2). Compiling this package alone takes enough time to prepare and drink your favorite tea.
+5.3) The "geojsonio" package allows you to add the names of the tectonic plates on the location map. This package can be installed like the others before, but it requires the "sf" and "leaflet" packages to be installed first (see the previous section 5.2). It may be possible that the "sf" package needs to be installed from the file available at https://cran.rstudio.com/bin/windows/contrib/4.4/sf_1.0-20.zip (see the previous section 5.1.2).
 
 
-5.4) The "Rcpp", "RcppArmadillo" and "RcppEigen" packages allow you to compile ad hoc C++ functions defined in the 'functions.cpp' file, which would speed up the noise analysis on a Windows machine by about 4 times. These packages can be compiled and installed just like the others before. The ad hoc C++ functions themselves will be compiled each time the SARI app is run and this will take a few seconds.
+5.4) If using a Windows machine, the "Rcpp", "RcppArmadillo" and "RcppEigen" packages allow you to compile ad hoc C++ functions defined in the 'functions.cpp' file, which would speed up the noise analysis on a Windows machine by about 4 times. These packages can be installed just like the others before. The ad hoc C++ functions themselves will be compiled each time the SARI app is run and this will take a few seconds.
 
 
 

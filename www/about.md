@@ -41,7 +41,7 @@ date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 SARI allows you to visualize discrete time series data, analyze and fit unidimensional models interactively and save the results using a [WYSIWYG](https://en.wikipedia.org/wiki/WYSIWYG) web interface.  
 
 It has been developed in the [R programming language](https://www.r-project.org), under the interactive framework of the [Shiny R package](https://shiny.rstudio.com).  
-Currently tested in R version 4.1.3.
+Currently tested in R version 4.4.3.
 
 The development of SARI started in 2017 to analyze GNSS position time series from the [GNSS National Network (RENAG)](http://renag.resif.fr/en/) ([<a href="#references" target="_self">RESIF 2017</a>](#references)) and it is oriented towards this kind of dataset, but any other type of series can be used as long as the series format is simple, consistent and does not have uncommented alphabetic characters.
 
