@@ -14325,7 +14325,7 @@ server <- function(input,output,session) {
     if (input$tab < 4) {
       if (input$fitType == 1 && length(trans$results) > 0) {
         cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
-        param <- data.frame(formatting(trans$LScoefs,2), check.names = F)[,c(1,2)]
+        param <- data.frame(formatting(trans$LScoefs[,c(1,2)],2), check.names = F)
         param <- cbind(param[1], s = rep("+/-",length(param[1])), param[2])
         rownames(param) <- format(paste("# Parameter:",rownames(param),"="), justify = "left")
         write.table(param, file = file_out, col.names = F, row.names = T, append = T, quote = F)
@@ -16243,18 +16243,20 @@ server <- function(input,output,session) {
     } else {
       extra_dec <- y
     }
-    if (is.list(x)) {
+    # if (is.list(x)) {
+    if (is.list(x) || is.matrix(x)) {
       formatted <- format(x, digits = 2, scientific = info$scientific, trim = F, width = width)
-    } else if (is.matrix(x)) {
-      extra_dig <- 0
-      formatted <- format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)
+    # } else if (is.matrix(x)) {
+      # extra_dig <- 0
+      # formatted <- format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)
     } else {
       x <- as.numeric(x)
       intgr <- as.integer(x)
       x <- x - intgr
       if (length(x) > 1) {
         extra_dig <- 0
-        formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
+        # formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
+        formatted <- format(intgr + as.numeric(format(x, digits = 2, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
       } else {
         extra_dig <- y
         formatted <- intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width))
