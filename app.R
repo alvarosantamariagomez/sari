@@ -14327,7 +14327,7 @@ server <- function(input,output,session) {
         cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
         param <- data.frame(formatting(trans$LScoefs,2), check.names = F)[,c(1,2)]
         param <- cbind(param[1], s = rep("+/-",length(param[1])), param[2])
-        rownames(param) <- format(paste("# Parameter:",rownames(param)), justify = "left")
+        rownames(param) <- format(paste("# Parameter:",rownames(param),"="), justify = "left")
         write.table(param, file = file_out, col.names = F, row.names = T, append = T, quote = F)
         if (isTruthy(trans$results$sinusoidales)) {
           for (i in 1:dim(trans$results$sinusoidales)[1]) {
