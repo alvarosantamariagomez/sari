@@ -4370,7 +4370,7 @@ server <- function(input,output,session) {
               trans$mod <- NULL
               trans$LScoefs <- NULL
               trans$names <- NULL
-              showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
+              showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 5, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
             }
           }
         } else {
@@ -16377,15 +16377,50 @@ server <- function(input,output,session) {
       span(x)
     })
     if (input$fitType == 1) {
-      # changing lm summary output into nls summary output
-      if (!"Logarithmic" %in% input$model && !"Exponential" %in% input$model) {
+      # changing lm & nls summary output
+      if (!"Logarithmic" %in% input$model && !"Exponential" %in% input$model) { # nls model
         id_call <- grep("Call: ", summary_output)
         summary_output <- summary_output[-id_call]
-        summary_output[[id_call]] <- span(paste("Formula: ",trans$equation))
+        summary_output <- summary_output[-id_call]
+        # summary_output <- append(summary_output, "", after = id_call + sentence_out + 1)
         id_residuals <- grep("Residuals: ", summary_output)
         for (i in seq(4)) { summary_output <- summary_output[-id_residuals] }
         summary_output <- summary_output[-grep("Multiple R-squared: ", summary_output)]
         summary_output <- summary_output[-grep("F-statistic: ", summary_output)]
+      } else { # lm model
+        id_call <- grep("Formula:", summary_output)
+        summary_output <- summary_output[-id_call]
+      }
+      # split the equation formula into several lines
+      id_call <- id_call - 1
+      sentences <- unlist(strsplit(paste("Formula:",trans$equation), " \\+ "))
+      max_width <- round(info$width/8.125)
+      result <- character()
+      current_string <- ""
+      sentence_out <- 0
+      for (sentence in sentences) {
+        sentence <- gsub("\\s+", "", sentence, perl = T)
+        sentence <- sub("Formula:Model=", "Formula: Model = ", sentence)
+        if (nchar(current_string) + nchar(sentence) <= max_width) {
+          # adding to current line
+          current_string <- paste(current_string, sentence, sep = " + ")
+          current_string <- sub("^ \\+ ", "", current_string, perl = T)
+        } else {
+          # new line
+          if (sentence_out == 0) {
+            summary_output <- append(summary_output, list(span(paste(current_string, "+"))), after = id_call + sentence_out)
+          } else {
+            summary_output <- append(summary_output, list(span(paste("                ",current_string,"+"))), after = id_call + sentence_out) 
+          }
+          sentence_out <- sentence_out + 1
+          current_string <- sentence
+        }
+      }
+      # last or unique line
+      if (sentence_out > 0) {
+        summary_output <- append(summary_output, list(span(paste("                ",current_string))), after = id_call + sentence_out)
+      } else {
+        summary_output <- append(summary_output, list(span(current_string)), after = id_call + sentence_out)
       }
       # changing high probabilities into red color and zero if necessary
       found1 <- grepl(pattern = "Parameters:|Coefficients:", x = summary_output, ignore.case = F, fixed = F)
