@@ -3494,15 +3494,15 @@ server <- function(input,output,session) {
                 index <- grep(" A priori: E", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
-              updateTextInput(session, "E0", value = paste(sapply(values, "[[", 2), collapse = ", "))
-              updateTextInput(session, "eE0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              updateTextInput(session, "E0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+              updateTextInput(session, "eE0", value = paste(trimws(sapply(values, "[[", 3)), collapse = ", "))
               index <- grep(" Initial: TauE", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               if (!isTruthy(index)) {
                 index <- grep(" A priori: TauE", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
-              updateTextInput(session, "TE0", value = paste(sapply(values, "[[", 2), collapse = ", "))
-              updateTextInput(session, "eTE0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              updateTextInput(session, "TE0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+              updateTextInput(session, "eTE0", value = paste(trimws(sapply(values, "[[", 3)), collapse = ", "))
               components <- c(components, "Exponential")
             }
             # Extracting Logarithmic info
@@ -3514,15 +3514,15 @@ server <- function(input,output,session) {
                 index <- grep(" A priori: L", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
-              updateTextInput(session, "L0", value = paste(sapply(values, "[[", 2), collapse = ", "))
-              updateTextInput(session, "eL0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              updateTextInput(session, "L0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+              updateTextInput(session, "eL0", value = paste(trimws(sapply(values, "[[", 3)), collapse = ", "))
               index <- grep(" Initial: TauL", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               if (!isTruthy(index)) {
                 index <- grep(" A priori: TauL", aprioris, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               }
               values <- strsplit(aprioris[index], "=|\\+\\/-")
-              updateTextInput(session, "TL0", value = paste(sapply(values, "[[", 2), collapse = ", "))
-              updateTextInput(session, "eTL0", value = paste(sapply(values, "[[", 3), collapse = ", "))
+              updateTextInput(session, "TL0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+              updateTextInput(session, "eTL0", value = paste(trimws(sapply(values, "[[", 3)), collapse = ", "))
               components <- c(components, "Logarithmic")
             }
             updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = components, inline = T)
@@ -3619,10 +3619,10 @@ server <- function(input,output,session) {
               updateTextInput(session, "ExponenRef", value = paste(text[index + 1], collapse = ","))
               index <- grep(" Parameter: E", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "E0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "E0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
               index <- grep(" Parameter: TauE", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "TE0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "TE0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
               components <- c(components, "Exponential")
             }
             # Extracting Logarithmic info
@@ -3631,10 +3631,10 @@ server <- function(input,output,session) {
               updateTextInput(session, "LogariRef", value = paste(text[index + 1], collapse = ","))
               index <- grep(" Parameter: L", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "L0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "L0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
               index <- grep(" Parameter: TauL", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
               values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "TL0", value = paste(sapply(values, "[[", 2), collapse = ", "))
+              updateTextInput(session, "TL0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
               components <- c(components, "Logarithmic")
             }
             info$menu <- unique(c(info$menu, 4))
@@ -14326,8 +14326,8 @@ server <- function(input,output,session) {
       if (input$fitType == 1 && length(trans$results) > 0) {
         cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
         param <- data.frame(formatting(trans$LScoefs[,c(1,2)],2), check.names = F)
-        param <- cbind(param[1], s = rep("+/-",length(param[1])), param[2])
-        rownames(param) <- format(paste("# Parameter:",rownames(param),"="), justify = "left")
+        param <- cbind(e = rep("=",length(param[1])), param[1], s = rep("+/-",length(param[1])), param[2])
+        rownames(param) <- format(paste("# Parameter:",rownames(param)), justify = "left")
         write.table(param, file = file_out, col.names = F, row.names = T, append = T, quote = F)
         if (isTruthy(trans$results$sinusoidales)) {
           for (i in 1:dim(trans$results$sinusoidales)[1]) {
