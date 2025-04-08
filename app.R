@@ -617,6 +617,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   Check the series format before plotting with the <span class='UIoption'>show series header</span> option.<br><br>
                                                                                                   Activate or deactivate the series error bars with the <span class='UIoption'>use error bars</span> option.<br><br>
                                                                                                   Reduce the sampling of the series with the <span class='UIoption'>reduce sampling</span> option.<br><br>
+                                                                                                  Once the series is plotted, the <span class='UIoption'>show location map</span> will show the geographic location of the station if the coordinates are known or provided.<br><br>
                                                                                                   See more details in the </i><span class='help'>help</span> tab."))
                                                                       ),
                                                                       div(style = "padding: 0px 0px; margin-top:-2em",
@@ -788,8 +789,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                              helpPopupHeader("This block allows plotting/resetting the time series with the <span class='UIoption'>plot</span> and <span class='UIoption'>reset</span> buttons.<br><br>
                                                                                              The <span class='UIoption'>overview</span> button opens a new browser window containing a plot of the three coordinate components, if available.<br><br>
                                                                                              Outliers can be excluded manually or automatically with the <span class='UIoption'>toggle</span> and <span class='UIoption'>auto toggle</span> buttons.<br><br>
-                                                                                             Removed outliers can be restored with the <span class='UIoption'>reset toggle</span> button.<br><br>
+                                                                                             The removed outliers can be restored with the <span class='UIoption'>reset toggle</span> button.<br><br>
                                                                                              The <span class='UIoption'>truncate</span> option removes the beginning and/or end of the series.<br><br>
+                                                                                             The <span class='UIoption'>remove period</span> option removes all the points between two provided epochs.<br><br>
                                                                                              The <span class='UIoption'>all components</span> option allows removing the outliers from all the components (if more than one) simultaneously or for each component individually.<br><br>
                                                                                              The <span class='UIoption'>permanent</span> option allows deleting permanently (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
                                                                                              The <span class='UIoption'>include in file</span> option keeps the excluded outliers in the downloaded results file as commented lines.<br><br>
@@ -14324,7 +14326,7 @@ server <- function(input,output,session) {
     }
     if (input$tab < 4) {
       if (input$fitType == 1 && length(trans$results) > 0) {
-        cat(paste0("# Model LS: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste0("# Model LS: ", gsub("&" , " \\+ ", gsub("\\s+", "", gsub(" \\+ ", "&", gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE)))))))))))), file = file_out, sep = "\n", fill = F, append = T)
         param <- data.frame(formatting(trans$LScoefs[,c(1,2)],2), check.names = F)
         param <- cbind(e = rep("=",length(param[1])), param[1], s = rep("+/-",length(param[1])), param[2])
         rownames(param) <- format(paste("# Parameter:",rownames(param)), justify = "left")
