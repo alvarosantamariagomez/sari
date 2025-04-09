@@ -6957,6 +6957,11 @@ server <- function(input,output,session) {
           disable("series")
           disable("format")
           disable("separator")
+          if (isTruthy(info$product1) || isTruthy(url$server)) {
+            disable("sunits")
+          } else {
+            enable("sunits")
+          }
           enable("overflow")
           enable("cut")
           enable("strip")
