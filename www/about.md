@@ -212,9 +212,16 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">IGB14</td>
   </tr>
+  <tr>
+   <td style="text-align:left;"><a href="https://ids-doris.org/" target="_blank">DORIS</a></td>
+   <td style="text-align:center;"><sup>4</sup></td>
+   <td style="text-align:left;">4 characters (TLSB)</td>
+   <td style="text-align:left;"> </td>
+   <td style="text-align:left;">ESA, GOP, GRG, GSC, IDS, IGN</td>
+  </tr>
   <tr style="vertical-align: top">
    <td style="text-align:left;"><a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a></td>
-   <td style="text-align:center;"><sup>4</sup></td>
+   <td style="text-align:center;"><sup>5</sup></td>
    <td style="text-align:left;">14 characters (TLSE_10003M009)</td>
    <td style="text-align:left;"> </td>
    <td style="text-align:left;">ATMIB, ATMIB(d), ATMMO(o), ECCO(o), ECCO2, ERA5IB, ERA5IB(d), ERA5TUGO, ERA5TUGO(d), ERA5HYD, ERA5HYD(d), ERA5LAND, GRACE, GLDAS2, GLDAS2(d), GLORYS(o), MERRA2ATM, MERRA2ATM(d), MERRA2HYD, MERRA2HYD(d)</td>
@@ -234,7 +241,8 @@ Notes:
 <sup>1</sup> The *LOCAL* server is used only to upload series from local files on a local SARI session (more details in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh)).  
 <sup>2</sup> The *RAPID NGL* series correspond to the IGS14 solution.  
 <sup>3</sup> The EarthScope (UNAVCO) series correspond to the *IGS14* solution.  
-<sup>4</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with *(d)*, if they are available. Products marked with *(o)* represent old products that are no longer updated.  
+<sup>4</sup> The DORIS series correspond to the *25wd01* solution.  
+<sup>5</sup> The *EOSTLS* loading series are those computed in the center of figure (CF) frame.  <b><span style="color: #DF536B;">WARNING:</span></b> some of the *EOSTLS* series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with *(d)*, if they are available. Products marked with *(o)* represent old products that are no longer updated.  
 
 Contact the [<a href="#author" target="_self">author</a>](#author) if more servers or products need to be added.
 

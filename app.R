@@ -634,7 +634,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
                                                                                selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
@@ -1102,7 +1102,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                   selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                             ),
                                                                             column(4,
                                                                                    selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
@@ -7748,6 +7748,8 @@ server <- function(input,output,session) {
       updateSelectizeInput(session, inputId = "product1", choices = list("CWU", "PBO", "NMT"), selected = "")
     } else if (input$server1 == "PSMSL") {
       updateSelectizeInput(session, inputId = "product1", choices = list("RLR"), selected = "RLR")
+    } else if (input$server1 == "DORIS") {
+      updateSelectizeInput(session, inputId = "product1", choices = list("ESA", "GOP", "GRG", "GSC", "IDS", "IGN"), selected = "")
     }
     output$showStation1 <- renderUI({
       textInput(inputId = "station1", label = "Station", value = "")
@@ -7781,6 +7783,8 @@ server <- function(input,output,session) {
       updateSelectizeInput(session, inputId = "product2", choices = list("CWU", "PBO", "NMT"), selected = "")
     } else if (input$server2 == "PSMSL") {
       updateSelectizeInput(session, inputId = "product2", choices = list("RLR"), selected = "RLR")
+    } else if (input$server2 == "DORIS") {
+      updateSelectizeInput(session, inputId = "product2", choices = list("ESA", "GOP", "GRG", "GSC", "IDS", "IGN"), selected = "")
     }
     output$showStation2 <- renderUI({
       textInput(inputId = "station2", label = "Station", value = "")
@@ -7817,10 +7821,13 @@ server <- function(input,output,session) {
         file$primary$datapath <- paste0("www/tempFiles/",file$primary$name)
         down <- download(url$server, url$file, file$primary$datapath)
         if (file.exists(file$primary$datapath)) {
-          downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
-          if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-              length(downloaded) < 2) {
-            down <- 1
+          downloaded <- try(fromJSON(file$primary$datapath), silent = T)
+          if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
+            downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
+            if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                length(downloaded) < 2) {
+              down <- 1
+            }
           }
         }
         if (isTruthy(down) && down == 0) {
@@ -7900,10 +7907,13 @@ server <- function(input,output,session) {
           if (messages > 0) cat(file = stderr(), mySession, "Downloading secondary series from", toupper(input$server2), "&", toupper(input$product2), "\n")
           down <- download(url$server2, url$file2[f], file$secondary$datapath[f])
           if (file.exists(file$secondary$datapath[f])) {
-            downloaded <- readLines(file$secondary$datapath[f], n = 2, warn = F)
-            if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                length(downloaded) < 2) {
-              down <- 1
+            downloaded <- try(fromJSON(file$secondary$datapath[f]), silent = T)
+            if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
+              downloaded <- readLines(file$secondary$datapath[f], n = 2, warn = F)
+              if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                  length(downloaded) < 2) {
+                down <- 1
+              }
             }
           }
           if (isTruthy(down) && down == 0) {
@@ -8873,6 +8883,12 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "tunits", selected = 3)
       url$server <- "IGS"
       url$file <- file$primary
+    } else if (grepl(".stcd.", file$primary$name, perl = T)) {
+      updateRadioButtons(inputId = "format", selected = 1)
+      updateRadioButtons(inputId = "sunits", selected = 1)
+      updateRadioButtons(inputId = "tunits", selected = 1)
+      url$server <- "DORIS"
+      url$file <- file$primary
     } else {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 0)
@@ -9238,6 +9254,10 @@ server <- function(input,output,session) {
       } else if (grepl("_igs.plh$", file$secondary$name, perl = T)) {
         updateRadioButtons(inputId = "format2", selected = 1)
         url$server2 <- "IGS"
+        url$file2 <- file$secondary
+      } else if (grepl(".stcd.", file$secondary$name, perl = T)) {
+        updateRadioButtons(inputId = "format2", selected = 1)
+        url$server2 <- "DORIS"
         url$file2 <- file$secondary
       } else if (as.numeric(input$format) < 4) {
         updateRadioButtons(inputId = "format2", selected = 1)
@@ -11986,6 +12006,15 @@ server <- function(input,output,session) {
           showNotification("No series was downloaded from the EPOS server.", action = NULL, duration = 10, closeButton = T, id = "no_epos", type = "error", session = getDefaultReactiveDomain())
           req(info$stop)
         }
+      } else if (server == "DORIS") { # extracting ENU format from DORIS JSON series
+        tableAll <- try(fromJSON(txt = file), silent = T)
+        if (isTruthy(tableAll) && !inherits(tableAll, "try-error")) {
+          tableAll <- tableAll[, c("date", "de", "dn", "du", "se", "sn", "su")]
+          tableAll[,c("de", "dn", "du", "se", "sn", "su")] <- tableAll[,c("de", "dn", "du", "se", "sn", "su")]/1000
+        } else {
+          showNotification("No series was downloaded from the DORIS server.", action = NULL, duration = 10, closeButton = T, id = "no_epos", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
       } else {
         tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
       }
@@ -12495,6 +12524,20 @@ server <- function(input,output,session) {
             coordinates <- c(as.numeric(tableAll[6]),as.numeric(tableAll[8]),as.numeric(tableAll[10]),lat,lon)
           } else {
             coordinates <- NULL
+          }
+        } else if (server == "DORIS") {
+          if (isTruthy(station)) {
+            tableAll <- read.table("www/tempFiles/dorisStations.txt", sep = ";")
+            coordinates <- tableAll[tableAll$V6 == station, c(2,3,4)]
+            if (length(coordinates) == 3) {
+              shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 2))
+              lat <- coordinates[1,1]
+              lon <- coordinates[1,2]
+              coordinates <- latlon2xyz(lat*pi/180,lon*pi/180,1)
+              coordinates <- c(coordinates,lat,lon)
+            } else {
+              coordinates <- NULL
+            }
           }
         }
       } else if (isTruthy(product) && (product == "SPOTGINS" || product == "SPOTGINS_POS")) {
@@ -15878,6 +15921,62 @@ server <- function(input,output,session) {
               } else {
                 showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
               }
+            }
+            return(NULL)
+          })
+        }
+      } else {
+        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+        return(NULL)
+      }
+    ## DORIS ####
+    } else if (server == "DORIS") {
+      format <- 1
+      solution <- "25wd01"
+      if (product == "ESA") {
+        pattern <- "esa"
+      } else if (product == "GOP") {
+        pattern <- "gop"
+      } else if (product == "GRG") {
+        pattern <- "grg"
+      } else if (product == "GSC") {
+        pattern <- "gsc"
+      } else if (product == "IDS") {
+        pattern <- "ids"
+      } else if (product == "IGN") {
+        pattern <- "ign"
+      }
+      name <- station
+      url <- paste0("https://apps.ids-doris.org/api/v1/position/",pattern,solution,"/")
+      if (product == "ESA" || product == "GOP" || product == "GRG" || product == "GSC" || product == "IDS" || product == "IGN") {
+        if (isTruthy(station)) {
+          filepath <- paste0(url,name)
+        } else {
+          withBusyIndicatorServer(variable, {
+            dorisStations <- try(fromJSON(txt = "https://apps.ids-doris.org/api/v1/station"), silent = T)
+            write.table(dorisStations, "www/tempFiles/dorisStations.txt", append = F, row.names = F, col.names = F, sep = ";")
+            if (isTruthy(dorisStations) && !inherits(dorisStations,"try-error")) {
+              stations_available <- sort(dorisStations$mnemonic)
+              if (length(stations_available) > 0) {
+                if (series == 1) {
+                  output$showStation1 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })
+                } else if (series == 2) {
+                  output$showStation2 <- renderUI({
+                    suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+                  })
+                  if (input$sunits == 2) {
+                    updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                  } else {
+                    updateTextInput(session, inputId = "scaleFactor", value = "1")
+                  }
+                }
+              } else {
+                showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+              }
+            } else {
+              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
             }
             return(NULL)
           })
