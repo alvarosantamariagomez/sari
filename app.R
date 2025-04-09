@@ -15961,9 +15961,9 @@ server <- function(input,output,session) {
         } else {
           withBusyIndicatorServer(variable, {
             dorisStations <- try(fromJSON(txt = "https://apps.ids-doris.org/api/v1/station"), silent = T)
-            write.table(dorisStations, "www/tempFiles/dorisStations.txt", append = F, row.names = F, col.names = F, sep = ";")
+            write.table(dorisStations[dorisStations$technique == "DORIS",], "www/tempFiles/dorisStations.txt", append = F, row.names = F, col.names = F, sep = ";")
             if (isTruthy(dorisStations) && !inherits(dorisStations,"try-error")) {
-              stations_available <- sort(dorisStations$mnemonic)
+              stations_available <- sort(dorisStations[dorisStations$technique == "DORIS",]$mnemonic)
               if (length(stations_available) > 0) {
                 if (series == 1) {
                   output$showStation1 <- renderUI({
