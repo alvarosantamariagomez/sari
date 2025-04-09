@@ -4025,7 +4025,7 @@ server <- function(input,output,session) {
                      setProgress(1)
                    })
       # getting the velocity estimate from the minimum entropy
-      if (H == 0) {
+      if (any(H == 0)) {
         trans$entropy_vel <- trans$entropy_sig <- NULL
         showNotification(HTML("Unable to compute the entropy value.<br>The series may be a constant value."), action = NULL, duration = 10, closeButton = T, id = "bad_entropy", type = "error", session = getDefaultReactiveDomain())
       } else {
@@ -4041,7 +4041,7 @@ server <- function(input,output,session) {
           segment <- trans$x >= breaks[i] & trans$x < breaks[i + 1]
           n <- ifelse(sum(segment) > n, sum(segment), n)
         }
-        l <- (n + 2*info$points) / (3*info$points) # longest segment counts 1/3 of total length
+        l <- (n + 2*info$points) / (3*info$points) # longest segment counts at least 2/3 of total length
         # compute the velocity uncertainty
         trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$rangex * l)
       }
@@ -4990,11 +4990,11 @@ server <- function(input,output,session) {
         listTag <- c(listTag, list(span("")))
       }
       listTag <- c(listTag, list(span("MIDAS rate estimate")))
-      listTag <- c(listTag, list(span(paste(trans$midas_vel, "+/-", trans$midas_sig, units))))
+      listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel,1), "+/-", formatting(trans$midas_sig,1), units))))
       if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
         listTag <- c(listTag, list(span("")))
         listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)")))
-        listTag <- c(listTag, list(span(paste(trans$midas_vel2, "+/-", trans$midas_sig2, units))))
+        listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel2,1), "+/-", formatting(trans$midas_sig2,1), units))))
       }
     }
     # show entropy estimate
@@ -5003,7 +5003,7 @@ server <- function(input,output,session) {
         listTag <- c(listTag, list(span("")))
       }
       listTag <- c(listTag, list(span("Minimum entropy rate estimate")))
-      listTag <- c(listTag, list(span(paste(trans$entropy_vel, "+/-", trans$entropy_sig, units))))
+      listTag <- c(listTag, list(span(paste(formatting(trans$entropy_vel,1), "+/-", formatting(trans$entropy_sig,1), units))))
     }
     # show fit estimate
     if (isTruthy(info$run) && length(trans$results) > 0) {
@@ -9036,32 +9036,32 @@ server <- function(input,output,session) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = db1$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
                            db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
-                           db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
+                           # db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           # db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
                            db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           # db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
                          }
                        } else {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = db1$original$sy1, sy2 = db1$original$sy2, sy3 = db1$original$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
                            db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
-                           db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
-                           db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
-                           db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
-                           db1$resampled$sy2 <- as.numeric(formatting(db1$resampled$sy2,0))
-                           db1$resampled$sy3 <- as.numeric(formatting(db1$resampled$sy3,0))
+                           # db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           # db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
+                           # db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
+                           # db1$resampled$sy1 <- as.numeric(formatting(db1$resampled$sy1,0))
+                           # db1$resampled$sy2 <- as.numeric(formatting(db1$resampled$sy2,0))
+                           # db1$resampled$sy3 <- as.numeric(formatting(db1$resampled$sy3,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
                            db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
                            db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
-                           db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
-                           db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
+                           # db1$resampled$y1 <- as.numeric(formatting(db1$resampled$y1,0))
+                           # db1$resampled$y2 <- as.numeric(formatting(db1$resampled$y2,0))
+                           # db1$resampled$y3 <- as.numeric(formatting(db1$resampled$y3,0))
                          }
                        }
                      })
@@ -9159,32 +9159,32 @@ server <- function(input,output,session) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = db2$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
                            db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
-                           db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
                            db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
                          }
                        } else {
                          if (input$sigmas) {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = db2$original$sy1, sy2 = db2$original$sy2, sy3 = db2$original$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
                            db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
-                           db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
-                           db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
-                           db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
-                           db2$resampled$sy2 <- as.numeric(formatting(db2$resampled$sy2,0))
-                           db2$resampled$sy3 <- as.numeric(formatting(db2$resampled$sy3,0))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
+                           # db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
+                           # db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
+                           # db2$resampled$sy2 <- as.numeric(formatting(db2$resampled$sy2,0))
+                           # db2$resampled$sy3 <- as.numeric(formatting(db2$resampled$sy3,0))
                          } else {
                            averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
                            db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
                            db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                           db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
-                           db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
-                           db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
+                           # db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
                          }
                        }
                      })
@@ -9377,8 +9377,8 @@ server <- function(input,output,session) {
             sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             status1 <- status1
           })[,c("x1","x2","x3","y1","sy1","status1")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
+          # table_common$y1 <- as.numeric(formatting(table_common$y1,1))
+          # table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
         } else {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
             if (info$format2 == 4) {
@@ -9407,12 +9407,6 @@ server <- function(input,output,session) {
               status3 <- status3
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
-          table_common$y2 <- as.numeric(formatting(table_common$y2,1))
-          table_common$y3 <- as.numeric(formatting(table_common$y3,1))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
-          table_common$sy2 <- as.numeric(formatting(table_common$sy2,1))
-          table_common$sy3 <- as.numeric(formatting(table_common$sy3,1))
         }
       } else if (input$optionSecondary == 3) {
         if (info$format == 4) {
@@ -9423,8 +9417,6 @@ server <- function(input,output,session) {
             sy1 <- sqrt(sy1.x^2 + (sy1.y * inputs$scaleFactor)^2)
             status1 <- status1
           })[,c("x1","x2","x3","y1","sy1","status1")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
         } else {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
             if (info$format2 == 4) {
@@ -9453,12 +9445,6 @@ server <- function(input,output,session) {
               status3 <- status3
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
-          table_common$y1 <- as.numeric(formatting(table_common$y1,1))
-          table_common$y2 <- as.numeric(formatting(table_common$y2,1))
-          table_common$y3 <- as.numeric(formatting(table_common$y3,1))
-          table_common$sy1 <- as.numeric(formatting(table_common$sy1,1))
-          table_common$sy2 <- as.numeric(formatting(table_common$sy2,1))
-          table_common$sy3 <- as.numeric(formatting(table_common$sy3,1))
         }
       }
       numValid1 <- sum(table_common$status1, na.rm = T)
