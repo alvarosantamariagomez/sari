@@ -13911,6 +13911,13 @@ server <- function(input,output,session) {
     req(input$tab > 3)
     if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
     if (input$tab == 4) {
+      if (input$format2 == 4) {
+        component2 <- 1
+      } else if (input$ne && component < 3) {
+        component2 <- as.numeric(chartr("12", "21", as.character(component)))
+      } else {
+        component2 <- component
+      }
       x0 <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status",component)]])]
       x1 <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% T]
       xe <- db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
@@ -13945,7 +13952,7 @@ server <- function(input,output,session) {
         sigmas <- T
       }
       rangeX <- range(x0)
-      if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
+      if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
         x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
         if (isTruthy(input$fullSeries)) {
           info$minx <- min(x0, x2, na.rm = T)
@@ -13971,12 +13978,7 @@ server <- function(input,output,session) {
       } else {
         rangeY <- range(y0[x0 >= rangeX[1] & x0 <= rangeX[2]])
       }
-      if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component)]]), na.rm = T) > 0) {
-        if (input$ne && component < 3) {
-          component2 <- as.numeric(chartr("12", "21", as.character(component)))
-        } else {
-          component2 <- component
-        }
+      if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
         y2 <- db2[[info$db2]][[paste0("y",component2)]]
         if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
           y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
