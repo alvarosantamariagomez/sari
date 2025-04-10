@@ -2501,7 +2501,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -7419,6 +7419,7 @@ server <- function(input,output,session) {
           }
           shinyjs::delay(100, disable("fitType"))
           if (input$optionSecondary > 0) {
+            info$last_optionSecondary <- 0
             updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
           }
           disable("traceLog")
@@ -7975,6 +7976,7 @@ server <- function(input,output,session) {
       }
     } else if (isTruthy(input$server2) && isTruthy(input$product2)) {
       url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$datapath <- NULL
+      info$last_optionSecondary <- 0
       updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 0)
     }
   })
@@ -9289,9 +9291,10 @@ server <- function(input,output,session) {
       }
     }
     if (input$optionSecondary > 0) {
-      if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary file\n")
       db2$original <- db2$resampled <- NULL
-      digest(2) 
+      info$last_optionSecondary <- 0
+      updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
+      updateSelectInput(session, inputId = "separator2", selected = 1)
     }
   }, priority = 8)
 
@@ -9520,6 +9523,7 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "giaType", selected = 0)
         }
       } else {
+        info$last_optionSecondary <- 1
         updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
       }
     } else if (info$last_optionSecondary > 1) {
@@ -11887,6 +11891,7 @@ server <- function(input,output,session) {
       # create secondary series merged file
       if (!is.null(table_stack)) {
         if (isTruthy(url$file2) && isTruthy(url$station2)) {
+          info$last_optionSecondary <- 1
           updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
         }
         if (anyNA(table_stack)) {
@@ -11969,6 +11974,7 @@ server <- function(input,output,session) {
       seriesClass <- "secondary"
     }
     if (input$optionSecondary > 1 && isTruthy(db1$merged)) {
+      info$last_optionSecondary <- 1
       updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
     }
     removeNotification("no_weeks")
