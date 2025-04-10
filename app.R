@@ -2501,7 +2501,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -4957,7 +4957,7 @@ server <- function(input,output,session) {
       serie2 <- data.frame(x = trans$x2, y = trans$y2)
       common <- merge(serie1, serie2, by.x = "x", by.y = "x")
       if (length(common$x) > 30) {
-        listTag <- list(span(paste("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs")))
+        listTag <- list(span(paste("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs between the primary and secondary series.")))
       }
     }
     if (input$tunits == 1) {
@@ -7418,6 +7418,9 @@ server <- function(input,output,session) {
             updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
           }
           shinyjs::delay(100, disable("fitType"))
+          if (input$optionSecondary > 0) {
+            updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
+          }
           disable("traceLog")
           disable("traceSinfo")
           disable("traceSoln")
@@ -7696,8 +7699,10 @@ server <- function(input,output,session) {
                 }
                 shinyjs::delay(1500, {
                   if (messages > 4) cat(file = stderr(), mySession, "From: observe url\n")
+                  db1$original <- db1$resampled <- db1$merged <- NULL
                   digest(1)
                   if (isTruthy(url$station2) && isTruthy(url$file2) && isTruthy(url$server2)) {
+                    db2$original <- db2$resampled <- NULL
                     digest(2)
                   }
                   if (url$server == "LOCAL") {
@@ -7841,6 +7846,7 @@ server <- function(input,output,session) {
             if (messages > 4) cat(file = stderr(), mySession, "From: observe remote series (primary)\n")
             updateRadioButtons(session, inputId = "format", label = NULL, selected = info$format)
             shinyjs::delay(1500, {
+              db1$original <- db1$resampled <- db1$merged <- NULL
               digest(1)
               filename <- file$primary$name
               session$sendCustomMessage("filename", filename)
@@ -7956,6 +7962,7 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "format2", selected = info$format2)
           shinyjs::delay(1500, {
             if (messages > 4) cat(file = stderr(), mySession, "From: observe remote series (secondary)\n")
+            db2$original <- db2$resampled <- NULL
             digest(2)
           })
         } else {
@@ -8940,6 +8947,7 @@ server <- function(input,output,session) {
       updateTextInput(session, "long_period", value = "")
     }
     if (messages > 4) cat(file = stderr(), mySession, "From: observe format 1D\n")
+    db1$original <- db1$resampled <- db1$merged <- NULL
     digest(1)
     if (input$fitType == 2) {
       trans$midas_vel <- NULL
@@ -8977,6 +8985,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(db2[[info$db2]])
     if (messages > 4) cat(file = stderr(), mySession, "From: observe format 1D secondary\n")
+    db2$original <- db2$resampled <- NULL
     digest(2)
   }, priority = 6)
 
@@ -9281,6 +9290,7 @@ server <- function(input,output,session) {
     }
     if (input$optionSecondary > 0) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary file\n")
+      db2$original <- db2$resampled <- NULL
       digest(2) 
     }
   }, priority = 8)
@@ -9289,6 +9299,7 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (input$optionSecondary > 0) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary format\n")
+      db2$original <- db2$resampled <- NULL
       digest(2)
     }
   }, priority = 6)
@@ -9297,6 +9308,7 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (input$optionSecondary > 0) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary separator\n")
+      db2$original <- db2$resampled <- NULL
       digest(2)
     }
   }, priority = 6)
@@ -9305,6 +9317,7 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary option\n")
+      db2$original <- db2$resampled <- NULL
       digest(2)
     }
     req(db2[[info$db2]])
@@ -9560,7 +9573,7 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
       info$last_optionSecondary <- 0
-      updateRadioButtons(inputId = "optionSecondary", selected = 0)
+      updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
     }
   }, priority = 0)
 
@@ -9685,47 +9698,47 @@ server <- function(input,output,session) {
   }, priority = 5)
 
   # Observe remove fit ####
-  observeEvent(c(input$series, input$separator, input$format, input$format2, inputs$epoch, inputs$epoch2, input$separator2), {
-    req(trans$res)
-    if (messages > 0) cat(file = stderr(), mySession, "Deleting fit", "\n")
-    trans$res <- NULL
-    trans$reserror <- NULL
-    trans$results <- NULL
-    trans$mod <- NULL
-    trans$kalman <- NULL
-    trans$equation <- NULL
-    trans$midas_vel <- NULL
-    trans$midas_all <- NULL
-    trans$filter <- NULL
-    trans$filterRes <- NULL
-    trans$mle <- F
-    trans$verif <- NULL
-    trans$pattern <- NULL
-    trans$spectra <- NULL
-    updateTextInput(session, "ObsError", value = "")
-    updateTextInput(session, "waveformPeriod", value = "")
-    if (isTruthy(input$correct_waveform)) {
-      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
-    }
-    if (isTruthy(input$model)) {
-      updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
-    }
-    updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
-    updateTextInput(session, "E0", value = "")
-    updateTextInput(session, "L0", value = "")
-    if (isTruthy(input$white)) {
-      updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-    }
-    if (isTruthy(input$flicker)) {
-      updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-    }
-    if (isTruthy(input$randomw)) {
-      updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-    }
-    if (isTruthy(input$powerl)) {
-      updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
-    }
-  }, priority = 5)
+  # observeEvent(c(input$separator, input$format, inputs$epoch), {
+  #   req(trans$res)
+  #   if (messages > 0) cat(file = stderr(), mySession, "Deleting fit", "\n")
+  #   trans$res <- NULL
+  #   trans$reserror <- NULL
+  #   trans$results <- NULL
+  #   trans$mod <- NULL
+  #   trans$kalman <- NULL
+  #   trans$equation <- NULL
+  #   trans$midas_vel <- NULL
+  #   trans$midas_all <- NULL
+  #   trans$filter <- NULL
+  #   trans$filterRes <- NULL
+  #   trans$mle <- F
+  #   trans$verif <- NULL
+  #   trans$pattern <- NULL
+  #   trans$spectra <- NULL
+  #   updateTextInput(session, "ObsError", value = "")
+  #   updateTextInput(session, "waveformPeriod", value = "")
+  #   if (isTruthy(input$correct_waveform)) {
+  #     updateCheckboxInput(session, inputId = "correct_waveform", value = F)
+  #   }
+  #   if (isTruthy(input$model)) {
+  #     updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
+  #   }
+  #   updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
+  #   updateTextInput(session, "E0", value = "")
+  #   updateTextInput(session, "L0", value = "")
+  #   if (isTruthy(input$white)) {
+  #     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
+  #   }
+  #   if (isTruthy(input$flicker)) {
+  #     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
+  #   }
+  #   if (isTruthy(input$randomw)) {
+  #     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
+  #   }
+  #   if (isTruthy(input$powerl)) {
+  #     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
+  #   }
+  # }, priority = 5)
 
   # Observe fit type ####
   observeEvent(input$fitType, {
@@ -9837,6 +9850,7 @@ server <- function(input,output,session) {
     info$format <- input$format
     info$width <- isolate(session$clientData$output_plot1_width)
     if (messages > 4) cat(file = stderr(), mySession, "From: observe plotting\n")
+    db1$original <- db1$resampled <- db1$merged <- NULL
     digest(1)
   }, priority = 4)
 
@@ -11949,6 +11963,11 @@ server <- function(input,output,session) {
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
     tableAll <- NULL
     extracted <- NULL
+    if (series == 1) {
+      seriesClass <- "primary"
+    } else if (series == 2) {
+      seriesClass <- "secondary"
+    }
     if (input$optionSecondary > 1 && isTruthy(db1$merged)) {
       updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
     }
@@ -12381,7 +12400,7 @@ server <- function(input,output,session) {
                     }
                   }
                 } else {
-                  showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
+                  showNotification(HTML(paste("Non numeric values extracted from the input", seriesClass, "series.<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
                   req(info$stop)
                 }
               }
@@ -12438,7 +12457,7 @@ server <- function(input,output,session) {
       }
       extracted
     } else {
-      showNotification(HTML("Non numeric values extracted from the input series.<br>Check the input file or the requested format."), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
+      showNotification(HTML(paste("Non numeric values extracted from the input", seriesClass, "series.<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = "no_values", type = "error", session = getDefaultReactiveDomain())
       req(info$stop)
     }
   }
