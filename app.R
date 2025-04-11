@@ -7609,10 +7609,13 @@ server <- function(input,output,session) {
                 file$primary$datapath <- paste0("www/tempFiles/",file$primary$name)
                 down <- download(url$server, url$file, file$primary$datapath)
                 if (file.exists(file$primary$datapath)) {
-                  downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
-                  if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                      length(downloaded) < 2) {
-                    down <- 1
+                  downloaded <- try(fromJSON(file$primary$datapath), silent = T)
+                  if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
+                    downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
+                    if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                        length(downloaded) < 2) {
+                      down <- 1
+                    }
                   }
                 }
               }
@@ -7662,10 +7665,13 @@ server <- function(input,output,session) {
                       file$secondary$datapath <- tempfile()
                       down <- download(url$server2, url$file2, file$secondary$datapath)
                       if (file.exists(file$secondary$datapath)) {
-                        downloaded <- readLines(file$secondary$datapath, warn = F)
-                        if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
-                            length(downloaded) < 2) {
-                          down <- 1
+                        downloaded <- try(fromJSON(file$secondary$datapath), silent = T)
+                        if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
+                          downloaded <- readLines(file$secondary$datapath, n = 2, warn = F)
+                          if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
+                              length(downloaded) < 2) {
+                            down <- 1
+                          }
                         }
                       }
                     }
