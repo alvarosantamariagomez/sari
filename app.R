@@ -8454,7 +8454,7 @@ server <- function(input,output,session) {
           y2 <- inputs$station_lat2
           z2 <- interpolateGIA(x2,y2,2)
           if (isTruthy(z2)) {
-            z2 <- z2 * scaling * inputs$scaleFactor
+            z2 <- z2 * scaling
           }
         }
         if (isTruthy(z2)) {
@@ -13997,7 +13997,7 @@ server <- function(input,output,session) {
         rangeY <- range(y0[x0 >= rangeX[1] & x0 <= rangeX[2]])
       }
       if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
-        y2 <- db2[[info$db2]][[paste0("y",component2)]]* inputs$scaleFactor
+        y2 <- db2[[info$db2]][[paste0("y",component2)]] * inputs$scaleFactor
         sy2 <- db2[[info$db2]][[paste0("sy",component2)]] * inputs$scaleFactor
         if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
           y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
