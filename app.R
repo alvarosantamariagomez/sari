@@ -8059,13 +8059,8 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$station_lat, inputs$station_lon), {
     coordinates <- NULL
     if (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon)) {
-      if (input$sunits == 1) {
-        coordinates <- latlon2xyz(inputs$station_lat*pi/180,inputs$station_lon*pi/180,1)
-      } else if (input$sunits == 2) {
-        coordinates <- latlon2xyz(inputs$station_lat*pi/180,inputs$station_lon*pi/180,1000)
-      }
+      coordinates <- latlon2xyz(inputs$station_lat*pi/180,inputs$station_lon*pi/180,1)
       if (isTruthy(coordinates) && length(coordinates) == 3) {
-
         if (!isTruthy(inputs$station_x) || !isTruthy(inputs$station_y) || !isTruthy(inputs$station_z)) {
           updateTextInput(session, inputId = "station_x", value = coordinates[1])
           updateTextInput(session, inputId = "station_y", value = coordinates[2])
@@ -8088,11 +8083,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$station_lat2, inputs$station_lon2), {
     coordinates <- NULL
     if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
-      if (input$sunits == 1) {
-        coordinates <- latlon2xyz(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180,1)
-      } else if (input$sunits == 2) {
-        coordinates <- latlon2xyz(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180,1000)
-      }
+      coordinates <- latlon2xyz(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180,1)
       if (length(coordinates) == 3) {
         updateTextInput(session, inputId = "station_x2", value = coordinates[1])
         updateTextInput(session, inputId = "station_y2", value = coordinates[2])
@@ -8241,7 +8232,7 @@ server <- function(input,output,session) {
           updateRadioButtons(session, inputId = "eulerType", selected = 0)
           req(info$stop)
         }
-        if (sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) < 6355000*scaling || sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) > 6385000*scaling) {
+        if (sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) < 6355000 || sqrt(stationCartesian[1]^2 + stationCartesian[2]^2 + stationCartesian[3]^2) > 6385000) {
           showNotification(HTML("Station coordinates are missing or out of bounds.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "bad_coordinates", type = "error", session = getDefaultReactiveDomain())
           updateRadioButtons(session, inputId = "eulerType", selected = 0)
           req(info$stop)
@@ -8254,7 +8245,7 @@ server <- function(input,output,session) {
         plateCartesian <- cross(poleCartesian,stationCartesian)
         # Applying the ORB correction
         if (input$plateModel == "ITRF2020") {
-          plateCartesian <- plateCartesian + c(0.37, 0.35, 0.74)*scaling/1000
+          plateCartesian <- plateCartesian + c(0.37, 0.35, 0.74)/1000
         }
         # rotation <- matrix(data = c(-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),cos(stationGeo[1]),0,-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #NEU
         rotation <- matrix(data = c(-1*sin(stationGeo[2]),-1*sin(stationGeo[1])*cos(stationGeo[2]),-1*cos(stationGeo[1])*cos(stationGeo[2]),cos(stationGeo[2]),-1*sin(stationGeo[1])*sin(stationGeo[2]),-1*cos(stationGeo[1])*sin(stationGeo[2]),0,cos(stationGeo[1]),-1*sin(stationGeo[1])), nrow = 3, ncol = 3) #ENU
@@ -8271,12 +8262,15 @@ server <- function(input,output,session) {
         } else if (input$tunits == 2) {
           trans$plate <- trans$plate*7/daysInYear
         }
+        # changing between m/yr and mm/yr
+        trans$plate <- trans$plate * scaling
+        # plate motion for the secondary series
         if (isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2) && isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
           stationCartesian2 <- c(inputs$station_x2,inputs$station_y2,inputs$station_z2)
           stationGeo2 <- c(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180)
           plateCartesian2 <- cross(poleCartesian,stationCartesian2)
           if (input$plateModel == "ITRF2020") {
-            plateCartesian2 <- plateCartesian2 + c(0.37, 0.35, 0.74)*scaling/1000
+            plateCartesian2 <- plateCartesian2 + c(0.37, 0.35, 0.74)/1000
           }
           rotation2 <- matrix(data = c(-1*sin(stationGeo2[2]),-1*sin(stationGeo2[1])*cos(stationGeo2[2]),-1*cos(stationGeo2[1])*cos(stationGeo2[2]),cos(stationGeo2[2]),-1*sin(stationGeo2[1])*sin(stationGeo2[2]),-1*cos(stationGeo2[1])*sin(stationGeo2[2]),0,cos(stationGeo2[1]),-1*sin(stationGeo2[1])), nrow = 3, ncol = 3) #ENU
           plate_neu2 <- c(rotation2 %*% plateCartesian2)
@@ -8294,6 +8288,7 @@ server <- function(input,output,session) {
           } else if (input$tunits == 2) {
             trans$plate2 <- trans$plate2*7/daysInYear
           }
+          trans$plate2 <- trans$plate2 * scaling
         }
       } else {
         showNotification(HTML("Problem reading the station coordinates and/or the Euler pole parameters.<br>Check the input values."), action = NULL, duration = 15, closeButton = T, id = "no_rotation", type = "warning", session = getDefaultReactiveDomain())
@@ -11024,6 +11019,7 @@ server <- function(input,output,session) {
     info$periodRef <- NULL
     info$tunits.known1 <- F
     info$tunits.known2 <- F
+    info$product1 <- NULL
     info$step <- NULL
     info$step2 <- NULL
     info$stepUnit <- NULL
@@ -14001,15 +13997,14 @@ server <- function(input,output,session) {
         rangeY <- range(y0[x0 >= rangeX[1] & x0 <= rangeX[2]])
       }
       if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
-        y2 <- db2[[info$db2]][[paste0("y",component2)]]
+        y2 <- db2[[info$db2]][[paste0("y",component2)]]* inputs$scaleFactor
+        sy2 <- db2[[info$db2]][[paste0("sy",component2)]] * inputs$scaleFactor
         if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
           y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
         }
         if (component2 > 2  && isTruthy(trans$gia2) && input$giaType == 2) {
           y2 <- y2 - trans$gia2[component2]*(x2 - centerx) - centery
         }
-        y2 <- y2 * inputs$scaleFactor
-        sy2 <- db2[[info$db2]][[paste0("sy",component2)]]
         if (input$symbol == 0) {
           symbol <- 'p'
         } else if (input$symbol == 1) {
