@@ -4381,6 +4381,11 @@ server <- function(input,output,session) {
           trans$mod <- NULL
           trans$LScoefs <- NULL
           trans$names <- NULL
+          trans$model_old <- NULL
+          db1[[info$db1]][[paste0("res", input$tab)]] <- NA
+          db1[[info$db1]][[paste0("mod", input$tab)]] <- NA
+          db1[[info$db1]][[paste0("reserror", input$tab)]] <- NA
+          trans[[paste0("offsetEpochs", input$tab)]] <- NA
         }
       }
     } else {
@@ -4389,6 +4394,11 @@ server <- function(input,output,session) {
       trans$mod <- NULL
       trans$LScoefs <- NULL
       trans$names <- NULL
+      trans$model_old <- NULL
+      db1[[info$db1]][[paste0("res", input$tab)]] <- NA
+      db1[[info$db1]][[paste0("mod", input$tab)]] <- NA
+      db1[[info$db1]][[paste0("reserror", input$tab)]] <- NA
+      trans[[paste0("offsetEpochs", input$tab)]] <- NA
     }
     #
     if (isTruthy(debug)) {
@@ -11499,16 +11509,18 @@ server <- function(input,output,session) {
   })
 
   # Observe offset epochs ####
-  observeEvent(c(inputs$offsetEpoch, trans$x), {
+  observeEvent(c(inputs$offsetEpoch, input$model, trans$x), {
     req(db1[[info$db1]])
     trans$offsetEpochs <- NULL
-    offsetEpochs <- trimws(unlist(strsplit(inputs$offsetEpoch, split = ",")))
-    offsetEpochs <- extractEpochList(trans$x, offsetEpochs, "offset")
-    if (length(offsetEpochs) > 0) {
-      if (input$breaking && length(trans$breakEpochs) > 0 && sum(as.numeric(input$trendType,input$sinusoidType,input$polyType)) > 0) {
-        trans$offsetEpochs <- extractEpochList(trans$x, offsetEpochs, "offset", trans$breakEpochs, "break")
-      } else {
-        trans$offsetEpochs <- offsetEpochs
+    if ("Offset" %in% input$model) {
+      offsetEpochs <- trimws(unlist(strsplit(inputs$offsetEpoch, split = ",")))
+      offsetEpochs <- extractEpochList(trans$x, offsetEpochs, "offset")
+      if (length(offsetEpochs) > 0) {
+        if (input$breaking && length(trans$breakEpochs) > 0 && sum(as.numeric(input$trendType,input$sinusoidType,input$polyType)) > 0) {
+          trans$offsetEpochs <- extractEpochList(trans$x, offsetEpochs, "offset", trans$breakEpochs, "break")
+        } else {
+          trans$offsetEpochs <- offsetEpochs
+        }
       }
     }
   }, priority = 3)
