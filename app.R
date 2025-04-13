@@ -8845,6 +8845,7 @@ server <- function(input,output,session) {
       if (messages > 0) cat(file = stderr(), mySession, "Showing help file", "\n")
     } else {
       req(db1[[info$db1]])
+      updateOverview()
       printInfo("CHANGE")
     }
   }, priority = 7)
