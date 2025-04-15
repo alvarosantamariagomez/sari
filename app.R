@@ -2465,7 +2465,9 @@ server <- function(input,output,session) {
                            step = NULL, step2 = NULL,
                            giaTrend = NULL, giaTrend2 = NULL,
                            plot4_1click = NULL, plot5_1click = NULL,
-                           breakEpoch = NULL)
+                           breakEpoch = NULL,
+                           pole_x = NULL, pole_y = NULL, pole_z = NULL, pole_lat = NULL, pole_lon = NULL, pole_rot = NULL, station_x = NULL, station_y = NULL, station_z = NULL, station_x2 = NULL, station_y2 = NULL, station_z2 = NULL)
+
   obs <- reactiveVal()
 
   # 6. computed values
@@ -3039,6 +3041,10 @@ server <- function(input,output,session) {
   observeEvent(station_z2_d(), {
     inputs$station_z2 <- suppressWarnings(as.numeric(trimws(station_z2_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
+  
+  allCoordinates <- reactive({
+    list(inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_x, inputs$station_y, inputs$station_z, inputs$station_x2, inputs$station_y2, inputs$station_z2)
+  }) %>% debounce(100, priority = 2000)
 
   station_lat_d <- reactive(input$station_lat) %>% debounce(1000, priority = 1000)
   observeEvent(station_lat_d(), {
@@ -8092,7 +8098,7 @@ server <- function(input,output,session) {
   }, priority = 5)
   observeEvent(c(inputs$station_lat2, inputs$station_lon2), {
     coordinates <- NULL
-    if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)) {
+    if (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2) && !isTruthy(inputs$station_x2) && !isTruthy(inputs$station_y2) && !isTruthy(inputs$station_z2)) {
       coordinates <- latlon2xyz(inputs$station_lat2*pi/180,inputs$station_lon2*pi/180,1)
       if (length(coordinates) == 3) {
         updateTextInput(session, inputId = "station_x2", value = coordinates[1])
@@ -8102,7 +8108,7 @@ server <- function(input,output,session) {
     }
   }, priority = 5)
   observeEvent(c(inputs$station_x2, inputs$station_y2, inputs$station_z2), {
-    if (isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
+    if (isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2) && !isTruthy(inputs$station_lat2) && !isTruthy(inputs$station_lon2)) {
       stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(inputs$station_x2,inputs$station_y2,inputs$station_z2))))
       coordinates <- c(sprintf("%.6f", stationGeo[1] * 180/pi), sprintf("%.6f", stationGeo[2] * 180/pi))
       if (length(coordinates) == 2) {
@@ -8177,7 +8183,7 @@ server <- function(input,output,session) {
       output$map <- renderUI({ NULL })
     }
   }, priority = 3)
-  observeEvent(c(input$neuenu, input$tunits, input$sunits, inputs$pole_x, inputs$pole_y, inputs$pole_z, inputs$pole_lat, inputs$pole_lon, inputs$pole_rot, inputs$station_x, inputs$station_y, inputs$station_z, inputs$station_x2, inputs$station_y2, inputs$station_z2), {
+  observeEvent(c(input$neuenu, input$tunits, input$sunits, allCoordinates()), {
     req(db1[[info$db1]], input$euler)
     removeNotification("no_rotation")
     if (((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
@@ -13957,7 +13963,7 @@ server <- function(input,output,session) {
       ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
       centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]]], na.rm = T)
       centery <- median(db1[[info$db1]][[paste0("y",component)]], na.rm = T)
-      if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+      if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(allCoordinates()[c(7,8,9)])) {
         y0 <- y0 - trans$plate[component]*(x0 - centerx) - centery
         y1 <- y1 - trans$plate[component]*(x1 - centerx) - centery
         ye <- ye - trans$plate[component]*(xe - centerx) - centery
@@ -14012,7 +14018,7 @@ server <- function(input,output,session) {
       if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
         y2 <- db2[[info$db2]][[paste0("y",component2)]] * inputs$scaleFactor
         sy2 <- db2[[info$db2]][[paste0("sy",component2)]] * inputs$scaleFactor
-        if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
+        if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(allCoordinates()[c(10,11,12)])) {
           y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
         }
         if (component2 > 2  && isTruthy(trans$gia2) && input$giaType == 2) {
