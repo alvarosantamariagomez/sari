@@ -11590,7 +11590,7 @@ server <- function(input,output,session) {
       if (isTruthy(url$file)) {
         filein <- file$primary$datapath
         # checking downloaded file
-        if (isTruthy(file.exists(filein))) {
+        if (isTruthy(filein) && file.exists(filein)) {
           table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,url$server,1)
         } else {
           showNotification(paste("Problem downloading the", file$primary$name, "series from the remote server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
