@@ -12564,8 +12564,8 @@ server <- function(input,output,session) {
           }
         } else if (server == "DORIS") {
           if (isTruthy(station)) {
-            tableAll <- read.table("www/tempFiles/dorisStations.txt", sep = ";")
-            coordinates <- tableAll[tableAll$V6 == station, c(2,3,4)]
+            tableAll <- read.table("www/DORIS_database.txt", sep = ";")
+            coordinates <- tableAll[grepl(station, tableAll$V6, ignore.case = T), c(2,3,4)]
             if (length(coordinates) == 3) {
               shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 2))
               lat <- coordinates[1,1]
@@ -15986,13 +15986,19 @@ server <- function(input,output,session) {
       }
       name <- station
       url <- paste0("https://apps.ids-doris.org/api/v1/position/",pattern,solution,"/")
+      listFile <- "www/DORIS_database.txt"
       if (product == "ESA" || product == "GOP" || product == "GRG" || product == "GSC" || product == "IDS" || product == "IGN") {
         if (isTruthy(station)) {
           filepath <- paste0(url,name)
         } else {
           withBusyIndicatorServer(variable, {
-            dorisStations <- try(fromJSON(txt = "https://apps.ids-doris.org/api/v1/station"), silent = T)
-            write.table(dorisStations[dorisStations$technique == "DORIS",], "www/tempFiles/dorisStations.txt", append = F, row.names = F, col.names = F, sep = ";")
+            if (file.exists(listFile)) {
+              dorisStations <- read.table(listFile, sep = ";")
+              colnames(dorisStations) <- c("id","lat","lon","altitude","domes","mnemonic","startDate","endDate","technique","site.id","site.name","site.country","site.lat","site.lon","site.altitude")
+            } else {
+              dorisStations <- try(fromJSON(txt = "https://apps.ids-doris.org/api/v1/station"), silent = T)
+              write.table(dorisStations[dorisStations$technique == "DORIS",], "www/DORIS_database.txt", append = F, row.names = F, col.names = F, sep = ";")
+            }
             if (isTruthy(dorisStations) && !inherits(dorisStations,"try-error")) {
               stations_available <- sort(dorisStations[dorisStations$technique == "DORIS",]$mnemonic)
               if (length(stations_available) > 0) {
