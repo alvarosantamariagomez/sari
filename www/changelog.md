@@ -1,6 +1,39 @@
 # **SARI changelog**
 
 
+# mayo 2025 [2025.05]
+
+### Fixed
+- fixing the series sampling after undoing a resampling
+- correcting the averaged sampling of the series after a reset
+- improving the plate motion correction when uploading a secondary series
+- improving the gia correction of the secondary series
+- improving the scale factor of the secondary series
+- improving checks on the downloaded series file
+- correcting the 3D plots when adding a 1D secondary series
+- avoiding updating the ID of the primary series when reading the secondary series file
+- removing duplicated epochs when reading a soln.snx file
+- removing the pointer to the soln.snx file after a reset
+- fixing the product names of the formater server
+
+### Changed
+- adapting the code to the new R 4.4.3 version
+- improving the shift of the time axis of the secondary series when merging with the primary series
+- disabling the series units option when the series format is known
+- removing the fitted model from the 3D plot when it is removed from a component
+- updating the overview plot when changing the series units
+- removing the plot of the secondary series when a new secondary series is uploaded
+- avoiding removing the fitted model when loading a new secondary series
+- improving the format of the resampled series & the midas/entropy estimates
+- removing empty spaces in the model equation printed in the results file
+- splitting the LS equation model in several lines printed in the results summary on screen
+- changing the debounce of the input averaging period to 1 sec
+- correcting the station list from the EARTHSCOPE server
+
+### Added
+- adding the series from the DORIS server (L. Soudarin, G. Moreaux)
+
+
 # abril 2025 [2025.04]
 
 ### Fixed

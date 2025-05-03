@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version abril 2025'
+title: 'SARI documentation - version mayo 2025'
 author: 'Alvaro Santamaría'
 date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
@@ -68,7 +68,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *abril 2025*  --  "Are you an effective team?"
+Current SARI version: *mayo 2025*  --  "The more contact I have with humans, the more I learn"
 
 -----------------
 
@@ -98,22 +98,23 @@ Any non-numeric value in a *NEU/ENU* or *1D* series will make the full line to b
 For the *PBO* and *NGL* series, the headers are recognized and skipped, also the first two columns of the *NGL* files and the last column of the *PBO* files. However, any other non-numeric value in these files will stop the app.  
 Data records having a NA, NaN or Inf/inf entries will be treated as valid not-available or not-a-number numeric values and will be automatically skipped, but na, Na, nan, NAN or any other string will be considered as unwanted text. <p></p>
 For *NEU/ENU* and *1D* series, the user may need to set the `Time units` (days, weeks or years) and the `Series units` (metres or millimetres) of the input series, which may be otherwise unknown to SARI (some *NEU/ENU* series are recognized by SARI and the format will be set automatically).  
-The user must pay attention to the time units that are set when a *NEU/ENU* or *1D* series are plotted, as these units will define and fix the sampling of the series during the analysis. Changing the time units later when the series are already plotted will change the units of the time axis, but not its sampling. For instance, when changing from days to weeks or years, the sampling units will change from one point per day into one point per ~0.14 weeks or ~0.0027 years, instead of one point per week or one point per year.  
-For the *PBO* and *NGL* series, different time units are available in these formats, so changing the `Time units` is optional. The latter also applies in case of a *NEU/ENU* series where the epochs are provided in [ISO 8601 calendar date and time format](https://en.wikipedia.org/wiki/ISO_8601). <p></p> 
+The user must pay special attention to the time units that are set before a *NEU/ENU* or *1D* series are plotted, as these units will define the sampling of the series for the rest of the analysis. Changing the time units after the series have been plotted will change the units of the time axis, but not its sampling. For instance, when changing the time units of an already plotted daily series from years to days or weeks, the sampling units will change from one point per ~0.0027 years into one point per day or per ~0.14 weeks; the already defined sampling period will not change, only its units does. The correct use of several options in SARI depends on defining the correct sampling of the series before plotting them, and this is done by setting the correct time units of the series.  
+For the *PBO* and *NGL* series, different time units are provided by these formats, so changing the `Time units` is just optional as the sampling period is already known (daily). The latter also applies in case of a *NEU/ENU* series where the epochs are provided in [ISO 8601 calendar date and time format](https://en.wikipedia.org/wiki/ISO_8601). <p></p> 
 If the series does not contain error bars, or the user does not want to use them, it is possible to turn the error bars off in the processing using the `use error bars` option. By default, they are always on. <p id="header"></p>
 If the format of the input file is not known (content of columns, separation, etc.), it is possible to print on screen the first lines of the input series to assess the corresponding format before plotting using the `show series header` option.  After the series has been plotted, if it is not a *1D* series, this option will show the first lines of the coordinate component that has been extracted from the input file and is being used in the analysis. <p></p>
 When the format of the series is set, click the `Plot` button in the [<a href="#plot-controls" target="_self">Plot controls</a>](#ii.-plot-controls) block.
 
-2) The user can automatically download GNSS series available at specific <ins>**web servers**</ins>.  
-This is done via the options: `server`, `product` and `station`. To download a series, the user must first select the `server` from those available in the dropdown menu, and then select the `product` (if only one `product` is available for the selected `server`, it will be selected automatically). With the `server` and `product` selected, SARI will download the list of available stations from the server.  
-Depending on the lenght of the list of stations, the download may take up to a few seconds. Type in the first characters of the `station` name to filter the list of stations available.  
+2) The user can automatically download GNSS series available at specific remote <ins>**web servers**</ins>.  
+This is done via the options: `server`, `product` and `station`. To download a series, the user must first select the `server` from those available in the dropdown menu, and then select the `product`. If only one `product` is available for the selected `server`, then it will be selected automatically. With the `server` and `product` selected, SARI will download the list of available stations from the server and for the selected product.  
+Depending on the connection and the lenght of the list of stations, the download may take up to a few seconds. For some servers for which this operation is sensibly long, a pre-downloaded list of stations is included in SARI allowing for a faster interaction with the remote server. The pre-downloaded lists of stations are updated with each new SARI version.  
+Once the list of stations from the selected server and product are shown, you can type in the first characters of the `station` name to filter the list of stations available.  
 When a `station` is selected, the series will be downloaded and plotted automatically, i.e. there is no need to set the format and units as these are already known.  
 Similar options are available for downloading a secondary series (see an example below and the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block for further details).
 
 3) The values for the `server`, `product` and `station` options can also be provided in any order as a <ins>**query string**</ins> after the base SARI URL on the address bar of the browser.  
 These three parameters can be defined for both the primary and secondary series at the same time. For example, adding this query string  
-<span style="color: red;">?product=SPOTGINS_POS&station=CRAL00FRA&server=FORMATER&server2=NGL&product2=FINAL&station2=CRAL</span>  
-at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *SPOTGINS* GNSS position series of the station *CRAL* from the *FORMATER* server, and also the *NGL* *FINAL* series of the same station as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
+<span style="color: red;">?product=SPOTGINS_POS&station=CRAL00FRA&server=FORMATER&server2=NGL&product2=IGS14&station2=CRAL</span>  
+at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *SPOTGINS* GNSS position series of the station *CRAL00FRA* from the *FORMATER* server, and also the *NGL* *IGS14* series of the station *CRAL* as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 This feature allows webmasters of any GNSS series database to include a link on their webpages so that users can open a specific GNSS series directly with SARI on a new browser tab. Contact the [<a href="#author" target="_self">author</a>](#author) for more information. <p></p>
 At this moment, the following servers and products are available:  
 
@@ -259,7 +260,7 @@ If the series was computed with a constant integration period, like the common 2
 If there were points already removed from the series before reducing the sampling, these points will not contribute to the new averaged values. Also, if there is a secondary series being used with the `correct` or `average` options, the reduced sampling will be obtained before the secondary series is used. This means that the primary and secondary series would be compared after their original sampling has been reduced. <p id="map"></p>
 
 A summary of the contents of the plotted series (number of points, time range, sampling, etc.) will be shown at the bottom of this block.  
-If the station coordinates are known, the `show location map` option will show a map with the station's location together with the [<a href="#references" target="_self">Bird (2003)</a>](#references) plate boundaries. The station ID and the plate name are shown by hoovering over the map.
+If the station coordinates are already known, or provided by the user, the `show location map` option will show a map with the station's location together with the [<a href="#references" target="_self">Bird (2003)</a>](#references) plate boundaries. The station ID and the plate name are shown by hoovering over the map.
 
 <h3 id="plot-controls"></h3>
 
@@ -651,7 +652,7 @@ If you use SARI for your research, I would really appreciate it if you could inc
 
 As for me, I am thankful to these people that directly or indirectly contributed to improve this software (some of them more than once):
 
-Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard, Joëlle Nicolas.
+Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard, Joëlle Nicolas, Laurent Soudarin, Guilhem Moreaux.
 
 SARI is accessible to anyone at the Shinyapps server thanks to the financial support of the [RENAG National Observing Service](http://renag.resif.fr/en/).
 
@@ -776,19 +777,19 @@ Zeileis A, Leisch F, Hornik K, Kleiber C (2002) strucchange: An R Package for Te
 This software is developed and is maintained by  
 
 [**Alvaro Santamar&#237;a**](https://www.get.omp.eu/author/ALVARO-SANTAMARIA/)  
+Centre National d'Etudes Spatiales  
 Geosciences Environnement Toulouse  
 Universit&#233; de Toulouse, CNES, CNRS, IRD, UPS  
 Observatoire Midi-Pyr&#233;n&#233;es  
-Toulouse 
+Toulouse  
 
 For any comments, suggestions, questions, bugs, unexpected crashes or missing features, please open a github issue [here](https://github.com/alvarosantamariagomez/sari).  
 
 &nbsp;
 
-[![GET](get.jpg)](https://www.get.omp.eu/en/geosciences-environnement-toulouse-en/) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![CNES](cnes.png)](https://cnes.fr/en) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![UPS](ups.jpg)](https://www.univ-tlse3.fr/home) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-[![OMP](omp.jpg)](https://www.omp.eu)
+[![CNES](cnes.png)](https://cnes.fr/en) &nbsp;&nbsp;
+[![GET](get.png)](https://www.get.omp.eu/en/geosciences-environnement-toulouse-en/) &nbsp;&nbsp;
+[![OMP](omp.png)](https://www.omp.eu)  &nbsp;&nbsp;
 
 [![RENAG](eposfr-renag.png)](https://renag.resif.fr/en/)
 

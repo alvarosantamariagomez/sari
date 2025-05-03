@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version abril 2025</title>
+  <title>SARI documentation - version mayo 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version abril 2025</h1>
+<h1 class="title">SARI documentation - version mayo 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 <p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
@@ -62,7 +62,7 @@
 <h1 id="sari-overview">SARI overview</h1>
 <p>SARI allows you to visualize discrete time series data, analyze and fit unidimensional models interactively and save the results using a <a href="https://en.wikipedia.org/wiki/WYSIWYG">WYSIWYG</a> web interface.</p>
 <p>It has been developed in the <a href="https://www.r-project.org">R programming language</a>, under the interactive framework of the <a href="https://shiny.rstudio.com">Shiny R package</a>.<br />
-Currently tested in R version 4.1.3.</p>
+Currently tested in R version 4.4.3.</p>
 <p>The development of SARI started in 2017 to analyze GNSS position time series from the <a href="http://renag.resif.fr/en/">GNSS National Network (RENAG)</a> (<a href="#references"><a href="#references" target="_self">RESIF 2017</a></a>) and it is oriented towards this kind of dataset, but any other type of series can be used as long as the series format is simple, consistent and does not have uncommented alphabetic characters.</p>
 <p>SARI is available on all platforms, except mobile devices, and can be accessed in three ways:</p>
 <ul>
@@ -81,7 +81,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>abril 2025</em> – “Are you an effective team?”</p>
+<p>Current SARI version: <em>mayo 2025</em> – “The more contact I have with humans, the more I learn”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -108,8 +108,8 @@ Data records having a NA, NaN or Inf/inf entries will be treated as valid not-av
 <p>
 </p>
 For <em>NEU/ENU</em> and <em>1D</em> series, the user may need to set the <code>Time units</code> (days, weeks or years) and the <code>Series units</code> (metres or millimetres) of the input series, which may be otherwise unknown to SARI (some <em>NEU/ENU</em> series are recognized by SARI and the format will be set automatically).<br />
-The user must pay attention to the time units that are set when a <em>NEU/ENU</em> or <em>1D</em> series are plotted, as these units will define and fix the sampling of the series during the analysis. Changing the time units later when the series are already plotted will change the units of the time axis, but not its sampling. For instance, when changing from days to weeks or years, the sampling units will change from one point per day into one point per ~0.14 weeks or ~0.0027 years, instead of one point per week or one point per year.<br />
-For the <em>PBO</em> and <em>NGL</em> series, different time units are available in these formats, so changing the <code>Time units</code> is optional. The latter also applies in case of a <em>NEU/ENU</em> series where the epochs are provided in <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601 calendar date and time format</a>.
+The user must pay special attention to the time units that are set before a <em>NEU/ENU</em> or <em>1D</em> series are plotted, as these units will define the sampling of the series for the rest of the analysis. Changing the time units after the series have been plotted will change the units of the time axis, but not its sampling. For instance, when changing the time units of an already plotted daily series from years to days or weeks, the sampling units will change from one point per ~0.0027 years into one point per day or per ~0.14 weeks; the already defined sampling period will not change, only its units does. The correct use of several options in SARI depends on defining the correct sampling of the series before plotting them, and this is done by setting the correct time units of the series.<br />
+For the <em>PBO</em> and <em>NGL</em> series, different time units are provided by these formats, so changing the <code>Time units</code> is just optional as the sampling period is already known (daily). The latter also applies in case of a <em>NEU/ENU</em> series where the epochs are provided in <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601 calendar date and time format</a>.
 <p>
 </p>
 If the series does not contain error bars, or the user does not want to use them, it is possible to turn the error bars off in the processing using the <code>use error bars</code> option. By default, they are always on.
@@ -119,15 +119,16 @@ If the format of the input file is not known (content of columns, separation, et
 <p>
 </p>
 <p>When the format of the series is set, click the <code>Plot</code> button in the <a href="#ii.-plot-controls"><a href="#plot-controls" target="_self">Plot controls</a></a> block.</p></li>
-<li><p>The user can automatically download GNSS series available at specific <ins><strong>web servers</strong></ins>.<br />
-This is done via the options: <code>server</code>, <code>product</code> and <code>station</code>. To download a series, the user must first select the <code>server</code> from those available in the dropdown menu, and then select the <code>product</code> (if only one <code>product</code> is available for the selected <code>server</code>, it will be selected automatically). With the <code>server</code> and <code>product</code> selected, SARI will download the list of available stations from the server.<br />
-Depending on the lenght of the list of stations, the download may take up to a few seconds. Type in the first characters of the <code>station</code> name to filter the list of stations available.<br />
+<li><p>The user can automatically download GNSS series available at specific remote <ins><strong>web servers</strong></ins>.<br />
+This is done via the options: <code>server</code>, <code>product</code> and <code>station</code>. To download a series, the user must first select the <code>server</code> from those available in the dropdown menu, and then select the <code>product</code>. If only one <code>product</code> is available for the selected <code>server</code>, then it will be selected automatically. With the <code>server</code> and <code>product</code> selected, SARI will download the list of available stations from the server and for the selected product.<br />
+Depending on the connection and the lenght of the list of stations, the download may take up to a few seconds. For some servers for which this operation is sensibly long, a pre-downloaded list of stations is included in SARI allowing for a faster interaction with the remote server. The pre-downloaded lists of stations are updated with each new SARI version.<br />
+Once the list of stations from the selected server and product are shown, you can type in the first characters of the <code>station</code> name to filter the list of stations available.<br />
 When a <code>station</code> is selected, the series will be downloaded and plotted automatically, i.e. there is no need to set the format and units as these are already known.<br />
 Similar options are available for downloading a secondary series (see an example below and the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block for further details).</p></li>
 <li>The values for the <code>server</code>, <code>product</code> and <code>station</code> options can also be provided in any order as a <ins><strong>query string</strong></ins> after the base SARI URL on the address bar of the browser.<br />
 These three parameters can be defined for both the primary and secondary series at the same time. For example, adding this query string<br />
-<span style="color: red;">?product=SPOTGINS_POS&amp;station=CRAL00FRA&amp;server=FORMATER&amp;server2=NGL&amp;product2=FINAL&amp;station2=CRAL</span><br />
-at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the <em>SPOTGINS</em> GNSS position series of the station <em>CRAL</em> from the <em>FORMATER</em> server, and also the <em>NGL</em> <em>FINAL</em> series of the same station as secondary series (see the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block).<br />
+<span style="color: red;">?product=SPOTGINS_POS&amp;station=CRAL00FRA&amp;server=FORMATER&amp;server2=NGL&amp;product2=IGS14&amp;station2=CRAL</span><br />
+at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the <em>SPOTGINS</em> GNSS position series of the station <em>CRAL00FRA</em> from the <em>FORMATER</em> server, and also the <em>NGL</em> <em>IGS14</em> series of the station <em>CRAL</em> as secondary series (see the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block).<br />
 This feature allows webmasters of any GNSS series database to include a link on their webpages so that users can open a specific GNSS series directly with SARI on a new browser tab. Contact the <a href="#author"><a href="#author" target="_self">author</a></a> for more information.
 <p>
 </p>
@@ -323,12 +324,28 @@ CWU, PBO, NMT
 IGB14
 </td>
 </tr>
+<tr>
+<td style="text-align:left;">
+<a href="https://ids-doris.org/" target="_blank">DORIS</a>
+</td>
+<td style="text-align:center;">
+<sup>4</sup>
+</td>
+<td style="text-align:left;">
+4 characters (TLSB)
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+ESA, GOP, GRG, GSC, IDS, IGN
+</td>
+</tr>
 <tr style="vertical-align: top">
 <td style="text-align:left;">
 <a href="http://loading.u-strasbg.fr/" target="_blank">EOSTLS</a>
 </td>
 <td style="text-align:center;">
-<sup>4</sup>
+<sup>5</sup>
 </td>
 <td style="text-align:left;">
 14 characters (TLSE_10003M009)
@@ -361,7 +378,8 @@ RLR
 <sup>1</sup> The <em>LOCAL</em> server is used only to upload series from local files on a local SARI session (more details in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">SARI shell script</a>).<br />
 <sup>2</sup> The <em>RAPID NGL</em> series correspond to the IGS14 solution.<br />
 <sup>3</sup> The EarthScope (UNAVCO) series correspond to the <em>IGS14</em> solution.<br />
-<sup>4</sup> The <em>EOSTLS</em> loading series are those computed in the center of figure (CF) frame. <b><span style="color: #DF536B;">WARNING:</span></b> some of the <em>EOSTLS</em> series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with <em>(d)</em>, if they are available. Products marked with <em>(o)</em> represent old products that are no longer updated.</p>
+<sup>4</sup> The DORIS series correspond to the <em>25wd01</em> solution.<br />
+<sup>5</sup> The <em>EOSTLS</em> loading series are those computed in the center of figure (CF) frame. <b><span style="color: #DF536B;">WARNING:</span></b> some of the <em>EOSTLS</em> series are very long and/or have a very high sampling, loading these series may take longer than expected. It is recommended to use the daily series from those products marked with <em>(d)</em>, if they are available. Products marked with <em>(o)</em> represent old products that are no longer updated.</p>
 <p>Contact the <a href="#author"><a href="#author" target="_self">author</a></a> if more servers or products need to be added.</p>
 <p>When uploading a series from a remote server via the the <code>server</code>, <code>product</code> and <code>station</code> options, SARI will also upload the corresponding <em>sitelog</em>, <em>soln.snx</em> or <em>custom offset</em> files, depending on the selected server, if these files are available for the selected station (see the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block).</p>
 Once uploaded and plotted (see the <a href="#ii.-plot-controls"><a href="#plot-controls" target="_self">Plot controls</a></a> block), the series will be shown on the visualization panel on the right. If the series contains three coordinate components (all except the <em>1D</em> format), the three coordinate components of the series will be shown together in the <em>3D</em> tab. Each coordinate component will be also available individually in separate tabs on the top. The series analysis is done separately for each coordinate component in its respective tab (see the <a href="#ii.-fit-controls"><a href="#fit-controls" target="_self">Fit controls</a></a> block).<br />
@@ -381,7 +399,7 @@ If there were points already removed from the series before reducing the samplin
 <p id="map">
 </p>
 <p>A summary of the contents of the plotted series (number of points, time range, sampling, etc.) will be shown at the bottom of this block.<br />
-If the station coordinates are known, the <code>show location map</code> option will show a map with the station’s location together with the <a href="#references"><a href="#references" target="_self">Bird (2003)</a></a> plate boundaries. The station ID and the plate name are shown by hoovering over the map.</p>
+If the station coordinates are already known, or provided by the user, the <code>show location map</code> option will show a map with the station’s location together with the <a href="#references"><a href="#references" target="_self">Bird (2003)</a></a> plate boundaries. The station ID and the plate name are shown by hoovering over the map.</p>
 <h3 id="plot-controls">
 </h3>
 <p><a href="#contents"><a href="#contents" target="_self">Go to top of document</a></a></p>
@@ -510,12 +528,13 @@ Some of these components require additional parameters to be included in the mod
 Additionally, if using a <em>KF</em> fit, the initial state and the standard deviation of the process noise can be set for the trend and sinusoidal components (see the <a href="#notes-on-the-kalman-filter"><a href="#notes-on-the-kalman-filter" target="_self">notes</a></a> below).
 <p id="notes-on-the-model-breaks">
 </p>
-<p>If using a <em>LS</em> fit, the <code>segmented model</code> option allows fitting the linear rate, sinusoidal and polynomial components to different segments of the series, which are defined by a comma-separated list of <em>break epochs</em>. If the input list of <em>break epochs</em> is not empty, a new option allows fitting a <em>continuous</em> or <em>segmented</em> linar rate, sinusoidal variation or higher-degree polynomial. In case the <em>continuous</em> option is selected, the break epochs will be ignored for a specific component. For instance, a continuous sinusoidal variation can be fitted together with a segmented linear rate. In case the <em>segmented</em> option is selected, the estimated model components will not be constrained between the different segments.</p>
+<p>If using a <em>LS</em> fit, the <code>segmented model</code> option allows fitting the linear rate, sinusoidal and polynomial components to different segments of the series, which are defined by a comma-separated list of <em>break epochs</em>. If the input list of <em>break epochs</em> is not empty, a new option allows fitting a <em>continuous</em> or <em>segmented</em> linar rate, sinusoidal variation or higher-degree polynomial. In case the <em>continuous</em> option is selected, the break epochs will be ignored for a specific component. For instance, a continuous sinusoidal variation can be fitted together with a segmented linear rate, or vice versa. In case the <em>segmented</em> option is selected, the estimated model components will not be constrained between the different segments.</p>
 <p>The fitted model will be represented by a red line on top of the original series and in the plot of the residuals with a zero value line.<br />
 The <code>click and collect</code> option allows adding the epochs of the clicked points on the series plots automatically to the list of offset epochs in the fitted model.<br />
 The fitted offsets will be represented by vertical red lines in the residual plot.</p>
 <p>A fit summary will be shown on the visualization pannel on the right.<br />
 In case of a <em>LS</em> fit, the summary includes the estimated values of the chosen model components, their formal uncertainty, their absolute <a href="https://en.wikipedia.org/wiki/Student%27s_t-test">Student’s t-test</a> statistic and their corresponding significance level, i.e., the probability of rejecting a true null hypothesis in which the parameter value is not significantly different from zero; in short, the probability that the model parameter is unnecessary. Probabilities higher than 5 % will be printed in red as a warning. The correlation between the model parameters is also provided on the visualization panel. Similarly, correlations higher than 0.8 will be printed in red as a warning.<br />
+The LS fit also prints the estimated “residual standard error” value, which, in this context, represents the unitless scale factor that was applied to the series error bars to obtain the residual error bars. Values higher/lower than 1 ususally indicate that the series error bars are too optimistic/pesimistic to represent the unexplained variability of the series themselves.<br />
 In case of a <em>KF</em> fit, the summary will include the statistics (mean value, standard deviation, etc.) for each model component included in the estimated state.</p>
 <p>When the three coordinate components are fitted (excludig 1D series), the tab <em>residuals</em> will appear at the top. This tab will show the plots of the three coordinate components, as in the 3D tab, but using the fit residual series. By comparing the three residual series at the same time, it should be easier to verify the general quality of the fit. The <code>save</code> button will download the three residual series into a single file.</p>
 <p>The <code>search discontinuities</code> button provides an automatic guesstimate of the location of probable discontinuities in the time series. The algorithm is based on the assessment of deviations from stability in different segments of the series using a classical linear regression model and a <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a> (BIC). The algorithm is described by <a href="#references"><a href="#references" target="_self">Zeileis et al. (2003)</a></a>. <b><span style="color: #DF536B;">WARNING:</span></b> this option is very time-consuming (see the <a href="#notes-on-the-discontinuity-detection"><a href="#notes-on-the-discontinuity-detection" target="_self">notes</a></a> below).</p>
@@ -860,7 +879,7 @@ If running SARI on a local server (RStudio or Docker), there is a sixth block at
 For any comment or question, please open a <a href="https://github.com/alvarosantamariagomez/sari">github issue</a>.</p>
 <p>If you use SARI for your research, I would really appreciate it if you could include <a href="https://link.springer.com/article/10.1007/s10291-019-0846-y">this paper</a> in your references.</p>
 <p>As for me, I am thankful to these people that directly or indirectly contributed to improve this software (some of them more than once):</p>
-<p>Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard, Joëlle Nicolas.</p>
+<p>Valérie Ballu, Sylvain Loyer, Paul Rebischung, Pascal Gegout, Giorgi Khazaradze, Alexandre Michel, Emilie Klein, Jean-Michel Lemoine, Guy Wöppelmann, Sara Padilla, Sorin Nistor, Massyl Ouaddour, Kevin Gobron, Juan J. Portela Fernández, Marianne Métois, Andrea Walpersdorf, Germinal Gabalda, Hanane Ait-Lakbir, Florent Feriol, Médéric Gravelle, David Rodríguez Collantes, Daniel Moreira Medeiros, Elena Gimenez de Ory, Audrey Hyeans, Julie Cheynel, Mikaël Guichard, Joëlle Nicolas, Laurent Soudarin, Guilhem Moreaux.</p>
 <p>SARI is accessible to anyone at the Shinyapps server thanks to the financial support of the <a href="http://renag.resif.fr/en/">RENAG National Observing Service</a>.</p>
 <hr />
 <h1 id="references">
@@ -925,13 +944,14 @@ For any comment or question, please open a <a href="https://github.com/alvarosan
 <h1 id="author">Author</h1>
 <p>This software is developed and is maintained by</p>
 <p><a href="https://www.get.omp.eu/author/ALVARO-SANTAMARIA/"><strong>Alvaro Santamaría</strong></a><br />
+Centre National d’Etudes Spatiales<br />
 Geosciences Environnement Toulouse<br />
 Université de Toulouse, CNES, CNRS, IRD, UPS<br />
 Observatoire Midi-Pyrénées<br />
 Toulouse</p>
 <p>For any comments, suggestions, questions, bugs, unexpected crashes or missing features, please open a github issue <a href="https://github.com/alvarosantamariagomez/sari">here</a>.</p>
 <p> </p>
-<p><a href="https://www.get.omp.eu/en/geosciences-environnement-toulouse-en/"><img src="get.jpg" alt="GET" /></a>          <a href="https://cnes.fr/en"><img src="cnes.png" alt="CNES" /></a>          <a href="https://www.univ-tlse3.fr/home"><img src="ups.jpg" alt="UPS" /></a>          <a href="https://www.omp.eu"><img src="omp.jpg" alt="OMP" /></a></p>
+<p><a href="https://cnes.fr/en"><img src="cnes.png" alt="CNES" /></a>    <a href="https://www.get.omp.eu/en/geosciences-environnement-toulouse-en/"><img src="get.png" alt="GET" /></a>    <a href="https://www.omp.eu"><img src="omp.png" alt="OMP" /></a>   </p>
 <p><a href="https://renag.resif.fr/en/"><img src="eposfr-renag.png" alt="RENAG" /></a></p>
 <hr />
 <h1 id="policy">
