@@ -9379,6 +9379,7 @@ server <- function(input,output,session) {
         table2$sy1 <- table2sy_tmp
       }
       # computing the shift period between the primary and secondary series
+      deltas <- NULL
       xmin <- max(c(table1$x1[1],table2$x1[1]))
       xmax <- min(c(table1$x1[length(table1$x1)],table2$x1[length(table2$x1)]))
       x1 <- table1$x1[table1$x1 >= xmin & table1$x1 <= xmax]
@@ -9386,7 +9387,7 @@ server <- function(input,output,session) {
       if (length(x1) < length(x2)) {
         closest_values <- sapply(x1, function(x) { x2[which.min(abs(x2 - x))] })
         deltas <- abs(closest_values - x1)
-      } else {
+      } else if (length(x1) > 0 && length(x2) > 0) {
         closest_values <- sapply(x2, function(x) { x1[which.min(abs(x1 - x))] })
         deltas <- abs(x2 - closest_values)
       }
