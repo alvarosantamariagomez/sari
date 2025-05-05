@@ -447,7 +447,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 options(shiny.trace = F)
 devmode(F)
-# options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
@@ -4955,7 +4955,7 @@ server <- function(input,output,session) {
         } else if (input$sunits == 2) {
           cat("Series units: mm", "\n\n")
         }
-        print(formatting(stats,0), row.names = F)
+        print(formatting(stats,1), row.names = F)
       }, width = 280)
     } else {
       showNotification(HTML("Unable to compute the histogram.<br>Check the input series."), action = NULL, duration = 10, closeButton = T, id = "no_histogram", type = "error", session = getDefaultReactiveDomain())
@@ -14656,7 +14656,7 @@ server <- function(input,output,session) {
           names(output_excluded$df) <- c("# Epoch", "Data")
         }
         output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F,scientific = F)
-        output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],0)
+        output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],1)
         if (isTruthy(input$sigmas)) {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
         } else {
