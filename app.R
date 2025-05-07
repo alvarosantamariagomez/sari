@@ -4250,7 +4250,7 @@ server <- function(input,output,session) {
               if (fit$rank == length(info$parameters)) {
                 names(fit$coefficients) <- info$parameters
               } else {
-                showNotification(paste0("Problem computing the parameters: ",names(which(is.na(fit$coefficients)))), action = NULL, duration = 10, closeButton = T, id = "bad_rank", type = "error", session = getDefaultReactiveDomain())
+                showNotification(paste0("Problem computing the parameters: ",paste(names(which(is.na(fit$coefficients))), collapse = ", ")), action = NULL, duration = 10, closeButton = T, id = "bad_rank", type = "error", session = getDefaultReactiveDomain())
                 req(info$stop)
               }
             }
