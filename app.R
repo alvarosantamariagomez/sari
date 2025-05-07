@@ -4336,7 +4336,7 @@ server <- function(input,output,session) {
             trans$res <- res
             trans$mod <- mod
             trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
-            trans$reserror <- rep(NA, length(trans$res))
+            trans$reserror <- synthesis$sigma * trans$sy
             if (isTruthy(synthesis$sigma)) {
               if (!any(1/weights < trans$moderror^2)) {
                 trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
@@ -10453,7 +10453,7 @@ server <- function(input,output,session) {
     series <- data.frame(x = trans$x0[!is.na(trans$y0)], y = trans$y0[!is.na(trans$y0)])
     if (length(trans$res) > 0) {
       if (isTruthy(input$sigmas)) {
-        if (length(trans$reserror) > 0) {
+        if (length(trans$reserror) > 0 && all(!is.na(trans$reserror))) {
           residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$reserror)
         } else {
           residuals <- data.frame(x = trans$x, res = trans$res, sy = trans$sy)
