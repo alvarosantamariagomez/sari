@@ -10694,16 +10694,16 @@ server <- function(input,output,session) {
         updateCheckboxInput(session, inputId = "permanent", value = F)
       } else {
         if (isTruthy(input$remove3D)) {
-          db1[[info$db1]]$status1[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status1)] <- F
-          db1[[info$db1]]$status2[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status2)] <- F
-          db1[[info$db1]]$status3[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status3)] <- F
+          db1[[info$db1]]$status1[(x0 >= start & x0 <= end) & !is.na(db1[[info$db1]]$status1)] <- F
+          db1[[info$db1]]$status2[(x0 >= start & x0 <= end) & !is.na(db1[[info$db1]]$status2)] <- F
+          db1[[info$db1]]$status3[(x0 >= start & x0 <= end) & !is.na(db1[[info$db1]]$status3)] <- F
         } else {
           if (input$tab == 1) {
-            db1[[info$db1]]$status1[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status1)] <- F
+            db1[[info$db1]]$status1[(x0 >= start & x0 <= end) & !is.na(db1[[info$db1]]$status1)] <- F
           } else if (input$tab == 2) {
-            db1[[info$db1]]$status2[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status2)] <- F
+            db1[[info$db1]]$status2[(x0 >= start & x0 <= end) & !is.na(db1[[info$db1]]$status2)] <- F
           } else if (input$tab == 3) {
-            db1[[info$db1]]$status3[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status3)] <- F
+            db1[[info$db1]]$status3[(x0 >= start & x0 <= end) & !is.na(db1[[info$db1]]$status3)] <- F
           }
         }
       }
