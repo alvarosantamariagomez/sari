@@ -3680,17 +3680,24 @@ server <- function(input,output,session) {
       } else if (input$symbol == 2) {
         symbol <- 'o'
       }
+      rangesy1 <- ranges$y1
       # check secondary series and plot it first
       if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         # setting the right Y axis
+        pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+        pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
+        pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
+        pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
         if (isTruthy(input$sameScale)) {
-          pointsX1 <- trans$x[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
-          pointsX2 <- trans$x2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
-          pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
-          pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
-          half <- abs(ranges$y1[1] - mean(ranges$y1))
+          range1 <- diff(range(pointsY1))
+          range2 <- diff(range(pointsY2))
+          range <- ifelse(range1 > range2, range1, range2)
+          if (input$fullSeries) {
+            rangesy1[1] <- ranges$y1[1] - (range - range1)/2
+            rangesy1[2] <- ranges$y1[2] + (range - range1)/2
+          }
           middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
-          ranges$y12 <- c(middle - half, middle + half)
+          ranges$y12 <- c(middle - range/2, middle + range/2)
           if (length(pointsX1) == 0 || length(pointsX2) == 0) {
             # NA
           } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
@@ -3703,10 +3710,15 @@ server <- function(input,output,session) {
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
-            ranges$y12 <- isolate(ranges$y12 + (ranges$y1[1] - ranges$y12[1]) - pointsBias)
+            ranges$y12 <- ranges$y12 + (rangesy1[1] - ranges$y12[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
-          ranges$y12 <- ranges$y1
+          if (input$fullSeries) {
+            range <- range(c(pointsY1,pointsY2))
+            ranges$y12 <- rangesy1 <- range
+          } else {
+            ranges$y12 <- rangesy1
+          }
         } else {
           ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
           if (sum(ids) > 0) {
@@ -3728,7 +3740,7 @@ server <- function(input,output,session) {
         par(new = T)
       }
       # plotting primary series
-      plot_series(trans$x,trans$y,trans$sy,ranges$x1,ranges$y1,sigmas,title,input$symbol,T,info$tunits.label)
+      plot_series(trans$x,trans$y,trans$sy,ranges$x1,rangesy1,sigmas,title,input$symbol,T,info$tunits.label)
       # plotting excluded points
       points(trans$xe, trans$ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
       # plotting plate and GIA model predictions
@@ -13992,6 +14004,7 @@ server <- function(input,output,session) {
       rangeX <- range(x0)
       if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
         x2 <- db2[[info$db2]][[paste0("x",input$tunits)]]
+        y2 <- db2[[info$db2]][[paste0("y",component2)]] * inputs$scaleFactor
         if (isTruthy(input$fullSeries)) {
           info$minx <- min(x0, x2, na.rm = T)
           info$maxx <- max(x0, x2, na.rm = T)
@@ -14017,7 +14030,6 @@ server <- function(input,output,session) {
         rangeY <- range(y0[x0 >= rangeX[1] & x0 <= rangeX[2]])
       }
       if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
-        y2 <- db2[[info$db2]][[paste0("y",component2)]] * inputs$scaleFactor
         sy2 <- db2[[info$db2]][[paste0("sy",component2)]] * inputs$scaleFactor
         if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(allCoordinates()[c(10,11,12)])) {
           y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
@@ -14033,13 +14045,19 @@ server <- function(input,output,session) {
           symbol <- 'o'
         }
         if (isTruthy(input$sameScale)) {
-          pointsX1 <- x1[x1 > rangeX[1] & x1 < rangeX[2]]
-          pointsX2 <- x2[x2 > rangeX[1] & x2 < rangeX[2]]
-          pointsY1 <- y1[x1 > rangeX[1] & x1 < rangeX[2]]
-          pointsY2 <- y2[x2 > rangeX[1] & x2 < rangeX[2]]
-          half <- abs(rangeY[1] - mean(rangeY))
+          pointsX1 <- x1[x1 >= rangeX[1] & x1 <= rangeX[2]]
+          pointsX2 <- x2[x2 >= rangeX[1] & x2 <= rangeX[2]]
+          pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
+          pointsY2 <- y2[x2 >= rangeX[1] & x2 <= rangeX[2]]
+          range1 <- diff(range(pointsY1))
+          range2 <- diff(range(pointsY2))
+          range <- ifelse(range1 > range2, range1, range2)
+          if (input$fullSeries) {
+            rangeY[1] <- rangeY[1] - (range - range1)/2
+            rangeY[2] <- rangeY[2] + (range - range1)/2
+          }
           middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
-          rangeY2 <- c(middle - half, middle + half)
+          rangeY2 <- c(middle - range/2, middle + range/2)
           if (length(pointsX1) == 0 || length(pointsX2) == 0) {
             # NA
           } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
@@ -14055,7 +14073,14 @@ server <- function(input,output,session) {
             rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
-          rangeY2 <- rangeY
+          if (input$fullSeries) {
+            pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
+            pointsY2 <- y2[x2 >= rangeX[1] & x2 <= rangeX[2]]
+            range <- range(c(pointsY1,pointsY2))
+            rangeY2 <- rangeY <- range
+          } else {
+            rangeY2 <- rangeY 
+          }
         } else {
           ids <- x2 >= rangeX[1] & x2 <= rangeX[2]
           if (sum(ids) > 0) {
