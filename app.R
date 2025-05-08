@@ -11926,7 +11926,7 @@ server <- function(input,output,session) {
           if (isTruthy(url$station2) && dim(as.matrix(files$datapath))[1] > 1) {
             table_stack <- table_stack[,c("x1","y1","y2","y3")]
             names(table_stack) <- c("# MJD", "East", "North", "Up")
-            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "N/A", dec = ".", row.names = F, col.names = T))
+            suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "NA", dec = ".", row.names = F, col.names = T))
           } else {
             # Extracting station coordinates
             coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,skip,sep2)
@@ -14726,7 +14726,7 @@ server <- function(input,output,session) {
     }
     # Formatting the final file
     colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
-    suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
+    suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "NA",dec = ".",row.names = F,col.names = T))
     shinyjs::delay(2000, removeNotification(id = id, session = getDefaultReactiveDomain()))
   }
   #
@@ -14792,7 +14792,7 @@ server <- function(input,output,session) {
         column <- column + 1
       }
       colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
-      suppressWarnings(write.table(format(OutPut$df, digits = 6, nsmall = 6, trim = F, scientific = F),file_out,append = T,quote = F,sep = "  ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
+      suppressWarnings(write.table(format(OutPut$df, digits = 6, nsmall = 6, trim = F, scientific = F),file_out,append = T,quote = F,sep = "  ",eol = "\n",na = "NA",dec = ".",row.names = F,col.names = T))
     } else {
       showNotification("Problem when writing the periodogram data to a file.", action = NULL, duration = 10, closeButton = T, id = "bad_output", type = "error", session = getDefaultReactiveDomain())
     }
