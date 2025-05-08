@@ -14496,6 +14496,7 @@ server <- function(input,output,session) {
         cat(paste0('# Discontinuities ', info$components[3], ' at: ',paste(trans$offsetEpochs3, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
+    # Adding input data columns
     if (input$tab < 4) {
       if (isTruthy(input$sigmas)) {
         OutPut$df <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)
@@ -14569,10 +14570,11 @@ server <- function(input,output,session) {
     }
     req(OutPut$df)
     OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx)
+    # Formatting input data columns
     if (input$tab < 4) {
-      OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
+      OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],1)
       if (isTruthy(input$sigmas)) {
-        OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
+        OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],1)
       }
     } else if (input$tab == 4 || input$tab == 5) {
       # OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],1)
@@ -14586,6 +14588,7 @@ server <- function(input,output,session) {
         OutPut$df[,7] <- formatting(OutPut$df[,7],1)
       }
     }
+    # Adding and formatting the fit/filter/noise columns for each component
     if (input$tab < 4) {
       if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
         if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
@@ -14647,7 +14650,10 @@ server <- function(input,output,session) {
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
         OutPut$df$Waveform <- formatting(trans$pattern,1)
       }
-      if (isTruthy(input$add_excluded)) {
+    }
+    # Adding formatted excluded points
+    if (isTruthy(input$add_excluded)) {
+      if (input$tab < 4) {
         if (isTruthy(input$sigmas)) {
           output_excluded$df <- data.frame(x = trans$xe, y = trans$ye, sy = trans$sye)
           names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
@@ -14662,12 +14668,63 @@ server <- function(input,output,session) {
         } else {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
         }
-        excluded <- c(unique(which(is.na(OutPut$df), arr.ind = T)[,1]))
-        for (i in excluded) {
-          OutPut$df[i,"# Epoch"] <- paste0("#",OutPut$df[i,"# Epoch"])
+        excluded <- db1[[info$db1]][[paste0("status",input$tab)]] %in% F
+      } else {
+        excluded <- apply(db1[[info$db1]][, c("status1", "status2", "status3")], 1, function(row) all(row == FALSE))
+        names(excluded) <- NULL
+        if (isTruthy(input$sigmas)) {
+          if (isTruthy(trans$plate)) {
+            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
+            centery <- median(db1[[info$db1]]$y1, na.rm = T)
+            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1), sy = formatting(db1[[info$db1]]$sy1[excluded],1))
+            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
+            centery <- median(db1[[info$db1]]$y2, na.rm = T)
+            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1), sy = formatting(db1[[info$db1]]$sy2[excluded],1))
+          } else {
+            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded],1), sy = formatting(db1[[info$db1]]$sy1[excluded],1))
+            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded],1), sy = formatting(db1[[info$db1]]$sy2[excluded],1))
+          }
+          if (isTruthy(trans$gia)) {
+            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
+            centery <- median(db1[[info$db1]]$y3, na.rm = T)
+            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1), sy = formatting(db1[[info$db1]]$sy3[excluded],1))
+          } else {
+            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded],1), sy = formatting(db1[[info$db1]]$sy3[excluded],1))
+          }
+        } else {
+          if (isTruthy(trans$plate)) {
+            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
+            centery <- median(db1[[info$db1]]$y1, na.rm = T)
+            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1))
+            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
+            centery <- median(db1[[info$db1]]$y2, na.rm = T)
+            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1))
+          } else {
+            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded],1))
+            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded],1))
+          }
+          if (isTruthy(trans$gia)) {
+            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
+            centery <- median(db1[[info$db1]]$y3, na.rm = T)
+            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1))
+          } else {
+            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded],1))
+          }
+        }
+        component_list <- list(component1, component2, component3)
+        output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
+        names(output_excluded$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
+        if (isTruthy(input$sigmas)) {
+          OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up", "EastSigma", "NorthSigma", "UpSigma"), all = T)
+        } else {
+          OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up"), all = T)
         }
       }
+      for (i in which(excluded)) {
+        OutPut$df[i,"# Epoch"] <- paste0("#",OutPut$df[i,"# Epoch"])
+      }
     }
+    # Formatting the final file
     colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
     suppressWarnings(write.table(OutPut$df,file_out,append = T,quote = F,sep = " ",eol = "\n",na = "N/A",dec = ".",row.names = F,col.names = T))
     shinyjs::delay(2000, removeNotification(id = id, session = getDefaultReactiveDomain()))
