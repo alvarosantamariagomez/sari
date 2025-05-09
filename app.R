@@ -924,7 +924,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   an IGS-like <span class='UIoption'>soln</span> file,<br>
                                                                                                   a <span class='UIoption'>custom</span> offset file,<br>
                                                                                                   a <span class='UIoption'>secondary</span> series.<br>
-                                                                                                  The secondary series can be <span class='UIoption'>shown</span> next to the primary series or used to either <span class='UIoption'>correct</span> the primary series or to <span class='UIoption'>average</span> both the primary and secondary series.<br><br>
+                                                                                                  The secondary series can be <span class='UIoption'>shown</span> next to the primary series or used to either <span class='UIoption'>correct</span> the primary series, <span class='UIoption'>average</span> both the primary and secondary series or <span class='UIoption'>merge</span> both series into one.<br><br>
                                                                                                   Two model predictions can also be plotted or used to correct the primary series: a <span class='UIoption'>plate motion</span> model and a <span class='UIoption'>GIA</span> model.<br><br>
                                                                                                   See more details in the <span class='help'>help</span> tab."))
                                                                       ),
@@ -1076,9 +1076,9 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
 
                                                                       ## % Secondary series ####
-                                                                      div(style = "padding: 0px 0px; margin-top:-1em",
+                                                                      div(style = "padding: 0px 0px; margin-top:0em",
                                                                           fluidRow(
-                                                                            column(7,
+                                                                            column(8,
                                                                                    div(style = "margin-right:0; padding-right:0",
                                                                                        fileInput(inputId = "series2",
                                                                                                  div("Secondary series file",
@@ -1086,31 +1086,44 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                  multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
                                                                                    )
                                                                             ),
-                                                                            column(2, align = "right",
+                                                                            column(3, align = "left", offset = 1,
                                                                                    div(style = "padding: 0px 0px; margin-top:+1.9em",
                                                                                        actionButton(inputId = "swap", label = "Swap", icon = icon("refresh", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                                   )
-                                                                            ),
-                                                                            column(3,
-                                                                                   div(style = "padding: 0px 0px; margin-top:0em",
-                                                                                       conditionalPanel(
-                                                                                         condition = "output.series2",
-                                                                                         radioButtons(inputId = "optionSecondary", label = NULL, choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3), selected = NULL, inline = F, width = NULL) |> autoCompleteOff(),
-                                                                                       )
                                                                                    )
                                                                             )
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                   div(style = "margin-bottom: -1em",
+                                                                                       selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                   )
                                                                             ),
                                                                             column(4,
-                                                                                   selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
+                                                                                   div(style = "margin-bottom: -1em",
+                                                                                       selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
+                                                                                   )
                                                                             ),
                                                                             column(4,
                                                                                    withBusyIndicatorUI(
-                                                                                     uiOutput("showStation2")
+                                                                                     div(style = "margin-bottom: -1em",
+                                                                                         uiOutput("showStation2")
+                                                                                     )
                                                                                    )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "output.series2",
+                                                                            fluidRow(
+                                                                              column(12,
+                                                                                     radioButtons(inputId = "optionSecondary", 
+                                                                                                  div("Secondary series option",
+                                                                                                      helpPopup("None: hides the secondary series<br/>
+                                                                                                                Show: plots the secondary series underneath the primary series, in green color on the right axis<br/>
+                                                                                                                Correct: subtracts the secondary series from the primary series at common epochs<br/>
+                                                                                                                Average: averages the secondary and primary series at common epochs<br/>
+                                                                                                                Merge: adds the secondary series to the primary series at uncommon epochs.", anchor = "notes-on-the-secondary-series")),
+                                                                                                  choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3, "Merge" = 4), selected = 0, inline = T, width = NULL) |> autoCompleteOff()
+                                                                              )
                                                                             )
                                                                           ),
                                                                           conditionalPanel(
@@ -1118,7 +1131,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             fluidRow(
                                                                               column(8,
                                                                                      # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T) |> autoCompleteOff(),
-                                                                                     radioButtons(inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto") |> autoCompleteOff(),
+                                                                                     radioButtons(inputId = "format2", label = "Secondary series format", choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto") |> autoCompleteOff(),
                                                                                      fluidRow(
                                                                                        column(6,
                                                                                               textInput(inputId = "scaleFactor",
@@ -9366,6 +9379,9 @@ server <- function(input,output,session) {
         ids_info <- paste(file$id1,file$id2, sep = " - ")
       } else if (input$optionSecondary == 3) {
         cat(file = stderr(), mySession, "Averaging with secondary series", "\n")
+        ids_info <- paste(file$id1,file$id2, sep = " : ")
+      } else if (input$optionSecondary == 4) {
+        cat(file = stderr(), mySession, "Merging primary and secondary series", "\n")
         ids_info <- paste(file$id1,file$id2, sep = " + ")
       }
     }
@@ -9493,26 +9509,75 @@ server <- function(input,output,session) {
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
         }
+      } else if (input$optionSecondary == 4) {
+        table1[is.na(table1)] <- 999
+        if (info$format == 4) {
+          table2$status1 <- T
+          table_common <- data.frame(within(merge(table1, table2, by = "x1", all = T), {
+            x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
+            x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
+            y1 <- ifelse(is.na(y1.x),y1.y,y1.x)
+            sy1 <- ifelse(is.na(sy1.x),sy1.y,sy1.x)
+            status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
+          })[,c("x1","x2","x3","y1","sy1","status1")])
+          table_common[table_common$status1 == 999, 'status1'] <- NA
+        } else {
+          table2$status1 <- table2$status2 <- table2$status3 <- T
+          table_common <- data.frame(within(merge(table1, table2, by = "x1", all = T), {
+            if (info$format2 == 4) {
+              x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
+              x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
+              y1 <- ifelse(is.na(y1.x),y1.y,y1.x)
+              y2 <- ifelse(is.na(y2.x),y1.y,y2.x)
+              y3 <- ifelse(is.na(y3.x),y1.y,y3.x)
+              sy1 <- ifelse(is.na(sy1.x),sy1.y,sy1.x)
+              sy2 <- ifelse(is.na(sy2.x),sy1.y,sy2.x)
+              sy3 <- ifelse(is.na(sy3.x),sy1.y,sy3.x)
+              status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
+              status2 <- ifelse(is.na(status3.x),status1.y,status2.x)
+              status3 <- ifelse(is.na(status3.x),status1.y,status3.x)
+            } else {
+              x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
+              x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
+              y1 <- ifelse(is.na(y1.x),y1.y,y1.x)
+              y2 <- ifelse(is.na(y2.x),y2.y,y2.x)
+              y3 <- ifelse(is.na(y3.x),y3.y,y3.x)
+              sy1 <- ifelse(is.na(sy1.x),sy1.y,sy1.x)
+              sy2 <- ifelse(is.na(sy2.x),sy2.y,sy2.x)
+              sy3 <- ifelse(is.na(sy3.x),sy3.y,sy3.x)
+              status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
+              status2 <- ifelse(is.na(status3.x),status2.y,status2.x)
+              status3 <- ifelse(is.na(status3.x),status3.y,status3.x)
+            }
+          })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
+          table_common[table_common$status1 == 999, 'status1'] <- NA
+          table_common[table_common$status2 == 999, 'status2'] <- NA
+          table_common[table_common$status3 == 999, 'status3'] <- NA
+        }
       }
       numValid1 <- sum(table_common$status1, na.rm = T)
       if (input$format != 4 && input$format2 != 4) {
-      numValid2 <- sum(table_common$status2, na.rm = T)
-      numValid3 <- sum(table_common$status3, na.rm = T)
-      if (numValid1 == numValid2 && numValid1 == numValid3) {
+        numValid2 <- sum(table_common$status2, na.rm = T)
+        numValid3 <- sum(table_common$status3, na.rm = T)
+        if (numValid1 == numValid2 && numValid1 == numValid3) {
+          atLeast <- " "
+          numValid <- numValid1
+        } else {
+          atLeast <- " at least "
+          numValid <- min(numValid1,numValid2,numValid3)
+        }
+      } else {
         atLeast <- " "
         numValid <- numValid1
-      } else {
-        atLeast <- " at least "
-        numValid <- min(numValid1,numValid2,numValid3)
       }
+      if (input$optionSecondary == 4) {
+        showNotification(paste0("There are",atLeast,numValid," epochs together between the primary and secondary series (after excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())        
       } else {
-        atLeast <- " "
-        numValid <- numValid1
+        showNotification(paste0("There are",atLeast,numValid," epochs in common between the primary and secondary series (after excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       }
-      showNotification(paste0("There are",atLeast,numValid," epochs in common between the primary and secondary series (after excluding removed points)"), action = NULL, duration = 10, closeButton = T, id = "in_common", type = "warning", session = getDefaultReactiveDomain())
       if (numValid > 0) {
         # recovering past merged values if possible
-        if (input$optionSecondary > 1 && info$last_optionSecondary < 2) {
+        if (input$optionSecondary > 1 && input$optionSecondary < 4 && info$last_optionSecondary < 2) {
           if (isTruthy(db1$merged$status1) && length(db1$merged$status1) == length(table_common$status1)) {
             table_common$status1 <- table_common$status1 + db1$merged$status1 > 1
           }
@@ -9723,6 +9788,8 @@ server <- function(input,output,session) {
         } else if (input$optionSecondary == 2) {
           ids_info <- paste(file$id1,file$id2, sep = " - ")
         } else if (input$optionSecondary == 3) {
+          ids_info <- paste(file$id1,file$id2, sep = " : ")
+        } else if (input$optionSecondary == 4) {
           ids_info <- paste(file$id1,file$id2, sep = " + ")
         }
       } else {
@@ -11987,6 +12054,8 @@ server <- function(input,output,session) {
       } else if (input$optionSecondary == 2) {
         ids_info <- paste(file$id1,file$id2, sep = " - ")
       } else if (input$optionSecondary == 3) {
+        ids_info <- paste(file$id1,file$id2, sep = " : ")
+      } else if (input$optionSecondary == 4) {
         ids_info <- paste(file$id1,file$id2, sep = " + ")
       }
     } else if (isTruthy(file$id1)) {
@@ -14407,12 +14476,17 @@ server <- function(input,output,session) {
       } else {
         cat(sprintf('# Corrected with: %s',file$secondary$name), file = file_out, sep = "\n", fill = F, append = T)
       }
-    }
-    if (input$optionSecondary == 3) {
+    } else if (input$optionSecondary == 3) {
       if (length(file$secondary$name) > 1) {
         cat(paste('# Averaged with:', paste(input$product2, collapse = " & ")), file = file_out, sep = "\n", fill = F, append = T)
       } else {
         cat(sprintf('# Averaged with: %s',file$secondary$name), file = file_out, sep = "\n", fill = F, append = T)
+      }
+    } else if (input$optionSecondary == 4) {
+      if (length(file$secondary$name) > 1) {
+        cat(paste('# Merged with:', paste(input$product2, collapse = " & ")), file = file_out, sep = "\n", fill = F, append = T)
+      } else {
+        cat(sprintf('# Merged with: %s',file$secondary$name), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
     if (input$eulerType == 2 && length(trans$plate) > 0) {
