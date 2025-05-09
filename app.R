@@ -12303,6 +12303,7 @@ server <- function(input,output,session) {
                 }
                 updateRadioButtons(session, inputId = "tunits", selected = 1)
                 extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
+                extracted$x1 <- as.numeric(formatting(extracted$x1,1))
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
                 if (series == 1) {
@@ -16558,10 +16559,10 @@ server <- function(input,output,session) {
       if (length(x) > 1) {
         extra_dig <- 0
         # formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
-        formatted <- format(intgr + as.numeric(format(x, digits = 2, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
+        formatted <- format(intgr + as.numeric(format(x, digits = 2, scientific = info$scientific, trim = F, width = width)), nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, scientific = info$scientific, trim = F, width = width)
       } else {
         extra_dig <- y
-        formatted <- intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width))
+        formatted <- intgr + as.numeric(format(x, nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width))
       }
     }
     return(formatted)
