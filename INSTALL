@@ -57,11 +57,6 @@ data.table, devtools, dlm, fields, httr, import, lubridate, magrittr, markdown, 
 install.packages(c("data.table", "devtools", "dlm", "fields", "httr", "import", "lubridate", "magrittr", "markdown", "matrixStats", "numDeriv", "pracma", "psych", "RColorBrewer", "RCurl", "XML", "jsonlite", "shinyBS", "shinycssloaders", "shinyjs", "shinythemes", "shiny", "spectral", "strucchange", "tseries", "foreach", "mnormt", "ragg"))
 
 
-If the installed shinycssloaders package is not exactly version 1.0.0.9 or later, you need to update this package from its github repo using:
-
-devtools::install_github("daattali/shinycssloaders")
-
-
 
 5) In addition, the following packages are optional and allow for additional analysis, visualization features or faster functions:
 
