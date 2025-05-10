@@ -261,7 +261,7 @@ tabContents <- function(tabNum) {
              color = getOption("spinner.color", default = "#0080ff"),
              size = getOption("spinner.size", default = 2),
              color.background = getOption("spinner.color.background", default = "#ffffff"),
-             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+             hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
            conditionalPanel(
              condition = "output.run",
@@ -271,7 +271,7 @@ tabContents <- function(tabNum) {
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
                color.background = getOption("spinner.color.background", default = "#ffffff"),
-               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+               hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
            conditionalPanel(
@@ -282,7 +282,7 @@ tabContents <- function(tabNum) {
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
                color.background = getOption("spinner.color.background", default = "#ffffff"),
-               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+               hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
            verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F),
@@ -294,7 +294,7 @@ tabContents <- function(tabNum) {
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
                color.background = getOption("spinner.color.background", default = "#ffffff"),
-               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+               hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
            conditionalPanel(
@@ -305,7 +305,7 @@ tabContents <- function(tabNum) {
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
                color.background = getOption("spinner.color.background", default = "#ffffff"),
-               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+               hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
            conditionalPanel(
@@ -316,7 +316,7 @@ tabContents <- function(tabNum) {
                color = getOption("spinner.color", default = "#0080ff"),
                size = getOption("spinner.size", default = 2),
                color.background = getOption("spinner.color.background", default = "#ffffff"),
-               custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+               hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
              )
            ),
            conditionalPanel(
@@ -361,7 +361,7 @@ tabContents <- function(tabNum) {
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
                    color.background = getOption("spinner.color.background", default = "#ffffff"),
-                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                   hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
                  ),
                  div(style = "width: 15%; margin-left: 85%;",
                    downloadLink(paste0("downloadSpectrum",tabNum), div(id = paste0("downloadlink",tabNum), style = "margin-top:0em; margin-bottom:2em; font-size: 10px; text-align: right;","Get periodogram data"))
@@ -378,7 +378,7 @@ tabContents <- function(tabNum) {
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
                    color.background = getOption("spinner.color.background", default = "#ffffff"),
-                   custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
+                   hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "res1")) NULL else "400px"
                  ),
                  verbatimTextOutput(paste0("wavelet",tabNum,"_info"), placeholder = F)
                )
@@ -409,7 +409,7 @@ tab3Contents <- function(series) {
              color = getOption("spinner.color", default = "#0080ff"),
              size = getOption("spinner.size", default = 2),
              color.background = getOption("spinner.color.background", default = "#ffffff"),
-             custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+             hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
            ),
            div(style = "margin-top: 1.5em;",
                div(style = "margin: 0em 0em -4em 0em; font-weight: bold; font-size: 14px; text-align: left; position: relative; z-index: 1;", uiOutput(paste0("component",tabNum,"2"))),
@@ -419,7 +419,7 @@ tab3Contents <- function(series) {
                  color = getOption("spinner.color", default = "#0080ff"),
                  size = getOption("spinner.size", default = 2),
                  color.background = getOption("spinner.color.background", default = "#ffffff"),
-                 custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+                 hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
                )
            ),
            div(style = "margin-top: 1.5em;",
@@ -430,7 +430,7 @@ tab3Contents <- function(series) {
                  color = getOption("spinner.color", default = "#0080ff"),
                  size = getOption("spinner.size", default = 2),
                  color.background = getOption("spinner.color.background", default = "#ffffff"),
-                 custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
+                 hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "400px"
                )
            ),
            verbatimTextOutput(paste0("plot",tabNum,"_info"), placeholder = F)
@@ -772,7 +772,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                            color = getOption("spinner.color", default = "#0080ff"),
                                                                                            size = getOption("spinner.size", default = 2),
                                                                                            color.background = getOption("spinner.color.background", default = "#ffffff"),
-                                                                                           custom.css = FALSE, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "175px"
+                                                                                           hide.ui = F, proxy.height = if (grepl("height:\\s*\\d", "plot1")) NULL else "175px"
                                                                                          )
                                                                                      )
                                                                               )
