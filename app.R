@@ -2533,6 +2533,9 @@ server <- function(input,output,session) {
     # }
     req(info$intro)
     # next is run only at the start of each session
+    if (grepl("HeadlessChrome|phantomjs|selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS", session$clientData$url_search, ignore.case = T)) {
+      cat(file = stderr(), mySession, "Headless connection", "\n")
+    }
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), mySession, "Mobile connection", "\n")
