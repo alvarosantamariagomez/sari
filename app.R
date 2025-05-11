@@ -15971,6 +15971,7 @@ server <- function(input,output,session) {
       if (isTruthy(station)) {
         filepath <- c()
         name <- c()
+        station <- strsplit(station, split = " ")[[1]][1]
         for (p in product) {
           naming <- paste0(toupper(station),pattern,tolower(p))
           url <- "http://loading.u-strasbg.fr/ITRF/CF/"
@@ -16037,7 +16038,8 @@ server <- function(input,output,session) {
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/EOSTLS_database.txt")) {
-            stations_available <- readLines("www/EOSTLS_database.txt", warn = F)
+            database <- read.table("www/EOSTLS_database.txt2", fill = T, comment.char = "!", header = F)
+            stations_available <- paste(paste(database$V1,database$V2,sep = "_"),database$V7,database$V6)
             if (series == 1) {
               output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
