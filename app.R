@@ -9401,6 +9401,17 @@ server <- function(input,output,session) {
       }
       table1 <- db1[[type1]]
       table2 <- db2[[info$db2]]
+      if (input$format < 4 && isTruthy(trans$plate) && input$eulerType == 2 && length(trans$plate) == 3 && all(is.numeric(trans$plate))) {
+        table1$y1 <- table1$y1 - trans$plate[1]*(table1[[paste0("x",input$tunits)]] - median(table1[[paste0("x",input$tunits)]][table1$status1], na.rm = T)) - median(table1$y1, na.rm = T)
+        table1$y2 <- table1$y2 - trans$plate[2]*(table1[[paste0("x",input$tunits)]] - median(table1[[paste0("x",input$tunits)]][table1$status2], na.rm = T)) - median(table1$y2, na.rm = T)
+      }
+      if (isTruthy(trans$gia) && input$giaType == 2 && all(is.numeric(trans$gia))) {
+        if (input$format == 4) {
+          table1$y1 <- table1$y1 - trans$gia[3]*(table1[[paste0("x",input$tunits)]] - median(table1[[paste0("x",input$tunits)]][table1$status1], na.rm = T)) - median(table1$y1, na.rm = T)
+        } else {
+          table1$y3 <- table1$y3 - trans$gia[3]*(table1[[paste0("x",input$tunits)]] - median(table1[[paste0("x",input$tunits)]][table1$status3], na.rm = T)) - median(table1$y3, na.rm = T)
+        }
+      }
       if (isTruthy(input$ne)) {
         table2y_tmp <- table2$y2
         table2sy_tmp <- table2$sy2
@@ -9408,6 +9419,17 @@ server <- function(input,output,session) {
         table2$sy2 <- table2$sy1
         table2$y1 <- table2y_tmp
         table2$sy1 <- table2sy_tmp
+      }
+      if (input$format2 < 4 && isTruthy(trans$plate2) && input$eulerType == 2 && length(trans$plate2) == 3 && all(is.numeric(trans$plate2))) {
+        table2$y1 <- table2$y1 - trans$plate2[1]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status1], na.rm = T)) - median(table2$y1, na.rm = T)
+        table2$y2 <- table2$y2 - trans$plate2[2]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status2], na.rm = T)) - median(table2$y2, na.rm = T)
+      }
+      if (isTruthy(trans$gia2) && input$giaType == 2 && all(is.numeric(trans$gia2))) {
+        if (input$format == 4) {
+          table2$y1 <- table2$y1 - trans$gia2[3]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status1], na.rm = T)) - median(table2$y1, na.rm = T)
+        } else {
+          table2$y3 <- table2$y3 - trans$gia2[3]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status3], na.rm = T)) - median(table2$y3, na.rm = T)
+        }
       }
       # computing the shift period between the primary and secondary series
       deltas <- NULL
@@ -9431,6 +9453,10 @@ server <- function(input,output,session) {
         if (isTruthy(is.numeric(delta)) && delta > 0 && delta <= info$samplingRaw[1]) {
           table2$x1 <- table2$x1 + delta
           showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+          if (input$optionSecondary == 4) {
+            table2$x2 <- mjd2week(table2$x1)
+            table2$x3 <- mjd2year(table2$x1)
+          }
         }  
       }
       # merging the primary and secondary series
@@ -9517,10 +9543,11 @@ server <- function(input,output,session) {
         if (info$format == 4) {
           table2$status1 <- T
           table_common <- data.frame(within(merge(table1, table2, by = "x1", all = T), {
+            y1 <- y1.x - y1.y * inputs$scaleFactor
             x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
             x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
-            y1 <- ifelse(is.na(y1.x),y1.y,y1.x)
-            sy1 <- ifelse(is.na(sy1.x),sy1.y,sy1.x)
+            y1 <- ifelse(is.na(y1.x),y1.y * inputs$scaleFactor,y1.x)
+            sy1 <- ifelse(is.na(sy1.x),sy1.y * inputs$scaleFactor,sy1.x)
             status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
           })[,c("x1","x2","x3","y1","sy1","status1")])
           table_common[table_common$status1 == 999, 'status1'] <- NA
@@ -9530,24 +9557,24 @@ server <- function(input,output,session) {
             if (info$format2 == 4) {
               x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
               x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
-              y1 <- ifelse(is.na(y1.x),y1.y,y1.x)
-              y2 <- ifelse(is.na(y2.x),y1.y,y2.x)
-              y3 <- ifelse(is.na(y3.x),y1.y,y3.x)
-              sy1 <- ifelse(is.na(sy1.x),sy1.y,sy1.x)
-              sy2 <- ifelse(is.na(sy2.x),sy1.y,sy2.x)
-              sy3 <- ifelse(is.na(sy3.x),sy1.y,sy3.x)
+              y1 <- ifelse(is.na(y1.x),y1.y * inputs$scaleFactor,y1.x)
+              y2 <- ifelse(is.na(y2.x),y1.y * inputs$scaleFactor,y2.x)
+              y3 <- ifelse(is.na(y3.x),y1.y * inputs$scaleFactor,y3.x)
+              sy1 <- ifelse(is.na(sy1.x),sy1.y * inputs$scaleFactor,sy1.x)
+              sy2 <- ifelse(is.na(sy2.x),sy1.y * inputs$scaleFactor,sy2.x)
+              sy3 <- ifelse(is.na(sy3.x),sy1.y * inputs$scaleFactor,sy3.x)
               status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
               status2 <- ifelse(is.na(status3.x),status1.y,status2.x)
               status3 <- ifelse(is.na(status3.x),status1.y,status3.x)
             } else {
               x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
               x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
-              y1 <- ifelse(is.na(y1.x),y1.y,y1.x)
-              y2 <- ifelse(is.na(y2.x),y2.y,y2.x)
-              y3 <- ifelse(is.na(y3.x),y3.y,y3.x)
-              sy1 <- ifelse(is.na(sy1.x),sy1.y,sy1.x)
-              sy2 <- ifelse(is.na(sy2.x),sy2.y,sy2.x)
-              sy3 <- ifelse(is.na(sy3.x),sy3.y,sy3.x)
+              y1 <- ifelse(is.na(y1.x),y1.y * inputs$scaleFactor,y1.x)
+              y2 <- ifelse(is.na(y2.x),y2.y * inputs$scaleFactor,y2.x)
+              y3 <- ifelse(is.na(y3.x),y3.y * inputs$scaleFactor,y3.x)
+              sy1 <- ifelse(is.na(sy1.x),sy1.y * inputs$scaleFactor,sy1.x)
+              sy2 <- ifelse(is.na(sy2.x),sy2.y * inputs$scaleFactor,sy2.x)
+              sy3 <- ifelse(is.na(sy3.x),sy3.y * inputs$scaleFactor,sy3.x)
               status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
               status2 <- ifelse(is.na(status3.x),status2.y,status2.x)
               status3 <- ifelse(is.na(status3.x),status3.y,status3.x)
@@ -16038,7 +16065,7 @@ server <- function(input,output,session) {
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/EOSTLS_database.txt")) {
-            database <- read.table("www/EOSTLS_database.txt2", fill = T, comment.char = "!", header = F)
+            database <- read.table("www/EOSTLS_database.txt", fill = T, comment.char = "!", header = F)
             stations_available <- paste(paste(database$V1,database$V2,sep = "_"),database$V7,database$V6)
             if (series == 1) {
               output$showStation1 <- renderUI({
