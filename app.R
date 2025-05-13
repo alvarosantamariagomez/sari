@@ -2442,7 +2442,8 @@ server <- function(input,output,session) {
   #   y2 = residual series values axis
   #   y3 = amplitude/power values axis
   #   y4 = instantaneous rate values axis
-  ranges <- reactiveValues(x0 = NULL, x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL)
+  ranges <- reactiveValues(x0 = NULL, x1 = NULL, y1 = NULL, y12 = NULL, x2 = NULL, y2 = NULL, x3 = NULL, y3 = NULL, y4 = NULL,
+                           y3D11 = NULL, y3D21 = NULL, y3D31 = NULL, y3D12 = NULL, y3D22 = NULL, y3D32 = NULL)
 
   # 3. series info
   info <- reactiveValues(points = NULL, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
@@ -7188,7 +7189,11 @@ server <- function(input,output,session) {
               ranges$y1 <- NULL
             }
             if (input$optionSecondary == 1) {
-              if (any(db2[[info$db2]][[paste0("x",input$tunits)]] < ranges$x0[1]) || any(db2[[info$db2]][[paste0("x",input$tunits)]] > ranges$x0[2])) {
+              if (isTruthy(input$fullSeries) ||
+                  any(db2[[info$db2]][[paste0("x",input$tunits)]] < ranges$x0[1]) || any(db2[[info$db2]][[paste0("x",input$tunits)]] > ranges$x0[2]) ||
+                  any(db2[[info$db2]]$y1 < ranges$y3D12[1]) || any(db2[[info$db2]]$y1 > ranges$y3D12[2]) ||
+                  any(db2[[info$db2]]$y2 < ranges$y3D22[1]) || any(db2[[info$db2]]$y2 > ranges$y3D22[2]) ||
+                  any(db2[[info$db2]]$y3 < ranges$y3D32[1]) || any(db2[[info$db2]]$y3 > ranges$y3D32[2])) {
                 enable("fullSeries")
               } else {
                 disable("fullSeries")
@@ -14170,7 +14175,15 @@ server <- function(input,output,session) {
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
-            rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
+            if (input$fullSeries) {
+              if (range1 >= range2) {
+                rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
+              } else {
+                rangeY <- rangeY + (rangeY2[1] - rangeY[1]) + pointsBias
+              } 
+            } else {
+              rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
+            }
           }
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
@@ -14189,6 +14202,7 @@ server <- function(input,output,session) {
             rangeY2 <- range(y2, na.rm = T)
           }
         }
+        ranges[[paste0("y3D",component,2)]] <- rangeY2
         plot(x2, y2, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = rangeX, ylim = rangeY2)
         if (isTruthy(sigmas)) {
           color <- SARIcolors[3]
@@ -14201,6 +14215,7 @@ server <- function(input,output,session) {
         axis(side = 4, at = NULL, labels = T, tick = T, line = NA, pos = NA, outer = F)
         par(new = T)
       }
+      ranges[[paste0("y3D",component,1)]] <- rangeY
       plot_series(x1,y1,sy1,rangeX,rangeY,sigmas,title,input$symbol,T,info$tunits.label)
       points(xe, ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
       output[[paste0("component",input$tab,component)]] <- renderText(sub(" component", "", info$components[component]))
