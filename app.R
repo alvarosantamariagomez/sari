@@ -447,7 +447,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 options(shiny.trace = F)
 devmode(F)
-options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+# options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
