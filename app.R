@@ -4260,7 +4260,7 @@ server <- function(input,output,session) {
           if (messages > 1) cat(file = stderr(), mySession, m$model_nls, "\n")
           # run fit
           fit <- NULL
-          if ("Logarithmic" %in% input$model || "Exponential" %in% input$model) {
+          if (grepl("L1",m$model_nls) || grepl("E1",m$model_nls)) {
             model <- m$model_nls
             apriori <- m$apriori
             fit <- try(nls(as.formula(model), model = T, start = apriori, trace = F, weights = weights, control = nls.control(tol = info$LStol, minFactor = 1e-10, warnOnly = F, printEval = F, scaleOffset = 1)), silent = F)
@@ -4275,7 +4275,7 @@ server <- function(input,output,session) {
             fit <- try(lm(as.formula(model), weights = weights), silent = F)
           }
           if (!inherits(fit,"try-error") && !is.null(fit)) {
-            if (!"Logarithmic" %in% input$model && !"Exponential" %in% input$model) {
+            if (!grepl("L1",m$model_nls) && !grepl("E1",m$model_nls)) {
               if (fit$rank == length(info$parameters)) {
                 names(fit$coefficients) <- info$parameters
               } else {
@@ -4284,7 +4284,7 @@ server <- function(input,output,session) {
               }
             }
             synthesis <- summary(fit,correlation = T, signif.stars = T)
-            if ("Logarithmic" %in% input$model || "Exponential" %in% input$model) {
+            if (grepl("L1",m$model_nls) || grepl("E1",m$model_nls)) {
               jacobian <- fit$m$gradient()/sqrt(weights)
               # format model equation
               synthesis$formula <- deparse(synthesis$formula)
@@ -4397,7 +4397,7 @@ server <- function(input,output,session) {
             }
             info$run <- T
           } else {
-            if (("Logarithmic" %in% input$model || "Exponential" %in% input$model) && grepl("minFactor", fit[1]) && info$LStol < 1e-2) {
+            if ((grepl("L1",trans$equation) || grepl("E1",trans$equation)) && grepl("minFactor", fit[1]) && info$LStol < 1e-2) {
               info$LStol <- info$LStol*10
               req(info$stop)
             } else {
@@ -16728,7 +16728,7 @@ server <- function(input,output,session) {
     })
     if (input$fitType == 1) {
       # changing lm & nls summary output
-      if (!"Logarithmic" %in% input$model && !"Exponential" %in% input$model) { # nls model
+      if (!grepl("L1",trans$equation) && !grepl("E1",trans$equation)) { # lm model
         id_call <- grep("Call: ", summary_output)
         summary_output <- summary_output[-id_call]
         summary_output <- summary_output[-id_call]
@@ -16737,7 +16737,7 @@ server <- function(input,output,session) {
         for (i in seq(4)) { summary_output <- summary_output[-id_residuals] }
         summary_output <- summary_output[-grep("Multiple R-squared: ", summary_output)]
         summary_output <- summary_output[-grep("F-statistic: ", summary_output)]
-      } else { # lm model
+      } else { # nls model
         id_call <- grep("Formula:", summary_output)
         summary_output <- summary_output[-id_call]
       }
@@ -16767,10 +16767,10 @@ server <- function(input,output,session) {
         }
       }
       # last or unique line
-      if (sentence_out > 0) {
+      if (isTruthy(sentence_out) && sentence_out > 0) {
         summary_output <- append(summary_output, list(span(paste("                ",current_string))), after = id_call + sentence_out)
       } else {
-        summary_output <- append(summary_output, list(span(current_string)), after = id_call + sentence_out)
+        summary_output <- append(summary_output, list(span(current_string)), after = id_call)
       }
       # changing high probabilities into red color and zero if necessary
       found1 <- grepl(pattern = "Parameters:|Coefficients:", x = summary_output, ignore.case = F, fixed = F)
@@ -16807,7 +16807,7 @@ server <- function(input,output,session) {
         }
         # recalling the column names below the correlation matrix
         if (found2 - which(found1) > 6) {
-          if (!"Logarithmic" %in% input$model && !"Exponential" %in% input$model) {
+          if (!grepl("L1",trans$equation) && !grepl("E1",trans$equation)) {
            summary_output <- summary_output[-found2]
           }
           summary_output <- append(summary_output, list(summary_output[[columnsId]]), after = i)
