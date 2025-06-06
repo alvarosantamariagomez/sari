@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version mayo 2025</title>
+  <title>SARI documentation - version junio 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,9 +35,8 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version mayo 2025</h1>
+<h1 class="title">SARI documentation - version junio 2025</h1>
 <p class="author">Alvaro Santamaría</p>
-<p class="date"><a href="https://github.com/alvarosantamariagomez/sari">SARI GitHub repository</a></p>
 </header>
 <base target="_blank">
 <h3 id="contents">
@@ -81,7 +80,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>mayo 2025</em> – “The more contact I have with humans, the more I learn”</p>
+<p>Current SARI version: <em>junio 2025</em> – “You will ride eternal, shiny and chrome!”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -468,29 +467,31 @@ The user can upload any combination of the following possibilities:</p>
 </h5>
 <h5 id="notes-on-the-secondary-series"><strong>Notes on the secondary series</strong>:</h5>
 <ol type="1">
-<li>The secondary series can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single secondary series. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single secondary series representing the total loading at the site.<br />
+<li>The <em>secondary series</em> can be obtained from a single file or from several files uploaded at the same time. When uploading several files, they will be added together to form a single <em>secondary series</em>. For instance, atmospheric, oceanic and hydrological loading series at the same site can be uploaded at the same time to obtain a single <em>secondary series</em> representing the total loading at the site.<br />
 </li>
 <li>When loading several files, only the common epochs among them will be retained. If one epoch is missing in one of the files, it will be skipped.<br />
 </li>
-<li>Several loading products can be selected and uploaded directly from the EOSTSL server (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block). If necessary, the series are automatically resampled to daily before being added together to form the secondary series. Change the averaging period of the secondary series to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the ERA5-Land reanalysis (ERA5LAND label). More details at the <a href="http://loading.u-strasbg.fr">EOSTLS server</a>.<br />
+<li>Several loading products can be selected and uploaded directly from the EOSTSL server (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block). If necessary, the series are automatically resampled to daily before being added together to form the <em>secondary series</em>. Change the averaging period of the <em>secondary series</em> to obtain a different sampling (e.g., weekly or monthly). The recommended loading models (J-P. Boy, personal communication) are: atmospheric loading from the latest ECMWF ERA5 reanalysis including the dynamic ocean response from the TUGO-m barotropic model (ERA5TUGO(d) label) together with hydrology loading (soil moisture and snow) from the ERA5-Land reanalysis (ERA5LAND label). More details at the <a href="http://loading.u-strasbg.fr">EOSTLS server</a>.<br />
 </li>
-<li>If several secondary series are uploaded manually by the user, the series are added together as they are provided, so it is the user’s reponsability to verify that they have consistent time units and sampling.<br />
+<li>If several <em>secondary series</em> are uploaded manually by the user, the series are added together as they are provided, so it is the user’s reponsability to verify that they have consistent time units and sampling.<br />
 </li>
-<li>The <code>Swap</code> button exchanges the role of the primary and secondary series so that the secondary series can be now analysed as if it was loaded as the primary series. Both the primary and secondary series will be reset to their original values, i.e., neglecting any resampling, excluded points or plate motion corrections.<br />
+<li>The <code>Swap</code> button exchanges the role of the <em>primary</em> and <em>secondary series</em> so that the <em>secondary series</em> can be now analysed as if it was loaded as the <em>primary series</em>. Both the <em>primary</em> and <em>secondary series</em> will be reset to their original values, i.e., neglecting any resampling, excluded points or plate motion corrections.<br />
 </li>
-<li>When uploading a <em>secondary series</em>, both station IDs will be shown in the <code>series ID</code> box on the left panel, together with a “&amp;” when using the option <code>show</code>, a “–” when using the option <code>correct</code>, or a “+” when using the option <code>average</code>. When the primary series is combined with a <em>secondary series</em> (using <code>correct</code> or <code>average</code>, but not <code>show</code>), the IDs from both series will be extracted from the <em>station.info</em>, <em>soln</em>, and <em>customized offset</em> files. Otherwise only the ID from the primary series will be used.<br />
+<li>When uploading a <em>secondary series</em>, both station IDs will be shown in the <code>series ID</code> box on the left panel, together with a “&amp;” when using the option <code>show</code>, a “–” when using the option <code>correct</code>, a “:” when using the option <code>average</code>, or a “+” when using the option <code>merge</code>. When the <em>primary series</em> is combined with a <em>secondary series</em> (using <code>correct</code>, <code>average</code>, or <code>merge</code>, but not <code>show</code>), the IDs from both series will be extracted from the <em>station.info</em>, <em>soln</em>, and <em>customized offset</em> files. Otherwise only the ID from the primary series will be used.<br />
 </li>
-<li>If the <code>show</code> option is selected, the <em>secondary series</em> will be plotted in green on the right y-axis and will not be included in the processing. This means that the <em>secondary series</em> could have a different sampling than the primary series. In case the <code>correct</code> or the <code>average</code> option is selected, only the common epochs between the primary and the <em>secondary series</em> will be shown. In the latter case, the <em>secondary series</em> must have observations at common epochs with the primary series because the series are neither filled nor interpolated at common epochs.<br />
+<li>If the <code>show</code> option is selected, the <em>secondary series</em> will be plotted in green on the right y-axis and will not be included in the processing. This means that the <em>secondary series</em> could have a different sampling than the <em>primary series</em>. In case the <code>correct</code> or the <code>average</code> option is selected, only the common epochs between the <em>primary</em> and the <em>secondary series</em> will be shown. In the latter case, the <em>secondary series</em> must have observations at common epochs with the <em>primary series</em> because the series are neither filled nor interpolated at common epochs. For the <code>merge</code> option, only the epochs that are present in the <em>secondary series</em> and not in the <em>primary series</em>, will be added to the <em>primary series</em>.<br />
 </li>
-<li>For typical GNSS series with daily sampling, even if the sampling period is constant, very often the epochs will not exactly match between the primary and secondary series, especially if the series are produced by different people. If the primary and secondary series have both a constant sampling of one day, but their epochs do not match, SARI will try to compute the constant fraction of a day shift between both series and apply it to the secondary series to match the epochs of the primary series. This feature will work only if both the primary and <em>secondary</em> series have a regular sampling of 1 day or less, independently of their time unit.<br />
+<li>For typical GNSS series with daily sampling, even if the sampling period is constant, very often the epochs will not exactly match between the <em>primary</em> and <em>secondary series</em>, especially if the series are produced by different people. If the <em>primary</em> and <em>secondary</em> series have both a constant sampling of one day, but their epochs do not match, SARI will try to compute the constant fraction of a day shift between both series and apply it to the <em>secondary series</em> to match the epochs of the <em>primary series</em>. This feature will only work correctly if both the <em>primary</em> and <em>secondary</em> series have a regular sampling, independently of their time unit.<br />
 </li>
-<li>If the <em>secondary series</em> does not have the same sampling as the primary series, a warning will be shown on screen. The sampling of the <em>secondary series</em> can be reduced with the <code>averaging</code> option, which is equivalent to the <code>reduce sampling</code> option of the primary series (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block).<br />
+<li>If the <em>secondary series</em> does not have the same sampling as the <em>primary series</em>, a warning will be shown on screen. The sampling of the <em>secondary series</em> can be reduced with the <code>averaging</code> option, which is equivalent to the <code>reduce sampling</code> option of the <em>primary series</em> (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block).<br />
 </li>
-<li>For NEU/ENU series, the <em>secondary series</em> must have the same format than the primary series. For 1D series, the user has the option to choose the column number and column separator for the <em>secondary series</em> independently of those already set for the primary series.<br />
+<li>For NEU/ENU series, the <em>secondary series</em> must have the same format than the <em>primary series</em>. For 1D series, the user has the option to choose the column number and column separator for the <em>secondary series</em> independently of those already set for the <em>primary series</em>.<br />
 </li>
-<li>The units of the <em>secondary series</em> can be scaled using the <code>scale factor</code> option. Also the y-axis values of the <em>secondary series</em> are partially controlled by the <code>same scale</code> and <code>same axis</code> options with respect to the left y-axis of the primary series. The <code>same scale</code> option will force the right y-axis to have the same range as the left y-axis, but not necessarily the same values. The <code>same axis</code> option will force the right y-axis to be the same as the left y-axis.<br />
+<li>The units of the <em>secondary series</em> can be scaled using the <code>scale factor</code> option. Also the y-axis values of the <em>secondary series</em> are partially controlled by the <code>same scale</code> and <code>same axis</code> options with respect to the left y-axis of the <em>primary series</em>. The <code>same scale</code> option will force the right y-axis to have the same range as the left y-axis, but not necessarily the same values. The <code>same axis</code> option will force the right y-axis to be the same as the left y-axis.<br />
 </li>
-<li>If the coordinate components of either the primary or the <em>secondary</em> series are unknown, the <code>N@E</code> option will swap the North and East components of the <em>secondary series</em> to match the components of the primary series.</li>
+<li>The <code>full series</code> option will expand the plot area to show both the <em>primary</em> and <em>secondary series</em>. By default, the plot are only includes the <em>primary series</em>.<br />
+</li>
+<li>If the coordinate components of either the <em>primary</em> or the <em>secondary</em> series are unknown, the <code>N@E</code> option can be used to swap the North and East components of the <em>secondary series</em> to match the components of the <em>primary series</em>.</li>
 </ol>
 <h5 id="notes-on-the-plate-motion-model">
 </h5>

@@ -5,9 +5,8 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version mayo 2025'
+title: 'SARI documentation - version junio 2025'
 author: 'Alvaro Santamaría'
-date: '[SARI GitHub repository](https://github.com/alvarosantamariagomez/sari)'
 ---
 
 <base target="_blank">
@@ -68,7 +67,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *mayo 2025*  --  "The more contact I have with humans, the more I learn"
+Current SARI version: *junio 2025*  --  "You will ride eternal, shiny and chrome!"
 
 -----------------
 

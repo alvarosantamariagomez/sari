@@ -1,6 +1,29 @@
 # **SARI changelog**
 
 
+# junio 2025 [2025.06]
+
+### Fixed
+- correcting the from/to epochs of the remove period option
+- improving the separation between linear and non-linear LS models
+- correcting the numeric formating on windows
+
+### Changed
+- improving the fullSeries option of the secondary series
+- improving the merging of the primary and secondary series
+- correcting the assessment of the time axis shift between the primary and secondary series when there are no common epochs
+- improving the series format when reducing the sampling
+- improving the formatting of the time axis when the series epoch is given in calendar date
+- adding the excluded points on the downloaded file from the 3D tab
+- replacing N/A by NA in the dowloaded file
+- using a pre-downloaded list of stations from the DORIS server
+
+### Added
+- adding a new option to merge the primary and secondary series into a single series
+- adding the new EOSTLS station database
+- adding flag for some headless browser connections
+
+
 # mayo 2025 [2025.05]
 
 ### Fixed
