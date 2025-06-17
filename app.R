@@ -16820,7 +16820,7 @@ server <- function(input,output,session) {
         }
       }
       # adding the break/offset information
-      if (isTruthy(trans$breakEpochs)) {
+      if (isTruthy(trans$breakEpochs) && (input$trendType == 1 || input$sinusoidType == 1)) {
         summary_output <- append(summary_output, paste("Breakpoints at:", paste(trans$breakEpochs, collapse = ", ")))
         summary_output <- c(summary_output, "")
       }
