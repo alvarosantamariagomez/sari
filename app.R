@@ -4196,6 +4196,7 @@ server <- function(input,output,session) {
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
     removeNotification("bad_LS")
+    removeNotification("overfit")
     if (input$tab > 3) {
       req(info$stop)
     }
@@ -4366,11 +4367,15 @@ server <- function(input,output,session) {
             trans$mod <- mod
             trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
             trans$reserror <- synthesis$sigma * trans$sy
-            if (isTruthy(synthesis$sigma)) {
-              if (!any(1/weights < trans$moderror^2)) {
-                trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
+            if (!any(is.na(trans$moderror))) {
+              if (isTruthy(synthesis$sigma)) {
+                if (!any(1/weights < trans$moderror^2)) {
+                  trans$reserror <- sqrt( 1/weights - trans$moderror^2 ) * synthesis$sigma
+                }
+                trans$moderror <- trans$moderror * synthesis$sigma
               }
-              trans$moderror <- trans$moderror * synthesis$sigma
+            } else {
+              showNotification(HTML("Unable to assess the model variance.<br>The model may be overfitted.<br>Change the model components."), action = NULL, duration = 10, closeButton = T, id = "overfit", type = "warning", session = getDefaultReactiveDomain())
             }
             # keeping results for the overview plot
             if ("Linear" %in% input$model && input$trendType == 0) {
