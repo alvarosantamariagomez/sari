@@ -3706,15 +3706,22 @@ server <- function(input,output,session) {
         pointsY1 <- trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]]
         pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
         if (isTruthy(input$sameScale)) {
-          range1 <- diff(range(pointsY1))
-          range2 <- diff(range(pointsY2))
-          range <- ifelse(range1 > range2, range1, range2)
+          rangesy12 <- range(pointsY2)
+          range1 <- diff(rangesy1)
+          range2 <- diff(rangesy12)
           if (input$fullSeries) {
-            rangesy1[1] <- ranges$y1[1] - (range - range1)/2
-            rangesy1[2] <- ranges$y1[2] + (range - range1)/2
+            if (range1 >= range2) {
+              rangesy12[1] <- rangesy12[1] - (range1 - range2)/2
+              rangesy12[2] <- rangesy12[2] + (range1 - range2)/2
+            } else {
+              rangesy1[1] <- ranges$y1[1] - (range2 - range1)/2
+              rangesy1[2] <- ranges$y1[2] + (range2 - range1)/2
+            }
+          } else {
+            middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
+            rangesy12 <- c(middle - range1/2, middle + range1/2)
           }
-          middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
-          ranges$y12 <- c(middle - range/2, middle + range/2)
+          # adjusting the vertical offset within the same scale (range)
           if (length(pointsX1) == 0 || length(pointsX2) == 0) {
             # NA
           } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
@@ -3727,24 +3734,32 @@ server <- function(input,output,session) {
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
-            ranges$y12 <- ranges$y12 + (rangesy1[1] - ranges$y12[1]) - pointsBias
+            if (input$fullSeries) {
+              if (range1 >= range2) {
+                rangesy12 <- rangesy12 + (rangesy1[1] - rangesy12[1]) - pointsBias
+              } else {
+                rangesy1 <- rangesy1 + (rangesy12[1] - rangesy1[1]) + pointsBias
+              }
+            } else {
+              rangesy12 <- rangesy12 + (rangesy1[1] - rangesy12[1]) - pointsBias
+            }
           }
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             range <- range(c(pointsY1,pointsY2))
-            ranges$y12 <- rangesy1 <- range
+            rangesy12 <- rangesy1 <- range
           } else {
-            ranges$y12 <- rangesy1
+            rangesy12 <- rangesy1
           }
         } else {
           ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
           if (sum(ids) > 0) {
-            ranges$y12 <- range(trans$y2[ids], na.rm = T)
+            rangesy12 <- range(trans$y2[ids], na.rm = T)
           } else {
-            ranges$y12 <- range(trans$y2, na.rm = T)
+            rangesy12 <- range(trans$y2, na.rm = T)
           }
         }
-        plot(trans$x2, trans$y2, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = ranges$y12)
+        plot(trans$x2, trans$y2, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = rangesy12)
         if (isTruthy(sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.2
@@ -14159,15 +14174,22 @@ server <- function(input,output,session) {
           pointsX2 <- x2[x2 >= rangeX[1] & x2 <= rangeX[2]]
           pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
           pointsY2 <- y2[x2 >= rangeX[1] & x2 <= rangeX[2]]
+          rangeY2 <- range(pointsY2)
           range1 <- diff(range(pointsY1))
-          range2 <- diff(range(pointsY2))
-          range <- ifelse(range1 > range2, range1, range2)
+          range2 <- diff(rangeY2)
           if (input$fullSeries) {
-            rangeY[1] <- rangeY[1] - (range - range1)/2
-            rangeY[2] <- rangeY[2] + (range - range1)/2
+            if (range1 >= range2) {
+              rangeY2[1] <- rangeY2[1] - (range1 - range2)/2
+              rangeY2[2] <- rangeY2[2] + (range1 - range2)/2
+            } else {
+              rangeY[1] <- rangeY[1] - (range2 - range1)/2
+              rangeY[2] <- rangeY[2] + (range2 - range1)/2
+            }
+          } else {
+            middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
+            rangeY2 <- c(middle - range1/2, middle + range1/2)
           }
-          middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
-          rangeY2 <- c(middle - range/2, middle + range/2)
+          # adjusting the vertical offset within the same scale (range)
           if (length(pointsX1) == 0 || length(pointsX2) == 0) {
             # NA
           } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
