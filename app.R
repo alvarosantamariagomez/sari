@@ -3759,6 +3759,7 @@ server <- function(input,output,session) {
             rangesy12 <- range(trans$y2, na.rm = T)
           }
         }
+        ranges$y12 <- rangesy12
         plot(trans$x2, trans$y2, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], axes = F, xlab = NA, ylab = NA, xlim = ranges$x1, ylim = rangesy12)
         if (isTruthy(sigmas)) {
           color <- SARIcolors[3]
@@ -7211,6 +7212,7 @@ server <- function(input,output,session) {
             if (input$optionSecondary == 1) {
               if (isTruthy(input$fullSeries) ||
                   any(db2[[info$db2]][[paste0("x",input$tunits)]] < ranges$x0[1]) || any(db2[[info$db2]][[paste0("x",input$tunits)]] > ranges$x0[2]) ||
+                  any(db2[[info$db2]][[paste0("y",input$tab)]] < ranges$y12[1]) || any(db2[[info$db2]][[paste0("y",input$tab)]] > ranges$y12[2]) ||
                   any(db2[[info$db2]]$y1 < ranges$y3D12[1]) || any(db2[[info$db2]]$y1 > ranges$y3D12[2]) ||
                   any(db2[[info$db2]]$y2 < ranges$y3D22[1]) || any(db2[[info$db2]]$y2 > ranges$y3D22[2]) ||
                   any(db2[[info$db2]]$y3 < ranges$y3D32[1]) || any(db2[[info$db2]]$y3 > ranges$y3D32[2])) {
