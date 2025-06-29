@@ -9448,14 +9448,14 @@ server <- function(input,output,session) {
         table2$sy1 <- table2sy_tmp
       }
       if (input$format2 < 4 && isTruthy(trans$plate2) && input$eulerType == 2 && length(trans$plate2) == 3 && all(is.numeric(trans$plate2))) {
-        table2$y1 <- table2$y1 - trans$plate2[1]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status1], na.rm = T)) - median(table2$y1, na.rm = T)
-        table2$y2 <- table2$y2 - trans$plate2[2]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status2], na.rm = T)) - median(table2$y2, na.rm = T)
+        table2$y1 <- table2$y1 - trans$plate2[1]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]], na.rm = T)) - median(table2$y1, na.rm = T)
+        table2$y2 <- table2$y2 - trans$plate2[2]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]], na.rm = T)) - median(table2$y2, na.rm = T)
       }
       if (isTruthy(trans$gia2) && input$giaType == 2 && all(is.numeric(trans$gia2))) {
         if (input$format == 4) {
-          table2$y1 <- table2$y1 - trans$gia2[3]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status1], na.rm = T)) - median(table2$y1, na.rm = T)
+          table2$y1 <- table2$y1 - trans$gia2[3]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]], na.rm = T)) - median(table2$y1, na.rm = T)
         } else {
-          table2$y3 <- table2$y3 - trans$gia2[3]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]][table2$status3], na.rm = T)) - median(table2$y3, na.rm = T)
+          table2$y3 <- table2$y3 - trans$gia2[3]*(table2[[paste0("x",input$tunits)]] - median(table2[[paste0("x",input$tunits)]], na.rm = T)) - median(table2$y3, na.rm = T)
         }
       }
       # computing the shift period between the primary and secondary series
