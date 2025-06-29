@@ -3225,7 +3225,7 @@ server <- function(input,output,session) {
       trans$y2 <- as.numeric(table2$y1) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy1) * inputs$scaleFactor
       status <- table1$status1
-      if (isTruthy(trans$plate) && input$eulerType == 2) {
+      if (isTruthy(trans$plate) && input$eulerType == 2 && info$db1 != "merged") {
         if (input$format == 4) {
           trans$y0 <- trans$y0 - trans$plate[as.numeric(input$neu1D)]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         } else {
@@ -3233,7 +3233,7 @@ server <- function(input,output,session) {
         }
         trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
-      if (input$format == 4 && isTruthy(trans$gia) && input$giaType == 2) {
+      if (input$format == 4 && isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
@@ -3255,7 +3255,7 @@ server <- function(input,output,session) {
       trans$y2 <- as.numeric(table2$y2) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy2) * inputs$scaleFactor
       status <- table1$status2
-      if (isTruthy(trans$plate) && input$eulerType == 2) {
+      if (isTruthy(trans$plate) && input$eulerType == 2 && info$db1 != "merged") {
         trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2], na.rm = T)) - median(trans$y0, na.rm = T)
         trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
@@ -3269,7 +3269,7 @@ server <- function(input,output,session) {
       trans$y2 <- as.numeric(table2$y3) * inputs$scaleFactor
       trans$sy2 <- as.numeric(table2$sy3) * inputs$scaleFactor
       status <- table1$status3
-      if (isTruthy(trans$gia) && input$giaType == 2) {
+      if (isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
@@ -7081,7 +7081,7 @@ server <- function(input,output,session) {
               updateSelectInput(session, inputId = "giaModel", selected = "")
               disable("giaType")
             } else {
-              if (!is.na(inputs$giaTrend)) {
+              if (!is.na(inputs$giaTrend) && input$optionSecondary < 2 && info$db1 != "merged") {
                 enable("giaType")
               } else {
                 disable("giaType")
@@ -7095,7 +7095,8 @@ server <- function(input,output,session) {
               disable("neuenu")
               if ((((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
                    ((isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) || (isTruthy(inputs$station_lat2) && isTruthy(inputs$station_lon2)))) &&
-                  ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot)))) {
+                  ((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
+                  (input$optionSecondary < 2 && info$db1 != "merged")) {
                 enable("eulerType")
               } else {
                 disable("eulerType")
@@ -9669,10 +9670,10 @@ server <- function(input,output,session) {
         db1$merged <- table_common
         info$db1 <- "merged"
         rm(table_common,table1,table2)
-        if (input$eulerType > 1) {
+        if (input$eulerType == 1) {
           updateRadioButtons(session, inputId = "eulerType", selected = 0)
         }
-        if (input$giaType > 1) {
+        if (input$giaType == 1) {
           updateRadioButtons(session, inputId = "giaType", selected = 0)
         }
       } else {
@@ -10050,7 +10051,7 @@ server <- function(input,output,session) {
         x <- db1[[info$db1]]$x3
         x2 <- db2[[info$db2]]$x3
       }
-      if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+      if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z) && info$db1 != "merged") {
         y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x[db1[[info$db1]]$status1], na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
         y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x[db1[[info$db1]]$status2], na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
         y3 <- db1[[info$db1]]$y3
@@ -10059,7 +10060,7 @@ server <- function(input,output,session) {
         y2 <- db1[[info$db1]]$y2
         y3 <- db1[[info$db1]]$y3
       }
-      if (isTruthy(trans$gia) && input$giaType == 2) {
+      if (isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
         # y1 <- y1 - trans$gia[1]*(x - median(x[db1[[info$db1]]$status1], na.rm = T)) - median(y1, na.rm = T)
         # y2 <- y2 - trans$gia[2]*(x - median(x[db1[[info$db1]]$status2], na.rm = T)) - median(y2, na.rm = T)
         y3 <- y3 - trans$gia[3]*(x - median(x[db1[[info$db1]]$status3], na.rm = T)) - median(y3, na.rm = T)
@@ -10416,21 +10417,21 @@ server <- function(input,output,session) {
         brush1 <- input$plot41_brush
         x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$y1)]
         y <- db1[[info$db1]]$y1[!is.na(db1[[info$db1]]$y1)]
-        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z) && info$db1 != "merged") {
           y <- y - trans$plate[1]*(x - median(x, na.rm = T)) - median(y, na.rm = T)
         }
       } else if (isTruthy(input$plot42_brush)) {
         brush1 <- input$plot42_brush
         x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$y2)]
         y <- db1[[info$db1]]$y2[!is.na(db1[[info$db1]]$y2)]
-        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) {
+        if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z) && info$db1 != "merged") {
           y <- y - trans$plate[2]*(x - median(x, na.rm = T)) - median(y, na.rm = T)
         }
       } else if (isTruthy(input$plot43_brush)) {
         brush1 <- input$plot43_brush
         x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$y3)]
         y <- db1[[info$db1]]$y3[!is.na(db1[[info$db1]]$y3)]
-        if (isTruthy(trans$gia) && input$giaType == 2) {
+        if (isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
           y <- y - trans$gia[3]*(x - median(x, na.rm = T)) - median(y, na.rm = T)
         }
       }
@@ -14103,12 +14104,12 @@ server <- function(input,output,session) {
       ye <- db1[[info$db1]][[paste0("y",component)]][db1[[info$db1]][[paste0("status",component)]] %in% F]
       centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]][[paste0("status",component)]]], na.rm = T)
       centery <- median(db1[[info$db1]][[paste0("y",component)]], na.rm = T)
-      if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(allCoordinates()[c(7,8,9)])) {
+      if (component < 3 && isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(allCoordinates()[c(7,8,9)]) && info$db1 != "merged") {
         y0 <- y0 - trans$plate[component]*(x0 - centerx) - centery
         y1 <- y1 - trans$plate[component]*(x1 - centerx) - centery
         ye <- ye - trans$plate[component]*(xe - centerx) - centery
       }
-      if (component > 2 && isTruthy(trans$gia) && input$giaType == 2) {
+      if (component > 2 && isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
         y0 <- y0 - trans$gia[component]*(x0 - centerx) - centery
         y1 <- y1 - trans$gia[component]*(x1 - centerx) - centery
         ye <- ye - trans$gia[component]*(xe - centerx) - centery
