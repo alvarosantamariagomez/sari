@@ -158,16 +158,18 @@
  AC58  A    3 P 09:155:00000 17:199:00000 P - non-linearity
  AC58  A    4 P 17:199:00000 20:204:22365 P - EQ M7.8 - 99 km SSE of Perryville, Alaska
  AC58  A    5 P 20:204:22365 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
- AC58  A    6 P 21:210:22549 00:000:00000 P - 
+ AC58  A    6 P 21:210:22549 00:000:00000 P -
  AC58  A    1 P 00:000:00000 17:199:00000 V - non-linearity
- AC58  A    2 P 17:199:00000 00:000:00000 V - 
+ AC58  A    2 P 17:199:00000 21:210:22549 V - EQ M8.2 - 99 km SE of Perryville, Alaska
+ AC58  A    3 P 21:210:22549 00:000:00000 V -
 *
  AC60  A    1 P 00:000:00000 13:144:20689 P - EQ M8.3 - Sea of Okhotsk
  AC60  A    2 P 13:144:20689 14:174:75190 P - EQ M7.9 - Rat Islands, Aleutian Islands, Alaska
  AC60  A    3 P 14:174:75190 17:198:84854 P - EQ M7.7 - Komandorskiye Ostrova, Russia region
  AC60  A    4 P 17:198:84854 19:164:00000 P - non-linearity
  AC60  A    5 P 19:164:00000 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
- AC60  A    6 P 21:210:22549 00:000:00000 P - 
+ AC60  A    6 P 21:210:22549 25:110:00000 P - unknown
+ AC60  A    7 P 25:110:00000 00:000:00000 P -
  AC60  A    1 P 00:000:00000 14:174:75190 V - EQ M7.9 - Rat Islands, Aleutian Islands, Alaska
  AC60  A    2 P 14:174:75190 17:198:84854 V - EQ M7.7 - Komandorskiye Ostrova, Russia region
  AC60  A    3 P 17:198:84854 19:164:00000 V - non-linearity
@@ -213,15 +215,20 @@
 *
  ADIS  A    1 P 00:000:00000 19:343:00000 P - unknown
  ADIS  A    2 P 19:343:00000 22:103:46800 P - antenna change
- ADIS  A    3 P 22:103:46800 24:362:00000 P - Dike intrusion, Fentale volcano
- ADIS  A    4 P 24:362:00000 00:000:00000 P -
+ ADIS  A    3 P 22:103:46800 24:362:00000 P - dike intrusion, Fentale volcano
+ ADIS  A    4 P 24:362:00000 25:007:00000 P - dike intrusion, Fentale volcano
+ ADIS  A    5 P 25:007:00000 25:081:00000 P - end of dike intrusion (?)
+ ADIS  A    6 P 25:081:00000 00:000:00000 P -
  ADIS  A    1 P 00:000:00000 22:103:46800 V - antenna change
- ADIS  A    2 P 22:103:46800 24:362:00000 V - Dike intrusion, Fentale volcano
- ADIS  A    3 P 24:362:00000 00:000:00000 V -
+ ADIS  A    2 P 22:103:46800 24:362:00000 V - dike intrusion, Fentale volcano
+ ADIS  A    3 P 24:362:00000 25:007:00000 V - dike intrusion, Fentale volcano
+ ADIS  A    4 P 25:007:00000 25:081:00000 V - end of dike intrusion (?)
+ ADIS  A    5 P 25:081:00000 00:000:00000 V -
 *
  ADRI  A    1 P 00:000:00000 20:177:46920 P - antenna change
  ADRI  A    2 P 20:177:46920 00:000:00000 P - 
- ADRI  A    1 P 00:000:00000 00:000:00000 V - 
+ ADRI  A    1 P 00:000:00000 20:177:46920 V - antenna change
+ ADRI  A    2 P 20:177:46920 00:000:00000 V -
 *
  AGGO  A    1 P 00:000:00000 22:284:48600 P - antenna change
  AGGO  A    2 P 22:284:48600 00:000:00000 P - 
@@ -273,7 +280,8 @@
  AL92  A    1 P 00:000:00000 14:302:70380 P - antenna change
  AL92  A    2 P 14:302:70380 19:233:60000 P - antenna change
  AL92  A    3 P 19:233:60000 00:000:00000 P - 
- AL92  A    1 P 00:000:00000 00:000:00000 V - 
+ AL92  A    1 P 00:000:00000 19:233:60000 V - antenna change
+ AL92  A    2 P 19:233:60000 00:000:00000 V -
 *
  ALAC  A    1 P 00:000:00000 06:151:43200 P - antenna change
  ALAC  A    2 P 06:151:43200 10:258:00000 P - antenna change
@@ -1314,7 +1322,8 @@
 *
  CHOF  A    1 P 00:000:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
  CHOF  A    2 P 24:001:25809 00:000:00000 P - 
- CHOF  A    1 P 00:000:00000 00:000:00000 V - 
+ CHOF  A    1 P 00:000:00000 24:001:25809 V- EQ M7.5 - Noto Peninsula, Japan
+ CHOF  A    2 P 24:001:25809 00:000:00000 V -
 *
  CHPG  A    1 P 00:000:00000 00:000:00000 P - 
  CHPG  A    1 P 00:000:00000 00:000:00000 V - 
@@ -1459,7 +1468,8 @@
  CMP9  A    2 P 19:187:11993 00:000:00000 V - 
 *
  CMUM  A    1 P 00:000:00000 17:153:00000 P - non-linearity
- CMUM  A    2 P 17:153:00000 00:000:00000 P - 
+ CMUM  A    2 P 17:153:00000 25:087:22852 P - EQ M7.7 - Mandalay, Burma (Myanmar)
+ CMUM  A    3 P 25:087:22852 00:000:00000 P -
  CMUM  A    1 P 00:000:00000 17:153:00000 V - non-linearity
  CMUM  A    2 P 17:153:00000 00:000:00000 V - 
 *
@@ -1474,7 +1484,8 @@
 *
  CN11  A    1 P 00:000:00000 12:261:32400 P - antenna change
  CN11  A    2 P 12:261:32400 18:010:10293 P - EQ M7.5 - 203 km NNE of Barra Patuca, Honduras
- CN11  A    3 P 18:010:10293 00:000:00000 P - 
+ CN11  A    3 P 18:010:10293 20:028:69025 P - EQ M7.7 - 123 km NNW of Lucea, Jamaica
+ CN11  A    4 P 20:028:69025 00:000:00000 P -
  CN11  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CN12  A    1 P 00:000:00000 12:262:36000 P - antenna change
@@ -1641,7 +1652,8 @@
  CPVG  A    5 P 23:233:00000 24:048:00000 P - unknown
  CPVG  A    6 P 24:048:00000 24:230:00000 P - unknown
  CPVG  A    7 P 24:230:00000 24:339:00000 P - unknown
- CPVG  A    8 P 24:339:00000 00:000:00000 P -
+ CPVG  A    8 P 24:339:00000 25:111:00000 P - unknown
+ CPVG  A    9 P 25:111:00000 00:000:00000 P -
  CPVG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CPXF  A    1 P 00:000:00000 00:000:00000 P - 
@@ -3251,7 +3263,8 @@
  ISTA  A    3 P 16:130:25200 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
  ISTA  A    4 P 23:037:04656 00:000:00000 P - 
  ISTA  A    1 P 00:000:00000 16:130:25200 V - antenna change
- ISTA  A    2 P 16:130:25200 00:000:00000 V - 
+ ISTA  A    2 P 16:130:25200 23:037:04656 V - EQ M7.8 - Pazarcik earthquake
+ ISTA  A    3 P 23:037:04656 00:000:00000 V -
 *
  IUCO  A    1 P 00:000:00000 08:189:00000 P - antenna change
  IUCO  A    2 P 08:189:00000 12:214:00000 P - antenna change
@@ -3720,7 +3733,8 @@
  LAE1  A    2 P 07:326:31708 16:352:39070 P - EQ M7.9 - 140 km E of Kokopo, Papua New Guinea
  LAE1  A    3 P 16:352:39070 22:253:85618 P - EQ M7.6 - 70 km E of Kainantu, Papua New Guinea
  LAE1  A    4 P 22:253:85618 00:000:00000 P - 
- LAE1  A    1 P 00:000:00000 00:000:00000 V - 
+ LAE1  A    1 P 00:000:00000 22:253:85618 V - EQ M7.6 - 70 km E of Kainantu, Papua New Guinea
+ LAE1  A    2 P 22:253:85618 00:000:00000 V -
 *
  LAGO  A    1 P 00:000:00000 10:064:54000 P - antenna change
  LAGO  A    2 P 10:064:54000 16:362:57540 P - receiver change
@@ -3840,7 +3854,8 @@
  LEIJ  A    2 P 08:274:00000 10:128:00000 P - unknown
  LEIJ  A    3 P 10:128:00000 10:182:46800 P - antenna change
  LEIJ  A    4 P 10:182:46800 19:224:28200 P - antenna change
- LEIJ  A    5 P 19:224:28200 00:000:00000 P - 
+ LEIJ  A    5 P 19:224:28200 25:077:52200 P - antenna change
+ LEIJ  A    6 P 25:077:52200 00:000:00000 P -
  LEIJ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  LEPO  A    1 P 00:000:00000 00:000:00000 P - 
@@ -4554,7 +4569,8 @@
  MORP  A    4 P 06:350:00000 08:329:00000 P - unknown
  MORP  A    5 P 08:329:00000 11:048:00000 P - unknown
  MORP  A    6 P 11:048:00000 22:331:00000 P - switch to IGS20/igs20.atx?
- MORP  A    7 P 22:331:00000 00:000:00000 P - 
+ MORP  A    7 P 22:331:00000 23:176:00000 P - unknown
+ MORP  A    8 P 23:176:00000 00:000:00000 P -
  MORP  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MOS0  A    1 P 00:000:00000 00:000:00000 P - 
@@ -4596,7 +4612,8 @@
  MRL1  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  MRL1  A    2 P 16:318:39776 20:001:00000 P - non-linearity
  MRL1  A    3 P 20:001:00000 23:092:00000 P - non-linearity
- MRL1  A    4 P 23:092:00000 00:000:00000 P -
+ MRL1  A    4 P 23:092:00000 25:065:00000 P - unknown
+ MRL1  A    5 P 25:065:00000 00:000:00000 P -
  MRL1  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  MRL1  A    2 P 16:318:39776 20:001:00000 V - non-linearity
  MRL1  A    3 P 20:001:00000 23:092:00000 V - non-linearity
@@ -4635,7 +4652,8 @@
 *
  MSSA  A    1 P 00:000:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
  MSSA  A    2 P 24:001:25809 00:000:00000 P - 
- MSSA  A    1 P 00:000:00000 00:000:00000 V - 
+ MSSA  A    1 P 00:000:00000 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
+ MSSA  A    2 P 24:001:25809 00:000:00000 V -
 *
  MTBG  A    1 P 00:000:00000 07:248:00000 P - unknown
  MTBG  A    2 P 07:248:00000 08:315:00000 P - antenna change
@@ -4684,7 +4702,8 @@
  MTKA  A    6 P 24:001:25809 00:000:00000 P - 
  MTKA  A    1 P 00:000:00000 04:249:53839 V - EQ M7.4 - 118 km ESE of Shing?, Japan
  MTKA  A    2 P 04:249:53839 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- MTKA  A    3 P 11:070:20783 00:000:00000 V - 
+ MTKA  A    3 P 11:070:20783 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
+ MTKA  A    4 P 24:001:25809 00:000:00000 V -
 *
  MTMA  A    1 P 00:000:00000 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
  MTMA  A    2 P 12:102:31117 00:000:00000 P - 
@@ -4719,7 +4738,8 @@
  MZAN  A    2 P 14:237:00000 00:000:00000 P - 
  MZAN  A    1 P 00:000:00000 00:000:00000 V - 
 *
- NAIN  A    1 P 00:000:00000 00:000:00000 P - 
+ NAIN  A    1 P 00:000:00000 22:272:57060 P - antenna change
+ NAIN  A    2 P 22:272:57060 00:000:00000 P -
  NAIN  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NAMA  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6011,7 +6031,8 @@
  QAQ1  A    2 P 09:349:00000 13:164:00000 V - non-linearity
  QAQ1  A    3 P 13:164:00000 00:000:00000 V - 
 *
- QIKI  A    1 P 00:000:00000 00:000:00000 P - 
+ QIKI  A    1 P 00:000:00000 24:194:85560 P - antenna change
+ QIKI  A    2 P 24:194:85560 00:000:00000 P -
  QIKI  A    1 P 00:000:00000 00:000:00000 V - 
 *
  QUAD  A    1 P 00:000:00000 06:362:00000 P - unknown
@@ -6163,7 +6184,8 @@
 *
  RESO  A    1 P 00:000:00000 04:051:00000 P - receiver change
  RESO  A    2 P 04:051:00000 18:327:78600 P - receiver change
- RESO  A    3 P 18:327:78600 00:000:00000 P - 
+ RESO  A    3 P 18:327:78600 24:166:77100 P - antenna change
+ RESO  A    4 P 24:166:77100 00:000:00000 P -
  RESO  A    1 P 00:000:00000 00:000:00000 V - 
 *
  REUN  A    1 P 00:000:00000 03:094:36000 P - antenna change
@@ -6266,11 +6288,12 @@
  RNSP  A    1 P 00:000:00000 00:000:00000 P - 
  RNSP  A    1 P 00:000:00000 00:000:00000 V - 
 *
- ROAG  A    1 P 00:000:00000 00:000:00000 P - 
+ ROAG  A    1 P 00:000:00000 24:346:40200 P - antenna change
+ ROAG  A    2 P 24:346:40200 00:000:00000 P -
  ROAG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ROAP  A    1 P 00:000:00000 11:298:33480 P - antenna change
- ROAP  A    2 P 11:298:33480 00:000:00000 P - 
+ ROAP  A    2 P 11:298:33480 00:000:00000 P -
  ROAP  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ROB4  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6786,7 +6809,8 @@
  SNI1  A    3 P 98:230:00000 00:354:00000 P - antenna change
  SNI1  A    4 P 00:354:00000 10:034:00000 P - unknown
  SNI1  A    5 P 10:034:00000 17:220:64320 P - antenna change
- SNI1  A    6 P 17:220:64320 00:000:00000 P - 
+ SNI1  A    6 P 17:220:64320 25:079:59400 P - antenna change
+ SNI1  A    7 P 25:079:59400 00:000:00000 P -
  SNI1  A    1 P 00:000:00000 10:034:00000 V - unknown
  SNI1  A    2 P 10:034:00000 00:000:00000 V - 
 *
@@ -7369,7 +7393,8 @@
  TONG  A   14 P 19:166:78970 20:135:00000 P - unknown
  TONG  A   15 P 20:135:00000 21:263:66892 P - EQ M5.8 - 80 km ENE of ‘Ohonua, Tonga
  TONG  A   16 P 21:263:66892 23:166:65188 P - EQ M7.2 - 274 km SW of Houma, Tonga
- TONG  A   17 P 23:166:65188 00:000:00000 P - 
+ TONG  A   17 P 23:166:65188 25:089:44330 P - EQ M7.0 - 61 km SSE of Pangai, Tonga
+ TONG  A   18 P 25:089:44330 00:000:00000 P -
  TONG  A    1 P 00:000:00000 06:123:55600 V - EQ M8.0 - 47 km SSE of Pangai, Tonga
  TONG  A    2 P 06:123:55600 13:143:62345 V - EQ M7.4 - 292 km SW of Vaini, Tonga
  TONG  A    3 P 13:143:62345 21:263:66892 V - EQ M5.8 - 80 km ENE of ‘Ohonua, Tonga
@@ -7511,7 +7536,8 @@
  TSK2  A   11 P 21:146:17100 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
  TSK2  A   12 P 24:001:25809 00:000:00000 P - 
  TSK2  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- TSK2  A    2 P 11:070:20783 00:000:00000 V - 
+ TSK2  A    2 P 11:070:20783 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
+ TSK2  A    3 P 24:001:25809 00:000:00000 V -
 *
  TSKB  A    1 P 00:000:00000 94:277:48178 P - EQ M8.3 - 48 km E of Shikotan, Russia
  TSKB  A    2 P 94:277:48178 95:307:00000 P - unknown
@@ -7527,7 +7553,8 @@
  TSKB  A   12 P 18:167:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
  TSKB  A   13 P 24:001:25809 00:000:00000 P - 
  TSKB  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- TSKB  A    2 P 11:070:20783 00:000:00000 V - 
+ TSKB  A    2 P 11:070:20783 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
+ TSKB  A    3 P 24:001:25809 00:000:00000 V -
 *
  TSKT  A    1 P 00:000:00000 15:224:00000 P - unknown
  TSKT  A    2 P 15:224:00000 16:243:55500 P - antenna change
@@ -7604,7 +7631,8 @@
  TWTF  A    4 P 13:241:00000 18:037:57043 V - EQ M6.4 - 18 km NNE of Hualien City, Taiwan
  TWTF  A    5 P 18:037:57043 00:000:00000 V - 
 *
- TXES  A    1 P 00:000:00000 00:000:00000 P - 
+ TXES  A    1 P 00:000:00000 23:173:50400 P - receiver change
+ TXES  A    2 P 23:173:50400 00:000:00000 P -
  TXES  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TXFS  A    1 P 00:000:00000 13:317:72900 P - antenna change
@@ -7853,7 +7881,7 @@
  USUD  A    7 P 24:001:25809 00:000:00000 P - 
  USUD  A    1 P 00:000:00000 00:279:00000 V - receiver change
  USUD  A    2 P 00:279:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- USUD  A    3 P 11:070:20783 24:001:25809 V- EQ M7.5 - Noto Peninsula, Japan
+ USUD  A    3 P 11:070:20783 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
  USUD  A    4 P 24:001:25809 00:000:00000 V -
 *
  UTQI  A    1 P 00:000:00000 18:354:84600 P - antenna change

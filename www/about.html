@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version junio 2025</title>
+  <title>SARI documentation - version julio 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version junio 2025</h1>
+<h1 class="title">SARI documentation - version julio 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 </header>
 <base target="_blank">
@@ -80,7 +80,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>junio 2025</em> – “You will ride eternal, shiny and chrome!”</p>
+<p>Current SARI version: <em>julio 2025</em> – “Many machines on Ix. New machines.”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -481,6 +481,8 @@ The user can upload any combination of the following possibilities:</p>
 </li>
 <li>If the <code>show</code> option is selected, the <em>secondary series</em> will be plotted in green on the right y-axis and will not be included in the processing. This means that the <em>secondary series</em> could have a different sampling than the <em>primary series</em>. In case the <code>correct</code> or the <code>average</code> option is selected, only the common epochs between the <em>primary</em> and the <em>secondary series</em> will be shown. In the latter case, the <em>secondary series</em> must have observations at common epochs with the <em>primary series</em> because the series are neither filled nor interpolated at common epochs. For the <code>merge</code> option, only the epochs that are present in the <em>secondary series</em> and not in the <em>primary series</em>, will be added to the <em>primary series</em>.<br />
 </li>
+<li>When the <em>primary series</em> is combined with a <em>secondary series</em> using any of the <code>correct</code>, <code>average</code>, or <code>merge</code> options, both the <code>plate model</code> and <code>GIA model</code> options will be disabled and fixed to their current status. This is done to avoid using these model corrections before and also after the <em>primary</em> and <em>secondary series</em> were combined. The <code>plate model</code> and <code>GIA model</code> options must be used before combining the <em>primary</em> and <em>secondary</em> series.<br />
+</li>
 <li>For typical GNSS series with daily sampling, even if the sampling period is constant, very often the epochs will not exactly match between the <em>primary</em> and <em>secondary series</em>, especially if the series are produced by different people. If the <em>primary</em> and <em>secondary</em> series have both a constant sampling of one day, but their epochs do not match, SARI will try to compute the constant fraction of a day shift between both series and apply it to the <em>secondary series</em> to match the epochs of the <em>primary series</em>. This feature will only work correctly if both the <em>primary</em> and <em>secondary</em> series have a regular sampling, independently of their time unit.<br />
 </li>
 <li>If the <em>secondary series</em> does not have the same sampling as the <em>primary series</em>, a warning will be shown on screen. The sampling of the <em>secondary series</em> can be reduced with the <code>averaging</code> option, which is equivalent to the <code>reduce sampling</code> option of the <em>primary series</em> (see the <a href="#iii.-input-format"><a href="#input-format" target="_self">Input data and format</a></a> block).<br />
@@ -497,13 +499,15 @@ The user can upload any combination of the following possibilities:</p>
 </h5>
 <h5 id="notes-on-the-plate-motion-model"><strong>Notes on the plate motion model</strong>:</h5>
 <ol type="1">
-<li>In order to compute the <em>plate motion</em>, SARI needs to know the station coordinates and the parameters of the Euler’s pole. The station coordinates will be extracted automatically from <em>NGL</em>, <em>PBO</em> and some <em>ENU/NEU</em> series. For other series formats, the Cartesian (X,Y,Z) or geographic (latitude, longitude) coordinates of the station must be provided in this option. The units of the Cartesian station coordinates must be the same as the time series units (i.e., meters or millimeters). If geopraphic coordinates are provided and the <code>Series units</code> have not been set, SARI will try to guess if the values of the GNSS series are in meters or millimeters and then transform the geographic coordinates into Cartesian coordinates with the correct units. This guess may fail if the series are ambiguous, so either the series units must be set by the user or the station Cartesian coordinates should be preferred as input.<br />
+<li>In order to compute the <em>plate motion</em>, SARI needs to know the station coordinates and the parameters of the Euler’s pole. The station coordinates will be extracted automatically from <em>NGL</em>, <em>PBO</em> and some <em>ENU/NEU</em> series. For other series formats, the Cartesian (X,Y,Z) or geographic (latitude, longitude) coordinates of the station must be provided below the <code>select a plate model</code> option in this section. The units of the Cartesian station coordinates must be the same as the time series units (i.e., meters or millimeters). If geopraphic coordinates are provided and the <code>Series units</code> have not been set, SARI will try to guess if the values of the GNSS series are in meters or millimeters and then transform the geographic coordinates into Cartesian coordinates with the correct units. This guess may fail if the series are ambiguous, so either the series units must be set by the user or the station Cartesian coordinates should be preferred as input.<br />
 </li>
 <li>The <code>Select a plate model</code> option allows selecting any of the three <em>plate motion</em> models implemented in SARI: the ITRF2020 model (<a href="#references"><a href="#references" target="_self">Altamimi et al. 2023</a></a>), the NNR-MORVEL56 model (<a href="#references"><a href="#references" target="_self">Argus et al. 2011</a></a>) and the NNR-GSRM v2.1 model (<a href="#references"><a href="#references" target="_self">Kreemer et al. 2014</a></a>). The parameters of the Euler’s pole for each plate can be shown by clicking on the <code>Show the selected plate model</code> link. The user needs to select a plate motion model and then select one of the tectonic plates available for each model.<br />
 </li>
 <li>Alternatively, the user can <code>Upload a custom plate model</code> that must have six or seven values per line corresponding to the station ID (first value), the station coordinates (two values: latitude &amp; longitude; or three values: X,Y,Z), and the Euler’s pole parameters (three values: latitude,longitude,rotation or X,Y,Z rotations). If a station ID is present in more than one line, only the last one will be used. The units of the plate model parameters are degrees for latitude &amp; longitude and degrees/Ma for rotations. An example of the custom <em>plate motion</em> model can be found <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/euler.txt">here</a>).<br />
 </li>
-<li>Once the <em>plate motion</em> model is read, the extracted values will be shown on the left panel. The user can check and modify these values manually. If no values are being shown, it means no values were found for either the selected plate (see point 2) or the current station ID (see point 3) that is shown in the <code>station ID</code> box of the left panel.</li>
+<li>Once the <em>plate motion</em> model is read, the extracted values will be shown on the left panel. The user can check and modify these values manually. If no values are being shown, it means no values were found for either the selected plate (see point 2) or the current station ID (see point 3) that is shown in the <code>station ID</code> box of the left panel.<br />
+</li>
+<li>The <code>plate model</code> option will be disabled and fixed to their current status (<em>none</em>, <em>show</em> or <em>remove</em>) if both the <em>primary</em> and <em>secondary series</em> are combined using any of the <code>correct</code>, <code>average</code>, or <code>merge</code> options. This is done to avoid using the <code>plate model</code> correction before and also after the <em>primary</em> and <em>secondary series</em> were combined. The <code>plate model</code> option must be used before combining the <em>primary</em> and <em>secondary</em> series.</li>
 </ol>
 <h5 id="notes-on-the-gia-model">
 </h5>
@@ -512,7 +516,9 @@ The user can upload any combination of the following possibilities:</p>
 <li>The vertical land motion (VLM) linear trend value is extracted by bilinear interpolation of the station’s location (also for the secondary series) on the selected model grid.</li>
 <li>The available GIA VLM grids are obtained from the <a href="#references"><a href="#references" target="_self">Caron and Ivins, 2019</a></a> model with resolution 1°x1° (using the total mass sources), the ICE-6G-VM5a model with resolution 0.2°x0.2° (version D, <a href="#references"><a href="#references" target="_self">Peltier et al., 2018</a></a>) and the ICE-6G-ANU model with resolution 1°x1° (<a href="#references"><a href="#references" target="_self">Purcell et al., 2016</a></a>).</li>
 <li>The station coordinates must be provided in the plate motion model section (see the <a href="#notes-on-the-plate-motion-model"><a href="#notes-on-the-plate-motion-model" target="_self">notes</a></a> above).</li>
-<li>The extracted VLM value can be modified manually to change the sign, for instance if correcting the VLM of a TG series, or to use a different VLM value, for instance obtained from a GNSS series.</li>
+<li>The extracted VLM value can be modified manually to change the sign, for instance if correcting the VLM of a TG series, or to use a different VLM value, for instance obtained from a GNSS series.<br />
+</li>
+<li>The <code>GIA model</code> option will be disabled and fixed to their current status (<em>none</em>, <em>show</em> or <em>remove</em>) if both the <em>primary</em> and <em>secondary series</em> are combined using any of the <code>correct</code>, <code>average</code>, or <code>merge</code> options. This is done to avoid using the <code>GIA model</code> correction before and also after the <em>primary</em> and <em>secondary series</em> were combined. The <code>GIA model</code> option must be used before combining the <em>primary</em> and <em>secondary</em> series.</li>
 </ol>
 <h3 id="fit-controls">
 </h3>
@@ -783,7 +789,7 @@ In case of a <em>KF</em> fit, the summary will include the statistics (mean valu
 <h1 id="interactive-operation">Interactive operation</h1>
 <p>The top navigation bar contains the links to this <em>help page</em> and for changing between the 3D, the different coordinate components and the residual series (unless a 1D series is used). It also contains two links at the right edge to download this help page into a <code>PDF</code> file and to <code>save</code> the results of the analysis. These two links will not be visible unless they are needed. To get back to the main program interface from this help page, click on any of the coordinate component tabs.</p>
 <p>SARI processes the time series of each coordinate component independently. However, many options and features activated while analyzing the series in one of the tab/components will still be active when changing the tab/component (if using a 3D series) or the column number (if using a 1D series). This implies that when changing the series component, the visualization of the new series will not be available until all the selected features are computed. This allows fitting the same model for different components of the series or different series in the same input file, although it may also slow down the initial visualization of the series. It is recommended to deactivate the options that are not needed to have a faster and smoother transition between coordinate components. Also, bear in mind that a model that has been adjusted in one series may fail for another (for instance, if fitting a logarithmic/exponential decay). Since the Kalman filter is run only when clicking on the <code>run KF</code> button, the KF fit will be removed when changing the tab.</p>
-<p>One click on any plot will provide the coordinates of the clicked point in a space right under the plots. This is useful to obtain the series values, pinpoint discontinuity epochs, or periodic lines in the spectrum.</p>
+<p>One click on any plot will provide the coordinates of the clicked point in a space right under the plots. This is useful to obtain the series values, pinpoint discontinuity epochs, or periodic lines in the spectrum. Note that in case a secondary series is plotted, the coordinates of the clicked point will correspond to the vertical axis of the primary series on the left, which very likely, will be different to the axis of the secondary series on the right, unless the <code>same axis</code> option is activated (see the <a href="#notes-on-the-secondary-series"><a href="#notes-on-the-secondary-series" target="_self">notes on the secondary series</a></a>).</p>
 <p>One click and drag will select an area on any plot. Once the area is selected, its dimensions and location can be modified. One click outside the area will remove the selection. A double click inside the area of any plot will zoom in on the selection. A double click on the same plot with no selected area will zoom out (if possible) to the original view.<br />
 Points inside the red selected area on the series plot (top) or the blue selected area on the model/filter residuals plot (bottom) can be excluded using the <code>toggle points</code> button. This is useful for removing outliers or for limiting the series to a period of interest (see the <code>truncate</code> option for that also). The removed points will turn into solid red on the series plot as a remainder, but they will disappear on the model/filter residual plot. If the option <code>permanent</code> is activated, the toogled points will be removed from the analysis for good (but not from the user input file). If the series has more than one dimension, the removed points for each dimension will be kept separately when changing tabs if the <code>all components</code> option is not activated.<br />
 Any point toggled twice on the series plot (top) will be restored as a valid point again, i.e., off and on, unless the the option <code>permanent</code> was used. All <em>toggled</em> points in the tab can be restored at once with the <code>reset toggle</code> button. If the <code>reset toggle</code> button is not active, it means there are no points to be restored.</p>
@@ -805,6 +811,8 @@ A warning should appear on the screen when a very long computation time is expec
 <li>If loading a series from your computer, set the series format and time units if they are not already set, and <code>Plot</code> the series with points (default), lines or points &amp; lines.<br />
 </li>
 <li>Click on the <code>overview</code> button to open a new window with the three coordinate components and then select one of the coordinate components in the upper tabs. Move the overview window to a secondary screen and leave it open there.<br />
+</li>
+<li>Load and correct one of the available <code>plate models</code> (for horizontal components) and <code>GIA models</code> (for the vertical component) if necessary. The station’s tectonic plate can be obtained with the <code>show location map</code> option. You can also load the parameters of your own plate and GIA models.<br />
 </li>
 <li>Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.<br />
 </li>
@@ -843,8 +851,6 @@ A warning should appear on the screen when a very long computation time is expec
 <li>Plot the <code>histogram</code> if statistics of the model residuals or a stationarity assessment are needed. The standard deviation of the residuals is also indicated on the overview figure.<br />
 </li>
 <li>Run the <code>MIDAS</code> and/or the <code>minimum entropy</code> estimators for trend comparison.<br />
-</li>
-<li>Load the parameters of a <code>plate model</code> (for horizontal components) or a <code>GIA model</code> (for the vertical component) to check if the site is located where it should be and it is not moving away from its plate. The station’s tectonic plate can be obtained with the <code>show location map</code> option.<br />
 </li>
 <li>Save the results of each coordinate component on your computer using the <code>save</code> icon at the top right corner. This file can be uploaded with the <code>load SARI model</code> if you need to redo the same fit later. If necessary, the periodogram data can be saved by clicking on the <code>get periodogram data</code> link below the periodogram.<br />
 </li>

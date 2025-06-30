@@ -1,6 +1,22 @@
 # **SARI changelog**
 
 
+# julio 2025 [2025.07]
+
+### Fixed
+- adding a check and warning for overfitting in a segmented LS model
+- increasing the checks on the series gaps
+- correcting the range of the secondary Y-axis when using the same scale option
+- correcting a bug when subtracting the secondary series from the primary series and a plate model has already been removed
+
+### Changed
+- printing the epochs of the breakpoints in the results section only when they are used
+- enabling the full series option for the vertical axis of 1D plots
+- disabling the plate and GIA model options when the primary and secondary series are combined
+
+### Added
+
+
 # junio 2025 [2025.06]
 
 ### Fixed
