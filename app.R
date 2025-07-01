@@ -15628,7 +15628,7 @@ server <- function(input,output,session) {
     } else if (server == "RENAG") {
       format <- 2
       if (product == "UGA") {
-        url <- "ftp://webrenag.unice.fr/products/position-timeseries/"
+        url <- "ftp://webrenag.unice.fr/products/POS/gamitUGA/"
         pattern <- "_raw.pos_UGA_ITRF14.pos"
         if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
