@@ -15911,7 +15911,7 @@ server <- function(input,output,session) {
         format <- 2
         pattern1 <- "ENS_"
         pattern2 <- ".pos"
-        solution <- "SOAM_GNSS_solENS"
+        solution <- "_GNSS_solENS"
         name <- paste0(pattern1,toupper(station),pattern2)
       }
       url <- "https://geodesy-plotter.ipgp.fr/"
@@ -15955,7 +15955,7 @@ server <- function(input,output,session) {
             url <- paste0(url,"api/1.0/products/?output=csv")
             dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-              stations_available <- sort(as.character(dir_contents$STATION[dir_contents$SOLUTION == solution]))
+              stations_available <- sort(as.character(dir_contents$STATION[grepl(solution, dir_contents$SOLUTION)]))
               if (length(stations_available) > 0) {
                 if (series == 1) {
                   output$showStation1 <- renderUI({
