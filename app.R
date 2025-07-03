@@ -9567,20 +9567,23 @@ server <- function(input,output,session) {
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
         }
       } else if (input$optionSecondary == 4) {
-        table1[is.na(table1)] <- 999
+        table2$status1 <- T
+        table1$y1 <- ifelse(table1$status1 == T, table1$y1, NA)
+        table1$sy1 <- ifelse(table1$status1 == T, table1$sy1, NA)
         if (info$format == 4) {
-          table2$status1 <- T
           table_common <- data.frame(within(merge(table1, table2, by = "x1", all = T), {
-            y1 <- y1.x - y1.y * inputs$scaleFactor
             x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
             x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
             y1 <- ifelse(is.na(y1.x),y1.y * inputs$scaleFactor,y1.x)
             sy1 <- ifelse(is.na(sy1.x),sy1.y * inputs$scaleFactor,sy1.x)
-            status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
+            status1 <- ifelse(is.na(as.numeric(y1)),NA,T)
           })[,c("x1","x2","x3","y1","sy1","status1")])
-          table_common[table_common$status1 == 999, 'status1'] <- NA
         } else {
-          table2$status1 <- table2$status2 <- table2$status3 <- T
+          table2$status2 <- table2$status3 <- T
+          table1$y2 <- ifelse(table1$status1 == T, table1$y2, NA)
+          table1$y3 <- ifelse(table1$status1 == T, table1$y3, NA)
+          table1$sy2 <- ifelse(table1$status1 == T, table1$sy2, NA)
+          table1$sy3 <- ifelse(table1$status1 == T, table1$sy3, NA)
           table_common <- data.frame(within(merge(table1, table2, by = "x1", all = T), {
             if (info$format2 == 4) {
               x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
@@ -9591,9 +9594,9 @@ server <- function(input,output,session) {
               sy1 <- ifelse(is.na(sy1.x),sy1.y * inputs$scaleFactor,sy1.x)
               sy2 <- ifelse(is.na(sy2.x),sy1.y * inputs$scaleFactor,sy2.x)
               sy3 <- ifelse(is.na(sy3.x),sy1.y * inputs$scaleFactor,sy3.x)
-              status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
-              status2 <- ifelse(is.na(status3.x),status1.y,status2.x)
-              status3 <- ifelse(is.na(status3.x),status1.y,status3.x)
+              status1 <- ifelse(is.na(as.numeric(y1)),NA,T)
+              status2 <- ifelse(is.na(as.numeric(y2)),NA,T)
+              status3 <- ifelse(is.na(as.numeric(y3)),NA,T)
             } else {
               x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
               x3 <- ifelse(is.na(x3.x),x3.y,x3.x)
@@ -9603,14 +9606,11 @@ server <- function(input,output,session) {
               sy1 <- ifelse(is.na(sy1.x),sy1.y * inputs$scaleFactor,sy1.x)
               sy2 <- ifelse(is.na(sy2.x),sy2.y * inputs$scaleFactor,sy2.x)
               sy3 <- ifelse(is.na(sy3.x),sy3.y * inputs$scaleFactor,sy3.x)
-              status1 <- ifelse(is.na(status1.x),status1.y,status1.x)
-              status2 <- ifelse(is.na(status3.x),status2.y,status2.x)
-              status3 <- ifelse(is.na(status3.x),status3.y,status3.x)
+              status1 <- ifelse(is.na(as.numeric(y1)),NA,T)
+              status2 <- ifelse(is.na(as.numeric(y1)),NA,T)
+              status3 <- ifelse(is.na(as.numeric(y1)),NA,T)
             }
           })[,c("x1","x2","x3","y1","y2","y3","sy1","sy2","sy3","status1","status2","status3")])
-          table_common[table_common$status1 == 999, 'status1'] <- NA
-          table_common[table_common$status2 == 999, 'status2'] <- NA
-          table_common[table_common$status3 == 999, 'status3'] <- NA
         }
       }
       numValid1 <- sum(table_common$status1, na.rm = T)
