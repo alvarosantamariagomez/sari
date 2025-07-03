@@ -112,8 +112,8 @@ Similar options are available for downloading a secondary series (see an example
 
 3) The values for the `server`, `product` and `station` options can also be provided in any order as a <ins>**query string**</ins> after the base SARI URL on the address bar of the browser.  
 These three parameters can be defined for both the primary and secondary series at the same time. For example, adding this query string  
-<span style="color: red;">?product=SPOTGINS_POS&station=CRAL00FRA&server=FORMATER&server2=NGL&product2=IGS14&station2=CRAL</span>  
-at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *SPOTGINS* GNSS position series of the station *CRAL00FRA* from the *FORMATER* server, and also the *NGL* *IGS14* series of the station *CRAL* as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
+<span style="color: red;">?product=SPOTGINS_POS&station=CRAL00FRA&server=FORMATERRE&server2=NGL&product2=IGS14&station2=CRAL</span>  
+at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the *SPOTGINS* GNSS position series of the station *CRAL00FRA* from the *FORMATERRE* server, and also the *NGL* *IGS14* series of the station *CRAL* as secondary series (see the [<a href="#ancillary-information" target="_self">Ancillary information</a>](#iii.-ancillary-information) block).  
 This feature allows webmasters of any GNSS series database to include a link on their webpages so that users can open a specific GNSS series directly with SARI on a new browser tab. Contact the [<a href="#author" target="_self">author</a>](#author) for more information. <p></p>
 At this moment, the following servers and products are available:  
 
@@ -150,7 +150,7 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;">UGA</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="https://en.poleterresolide.fr/" target="_blank">FORMATER</a></td>
+   <td style="text-align:left;"><a href="https://en.poleterresolide.fr/" target="_blank">FORMATERRE</a></td>
    <td style="text-align:center;"> </td>
    <td style="text-align:left;">9 characters (TLSE00FRA)</td>
    <td style="text-align:left;"> </td>

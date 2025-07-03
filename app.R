@@ -634,7 +634,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
                                                                                selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
@@ -1095,7 +1095,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           fluidRow(
                                                                             column(4,
                                                                                    div(style = "margin-bottom: -1em",
-                                                                                       selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATER", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                       selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                                    )
                                                                             ),
                                                                             column(4,
@@ -7815,7 +7815,7 @@ server <- function(input,output,session) {
   observeEvent(input$server1, {
     if (input$server1 == "RENAG") {
       updateSelectizeInput(session, inputId = "product1", choices = list("UGA"), selected = "UGA")
-    } else if (input$server1 == "FORMATER") {
+    } else if (input$server1 == "FORMATERRE") {
       updateSelectizeInput(session, inputId = "product1", choices = list("SPOTGINS", "UGA", "IGS20", "ENS"), selected = "")
     } else if (input$server1 == "IGS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
@@ -7850,7 +7850,7 @@ server <- function(input,output,session) {
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     if (input$server2 == "RENAG") {
       updateSelectizeInput(session, inputId = "product2", choices = list("UGA"), selected = "UGA")
-    } else if (input$server2 == "FORMATER") {
+    } else if (input$server2 == "FORMATERRE") {
       updateSelectizeInput(session, inputId = "product2", choices = list("SPOTGINS", "UGA", "IGS20", "ENS"), selected = "")
     } else if (input$server2 == "IGS") {
       updateSelectizeInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
@@ -12309,7 +12309,7 @@ server <- function(input,output,session) {
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
               }
-            } else if (server == "FORMATER" || isTruthy(spotgins)) { # SPOTGINS series
+            } else if (server == "FORMATERRE" || isTruthy(spotgins)) { # SPOTGINS series
               if (series == 1) {
                 info$tunits.known1 <- T
               } else if (series == 2) {
@@ -12634,7 +12634,7 @@ server <- function(input,output,session) {
     coordinates <- NULL
     if (format == 1) {
       if (isTruthy(server)) {
-        if (server == "FORMATER") {
+        if (server == "FORMATERRE") {
           coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
           if (length(coordinates) == 3) {
             shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", selected = 1))
@@ -13983,7 +13983,7 @@ server <- function(input,output,session) {
                 rece <- unique(c(rece, as.numeric(unlist(unique(table$dyear[table$V1 == y][!antennaChange])))))
               }
             }
-          } else if (grepl(pattern = "# Offset file|# Events file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = T, fixed = F)) { #FORMATER offset file
+          } else if (grepl(pattern = "# Offset file|# Events file", x = readLines(z$datapath, n = 1), ignore.case = F, perl = T, fixed = F)) { #FORMATERRE offset file
             table$dyear <- decimal_date(strptime("18581117", format = '%Y%m%d', tz = "GMT") + as.numeric(table$V2)*86400)
             antennaChange <- apply(table, 1, function(row) any(grepl(pattern = "antenna|radome", x = row, fixed = F, ignore.case = T, perl = F)))
             ante <- as.numeric(unlist(unique(table$dyear[table$V1 == x & antennaChange])))
@@ -15887,8 +15887,8 @@ server <- function(input,output,session) {
         showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
         return(NULL)
       }
-    ## FORMATER ####
-    } else if (server == "FORMATER") {
+    ## FORMATERRE ####
+    } else if (server == "FORMATERRE") {
       if (product == "SPOTGINS" || product == "SPOTGINS_POS") {
         format <- 1
         pattern1 <- "SPOTGINS_"
