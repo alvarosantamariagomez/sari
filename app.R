@@ -15899,7 +15899,7 @@ server <- function(input,output,session) {
         format <- 2
         pattern1 <- "UGA_"
         pattern2 <- ".pos"
-        solution <- "UGA_Epos-Fr_GG"
+        solution <- "UGA_"
         name <- paste0(pattern1,toupper(station),"_01D",pattern2)
       } else if (product == "IGS20") {
         format <- 2
