@@ -10107,7 +10107,11 @@ server <- function(input,output,session) {
       if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
         x.range <- ranges$x1
       } else {
-        x.range <- c(min(x[valid1], x[valid2], x[valid3], na.rm = T), max(x[valid1], x[valid2], x[valid3], na.rm = T))
+        if (isTruthy(input$fullSeries)) {
+          x.range <- c(min(x[valid1], x[valid2], x[valid3], x2, na.rm = T), max(x[valid1], x[valid2], x[valid3], x2, na.rm = T))
+        } else {
+          x.range <- c(min(x[valid1], x[valid2], x[valid3], na.rm = T), max(x[valid1], x[valid2], x[valid3], na.rm = T))
+        }
       }
       ragg::agg_png(filename = fileout, width = info$width, height = 800, pointsize = 25)
       par(mai = c(1, 2, 1, 2))
@@ -10119,9 +10123,21 @@ server <- function(input,output,session) {
         if (isTruthy(input$sameScale)) {
           x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
           y2.common <- y12[x2 > x.range[1] & x2 < x.range[2]]
-          half <- abs(y.range[1] - mean(y.range))
-          middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
-          y2.range <- c(middle - half, middle + half)
+          y2.range <- range(y2.common)
+          range1 <- diff(y.range)
+          range2 <- diff(y2.range)
+          if (input$fullSeries) {
+            if (range1 >= range2) {
+              y.range[1] <- y2.range[1] - (range1 - range2)/2
+              y.range[2] <- y2.range[2] + (range1 - range2)/2
+            } else {
+              y.range[1] <- y.range[1] - (range2 - range1)/2
+              y.range[2] <- y.range[2] + (range2 - range1)/2
+            }
+          } else {
+            middle <- ifelse(isTruthy(y2.range), median(y2.range), 0)
+            y2.range <- c(middle - range1/2, middle + range1/2)
+          }
           if (length(x) == 0 || length(x2.common) == 0) {
             # NA
           } else if (x2.common[1] > x.range[2]) {
@@ -10133,18 +10149,25 @@ server <- function(input,output,session) {
             tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y1[valid1][tie1] - y2.common[tie2], na.rm = T)
+            pointsBias <- median(y1[valid3][tie1] - y2.common[tie2])
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
-          y2.range <- y.range
+          if (input$fullSeries) {
+            pointsY1 <- y1[valid1][x[valid1] >= x.range[1] & x[valid1] <= x.range[2]]
+            pointsY2 <- y12[x2 > x.range[1] & x2 < x.range[2]]
+            range <- range(c(pointsY1,pointsY2))
+            y.range <- y2.range <- range
+          } else {
+            y2.range <- y.range 
+          }
         } else {
           y2.range <- suppressWarnings(range(y12[x2 >= x.range[1] & x2 <= x.range[2]]))
         }
         if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
           y2.range <- range(y12)
         }
-        plot(x2, y12, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
+        plot(x2, y12, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
@@ -10213,9 +10236,21 @@ server <- function(input,output,session) {
         if (isTruthy(input$sameScale)) {
           x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
           y2.common <- y22[x2 > x.range[1] & x2 < x.range[2]]
-          half <- abs(y.range[1] - mean(y.range))
-          middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
-          y2.range <- c(middle - half, middle + half)
+          y2.range <- range(y2.common)
+          range1 <- diff(y.range)
+          range2 <- diff(y2.range)
+          if (input$fullSeries) {
+            if (range1 >= range2) {
+              y.range[1] <- y2.range[1] - (range1 - range2)/2
+              y.range[2] <- y2.range[2] + (range1 - range2)/2
+            } else {
+              y.range[1] <- y.range[1] - (range2 - range1)/2
+              y.range[2] <- y.range[2] + (range2 - range1)/2
+            }
+          } else {
+            middle <- ifelse(isTruthy(y2.range), median(y2.range), 0)
+            y2.range <- c(middle - range1/2, middle + range1/2)
+          }
           if (length(x) == 0 || length(x2.common) == 0) {
             # NA
           } else if (x2.common[1] > x.range[2]) {
@@ -10231,14 +10266,21 @@ server <- function(input,output,session) {
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
-          y2.range <- y.range
+          if (input$fullSeries) {
+            pointsY1 <- y2[valid2][x[valid2] >= x.range[1] & x[valid2] <= x.range[2]]
+            pointsY2 <- y22[x2 > x.range[1] & x2 < x.range[2]]
+            range <- range(c(pointsY1,pointsY2))
+            y.range <- y2.range <- range
+          } else {
+            y2.range <- y.range 
+          }
         } else {
           y2.range <- suppressWarnings(range(y22[x2 >= x.range[1] & x2 <= x.range[2]]))
         }
         if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
           y2.range <- range(y12)
         }
-        plot(x2, y22, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
+        plot(x2, y22, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
@@ -10308,9 +10350,21 @@ server <- function(input,output,session) {
         if (isTruthy(input$sameScale)) {
           x2.common <- x2[x2 > x.range[1] & x2 < x.range[2]]
           y2.common <- y32[x2 > x.range[1] & x2 < x.range[2]]
-          half <- abs(y.range[1] - mean(y.range))
-          middle <- ifelse(isTruthy(y2.common), median(y2.common), 0)
-          y2.range <- c(middle - half, middle + half)
+          y2.range <- range(y2.common)
+          range1 <- diff(y.range)
+          range2 <- diff(y2.range)
+          if (input$fullSeries) {
+            if (range1 >= range2) {
+              y.range[1] <- y2.range[1] - (range1 - range2)/2
+              y.range[2] <- y2.range[2] + (range1 - range2)/2
+            } else {
+              y.range[1] <- y.range[1] - (range2 - range1)/2
+              y.range[2] <- y.range[2] + (range2 - range1)/2
+            }
+          } else {
+            middle <- ifelse(isTruthy(y2.range), median(y2.range), 0)
+            y2.range <- c(middle - range1/2, middle + range1/2)
+          }
           if (length(x) == 0 || length(x2.common) == 0) {
             # NA
           } else if (x2.common[1] > x.range[2]) {
@@ -10326,14 +10380,21 @@ server <- function(input,output,session) {
             y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
           }
         } else if (isTruthy(input$same_axis)) {
-          y2.range <- y.range
+          if (input$fullSeries) {
+            pointsY1 <- y3[valid3][x[valid3] >= x.range[1] & x[valid3] <= x.range[2]]
+            pointsY2 <- y32[x2 > x.range[1] & x2 < x.range[2]]
+            range <- range(c(pointsY1,pointsY2))
+            y.range <- y2.range <- range
+          } else {
+            y2.range <- y.range 
+          }
         } else {
           y2.range <- suppressWarnings(range(y32[x2 >= x.range[1] & x2 <= x.range[2]]))
         }
         if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
-          y2.range <- range(y12)
+          y2.range <- range(y13)
         }
-        plot(x2, y32, type = symbol, pch = 20, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
+        plot(x2, y32, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
           color <- SARIcolors[3]
           alfa <- 0.5
