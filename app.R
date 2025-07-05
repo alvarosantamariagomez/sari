@@ -7204,8 +7204,8 @@ server <- function(input,output,session) {
                                  db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
               } else {
                 req(db2[[info$db2]])
-                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
-                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+                info$minx <- suppressWarnings(min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])]))
+                info$maxx <- suppressWarnings(max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])]))
               }
               ranges$x1 <- c(info$minx, info$maxx)
               ranges$y1 <- NULL
@@ -10053,8 +10053,8 @@ server <- function(input,output,session) {
         x2 <- db2[[info$db2]]$x3
       }
       if (isTruthy(trans$plate) && input$eulerType == 2 && isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z) && info$db1 != "merged") {
-        y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x[db1[[info$db1]]$status1], na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
-        y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x[db1[[info$db1]]$status2], na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
+        y1 <- db1[[info$db1]]$y1 - trans$plate[1]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
+        y2 <- db1[[info$db1]]$y2 - trans$plate[2]*(x - median(x, na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
         y3 <- db1[[info$db1]]$y3
       } else {
         y1 <- db1[[info$db1]]$y1
@@ -10062,13 +10062,11 @@ server <- function(input,output,session) {
         y3 <- db1[[info$db1]]$y3
       }
       if (isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
-        # y1 <- y1 - trans$gia[1]*(x - median(x[db1[[info$db1]]$status1], na.rm = T)) - median(y1, na.rm = T)
-        # y2 <- y2 - trans$gia[2]*(x - median(x[db1[[info$db1]]$status2], na.rm = T)) - median(y2, na.rm = T)
-        y3 <- y3 - trans$gia[3]*(x - median(x[db1[[info$db1]]$status3], na.rm = T)) - median(y3, na.rm = T)
+        y3 <- y3 - trans$gia[3]*(x - median(x, na.rm = T)) - median(y3, na.rm = T)
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(inputs$station_x2) && isTruthy(inputs$station_y2) && isTruthy(inputs$station_z2)) {
-        y12 <- db2[[info$db2]]$y1 - trans$plate2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
-        y22 <- db2[[info$db2]]$y2 - trans$plate2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
+        y12 <- db2[[info$db2]]$y1 - trans$plate2[1]*(x2 - median(x, na.rm = T)) - median(db1[[info$db1]]$y1, na.rm = T)
+        y22 <- db2[[info$db2]]$y2 - trans$plate2[2]*(x2 - median(x, na.rm = T)) - median(db1[[info$db1]]$y2, na.rm = T)
         y32 <- db2[[info$db2]]$y3
       } else {
         y12 <- db2[[info$db2]]$y1
@@ -10076,9 +10074,7 @@ server <- function(input,output,session) {
         y32 <- db2[[info$db2]]$y3
       }
       if (isTruthy(trans$gia2) && input$giaType == 2) {
-        # y12 <- y12 - trans$gia2[1]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y1, na.rm = T)
-        # y22 <- y22 - trans$gia2[2]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y2, na.rm = T)
-        y32 <- y32 - trans$gia2[3]*(x2 - median(x2, na.rm = T)) - median(db2[[info$db2]]$y3, na.rm = T)
+        y32 <- y32 - trans$gia2[3]*(x2 - median(x, na.rm = T)) - median(db1[[info$db1]]$y3, na.rm = T)
       }
       y12 <- y12 * inputs$scaleFactor
       y22 <- y22 * inputs$scaleFactor
@@ -10160,7 +10156,7 @@ server <- function(input,output,session) {
             range <- range(c(pointsY1,pointsY2))
             y.range <- y2.range <- range
           } else {
-            y2.range <- y.range 
+            y2.range <- y.range
           }
         } else {
           y2.range <- suppressWarnings(range(y12[x2 >= x.range[1] & x2 <= x.range[2]]))
@@ -12218,7 +12214,6 @@ server <- function(input,output,session) {
       tunitsKnown <- F
       spotgins <- try(grepl("# SPOTGINS SOLUTION [POSITION]", readLines(file, n = 1, warn = F), fixed = T), silent = T)
       spotgins <- isTruthy(spotgins)
-print(paste("spotgins",spotgins))
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
