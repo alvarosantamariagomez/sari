@@ -63,7 +63,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         +------------+--------------------------------------+---------+------------------------------------------------+
         | Server     | Product                              | Station | Reference                                      |
         +------------+--------------------------------------+---------+------------------------------------------------+
-        | LOCAL      | ENU, NEU, PBO, NGL, 1D*              | path    |                                                |
+        | LOCAL      | ENU, NEU, PBO, NGL, SPOTGINS, 1D*    | path    |                                                |
         | RENAG      | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
         | FORMATER   | SPOTGINS, UGA, IGS20, ENS            | 9 char  | https://en.poleterresolide.fr/                 |
         | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  | 9 char  | https://www.epos-eu.org/                       |
@@ -112,7 +112,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 # Setting list of available URL parameters
 servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas doris eostls psmsl "
 products=" enu neu pbo ngl uga spotgins ens ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a esa gop grg gsc ids ign atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd rlr "
-products_local=" enu neu pbo ngl 1d "
+products_local=" enu neu pbo ngl 1d spotgins "
 
 # Setting a trap to do a clean exit
 cleaning () {

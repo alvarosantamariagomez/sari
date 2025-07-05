@@ -7721,6 +7721,7 @@ server <- function(input,output,session) {
                     file$secondary$name <- url_info[3]
                     info$format2 <- url_info[4]
                     url$logfile2 <- url_info[5]
+                    info$product2 <- toupper(query[['product2']])
                     shinyjs::delay(100, updateRadioButtons(session, inputId = "format2", label = NULL, selected = info$format2))
                     if (tolower(query[['server2']]) == "local") {
                       if (!isTruthy(file.exists(url$file2))) {
@@ -9698,8 +9699,8 @@ server <- function(input,output,session) {
                          db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status2)],
                          db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
       } else {
-        info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
-        info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])])
+        info$minx <- suppressWarnings(min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])]))
+        info$maxx <- suppressWarnings(max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])]))
       }
       ranges$x1 <- c(info$minx, info$maxx)
     }
@@ -11856,7 +11857,7 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       # Extracting station coordinates
-      coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,skip,sep))
+      coordinates <- as.numeric(extract_coordinates(filein,info$format,url$server,info$product1,url$station,sep))
       if (isTruthy(coordinates)) {
         lat <- coordinates[4]
         lon <- coordinates[5]
@@ -12127,7 +12128,7 @@ server <- function(input,output,session) {
             suppressWarnings(write.table(x = format(table_stack, justify = "right", nsmall = 2, scientific = F), file = file$secondary$newpath, append = F, quote = F, sep = "\t", eol = "\n", na = "NA", dec = ".", row.names = F, col.names = T))
           } else {
             # Extracting station coordinates
-            coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,skip,sep2)
+            coordinates <- extract_coordinates(files$datapath[i],info$format2,url$server2,info$product2,url$station2,sep2)
             lat2 <- as.numeric(coordinates[4])
             lon2 <- as.numeric(coordinates[5])
             shinyjs::delay(100, updateTextInput(session, inputId = "station_x2", value = coordinates[1]))
@@ -12217,6 +12218,7 @@ server <- function(input,output,session) {
       tunitsKnown <- F
       spotgins <- try(grepl("# SPOTGINS SOLUTION [POSITION]", readLines(file, n = 1, warn = F), fixed = T), silent = T)
       spotgins <- isTruthy(spotgins)
+print(paste("spotgins",spotgins))
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
@@ -12691,10 +12693,10 @@ server <- function(input,output,session) {
     }
   }
   #
-  extract_coordinates <- function(filein,format,server,product,station,skip,sep) {
+  extract_coordinates <- function(filein,format,server,product,station,sep) {
     coordinates <- NULL
     if (format == 1) {
-      if (isTruthy(server)) {
+      if (isTruthy(server) && server != "LOCAL") {
         if (server == "FORMATERRE") {
           coordinates <- unlist(strsplit(grep("_pos ", readLines(filein, warn = F), ignore.case = F, value = T, perl = T), "\\s+", fixed = F, perl = T, useBytes = F))[c(4,8,12)]
           if (length(coordinates) == 3) {
@@ -16369,7 +16371,7 @@ server <- function(input,output,session) {
       }
     ## LOCAL ####
     } else if (server == "LOCAL") {
-      if (product == "NEU" || product == "ENU") {
+      if (product == "NEU" || product == "ENU" || product == "SPOTGINS") {
         format <- 1
       } else if (product == "PBO") {
         format <- 2

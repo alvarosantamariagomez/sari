@@ -140,7 +140,7 @@ At this moment, the following servers and products are available:
    <td style="text-align:center;"><sup>1</sup></td>
    <td style="text-align:left;">file path</td>
    <td style="text-align:left;"> </td>
-   <td style="text-align:left;">ENU, NEU, PBO, NGL</td>
+   <td style="text-align:left;">ENU, NEU, PBO, NGL, SPOTGINS, 1D</td>
   </tr>
   <tr>
    <td style="text-align:left;"><a href="http://renag.resif.fr/en/" target="_blank">RENAG</a></td>
