@@ -9746,7 +9746,12 @@ server <- function(input,output,session) {
     db1_tmp <- db1[[info$db1]]
     db2_tmp <- db2[[info$db2]]
     db1[[info$db1]] <- db2_tmp
-    db2[[info$db1]] <- db1_tmp
+    # keeping only if all components are valid
+    if (input$format < 4) {
+      db2[[info$db1]] <- db1_tmp[db1_tmp$status1 %in% T & db1_tmp$status2 %in% T & db1_tmp$status3 %in% T,]
+    } else {
+      db2[[info$db1]] <- db1_tmp[db1_tmp$status1 %in% T,]
+    }
     if (!isTruthy(db1[[info$db1]]$status1)) {
       db1[[info$db1]]$status1 <- rep(T, length(db1[[info$db1]]$x1))
       db1[[info$db1]]$status2 <- rep(T, length(db1[[info$db1]]$x1))
