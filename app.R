@@ -4846,7 +4846,11 @@ server <- function(input,output,session) {
     if (isTruthy(input$sigmas) && ((input$format == 4 && isTruthy(inputs$errorBar)) || input$format != 4)) {
       sigmas <- T
     }
-    plot_series(trans$x,trans$res,ey,ranges$x2,ranges$y2,sigmas,"",input$symbol,T,"")
+    rangesx2 <- range(trans$x)
+    if (isTruthy(ranges$x2)) {
+      rangesx2 <- ranges$x2
+    }
+    plot_series(trans$x,trans$res,ey,rangesx2,ranges$y2,sigmas,"",input$symbol,T,"")
     title(title, line = 3)
     abline(h = 0, col = SARIcolors[2], lwd = 3)
     if (input$traceLog && length(info$log) > 0) {
@@ -9760,7 +9764,12 @@ server <- function(input,output,session) {
     db2[[info$db1]]$status1 <- NULL
     db2[[info$db1]]$status2 <- NULL
     db2[[info$db1]]$status3 <- NULL
-    ranges$x0 <- ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]], na.rm = T)
+    if (input$optionSecondary == 1 && isTruthy(input$fullSeries)) {
+      ranges$x1 <- range(c(db1[[info$db1]][[paste0("x",input$tunits)]], db2[[info$db2]][[paste0("x",input$tunits)]]), na.rm = T)
+    } else {
+      ranges$x0 <- ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]], na.rm = T)
+    }
+    ranges$x2 <- NULL
     if (isTruthy(inputs$scaleFactor)) {
       updateTextInput(session, inputId = "scaleFactor", value = 1/inputs$scaleFactor)
     }
