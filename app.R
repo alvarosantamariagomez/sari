@@ -1140,12 +1140,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                         value = "1") |> autoCompleteOff()
                                                                                        ),
                                                                                        column(6,
+                                                                                              div( # dummy div to avoid sendCustomMessage to update the previous scaleFactor and the next step2 values both at the same time (maybe a bug?)
                                                                                               textInput(inputId = "step2",
                                                                                                         div("Averaging",
                                                                                                             helpPopup("This option computes the moving average of the secondary series for a given non-overlapping time pediod between the time series sampling and half the time series length.<br>
                                                                                                                       The period must be given in the same units as the time axis in the series.<br>
                                                                                                                       Expressions are allowed starting by <span class='UIoption'>=</span>, as in <span class='UIoption'>=7/365.25</span>.", anchor = "notes-on-the-secondary-series")),
                                                                                                         value = "") |> autoCompleteOff()
+                                                                                              )
                                                                                        )
                                                                                      ),
                                                                                      div(style = "margin-right: -1em", uiOutput("fileSeries2"))
