@@ -340,7 +340,7 @@ tabContents <- function(tabNum) {
              verbatimTextOutput(paste0("changes_rec",tabNum,"c"), placeholder = F)
            ),
            conditionalPanel(
-             condition = "output.run && input.model.length > 0 || input.midas == true || input.entropy == true || input.optionSecondary == 1",
+             condition = "output.run && input.model.length > 0 || input.midas == true || input.entropy == true || output.pearson",
              htmlOutput(paste0("summary",tabNum))
            ),
            conditionalPanel(
@@ -2732,6 +2732,17 @@ server <- function(input,output,session) {
     }
   })
   outputOptions(output, "pmm", suspendWhenHidden = F)
+  
+  output$pearson <- reactive({
+    common <- NULL
+    if (input$optionSecondary == 1 && isTruthy(trans$y) && isTruthy(trans$y2)) {
+      serie1 <- data.frame(x = trans$x, y = trans$y)
+      serie2 <- data.frame(x = trans$x2, y = trans$y2)
+      common <- merge(serie1, serie2, by = "x")
+    }
+    return(length(common$x) > 30)
+  })
+  outputOptions(output, "pearson", suspendWhenHidden = F)
 
   # Series summary ####
   output$information1 <- output$information2 <- renderUI({
