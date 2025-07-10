@@ -2762,7 +2762,7 @@ server <- function(input,output,session) {
       rangex <- range(x)
       seriesInfo(x)
       if (!isTruthy(info$decimalsy)) {
-        info$decimalsy <- decimalplaces(c(db1[[info$db1]]$y1,db1[[info$db1]]$y2,db1[[info$db1]]$y3), "y")
+        info$decimalsy <- decimalplaces(c(db1[[info$db1]]$y1,db1[[info$db1]]$y2,db1[[info$db1]]$y3), 0)
         if (!isTruthy(info$decimalsy)) {
           info$decimalsy <- 4
         }
@@ -3327,8 +3327,7 @@ server <- function(input,output,session) {
     # getting data sampling
     seriesInfo(trans$x)
     # Getting significant decimals from the primary series
-    # info$decimalsx <- decimalplaces(signif(info$sampling, digits = 2),"x")
-    info$decimalsy <- decimalplaces(trans$y, "y")
+    info$decimalsy <- decimalplaces(trans$y, 0)
     if (!isTruthy(info$decimalsy)) {
       info$decimalsy <- 4
       showNotification(HTML("It was not possible to extract the number of decimal places from the series.<br>Using 4 decimal places by default."), action = NULL, duration = 10, closeButton = T, id = "no_decimals", type = "warning", session = getDefaultReactiveDomain())
@@ -14832,73 +14831,75 @@ server <- function(input,output,session) {
     OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx)
     # Formatting input data columns
     if (input$tab < 4) {
-      OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],1)
+      OutPut$df[,"Data"] <- format(OutPut$df[,"Data"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       if (isTruthy(input$sigmas)) {
-        OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],1)
+        OutPut$df[,"Sigma"] <- format(OutPut$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
     } else if (input$tab == 4 || input$tab == 5) {
-      # OutPut$df[,c(2,3,4)] <- formatting(OutPut$df[,c(2,3,4)],1)
-      OutPut$df[,2] <- formatting(OutPut$df[,2],1)
-      OutPut$df[,3] <- formatting(OutPut$df[,3],1)
-      OutPut$df[,4] <- formatting(OutPut$df[,4],1)
+      OutPut$df[,2] <- format(OutPut$df[,2], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+      OutPut$df[,3] <- format(OutPut$df[,3], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+      OutPut$df[,4] <- format(OutPut$df[,4], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       if (isTruthy(input$sigmas)) {
-        # OutPut$df[,c(5,6,7)] <- formatting(OutPut$df[,c(5,6,7)],1)
-        OutPut$df[,5] <- formatting(OutPut$df[,5],1)
-        OutPut$df[,6] <- formatting(OutPut$df[,6],1)
-        OutPut$df[,7] <- formatting(OutPut$df[,7],1)
+        OutPut$df[,5] <- format(OutPut$df[,5], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        OutPut$df[,6] <- format(OutPut$df[,6], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        OutPut$df[,7] <- format(OutPut$df[,7], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
     }
     # Adding and formatting the fit/filter/noise columns for each component
     if (input$tab < 4) {
       if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
         if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-          OutPut$df$Model <- formatting(trans$mod - trans$pattern,1)
-          OutPut$df$Residuals <- formatting(trans$res + trans$pattern,1)
+          model <- trans$mod - trans$pattern
+          residuals <- trans$res + trans$pattern
         } else {
-          OutPut$df$Model <- formatting(trans$mod,1)
-          OutPut$df$Residuals <- formatting(trans$res,1)
+          model <- trans$mod
+          residuals <- trans$res
         }
+        OutPut$df$Model <- format(model, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        OutPut$df$Residuals <- format(residuals, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
       if (input$fitType == 1 && length(input$model) > 0) {
         if (length(trans$moderror) > 0) {
-          OutPut$df$Sigma.Model <- formatting(trans$moderror,1)
+          OutPut$df$Sigma.Model <- format(trans$moderror, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         }
         if (length(trans$reserror) > 0) {
-          OutPut$df$Sigma.Residuals <- formatting(trans$reserror,1)
+          OutPut$df$Sigma.Residuals <- format(trans$reserror, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         }
       }
       if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
         if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
-          OutPut$df$Smooth <- formatting(trans$filter - trans$pattern,1)
-          OutPut$df$Smooth.Residuals <- formatting(trans$filterRes + trans$pattern,1)
+          smooth <- trans$filter - trans$pattern
+          smooth.residuals <- trans$filterRes + trans$pattern
         } else {
-          OutPut$df$Smooth <- formatting(trans$filter,1)
-          OutPut$df$Smooth.Residuals <- formatting(trans$filterRes,1)
+          smooth <- trans$filter
+          smooth.residuals <- trans$filterRes
         }
+        OutPut$df$Smooth <- format(smooth, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        OutPut$df$Smooth.Residuals <- format(smooth.residuals, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
       if (input$wiener && input$mle) {
         if (input$white && length(trans$white) > 0) {
-          OutPut$df$White <- formatting(trans$white,1)
+          OutPut$df$White <- format(trans$white, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           if (input$sigmas && length(trans$white_sig) > 0) {
-            OutPut$df$Sigma.White <- formatting(trans$white_sig,1)
+            OutPut$df$Sigma.White <- format(trans$white_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
         if (input$flicker && length(trans$flicker) > 0) {
-          OutPut$df$Flicker <- formatting(trans$flicker,1)
+          OutPut$df$Flicker <- format(trans$flicker, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           if (input$sigmas && length(trans$flicker) > 0) {
-            OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig,1)
+            OutPut$df$Sigma.Flicker <- format(trans$flicker_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
         if (input$randomw && length(trans$randomw) > 0) {
-          OutPut$df$RandomWalk <- formatting(trans$randomw,1)
+          OutPut$df$RandomWalk <- format(trans$randomw, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           if (input$sigmas && length(trans$randomw_sig) > 0) {
-            OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig,1)
+            OutPut$df$Sigma.RandomWalk <- format(trans$randomw_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
         if (input$powerl && length(trans$powerl) > 0) {
-          OutPut$df$PowerLaw <- formatting(trans$powerl,1)
+          OutPut$df$PowerLaw <- format(trans$powerl, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           if (input$sigmas && length(trans$powerl_sig) > 0) {
-            OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig,1)
+            OutPut$df$Sigma.PowerLaw <- format(trans$powerl_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
       }
@@ -14908,7 +14909,7 @@ server <- function(input,output,session) {
         OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,1))
       }
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-        OutPut$df$Waveform <- formatting(trans$pattern,1)
+        OutPut$df$Waveform <- format(trans$pattern, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
     }
     # Adding formatted excluded points
@@ -14917,12 +14918,13 @@ server <- function(input,output,session) {
         if (isTruthy(input$sigmas)) {
           output_excluded$df <- data.frame(x = trans$xe, y = trans$ye, sy = trans$sye)
           names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
+          output_excluded$df[,"Sigma"] <- format(output_excluded$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         } else {
           output_excluded$df <- data.frame(x = trans$xe, y = trans$ye)
           names(output_excluded$df) <- c("# Epoch", "Data")
         }
-        output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F,scientific = F)
-        output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],1)
+        output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F)
+        output_excluded$df[,"Data"] <- format(output_excluded$df[,"Data"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         if (isTruthy(input$sigmas)) {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
         } else {
@@ -15501,33 +15503,15 @@ server <- function(input,output,session) {
     return(c(vel_f,vel_b))
   }
   #Based on https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
-  decimalplaces <- function(x,axis) {
+  decimalplaces <- function(x,extra) {
     if (all(is.numeric(x))) {
-      if (any(abs(x - round(x)) > .Machine$double.eps)) {
-        d <- quantile(na.omit(nchar(lapply(lapply(strsplit(sub('0+$', '', as.character(x)), ".", fixed = TRUE), `length<-`, 2), `[[`, 2))), probs = 0.95)
-        if (isTruthy(d) && d > 0) {
-          if (axis == "x") {
-            return(d)
-          } else if (d < 7) {
-            info$scientific <- F
-            return(d)
-          } else {
-            info$scientific <- T
-            d <- quantile(na.omit(nchar(sub(pattern = "^.*\\.0*([1-9])", replacement = "\\1", x = x))), probs = 0.05)
-            if (isTruthy(d) && d > 0) {
-              return(d)
-            } else {
-              return(0)
-            }
-          }
-        } else {
-          info$scientific <- F
-          return(0)
-        }
-      } else {
-        info$scientific <- F
+      info$scientific <- F
+      decimals <- suppressWarnings(nchar(format(as.numeric(min(sub("^.*\\.", "0\\.", grep("\\.", x - min(x, na.rm = T), value = T)))), digits = 1)) - 2)
+      if (!isTruthy(is.numeric(decimals))) {
         return(0)
       }
+      decimals <- decimals + extra
+      return(decimals)
     } else {
       if (messages > 2) cat(file = stderr(), mySession, "Bad series:", head(x), "\n")
       showNotification("Unable to obtain the appropriate number of decimal places of the series.", action = NULL, duration = 10, closeButton = T, id = "bad_decimalplaces", type = "error", session = getDefaultReactiveDomain())
@@ -16526,13 +16510,13 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    decimals <- decimalplaces(x, "x") + 2
+    decimals <- decimalplaces(x, 0) + 2
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, (x + offset - 44244)/7)))
   }
   #
   week2mjd <- function(x) {
-    decimals <- decimalplaces(x, "x") - 2
+    decimals <- decimalplaces(x, 0) - 2
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, x * 7 + 44244)))
   }
@@ -16542,25 +16526,25 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    decimals <- decimalplaces(diff(x), "x") + 4
+    decimals <- decimalplaces(diff(x), 0) + 4
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))))
   }
   #
   year2mjd <- function(x) {
-    decimals <- decimalplaces(x, "x") - 3
+    decimals <- decimalplaces(x, 0) - 3
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, difftime(date_decimal(x), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))))
   }
   #
   week2year <- function(x) {
-    decimals <- decimalplaces(diff(x), "x") + 2
+    decimals <- decimalplaces(diff(x), 0) + 2
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date("1980-01-06") + x * 7))))
   }
   #
   year2week <- function(x) {
-    decimals <- decimalplaces(x, "x") - 1
+    decimals <- decimalplaces(x, 0) - 1
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))))
   }
@@ -16763,7 +16747,7 @@ server <- function(input,output,session) {
       showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
       trans$gaps <- rep(T, length(x))
     }
-    info$decimalsx <- decimalplaces(x, "x")
+    info$decimalsx <- decimalplaces(x, 1)
     if (!isTruthy(input$tunits) || input$tunits == 3) {
       info$tunits.label <- "years"
     } else if (input$tunits == 1) {
