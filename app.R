@@ -14910,15 +14910,17 @@ server <- function(input,output,session) {
         OutPut$df$Waveform <- format(trans$pattern, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
     }
-    # Adding formatted excluded points
+    # Adding excluded points
     if (isTruthy(input$add_excluded)) {
       if (input$tab < 4) {
+        excluded <- !(db1[[info$db1]][[paste0("status",input$tab)]] %in% T)
+        names(excluded) <- NULL
         if (isTruthy(input$sigmas)) {
-          output_excluded$df <- data.frame(x = trans$xe, y = trans$ye, sy = trans$sye)
+          output_excluded$df <- data.frame(x = trans$x0[excluded], y = trans$y0[excluded], sy = trans$sy0[excluded])
           names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
           output_excluded$df[,"Sigma"] <- format(output_excluded$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         } else {
-          output_excluded$df <- data.frame(x = trans$xe, y = trans$ye)
+          output_excluded$df <- data.frame(x = trans$x0[excluded], y = trans$y0[excluded])
           names(output_excluded$df) <- c("# Epoch", "Data")
         }
         output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F)
@@ -14928,9 +14930,8 @@ server <- function(input,output,session) {
         } else {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
         }
-        excluded <- db1[[info$db1]][[paste0("status",input$tab)]] %in% F
       } else {
-        excluded <- apply(db1[[info$db1]][, c("status1", "status2", "status3")], 1, function(row) all(row == FALSE))
+        excluded <- apply(db1[[info$db1]][, c("status1", "status2", "status3")], 1, function(row) all(row == F) || all(is.na(row)))
         names(excluded) <- NULL
         if (isTruthy(input$sigmas)) {
           if (isTruthy(trans$plate)) {
@@ -14973,11 +14974,27 @@ server <- function(input,output,session) {
         }
         component_list <- list(component1, component2, component3)
         output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
-        names(output_excluded$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
-        if (isTruthy(input$sigmas)) {
-          OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up", "EastSigma", "NorthSigma", "UpSigma"), all = T)
+        output_excluded$df[,2] <- format(output_excluded$df[,2], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        output_excluded$df[,3] <- format(output_excluded$df[,3], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        output_excluded$df[,4] <- format(output_excluded$df[,4], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        output_excluded$df[,5] <- format(output_excluded$df[,5], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        output_excluded$df[,6] <- format(output_excluded$df[,6], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        output_excluded$df[,7] <- format(output_excluded$df[,7], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        if (input$tab == 5) {
+          names(output_excluded$df)[1] <- "# Epoch"
+          if (isTruthy(input$sigmas)) {
+            OutPut$df <- merge(OutPut$df, output_excluded$df, by = c("# Epoch"), all = T)[,c("# Epoch", "EastRes", "NorthRes", "UpRes", "EastSigma", "NorthSigma", "UpSigma")]
+          } else {
+            OutPut$df <- merge(OutPut$df, output_excluded$df, by = c("# Epoch"), all = T)[,c("# Epoch", "EastRes", "NorthRes", "UpRes")]
+          }
         } else {
-          OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up"), all = T)
+          if (isTruthy(input$sigmas)) {
+            names(output_excluded$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
+            OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up", "EastSigma", "NorthSigma", "UpSigma"), all = T)
+          } else {
+            names(output_excluded$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]))
+            OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up"), all = T)
+          }
         }
       }
       for (i in which(excluded)) {
