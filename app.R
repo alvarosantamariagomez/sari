@@ -522,6 +522,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .fa-caret-down { float: right; }
                       .headerIcon { color: #ffffff;}
                       /*.shiny-text-output { text-wrap-mode: wrap;}*/
+                      #euler, #gia, #fitType { scroll-margin-top: 150px; }
                       ")
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
@@ -8077,6 +8078,17 @@ server <- function(input,output,session) {
   })
 
   # Observe Euler ####
+  observeEvent(c(input$euler), {
+    req(db1[[info$db1]])
+    if (input$euler) {
+      runjs("
+        let element = document.getElementById('euler');
+        element.scrollIntoView({
+          behavior: 'smooth'
+        });
+        ")
+    }
+  })
   observeEvent(c(input$plateModel), {
     req(db1[[info$db1]], input$euler)
     if (messages > 0) cat(file = stderr(), mySession, "Plate model:", input$plateModel, "\n")
@@ -8463,6 +8475,17 @@ server <- function(input,output,session) {
   })
 
   # Observe GIA ####
+  observeEvent(c(input$gia), {
+    req(db1[[info$db1]])
+    if (input$gia) {
+      runjs("
+        let element = document.getElementById('gia');
+        element.scrollIntoView({
+          behavior: 'smooth'
+        });
+        ")
+    }
+  })
   observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2, input$tunits), {
     req(db1[[info$db1]])
     if (isTruthy(input$gia) || isTruthy(trans$gia)) {
@@ -9929,6 +9952,15 @@ server <- function(input,output,session) {
 
   # Observe fit type ####
   observeEvent(input$fitType, {
+    req(db1[[info$db1]])
+    if (input$fitType > 0) {
+      runjs("
+        let element = document.getElementById('fitType');
+        element.scrollIntoView({
+          behavior: 'smooth'
+        });
+        ")
+    }
     req(trans$res)
     if (messages > 0) cat(file = stderr(), mySession, "Deleting fit", "\n")
     trans$res <- NULL
@@ -10575,7 +10607,9 @@ server <- function(input,output,session) {
                   info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
                   info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
                 }
-                ranges$x1 <- c(info$minx, info$maxx)
+                if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+                  ranges$x1 <- c(info$minx, info$maxx)
+                }
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
                 db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
@@ -10593,7 +10627,9 @@ server <- function(input,output,session) {
                   info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
                   info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
                 }
-                ranges$x1 <- c(info$minx, info$maxx)
+                if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+                  ranges$x1 <- c(info$minx, info$maxx)
+                }
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
                 db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
@@ -10748,7 +10784,9 @@ server <- function(input,output,session) {
               info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
               info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)], db2[[info$db2]][[paste0("x",input$tunits)]])
             }
-            ranges$x1 <- c(info$minx, info$maxx)
+            if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+              ranges$x1 <- c(info$minx, info$maxx)
+            }
             updateCheckboxInput(session, inputId = "permanent", value = F)
           }
           db1[[info$db1]]$status2 <- db1[[info$db1]]$status3 <- db1[[info$db1]]$status1
@@ -10836,7 +10874,9 @@ server <- function(input,output,session) {
           info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
           info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
         }
-        ranges$x1 <- c(info$minx, info$maxx)
+        if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+          ranges$x1 <- c(info$minx, info$maxx)
+        }
         updateCheckboxInput(session, inputId = "permanent", value = F)
       } else {
         if (isTruthy(input$remove3D)) {
