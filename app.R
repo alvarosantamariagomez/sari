@@ -10609,6 +10609,7 @@ server <- function(input,output,session) {
                 }
                 if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
                   ranges$x1 <- c(info$minx, info$maxx)
+                  ranges$x2 <- NULL
                 }
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
@@ -10629,6 +10630,7 @@ server <- function(input,output,session) {
                 }
                 if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
                   ranges$x1 <- c(info$minx, info$maxx)
+                  ranges$x2 <- NULL
                 }
                 updateCheckboxInput(session, inputId = "permanent", value = F)
               } else {
@@ -14268,11 +14270,11 @@ server <- function(input,output,session) {
           shinyjs::show(paste0("zoomin",input$tab))
           rangeX <- ranges$x1
         } else {
-          ranges$x1 <- ranges$x2 <- ranges$x4 <- NULL
+          ranges$x1 <- NULL
         }
       } else {
         shinyjs::hide(paste0("zoomin",input$tab))
-        ranges$x1 <- ranges$x2 <- ranges$x4 <- rangeX
+        ranges$x1 <- rangeX
       }
       if (isTruthy(ranges$y1)) {
         rangeY <- ranges$y1
