@@ -2750,43 +2750,45 @@ server <- function(input,output,session) {
   # Series summary ####
   output$information1 <- output$information2 <- renderUI({
     req(db1[[info$db1]])
-    if (input$tunits == 1) {
-      units <- "days"
-    } else if (input$tunits == 2) {
+    isolate({
+      if (input$tunits == 1) {
+        units <- "days"
+      } else if (input$tunits == 2) {
         units <- "weeks"
-    } else if (input$tunits == 3) {
+      } else if (input$tunits == 3) {
         units <- "years"
-    }
-    if (input$tab > 3) {
-      statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
-      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
-      rangex <- range(x)
-      seriesInfo(x)
-      if (!isTruthy(info$decimalsy)) {
-        info$decimalsy <- decimalplaces(c(db1[[info$db1]]$y1,db1[[info$db1]]$y2,db1[[info$db1]]$y3), 0)
-        if (!isTruthy(info$decimalsy)) {
-          info$decimalsy <- 4
-        }
-        if (isTruthy(info$scientific)) {
-          info$digits <- info$decimalsy + 1
-          info$nsmall <- 0
-        } else {
-          info$digits <- 0
-          info$nsmall <- info$decimalsy
-        }
       }
-      removed <- sum(db1[[info$db1]]$status1 %in% F, db1[[info$db1]]$status2 %in% F, db1[[info$db1]]$status3 %in% F)
-    } else {
-      rangex <- range(trans$x)
-      removed <- info$removed
-    }
-    line1 <- sprintf("Number of points = %d",info$points)
-    line2 <- sprintf("Number of points removed = %d",removed)
-    line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
-    line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
-    line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
-    line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-    HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
+      if (input$tab > 3) {
+        statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
+        rangex <- range(x)
+        seriesInfo(x)
+        if (!isTruthy(info$decimalsy)) {
+          info$decimalsy <- decimalplaces(c(db1[[info$db1]]$y1,db1[[info$db1]]$y2,db1[[info$db1]]$y3), 0)
+          if (!isTruthy(info$decimalsy)) {
+            info$decimalsy <- 4
+          }
+          if (isTruthy(info$scientific)) {
+            info$digits <- info$decimalsy + 1
+            info$nsmall <- 0
+          } else {
+            info$digits <- 0
+            info$nsmall <- info$decimalsy
+          }
+        }
+        removed <- sum(db1[[info$db1]]$status1 %in% F, db1[[info$db1]]$status2 %in% F, db1[[info$db1]]$status3 %in% F)
+      } else {
+        rangex <- range(trans$x)
+        removed <- info$removed
+      }
+      line1 <- sprintf("Number of points = %d",info$points)
+      line2 <- sprintf("Number of points removed = %d",removed)
+      line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
+      line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
+      line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
+      line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
+      HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
+    })
   })
 
   # Debouncers & checks for user typed inputs ####
@@ -5033,78 +5035,80 @@ server <- function(input,output,session) {
   # Fit summary ####
   output$summary1 <- output$summary2 <- output$summary3 <- renderUI({
     req(db1[[info$db1]])
-    listTag <- list()
-    # compute correlation between primary and secondary series
-    if (input$optionSecondary == 1 && isTruthy(trans$y2)) {
-      serie1 <- data.frame(x = trans$x, y = trans$y)
-      serie2 <- data.frame(x = trans$x2, y = trans$y2)
-      common <- merge(serie1, serie2, by.x = "x", by.y = "x")
-      if (length(common$x) > 30) {
-        listTag <- list(span(paste("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs between the primary and secondary series.")))
+      listTag <- list()
+      # compute correlation between primary and secondary series
+      if (input$optionSecondary == 1 && isTruthy(trans$y2)) {
+        serie1 <- data.frame(x = trans$x, y = trans$y)
+        serie2 <- data.frame(x = trans$x2, y = trans$y2)
+        common <- merge(serie1, serie2, by.x = "x", by.y = "x")
+        if (length(common$x) > 30) {
+          listTag <- list(span(paste("Pearson's correlation =", sprintf("%.3f",cor(common$y.x,common$y.y)), "from", length(common$x),"points at common epochs between the primary and secondary series.")))
+        }
       }
-    }
-    if (input$tunits == 1) {
-      period <- "day"
-    } else if (input$tunits == 2) {
-      period <- "week"
-    } else if (input$tunits == 3) {
-      period <- "year"
-    }
-    if (input$sunits == 1) {
-      unit <- "m"
-      units <- paste0("m/",period)
-    } else if (input$sunits == 2) {
-      unit <- "mm"
-      units <- paste0("mm/",period)
-    } else {
-      unit <- ""
-      units <- ""
-    }
-    # recall the series units
-    if (input$sunits > 0 && isTruthy(info$run) && length(trans$results) > 0) {
-      if (length(listTag) > 0) {
-        listTag <- c(listTag, list(span("")))
+      if (input$tunits == 1) {
+        period <- "day"
+      } else if (input$tunits == 2) {
+        period <- "week"
+      } else if (input$tunits == 3) {
+        period <- "year"
       }
-      listTag <- c(listTag, list(span(paste("Parameter units:", unit, "&", units))))
-    }
-    # show MIDAS estimate
-    if (isTruthy(input$midas)) {
-      if (length(listTag) > 0) {
-        listTag <- c(listTag, list(span("")))
+      if (input$sunits == 1) {
+        unit <- "m"
+        units <- paste0("m/",period)
+      } else if (input$sunits == 2) {
+        unit <- "mm"
+        units <- paste0("mm/",period)
+      } else {
+        unit <- ""
+        units <- ""
       }
-      listTag <- c(listTag, list(span("MIDAS rate estimate")))
-      listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel,1), "+/-", formatting(trans$midas_sig,1), units))))
-      if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
-        listTag <- c(listTag, list(span("")))
-        listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)")))
-        listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel2,1), "+/-", formatting(trans$midas_sig2,1), units))))
+      # recall the series units
+      if (input$sunits > 0 && isTruthy(info$run) && length(isolate(trans$results)) > 0) {
+        if (length(listTag) > 0) {
+          listTag <- c(listTag, list(span("")))
+        }
+        listTag <- c(listTag, list(span(paste("Parameter units:", unit, "&", units))))
       }
-    }
-    # show entropy estimate
-    if (isTruthy(input$entropy) && isTruthy(trans$entropy_vel) && isTruthy(trans$entropy_sig)) {
-      if (length(listTag) > 0) {
-        listTag <- c(listTag, list(span("")))
+      # show MIDAS estimate
+      if (isTruthy(input$midas)) {
+        if (length(listTag) > 0) {
+          listTag <- c(listTag, list(span("")))
+        }
+        listTag <- c(listTag, list(span("MIDAS rate estimate")))
+        listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel,1), "+/-", formatting(trans$midas_sig,1), units))))
+        if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
+          listTag <- c(listTag, list(span("")))
+          listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)")))
+          listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel2,1), "+/-", formatting(trans$midas_sig2,1), units))))
+        }
       }
-      listTag <- c(listTag, list(span("Minimum entropy rate estimate")))
-      listTag <- c(listTag, list(span(paste(formatting(trans$entropy_vel,1), "+/-", formatting(trans$entropy_sig,1), units))))
-    }
-    # show fit estimate
-    if (isTruthy(info$run) && length(trans$results) > 0) {
-      if (length(listTag) > 0) {
-        listTag <- c(listTag, list(span("")))
+      # show entropy estimate
+      if (isTruthy(input$entropy) && isTruthy(trans$entropy_vel) && isTruthy(trans$entropy_sig)) {
+        if (length(listTag) > 0) {
+          listTag <- c(listTag, list(span("")))
+        }
+        listTag <- c(listTag, list(span("Minimum entropy rate estimate")))
+        listTag <- c(listTag, list(span(paste(formatting(trans$entropy_vel,1), "+/-", formatting(trans$entropy_sig,1), units))))
       }
-      if (input$fitType == 2) {
-        listTag <- c(listTag, list(span("KF estimate")))
-        listTag <- c(listTag, list(span(paste0(gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", trans$equation, perl = T)))))))))))
-        listTag <- c(listTag, list(span("")))
-      } else if (input$fitType == 1) {
-        listTag <- c(listTag, list(span("LS estimate")))
-        trans$results$formula <- sub("y ~","Model =",trans$results$formula)
+      # show fit estimate
+      if (isTruthy(info$run) && length(isolate(trans$results)) > 0) {
+        if (length(listTag) > 0) {
+          listTag <- c(listTag, list(span("")))
+        }
+        if (input$fitType == 2) {
+          listTag <- c(listTag, list(span("KF estimate")))
+          listTag <- c(listTag, list(span(paste0(gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", trans$equation, perl = T)))))))))))
+          listTag <- c(listTag, list(span("")))
+        } else if (input$fitType == 1) {
+          listTag <- c(listTag, list(span("LS estimate")))
+          isolate({
+            trans$results$formula <- sub("y ~","Model =",trans$results$formula)
+          })
+        }
+        options(max.print = 3000)
+        listTag <- c(listTag, list(customPrint(isolate(trans$results))))
       }
-      options(max.print = 3000)
-      listTag <- c(listTag, list(customPrint(trans$results)))
-    }
-    tagList(pre(listTag))
+      tagList(pre(listTag))
   })
 
   # Periodic waveform ####
@@ -6455,100 +6459,102 @@ server <- function(input,output,session) {
             output$est.unc <- renderUI({
               if ("Linear" %in% input$model && input$fitType == 1) {
                 req(trans$unc)
-                estimateFormalUncertainty <- function() {
-                  unc_pl <- 0
-                  if (isTruthy(sigmaFL)) {
-                    unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling,points) # general power-law trend uncertainty
-                    # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
-                    # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                isolate({
+                  estimateFormalUncertainty <- function() {
+                    unc_pl <- 0
+                    if (isTruthy(sigmaFL)) {
+                      unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling,points) # general power-law trend uncertainty
+                      # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
+                      # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                    }
+                    if (isTruthy(sigmaRW)) {
+                      unc <- pl_trend_unc(sigmaRW,-2,info$sampling,points) # general power-law trend uncertainty
+                      # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
+                      unc_pl <- sqrt(unc_pl^2 + unc^2)
+                    }
+                    if (isTruthy(sigmaPL)) {
+                      # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
+                      unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
+                      unc_pl <- sqrt(unc_pl^2 + unc^2)
+                    }
+                    unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
+                    return(list(unc_pl,unc_white))
                   }
-                  if (isTruthy(sigmaRW)) {
-                    unc <- pl_trend_unc(sigmaRW,-2,info$sampling,points) # general power-law trend uncertainty
-                    # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
-                    unc_pl <- sqrt(unc_pl^2 + unc^2)
-                  }
-                  if (isTruthy(sigmaPL)) {
-                    # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
-                    unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
-                    unc_pl <- sqrt(unc_pl^2 + unc^2)
-                  }
-                  unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
-                  return(list(unc_pl,unc_white))
-                }
-                rate_ids <- which(grepl("Rate",rownames(trans$LScoefs)))
-                if (input$breaking && length(trans$breakEpochs) > 0 && input$trendType > 0) {
-                  if (length(rate_ids) == (length(trans$breakEpochs) + 1)) {
-                    line <- ""
-                    for (breaks in seq_len(length(trans$breakEpochs) + 1)) {
-                      if (breaks == 1) {
-                        points <- sum(trans$x <= trans$breakEpochs[breaks])
-                      } else if (breaks == length(trans$breakEpochs) + 1) {
-                        points <- sum(trans$x > trans$breakEpochs[breaks - 1])
-                      } else {
-                        points <- sum(trans$x > trans$breakEpochs[breaks - 1] & trans$x <= trans$breakEpochs[breaks])
-                      }
-                      if (isTruthy(trans$mle)) {
-                        unc <- estimateFormalUncertainty()
-                        unc_pl <- unc[[1]]
-                        unc_white <- unc[[2]]
-                        if (isTruthy(unc_pl) && unc_pl > 0) {
-                          trans$LScoefs[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
-                          # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
-                          trans$results$coefficients[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
-                          trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
-                          trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
-                          line1 <- sprintf("<br/>Colored/white rate error ratio %d = %.2f", breaks,unc_pl/unc_white)
+                  rate_ids <- which(grepl("Rate",rownames(trans$LScoefs)))
+                  if (input$breaking && length(trans$breakEpochs) > 0 && input$trendType > 0) {
+                    if (length(rate_ids) == (length(trans$breakEpochs) + 1)) {
+                      line <- ""
+                      for (breaks in seq_len(length(trans$breakEpochs) + 1)) {
+                        if (breaks == 1) {
+                          points <- sum(trans$x <= trans$breakEpochs[breaks])
+                        } else if (breaks == length(trans$breakEpochs) + 1) {
+                          points <- sum(trans$x > trans$breakEpochs[breaks - 1])
                         } else {
+                          points <- sum(trans$x > trans$breakEpochs[breaks - 1] & trans$x <= trans$breakEpochs[breaks])
+                        }
+                        if (isTruthy(trans$mle)) {
+                          unc <- estimateFormalUncertainty()
+                          unc_pl <- unc[[1]]
+                          unc_white <- unc[[2]]
+                          if (isTruthy(unc_pl) && unc_pl > 0) {
+                            trans$LScoefs[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
+                            # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                            trans$results$coefficients[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
+                            trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
+                            trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
+                            line1 <- sprintf("<br/>Colored/white rate error ratio %d = %.2f", breaks,unc_pl/unc_white)
+                          } else {
+                            line1 <- NULL
+                          }
+                        } else {
+                          if (isTruthy(trans$LScoefs[rate_ids[breaks],2])) {
+                            trans$LScoefs[rate_ids[breaks],2] <- trans$unc[breaks]
+                            # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                          }
+                          if (isTruthy(trans$results$coefficients[rate_ids[breaks],2])) {
+                            trans$results$coefficients[rate_ids[breaks],2] <- trans$unc[breaks]
+                            trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
+                            trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
+                          }
                           line1 <- NULL
                         }
-                      } else {
-                        if (isTruthy(trans$LScoefs[rate_ids[breaks],2])) {
-                          trans$LScoefs[rate_ids[breaks],2] <- trans$unc[breaks]
-                          # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
-                        }
-                        if (isTruthy(trans$results$coefficients[rate_ids[breaks],2])) {
-                          trans$results$coefficients[rate_ids[breaks],2] <- trans$unc[breaks]
-                          trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
-                          trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
-                        }
-                        line1 <- NULL
+                        line <- paste(line, line1, sep = "<br/>")
                       }
-                      line <- paste(line, line1, sep = "<br/>")
-                    }
-                    updateOverview() # updating the overview plot
-                    HTML(line)
-                  }
-                } else {
-                  points <- info$points
-                  if (isTruthy(trans$mle)) {
-                    unc <- estimateFormalUncertainty()
-                    unc_pl <- unc[[1]]
-                    unc_white <- unc[[2]]
-                    if (isTruthy(unc_pl) && unc_pl > 0) {
-                      trans$LScoefs[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                      trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
-                      trans$results$coefficients[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                      trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
-                      trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
-                      line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
-                    } else {
-                      line1 <- NULL
+                      updateOverview() # updating the overview plot
+                      HTML(line)
                     }
                   } else {
-                    if (isTruthy(trans$LScoefs[rate_ids,2])) {
-                      trans$LScoefs[rate_ids,2] <- trans$unc
-                      trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
+                    points <- info$points
+                    if (isTruthy(trans$mle)) {
+                      unc <- estimateFormalUncertainty()
+                      unc_pl <- unc[[1]]
+                      unc_white <- unc[[2]]
+                      if (isTruthy(unc_pl) && unc_pl > 0) {
+                        trans$LScoefs[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                        trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
+                        trans$results$coefficients[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                        trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
+                        trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
+                        line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
+                      } else {
+                        line1 <- NULL
+                      }
+                    } else {
+                      if (isTruthy(trans$LScoefs[rate_ids,2])) {
+                        trans$LScoefs[rate_ids,2] <- trans$unc
+                        trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
+                      }
+                      if (isTruthy(trans$results$coefficients[rate_ids,2])) {
+                        trans$results$coefficients[rate_ids,2] <- trans$unc
+                        trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
+                        trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
+                      }
+                      line1 <- NULL
                     }
-                    if (isTruthy(trans$results$coefficients[rate_ids,2])) {
-                      trans$results$coefficients[rate_ids,2] <- trans$unc
-                      trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
-                      trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
-                    }
-                    line1 <- NULL
+                    updateOverview() # updating the overview plot
+                    HTML(line1)
                   }
-                  updateOverview() # updating the overview plot
-                  HTML(line1)
-                }
+                })
               }
             })
           } else {
