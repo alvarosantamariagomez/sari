@@ -14803,7 +14803,13 @@ server <- function(input,output,session) {
     }
     # Adding input data columns
     if (input$tab < 4) {
-      if (isTruthy(input$sigmas)) {
+      u <- unique(trans$sy)
+      if (isTruthy(input$sigmas) && (length(u) > 1 || (length(u) == 1 && u > 1.5e-9))) {
+        useSigmas <- T
+      } else {
+        useSigmas <- F
+      }
+      if (isTruthy(useSigmas)) {
         OutPut$df <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)
         names(OutPut$df) <- c("# Epoch", "Data", "Sigma")
       } else {
@@ -14878,7 +14884,7 @@ server <- function(input,output,session) {
     # Formatting input data columns
     if (input$tab < 4) {
       OutPut$df[,"Data"] <- format(OutPut$df[,"Data"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-      if (isTruthy(input$sigmas)) {
+      if (isTruthy(useSigmas)) {
         OutPut$df[,"Sigma"] <- format(OutPut$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
     } else if (input$tab == 4 || input$tab == 5) {
@@ -14904,7 +14910,7 @@ server <- function(input,output,session) {
         OutPut$df$Model <- format(model, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         OutPut$df$Residuals <- format(residuals, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
       }
-      if (input$fitType == 1 && length(input$model) > 0) {
+      if (useSigmas && input$fitType == 1 && length(input$model) > 0) {
         if (length(trans$moderror) > 0) {
           OutPut$df$Sigma.Model <- format(trans$moderror, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
         }
@@ -14926,25 +14932,25 @@ server <- function(input,output,session) {
       if (input$wiener && input$mle) {
         if (input$white && length(trans$white) > 0) {
           OutPut$df$White <- format(trans$white, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (input$sigmas && length(trans$white_sig) > 0) {
+          if (useSigmas && length(trans$white_sig) > 0) {
             OutPut$df$Sigma.White <- format(trans$white_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
         if (input$flicker && length(trans$flicker) > 0) {
           OutPut$df$Flicker <- format(trans$flicker, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (input$sigmas && length(trans$flicker) > 0) {
+          if (useSigmas && length(trans$flicker) > 0) {
             OutPut$df$Sigma.Flicker <- format(trans$flicker_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
         if (input$randomw && length(trans$randomw) > 0) {
           OutPut$df$RandomWalk <- format(trans$randomw, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (input$sigmas && length(trans$randomw_sig) > 0) {
+          if (useSigmas && length(trans$randomw_sig) > 0) {
             OutPut$df$Sigma.RandomWalk <- format(trans$randomw_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
         if (input$powerl && length(trans$powerl) > 0) {
           OutPut$df$PowerLaw <- format(trans$powerl, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (input$sigmas && length(trans$powerl_sig) > 0) {
+          if (useSigmas && length(trans$powerl_sig) > 0) {
             OutPut$df$Sigma.PowerLaw <- format(trans$powerl_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
           }
         }
@@ -14963,7 +14969,7 @@ server <- function(input,output,session) {
       if (input$tab < 4) {
         excluded <- !(db1[[info$db1]][[paste0("status",input$tab)]] %in% T)
         names(excluded) <- NULL
-        if (isTruthy(input$sigmas)) {
+        if (isTruthy(useSigmas)) {
           output_excluded$df <- data.frame(x = trans$x0[excluded], y = trans$y0[excluded], sy = trans$sy0[excluded])
           names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
           output_excluded$df[,"Sigma"] <- format(output_excluded$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
@@ -14973,7 +14979,7 @@ server <- function(input,output,session) {
         }
         output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F)
         output_excluded$df[,"Data"] <- format(output_excluded$df[,"Data"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        if (isTruthy(input$sigmas)) {
+        if (isTruthy(useSigmas)) {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
         } else {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
