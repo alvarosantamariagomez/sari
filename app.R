@@ -11983,7 +11983,7 @@ server <- function(input,output,session) {
         output$tabName5 <- renderText({ info$components[5] })
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
-      # Getting significant decimals from the primary series if necessary
+      # Getting significant decimals from the primary series
       if (info$format == 4) {
         info$decimalsyList[1] <- decimalplaces(table$y,0)
         info$scientificList[1] <- info$scientific
@@ -14821,7 +14821,7 @@ server <- function(input,output,session) {
         names(OutPut$df) <- c("# Epoch", "Data")
       }
     } else if (input$tab == 4) {
-      if (isTruthy(trans$plate)) {
+      if (isTruthy(trans$plate) && info$db1 != "merged") {
         centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
         centery <- median(db1[[info$db1]]$y1, na.rm = T)
         component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T] - centerx) - centery)
@@ -14832,7 +14832,7 @@ server <- function(input,output,session) {
         component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T])
         component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T])
       }
-      if (isTruthy(trans$gia)) {
+      if (isTruthy(trans$gia) && info$db1 != "merged") {
         centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
         centery <- median(db1[[info$db1]]$y3, na.rm = T)
         component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T] - centerx) - centery)
@@ -15115,21 +15115,6 @@ server <- function(input,output,session) {
         }
         component_list <- list(component1, component2, component3)
         output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
-        # if (isTruthy(info$scientific)) {
-        #   output_excluded$df[,2] <- formatting(output_excluded$df[,2],0)
-        #   output_excluded$df[,3] <- formatting(output_excluded$df[,3],0)
-        #   output_excluded$df[,4] <- formatting(output_excluded$df[,4],0)
-        #   output_excluded$df[,5] <- formatting(output_excluded$df[,5],0)
-        #   output_excluded$df[,6] <- formatting(output_excluded$df[,6],0)
-        #   output_excluded$df[,7] <- formatting(output_excluded$df[,7],0)
-        # } else {
-        #   output_excluded$df[,2] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,2])), scientific = F)
-        #   output_excluded$df[,3] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,3])), scientific = F)
-        #   output_excluded$df[,4] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,4])), scientific = F)
-        #   output_excluded$df[,5] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,5])), scientific = F)
-        #   output_excluded$df[,6] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,6])), scientific = F)
-        #   output_excluded$df[,7] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,7])), scientific = F)
-        # }
         if (input$tab == 5) {
           names(output_excluded$df)[1] <- "# Epoch"
           if (isTruthy(input$sigmas)) {
