@@ -14870,8 +14870,9 @@ server <- function(input,output,session) {
     }
     req(OutPut$df)
     # Formatting input data columns
-    # OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx)
-    OutPut$df[,"# Epoch"] <- format(as.numeric(sprintf("%.*f", info$decimalsx, OutPut$df[,"# Epoch"])), scientific = F)
+    # OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F)
+    # OutPut$df[,"# Epoch"] <- format(as.numeric(sprintf("%.*f", info$decimalsx, OutPut$df[,"# Epoch"])), scientific = F)
+    OutPut$df[,"# Epoch"] <- formatting(OutPut$df[,"# Epoch"],"x")
     if (input$tab < 4) {
       if (isTruthy(info$scientific)) {
         OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
@@ -15656,12 +15657,20 @@ server <- function(input,output,session) {
   decimalplaces <- function(x,extra) {
     if (all(is.numeric(x))) {
       info$scientific <- F
-      sort_diff <- abs(diff(sort(x - as.integer(x))))
+      dif <- x - as.integer(x)
+      sort_diff <- abs(diff(sort(dif)))
       sort_diff <- sort_diff[sort_diff != 0]
       if (isTruthy(sort_diff)) {
         min_diff <- format(min(sort_diff), digits = 1, scientific = F)
         decimals <- nchar(min_diff) - 2
         if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
+          return(0)
+        }
+      } else if (isempty(sort_diff)) {
+        epoch <- unique(sub("[0-9]*\\.", "", format(dif, scientific = F)))
+        if (length(epoch) == 1) {
+          decimals <- nchar(epoch)
+        } else {
           return(0)
         }
       } else {
@@ -16847,19 +16856,28 @@ server <- function(input,output,session) {
   #
   formatting <- function(x, extra_dec) {
     width <- NULL
-    if (isTruthy(info$scientific)) {
-      info$digits <- info$decimalsy
+    if (extra_dec == "x") {
+      extra_dec <- 0
+      decimals <- info$decimalsx
+      scientific <- F
+    } else {
+      decimals <- info$decimalsy
+      scientific <- info$scientific
+    }
+    if (isTruthy(scientific)) {
+      info$digits <- decimals
       info$nsmall <- 0
     } else {
       info$digits <- 2
-      info$nsmall <- info$decimalsy
+      info$nsmall <- decimals
     }
     if (is.list(x) || is.matrix(x) || is.vector(x)) {
-      formatted <- format(x, digits = info$digits + extra_dec, nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
-      if (!info$scientific) {
+      formatted <- format(x, digits = info$digits + extra_dec, nsmall = info$nsmall + extra_dec, scientific = scientific, trim = F, width = width)
+      if (!scientific) {
         while (all(grepl("0$", formatted))) {
           formatted <- sub("0$", "", formatted)
         }
+        formatted <- sub("\\.$", "", formatted)
       }
     } else {
       x <- as.numeric(x)
@@ -16868,9 +16886,9 @@ server <- function(input,output,session) {
       if (length(x) > 1) {
         extra_dig <- 0
         # formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
-        formatted <- format(intgr + as.numeric(format(x, digits = 2, scientific = info$scientific, trim = F, width = width)), nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, scientific = info$scientific, trim = F, width = width)
+        formatted <- format(intgr + as.numeric(format(x, digits = 2, scientific = scientific, trim = F, width = width)), nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, scientific = scientific, trim = F, width = width)
       } else {
-        formatted <- intgr + as.numeric(format(x, nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, digits = info$digits + extra_dec, scientific = info$scientific, trim = F, width = width))
+        formatted <- intgr + as.numeric(format(x, nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, digits = info$digits + extra_dec, scientific = scientific, trim = F, width = width))
       }
     }
     return(formatted)
