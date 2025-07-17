@@ -2431,7 +2431,7 @@ server <- function(input,output,session) {
 
   # Initialize reactive variables of the global database only for debugging
   database <- c("file", "ranges", "info", "db1", "db2", "inputs", "trans", "url")
-
+  
   # 1. input files.
   file <- reactiveValues(primary = NULL, secondary = NULL, id1 = NULL, id2 = NULL, sitelog = NULL, euler = NULL, soln = NULL, custom = NULL)
 
@@ -2451,7 +2451,7 @@ server <- function(input,output,session) {
   # 3. series info
   info <- reactiveValues(points = NULL, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, menu = c(1),
-                         decimalsx = NULL, decimalsy = NULL, scientific = F, nsmall = NULL, digits = NULL,
+                         decimalsx = NULL, decimalsy = NULL, decimalsyList = c(), scientific = F, scientificList = c(), nsmall = NULL, digits = NULL,
                          sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), rangex = NULL, errorbars = T,
                          step = NULL, step2 = NULL, stepUnit = NULL,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
@@ -2763,19 +2763,6 @@ server <- function(input,output,session) {
         x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
         rangex <- range(x)
         seriesInfo(x)
-        if (!isTruthy(info$decimalsy)) {
-          info$decimalsy <- decimalplaces(c(db1[[info$db1]]$y1,db1[[info$db1]]$y2,db1[[info$db1]]$y3), 0)
-          if (!isTruthy(info$decimalsy)) {
-            info$decimalsy <- 4
-          }
-          if (isTruthy(info$scientific)) {
-            info$digits <- info$decimalsy + 1
-            info$nsmall <- 0
-          } else {
-            info$digits <- 0
-            info$nsmall <- info$decimalsy
-          }
-        }
         removed <- sum(db1[[info$db1]]$status1 %in% F, db1[[info$db1]]$status2 %in% F, db1[[info$db1]]$status3 %in% F)
       } else {
         rangex <- range(trans$x)
@@ -3247,11 +3234,9 @@ server <- function(input,output,session) {
         } else {
           trans$y0 <- trans$y0 - trans$plate[1]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
         }
-        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (input$format == 4 && isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
-        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         if (input$format2 == 4) {
@@ -3259,11 +3244,9 @@ server <- function(input,output,session) {
         } else {
           trans$y2 <- trans$y2 - trans$plate2[1]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
         }
-        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
       if (input$format2 == 4 && isTruthy(trans$gia2) && input$giaType == 2) {
         trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
-        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
     } else if (input$tab == 2) {
       trans$y0 <- as.numeric(table1$y2)
@@ -3273,11 +3256,9 @@ server <- function(input,output,session) {
       status <- table1$status2
       if (isTruthy(trans$plate) && input$eulerType == 2 && info$db1 != "merged") {
         trans$y0 <- trans$y0 - trans$plate[2]*(trans$x0 - median(trans$x0[table1$status2], na.rm = T)) - median(trans$y0, na.rm = T)
-        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$plate2) && input$eulerType == 2) {
         trans$y2 <- trans$y2 - trans$plate2[2]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
-        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
     } else if (input$tab == 3) {
       trans$y0 <- as.numeric(table1$y3)
@@ -3287,11 +3268,9 @@ server <- function(input,output,session) {
       status <- table1$status3
       if (isTruthy(trans$gia) && input$giaType == 2 && info$db1 != "merged") {
         trans$y0 <- trans$y0 - trans$gia[3]*(trans$x0 - median(trans$x0[table1$status1], na.rm = T)) - median(trans$y0, na.rm = T)
-        trans$y0 <- as.numeric(sprintf(fmt = "%.6f", trans$y0))
       }
       if (isTruthy(trans$gia2) && input$giaType == 2) {
         trans$y2 <- trans$y2 - trans$gia2[3]*(trans$x2 - median(trans$x2, na.rm = T)) - median(trans$y2, na.rm = T)
-        trans$y2 <- as.numeric(sprintf(fmt = "%.6f", trans$y2))
       }
     }
     # getting data range including excluded points
@@ -3329,19 +3308,8 @@ server <- function(input,output,session) {
     }
     # getting data sampling
     seriesInfo(trans$x)
-    # Getting significant decimals from the primary series
-    info$decimalsy <- decimalplaces(trans$y, 0)
-    if (!isTruthy(info$decimalsy)) {
-      info$decimalsy <- 4
-      showNotification(HTML("It was not possible to extract the number of decimal places from the series.<br>Using 4 decimal places by default."), action = NULL, duration = 10, closeButton = T, id = "no_decimals", type = "warning", session = getDefaultReactiveDomain())
-    }
-    if (isTruthy(info$scientific)) {
-      info$digits <- info$decimalsy + 1
-      info$nsmall <- 0
-    } else {
-      info$digits <- 0
-      info$nsmall <- info$decimalsy
-    }
+    info$decimalsy <- info$decimalsyList[as.numeric(input$tab)]
+    info$scientific <- info$scientificList[as.numeric(input$tab)]
     trans$ordinate <- median(trans$y)
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     # dealing with the kalman filter series
@@ -8915,8 +8883,12 @@ server <- function(input,output,session) {
                          db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status3)])
         ranges$x1 <- c(info$minx, info$maxx)
       }
+      info$decimalsy <- info$decimalsyList[as.numeric(input$tab)]
+      info$scientific <- info$scientificList[as.numeric(input$tab)]
     } else if (input$tab == 5) {
       updateCollapse(session, id = "menu", open = c(2), close = c(1,4,5))
+      info$decimalsy <- info$decimalsyList[4]
+      info$scientific <- info$scientificList[4]
     }
   }, priority = 100)
 
@@ -12011,6 +11983,26 @@ server <- function(input,output,session) {
         output$tabName5 <- renderText({ info$components[5] })
         showNotification(HTML("Unknown coordinate components in the primary series.<br>Assuming a ENU column format."), action = NULL, duration = 10, closeButton = T, id = "unknown_components", type = "warning", session = getDefaultReactiveDomain())
       }
+      # Getting significant decimals from the primary series if necessary
+      if (info$format == 4) {
+        info$decimalsyList[1] <- decimalplaces(table$y,0)
+        info$scientificList[1] <- info$scientific
+        if (!isTruthy(info$decimalsyList[1])) {
+          info$decimalsyList[1] <- 4
+          showNotification(HTML("It was not possible to extract the number of decimal places from the series.<br>Using 4 decimal places by default."), action = NULL, duration = 10, closeButton = T, id = "no_decimals", type = "warning", session = getDefaultReactiveDomain())
+        }
+      } else {
+        for (comp in seq(3)) {
+          info$decimalsyList[comp] <- decimalplaces(table[[paste0("y",comp)]],0)
+          info$scientificList[comp] <- info$scientific
+          if (!isTruthy(info$decimalsyList[comp])) {
+            info$decimalsyList[comp] <- 4
+            showNotification(HTML(paste0("It was not possible to extract the number of decimal places from the series component ",comp,".<br>Using 4 decimal places by default.")), action = NULL, duration = 10, closeButton = T, id = "no_decimals", type = "warning", session = getDefaultReactiveDomain())
+          }
+        }
+        info$decimalsyList[4] <- decimalplaces(c(table$y1,table$y2,table$y3),0)
+        info$scientificList[4] <- info$scientific
+      }
       # all good
       info$db1 <- "original"
       db1$original <- as.data.frame(table)
@@ -14714,13 +14706,13 @@ server <- function(input,output,session) {
     if (input$tab < 4) {
       if (input$fitType == 1 && length(trans$results) > 0) {
         cat(paste0("# Model LS: ", gsub("&" , " \\+ ", gsub("\\s+", "", gsub(" \\+ ", "&", gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE)))))))))))), file = file_out, sep = "\n", fill = F, append = T)
-        param <- data.frame(formatting(trans$LScoefs[,c(1,2)],2), check.names = F)
+        param <- data.frame(formatting(trans$LScoefs[,c(1,2)],0), check.names = F)
         param <- cbind(e = rep("=",length(param[1])), param[1], s = rep("+/-",length(param[1])), param[2])
         rownames(param) <- format(paste("# Parameter:",rownames(param)), justify = "left")
         write.table(param, file = file_out, col.names = F, row.names = T, append = T, quote = F)
         if (isTruthy(trans$results$sinusoidales)) {
           for (i in 1:dim(trans$results$sinusoidales)[1]) {
-            cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],2), '+/-', formatting(trans$results$sinusoidales[i,3],2), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],2), '+/-', formatting(trans$results$sinusoidales[i,5],2), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
+            cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],1), '+/-', formatting(trans$results$sinusoidales[i,3],1), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],1), '+/-', formatting(trans$results$sinusoidales[i,5],1), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
           }
         }
       } else if (input$fitType == 2 && length(trans$kalman) > 0) {
@@ -14729,10 +14721,10 @@ server <- function(input,output,session) {
         } else if (input$kf == 2) {
           cat(paste0("# Model UKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
         }
-        cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),2), '+/-', formatting(colMeans(trans$kalman_unc),2)), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# Initial:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,2), '+/-', formatting(trans$kalman_info$error,2)), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),2))), file = file_out, sep = "\n", fill = F, append = T)
-        cat(paste('# Measurement noise:', formatting(inputs$ObsError,2), unit), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Parameter:', colnames(trans$kalman), '=', formatting(colMeans(trans$kalman),1), '+/-', formatting(colMeans(trans$kalman_unc),1)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Initial:', trans$kalman_info$nouns, '=', formatting(trans$kalman_info$apriori,1), '+/-', formatting(trans$kalman_info$error,1)), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (length(trans$offsetEpochs) > 0) {
         cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
@@ -14742,14 +14734,14 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
         if (isTruthy(trans$midas_vel2)) {
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,2), '+/-', formatting(trans$midas_sig,2), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel2,2), '+/-', formatting(trans$midas_sig2,2), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,0), '+/-', formatting(trans$midas_sig,0), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel2,0), '+/-', formatting(trans$midas_sig2,0), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
         } else {
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,2), '+/-', formatting(trans$midas_sig,2), units), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,0), '+/-', formatting(trans$midas_sig,0), units), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
       if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
-        cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,2), '+/-', formatting(trans$entropy_sig,2), units), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,0), '+/-', formatting(trans$entropy_sig,0), units), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (input$waveform && inputs$waveformPeriod > 0) {
         cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
@@ -14772,16 +14764,16 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$noise) && (isTruthy(input$mle))) {
         if (isTruthy(trans$noise[1])) {
-          cat(paste('# Noise: WH', formatting(trans$noise[1],2), '+/-', formatting(trans$noise[2],2), unit), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: WH', formatting(trans$noise[1],0), '+/-', formatting(trans$noise[2],0), unit), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[3])) {
-          cat(paste('# Noise: FL', formatting(trans$noise[3],2), '+/-', formatting(trans$noise[4],2), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: FL', formatting(trans$noise[3],0), '+/-', formatting(trans$noise[4],0), unit, paste0(period,"^(-1/4)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[5])) {
-          cat(paste('# Noise: RW', formatting(trans$noise[5],2), '+/-', formatting(trans$noise[6],2), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: RW', formatting(trans$noise[5],0), '+/-', formatting(trans$noise[6],0), unit, paste0(period,"^(-1/2)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[7])) {
-          cat(paste('# Noise: PL', formatting(trans$noise[7],2), '+/-', formatting(trans$noise[8],2), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
+          cat(paste('# Noise: PL', formatting(trans$noise[7],0), '+/-', formatting(trans$noise[8],0), unit, paste0(period,"^(K/4)")), file = file_out, sep = "\n", fill = F, append = T)
         }
         if (isTruthy(trans$noise[9])) {
           cat(paste('# Noise: K', format(trans$noise[9], nsmall = 3, scientific = F, trim = F), '+/-', format(trans$noise[10], nsmall = 3, scientific = F, trim = F)), file = file_out, sep = "\n", fill = F, append = T)
@@ -14801,14 +14793,26 @@ server <- function(input,output,session) {
         cat(paste0('# Discontinuities ', info$components[3], ' at: ',paste(trans$offsetEpochs3, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
+    # Checking sigmas
+    useSigmas <- F
+    if (isTruthy(input$sigmas)) {
+      if (input$tab < 4) {
+        u <- data.frame(sy = trans$sy)
+      } else if (input$tab == 4) {
+        u <- data.frame(sy1 = db1[[info$db1]]$sy1[db1[[info$db1]]$status1 %in% T],
+                        sy2 = db1[[info$db1]]$sy2[db1[[info$db1]]$status2 %in% T],
+                        sy3 = db1[[info$db1]]$sy3[db1[[info$db1]]$status3 %in% T])
+      } else if (input$tab == 5) {
+        u <- data.frame(sy1 = db1[[info$db1]]$reserror1[db1[[info$db1]]$status1 %in% T],
+                        sy2 = db1[[info$db1]]$reserror2[db1[[info$db1]]$status2 %in% T],
+                        sy3 = db1[[info$db1]]$reserror3[db1[[info$db1]]$status3 %in% T])
+      }
+      if (all(apply(u,2,function(col) length(unique(col))) > 0) || (all(apply(u,2,function(col) length(unique(col))) == 1) && all(u > 1.5e-9))) {
+        useSigmas <- T
+      }
+    }
     # Adding input data columns
     if (input$tab < 4) {
-      u <- unique(trans$sy)
-      if (isTruthy(input$sigmas) && (length(u) > 1 || (length(u) == 1 && u > 1.5e-9))) {
-        useSigmas <- T
-      } else {
-        useSigmas <- F
-      }
       if (isTruthy(useSigmas)) {
         OutPut$df <- data.frame(x = trans$x, y = trans$y, sy = trans$sy)
         names(OutPut$df) <- c("# Epoch", "Data", "Sigma")
@@ -14817,84 +14821,82 @@ server <- function(input,output,session) {
         names(OutPut$df) <- c("# Epoch", "Data")
       }
     } else if (input$tab == 4) {
-      if (isTruthy(input$sigmas)) {
-        if (isTruthy(trans$plate)) {
-          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
-          centery <- median(db1[[info$db1]]$y1, na.rm = T)
-          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T] - centerx) - centery, sy = db1[[info$db1]]$sy1[db1[[info$db1]]$status1 %in% T])
-          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
-          centery <- median(db1[[info$db1]]$y2, na.rm = T)
-          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T] - centerx) - centery, sy = db1[[info$db1]]$sy2[db1[[info$db1]]$status2 %in% T])
-        } else {
-          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T], sy = db1[[info$db1]]$sy1[db1[[info$db1]]$status1 %in% T])
-          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T], sy = db1[[info$db1]]$sy2[db1[[info$db1]]$status2 %in% T])
-        }
-        if (isTruthy(trans$gia)) {
-          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
-          centery <- median(db1[[info$db1]]$y3, na.rm = T)
-          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T] - centerx) - centery, sy = db1[[info$db1]]$sy3[db1[[info$db1]]$status3 %in% T])
-        } else {
-          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T], sy = db1[[info$db1]]$sy3[db1[[info$db1]]$status3 %in% T])
-        }
+      if (isTruthy(trans$plate)) {
+        centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
+        centery <- median(db1[[info$db1]]$y1, na.rm = T)
+        component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T] - centerx) - centery)
+        centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
+        centery <- median(db1[[info$db1]]$y2, na.rm = T)
+        component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T] - centerx) - centery)
+      } else {
+        component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T])
+        component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T])
+      }
+      if (isTruthy(trans$gia)) {
+        centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
+        centery <- median(db1[[info$db1]]$y3, na.rm = T)
+        component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T] - centerx) - centery)
+      } else {
+        component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T])
+      }
+      if (isTruthy(useSigmas)) {
+        component1$sy <- u$sy1
+        component2$sy <- u$sy2
+        component3$sy <- u$sy3
         component_list <- list(component1, component2, component3)
         OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
         names(OutPut$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
       } else {
-        if (isTruthy(trans$plate)) {
-          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
-          centery <- median(db1[[info$db1]]$y1, na.rm = T)
-          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T] - centerx) - centery)
-          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
-          centery <- median(db1[[info$db1]]$y2, na.rm = T)
-          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T] - centerx) - centery)
-        } else {
-          component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$y1[db1[[info$db1]]$status1 %in% T])
-          component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$y2[db1[[info$db1]]$status2 %in% T])
-        }
-        if (isTruthy(trans$gia)) {
-          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
-          centery <- median(db1[[info$db1]]$y3, na.rm = T)
-          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T] - centerx) - centery)
-        } else {
-          component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$y3[db1[[info$db1]]$status3 %in% T])
-        }
         component_list <- list(component1, component2, component3)
         OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)
         names(OutPut$df) <- c("# Epoch", sub(" component",info$components[1]), sub(" component",info$components[2]), sub(" component",info$components[3]))
       }
     } else if (input$tab == 5) {
-      if (isTruthy(input$sigmas)) {
-        component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T], sy = db1[[info$db1]]$reserror1[db1[[info$db1]]$status1 %in% T])
-        component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$res2[db1[[info$db1]]$status2 %in% T], sy = db1[[info$db1]]$reserror2[db1[[info$db1]]$status2 %in% T])
-        component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$res3[db1[[info$db1]]$status3 %in% T], sy = db1[[info$db1]]$reserror3[db1[[info$db1]]$status3 %in% T])
+      component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T])
+      component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$res2[db1[[info$db1]]$status2 %in% T])
+      component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$res3[db1[[info$db1]]$status3 %in% T])
+      if (isTruthy(useSigmas)) {
+        component1$sy <- u$sy1
+        component2$sy <- u$sy2
+        component3$sy <- u$sy3
         component_list <- list(component1, component2, component3)
         OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
         names(OutPut$df) <- c("# Epoch", sub(" component","Res",info$components[1]), sub(" component","Res",info$components[2]), sub(" component","Res",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
       } else {
-        component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T])
-        component2 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2 %in% T], y = db1[[info$db1]]$res2[db1[[info$db1]]$status2 %in% T])
-        component3 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3 %in% T], y = db1[[info$db1]]$res3[db1[[info$db1]]$status3 %in% T])
         component_list <- list(component1, component2, component3)
         OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)
         names(OutPut$df) <- c("# Epoch", sub(" component","Res",info$components[1]), sub(" component","Res",info$components[2]), sub(" component","Res",info$components[3]))
       }
     }
     req(OutPut$df)
-    OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx)
     # Formatting input data columns
+    # OutPut$df[,"# Epoch"] <- format(OutPut$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx)
+    OutPut$df[,"# Epoch"] <- format(as.numeric(sprintf("%.*f", info$decimalsx, OutPut$df[,"# Epoch"])), scientific = F)
     if (input$tab < 4) {
-      OutPut$df[,"Data"] <- format(OutPut$df[,"Data"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-      if (isTruthy(useSigmas)) {
-        OutPut$df[,"Sigma"] <- format(OutPut$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+      if (isTruthy(info$scientific)) {
+        OutPut$df[,"Data"] <- formatting(OutPut$df[,"Data"],0)
+        if (isTruthy(useSigmas)) {
+          OutPut$df[,"Sigma"] <- formatting(OutPut$df[,"Sigma"],0)
+        }
+      } else {
+        OutPut$df[,"Data"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, OutPut$df[,"Data"])), scientific = F)
+        if (isTruthy(useSigmas)) {
+          OutPut$df[,"Sigma"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, OutPut$df[,"Sigma"])), scientific = F)
+        }
       }
     } else if (input$tab == 4 || input$tab == 5) {
-      OutPut$df[,2] <- format(OutPut$df[,2], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-      OutPut$df[,3] <- format(OutPut$df[,3], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-      OutPut$df[,4] <- format(OutPut$df[,4], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-      if (isTruthy(input$sigmas)) {
-        OutPut$df[,5] <- format(OutPut$df[,5], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        OutPut$df[,6] <- format(OutPut$df[,6], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        OutPut$df[,7] <- format(OutPut$df[,7], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+      for (comp in seq(3)) {
+        if (isTruthy(info$scientific)) {
+          OutPut$df[,comp + 1] <- formatting(OutPut$df[,comp + 1],0)
+          if (isTruthy(useSigmas)) {
+            OutPut$df[,comp + 4] <- formatting(OutPut$df[,comp + 4],0)
+          }
+        } else {
+          OutPut$df[,comp + 1] <- format(as.numeric(sprintf("%.*f", info$decimalsy, OutPut$df[,comp + 1])), scientific = F)
+          if (isTruthy(useSigmas)) {
+            OutPut$df[,comp + 4] <- format(as.numeric(sprintf("%.*f", info$decimalsy, OutPut$df[,comp + 4])), scientific = F)
+          }
+        }
       }
     }
     # Adding and formatting the fit/filter/noise columns for each component
@@ -14907,15 +14909,29 @@ server <- function(input,output,session) {
           model <- trans$mod
           residuals <- trans$res
         }
-        OutPut$df$Model <- format(model, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        OutPut$df$Residuals <- format(residuals, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        if (isTruthy(info$scientific)) {
+          OutPut$df$Model <- formatting(model,0)
+          OutPut$df$Residuals <- formatting(residuals,0)
+        } else {
+          OutPut$df$Model <- format(as.numeric(sprintf("%.*f", info$decimalsy, model)), scientific = F)
+          OutPut$df$Residuals <- format(as.numeric(sprintf("%.*f", info$decimalsy, residuals)), scientific = F)
+        }
       }
       if (useSigmas && input$fitType == 1 && length(input$model) > 0) {
-        if (length(trans$moderror) > 0) {
-          OutPut$df$Sigma.Model <- format(trans$moderror, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        }
-        if (length(trans$reserror) > 0) {
-          OutPut$df$Sigma.Residuals <- format(trans$reserror, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        if (isTruthy(info$scientific)) {
+          if (length(trans$moderror) > 0) {
+            OutPut$df$Sigma.Model <- formatting(trans$moderror,0)
+          }
+          if (length(trans$reserror) > 0) {
+            OutPut$df$Sigma.Residuals <- formatting(trans$reserror,0)
+          }
+        } else {
+          if (length(trans$moderror) > 0) {
+            OutPut$df$Sigma.Model <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$moderror)), scientific = F)
+          }
+          if (length(trans$reserror) > 0) {
+            OutPut$df$Sigma.Residuals <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$reserror)), scientific = F)
+          }
         }
       }
       if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
@@ -14926,42 +14942,87 @@ server <- function(input,output,session) {
           smooth <- trans$filter
           smooth.residuals <- trans$filterRes
         }
-        OutPut$df$Smooth <- format(smooth, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        OutPut$df$Smooth.Residuals <- format(smooth.residuals, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        if (isTruthy(info$scientific)) {
+          OutPut$df$Smooth <- formatting(smooth,0)
+          OutPut$df$Smooth.Residuals <- formatting(smooth.residuals,0)
+        } else {
+          OutPut$df$smooth <- format(as.numeric(sprintf("%.*f", info$decimalsy, smooth)), scientific = F)
+          OutPut$df$smooth.Residuals <- format(as.numeric(sprintf("%.*f", info$decimalsy, smooth.residuals)), scientific = F)
+        }
       }
       if (input$wiener && input$mle) {
         if (input$white && length(trans$white) > 0) {
-          OutPut$df$White <- format(trans$white, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (useSigmas && length(trans$white_sig) > 0) {
-            OutPut$df$Sigma.White <- format(trans$white_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+          if (isTruthy(info$scientific)) {
+            OutPut$df$White <- formatting(trans$white,0)
+            if (useSigmas && length(trans$white_sig) > 0) {
+              OutPut$df$Sigma.White <- formatting(trans$white_sig,0)
+            }
+          } else {
+            OutPut$df$White <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$white)), scientific = F)
+            if (useSigmas && length(trans$white_sig) > 0) {
+              OutPut$df$Sigma.White <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$white_sig)), scientific = F)
+            }
           }
         }
         if (input$flicker && length(trans$flicker) > 0) {
-          OutPut$df$Flicker <- format(trans$flicker, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (useSigmas && length(trans$flicker) > 0) {
-            OutPut$df$Sigma.Flicker <- format(trans$flicker_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+          if (isTruthy(info$scientific)) {
+            OutPut$df$Flicker <- formatting(trans$flicker,0)
+            if (useSigmas && length(trans$flicker_sig) > 0) {
+              OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig,0)
+            }
+          } else {
+            OutPut$df$Flicker <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$flicker)), scientific = F)
+            if (useSigmas && length(trans$flicker_sig) > 0) {
+              OutPut$df$Sigma.Flicker <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$flicker_sig)), scientific = F)
+            }
           }
         }
         if (input$randomw && length(trans$randomw) > 0) {
-          OutPut$df$RandomWalk <- format(trans$randomw, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (useSigmas && length(trans$randomw_sig) > 0) {
-            OutPut$df$Sigma.RandomWalk <- format(trans$randomw_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+          if (isTruthy(info$scientific)) {
+            OutPut$df$RandomWalk <- formatting(trans$randomw,0)
+            if (useSigmas && length(trans$randomw_sig) > 0) {
+              OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig,0)
+            }
+          } else {
+            OutPut$df$RandomWalk <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$randomw)), scientific = F)
+            if (useSigmas && length(trans$randomw_sig) > 0) {
+              OutPut$df$Sigma.RandomWalk <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$randomw_sig)), scientific = F)
+            }
           }
         }
         if (input$powerl && length(trans$powerl) > 0) {
-          OutPut$df$PowerLaw <- format(trans$powerl, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-          if (useSigmas && length(trans$powerl_sig) > 0) {
-            OutPut$df$Sigma.PowerLaw <- format(trans$powerl_sig, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+          if (isTruthy(info$scientific)) {
+            OutPut$df$PowerLaw <- formatting(trans$powerl,0)
+            if (useSigmas && length(trans$powerl_sig) > 0) {
+              OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig,0)
+            }
+          } else {
+            OutPut$df$PowerLaw <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$powerl)), scientific = F)
+            if (useSigmas && length(trans$powerl_sig) > 0) {
+              OutPut$df$Sigma.PowerLaw <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$powerl_sig)), scientific = F)
+            }
           }
         }
       }
       if (input$fitType == 2 && length(trans$res) > 0) {
-        OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,1))
+        if (isTruthy(info$scientific)) {
+          OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,0))
+        } else {
+          OutPut$df <- cbind(OutPut$df, format(as.numeric(sprintf("%.*f", info$decimalsy, trans$kalman)), scientific = F))
+        }
         colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
-        OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,1))
+        if (isTruthy(info$scientific)) {
+          OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,0))
+        } else {
+          OutPut$df <- cbind(OutPut$df, format(as.numeric(sprintf("%.*f", info$decimalsy, trans$kalman_unc)), scientific = F))
+        }
       }
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
-        OutPut$df$Waveform <- format(trans$pattern, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        if (isTruthy(info$scientific)) {
+          OutPut$df$Waveform <- formatting(trans$pattern,0)
+        } else {
+          OutPut$df$Waveform <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$pattern)), scientific = F)
+        }
       }
     }
     # Adding excluded points
@@ -14972,13 +15033,22 @@ server <- function(input,output,session) {
         if (isTruthy(useSigmas)) {
           output_excluded$df <- data.frame(x = trans$x0[excluded], y = trans$y0[excluded], sy = trans$sy0[excluded])
           names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
-          output_excluded$df[,"Sigma"] <- format(output_excluded$df[,"Sigma"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+          if (isTruthy(info$scientific)) {
+            output_excluded$df[,"Sigma"] <- formatting(output_excluded$df[,"Sigma"],0)
+          } else {
+            output_excluded$df[,"Sigma"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,"Sigma"])), scientific = F)
+          }
         } else {
           output_excluded$df <- data.frame(x = trans$x0[excluded], y = trans$y0[excluded])
           names(output_excluded$df) <- c("# Epoch", "Data")
         }
-        output_excluded$df[,"# Epoch"] <- format(output_excluded$df[,"# Epoch"], nsmall = info$decimalsx, trim = F, scientific = F)
-        output_excluded$df[,"Data"] <- format(output_excluded$df[,"Data"], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        if (isTruthy(info$scientific)) {
+          output_excluded$df[,"# Epoch"] <- formatting(output_excluded$df[,"# Epoch"],0)
+          output_excluded$df[,"Data"] <- formatting(output_excluded$df[,"Data"],0)
+        } else {
+          output_excluded$df[,"# Epoch"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,"# Epoch"])), scientific = F)
+          output_excluded$df[,"Data"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,"Data"])), scientific = F)
+        }
         if (isTruthy(useSigmas)) {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
         } else {
@@ -14987,53 +15057,79 @@ server <- function(input,output,session) {
       } else {
         excluded <- apply(db1[[info$db1]][, c("status1", "status2", "status3")], 1, function(row) all(row == F) || all(is.na(row)))
         names(excluded) <- NULL
-        if (isTruthy(input$sigmas)) {
-          if (isTruthy(trans$plate)) {
-            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
-            centery <- median(db1[[info$db1]]$y1, na.rm = T)
-            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1), sy = formatting(db1[[info$db1]]$sy1[excluded],1))
-            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
-            centery <- median(db1[[info$db1]]$y2, na.rm = T)
-            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1), sy = formatting(db1[[info$db1]]$sy2[excluded],1))
+        if (isTruthy(trans$plate)) {
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
+          centery <- median(db1[[info$db1]]$y1, na.rm = T)
+          if (isTruthy(info$scientific)) {
+            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],0), y = formatting(db1[[info$db1]]$y1[excluded] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,0))
           } else {
-            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded],1), sy = formatting(db1[[info$db1]]$sy1[excluded],1))
-            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded],1), sy = formatting(db1[[info$db1]]$sy2[excluded],1))
+            component1 <- data.frame(x = format(as.numeric(sprintf("%.*f", info$decimalsx, db1[[info$db1]][[paste0("x",input$tunits)]][excluded])), scientific = F),
+                                     y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y1[excluded] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery)), scientific = F))
           }
-          if (isTruthy(trans$gia)) {
-            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
-            centery <- median(db1[[info$db1]]$y3, na.rm = T)
-            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1), sy = formatting(db1[[info$db1]]$sy3[excluded],1))
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
+          centery <- median(db1[[info$db1]]$y2, na.rm = T)
+          if (isTruthy(info$scientific)) {
+            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],0), y = formatting(db1[[info$db1]]$y2[excluded] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,0))
           } else {
-            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded],1), sy = formatting(db1[[info$db1]]$sy3[excluded],1))
+            component2 <- data.frame(x = format(as.numeric(sprintf("%.*f", info$decimalsx, db1[[info$db1]][[paste0("x",input$tunits)]][excluded])), scientific = F),
+                                     y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y2[excluded] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery)), scientific = F))
           }
         } else {
-          if (isTruthy(trans$plate)) {
-            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1], na.rm = T)
-            centery <- median(db1[[info$db1]]$y1, na.rm = T)
-            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded] - trans$plate[1]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1))
-            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status2], na.rm = T)
-            centery <- median(db1[[info$db1]]$y2, na.rm = T)
-            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded] - trans$plate[2]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1))
+          if (isTruthy(info$scientific)) {
+            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],0), y = formatting(db1[[info$db1]]$y1[excluded],0))
+            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],0), y = formatting(db1[[info$db1]]$y2[excluded],0))
           } else {
-            component1 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y1[excluded],1))
-            component2 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y2[excluded],1))
+            component1 <- data.frame(x = format(as.numeric(sprintf("%.*f", info$decimalsx, db1[[info$db1]][[paste0("x",input$tunits)]][excluded])), scientific = F),
+                                     y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y1[excluded])), scientific = F))
+            component2 <- data.frame(x = format(as.numeric(sprintf("%.*f", info$decimalsx, db1[[info$db1]][[paste0("x",input$tunits)]][excluded])), scientific = F),
+                                     y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y2[excluded])), scientific = F))
           }
-          if (isTruthy(trans$gia)) {
-            centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
-            centery <- median(db1[[info$db1]]$y3, na.rm = T)
-            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,1))
+        }
+        if (isTruthy(trans$gia)) {
+          centerx <- median(db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status3], na.rm = T)
+          centery <- median(db1[[info$db1]]$y3, na.rm = T)
+          if (isTruthy(info$scientific)) {
+            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],0), y = formatting(db1[[info$db1]]$y3[excluded] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery,0))
           } else {
-            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],1), y = formatting(db1[[info$db1]]$y3[excluded],1))
+            component3 <- data.frame(x = format(as.numeric(sprintf("%.*f", info$decimalsx, db1[[info$db1]][[paste0("x",input$tunits)]][excluded])), scientific = F),
+                                     y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y3[excluded] - trans$gia[3]*(db1[[info$db1]][[paste0("x",input$tunits)]][excluded] - centerx) - centery)), scientific = F))
+          }
+        } else {
+          if (isTruthy(info$scientific)) {
+            component3 <- data.frame(x = formatting(db1[[info$db1]][[paste0("x",input$tunits)]][excluded],0), y = formatting(db1[[info$db1]]$y3[excluded],0))
+          } else {
+            component3 <- data.frame(x = format(as.numeric(sprintf("%.*f", info$decimalsx, db1[[info$db1]][[paste0("x",input$tunits)]][excluded])), scientific = F),
+                                     y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y3[excluded])), scientific = F))
+          }
+        }
+        if (isTruthy(useSigmas)) {
+          if (isTruthy(info$scientific)) {
+            component1$sy <- formatting(db1[[info$db1]]$sy1[excluded],0)
+            component2$sy <- formatting(db1[[info$db1]]$sy2[excluded],0)
+            component3$sy <- formatting(db1[[info$db1]]$sy3[excluded],0)
+          } else {
+            component1$sy <- format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$sy1[excluded])), scientific = F)
+            component2$sy <- format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$sy2[excluded])), scientific = F)
+            component3$sy <- format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$sy3[excluded])), scientific = F)
           }
         }
         component_list <- list(component1, component2, component3)
         output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
-        output_excluded$df[,2] <- format(output_excluded$df[,2], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        output_excluded$df[,3] <- format(output_excluded$df[,3], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        output_excluded$df[,4] <- format(output_excluded$df[,4], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        output_excluded$df[,5] <- format(output_excluded$df[,5], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        output_excluded$df[,6] <- format(output_excluded$df[,6], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
-        output_excluded$df[,7] <- format(output_excluded$df[,7], digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy)
+        # if (isTruthy(info$scientific)) {
+        #   output_excluded$df[,2] <- formatting(output_excluded$df[,2],0)
+        #   output_excluded$df[,3] <- formatting(output_excluded$df[,3],0)
+        #   output_excluded$df[,4] <- formatting(output_excluded$df[,4],0)
+        #   output_excluded$df[,5] <- formatting(output_excluded$df[,5],0)
+        #   output_excluded$df[,6] <- formatting(output_excluded$df[,6],0)
+        #   output_excluded$df[,7] <- formatting(output_excluded$df[,7],0)
+        # } else {
+        #   output_excluded$df[,2] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,2])), scientific = F)
+        #   output_excluded$df[,3] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,3])), scientific = F)
+        #   output_excluded$df[,4] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,4])), scientific = F)
+        #   output_excluded$df[,5] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,5])), scientific = F)
+        #   output_excluded$df[,6] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,6])), scientific = F)
+        #   output_excluded$df[,7] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,7])), scientific = F)
+        # }
         if (input$tab == 5) {
           names(output_excluded$df)[1] <- "# Epoch"
           if (isTruthy(input$sigmas)) {
@@ -15575,12 +15671,23 @@ server <- function(input,output,session) {
   decimalplaces <- function(x,extra) {
     if (all(is.numeric(x))) {
       info$scientific <- F
-      decimals <- suppressWarnings(nchar(format(as.numeric(min(sub("^.*\\.", "0\\.", grep("\\.", x - min(x, na.rm = T), value = T)))), digits = 1)) - 2)
-      if (!isTruthy(is.numeric(decimals))) {
+      sort_diff <- abs(diff(sort(x - as.integer(x))))
+      sort_diff <- sort_diff[sort_diff != 0]
+      if (isTruthy(sort_diff)) {
+        min_diff <- format(min(sort_diff), digits = 1, scientific = F)
+        decimals <- nchar(min_diff) - 2
+        if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
+          return(0)
+        }
+      } else {
         return(0)
       }
-      decimals <- decimals + extra
-      return(decimals)
+      zeroDecimals <- min(nchar(sub("(^0*).*", "\\1", sub("[0-9]*\\.", "", format(x, scientific = F)))))
+      if (zeroDecimals > 5) {
+        decimals <- decimals - zeroDecimals
+        info$scientific <- T
+      }
+      return(decimals + extra)
     } else {
       if (messages > 2) cat(file = stderr(), mySession, "Bad series:", head(x), "\n")
       showNotification("Unable to obtain the appropriate number of decimal places of the series.", action = NULL, duration = 10, closeButton = T, id = "bad_decimalplaces", type = "error", session = getDefaultReactiveDomain())
@@ -16753,20 +16860,22 @@ server <- function(input,output,session) {
     return(z)
   }
   #
-  formatting <- function(x, y) {
+  formatting <- function(x, extra_dec) {
     width <- NULL
-    if (info$scientific) {
-      extra_dec <- 0
-      width <- 13
+    if (isTruthy(info$scientific)) {
+      info$digits <- info$decimalsy
+      info$nsmall <- 0
     } else {
-      extra_dec <- y
+      info$digits <- 2
+      info$nsmall <- info$decimalsy
     }
-    # if (is.list(x)) {
-    if (is.list(x) || is.matrix(x)) {
-      formatted <- format(x, digits = 2, scientific = info$scientific, trim = F, width = width)
-    # } else if (is.matrix(x)) {
-      # extra_dig <- 0
-      # formatted <- format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)
+    if (is.list(x) || is.matrix(x) || is.vector(x)) {
+      formatted <- format(x, digits = info$digits + extra_dec, nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
+      if (!info$scientific) {
+        while (all(grepl("0$", formatted))) {
+          formatted <- sub("0$", "", formatted)
+        }
+      }
     } else {
       x <- as.numeric(x)
       intgr <- as.integer(x)
@@ -16776,8 +16885,7 @@ server <- function(input,output,session) {
         # formatted <- format(intgr + as.numeric(format(x, nsmall = info$nsmall + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width)), nsmall = info$nsmall + extra_dec, scientific = info$scientific, trim = F, width = width)
         formatted <- format(intgr + as.numeric(format(x, digits = 2, scientific = info$scientific, trim = F, width = width)), nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, scientific = info$scientific, trim = F, width = width)
       } else {
-        extra_dig <- y
-        formatted <- intgr + as.numeric(format(x, nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, digits = info$digits + extra_dig, scientific = info$scientific, trim = F, width = width))
+        formatted <- intgr + as.numeric(format(x, nsmall = ifelse(is.null(info$nsmall), 0, info$nsmall) + extra_dec, digits = info$digits + extra_dec, scientific = info$scientific, trim = F, width = width))
       }
     }
     return(formatted)
@@ -16816,7 +16924,7 @@ server <- function(input,output,session) {
       showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
       trans$gaps <- rep(T, length(x))
     }
-    info$decimalsx <- decimalplaces(x, 1)
+    info$decimalsx <- decimalplaces(x,0)
     if (!isTruthy(input$tunits) || input$tunits == 3) {
       info$tunits.label <- "years"
     } else if (input$tunits == 1) {
