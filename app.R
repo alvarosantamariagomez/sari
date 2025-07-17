@@ -14715,6 +14715,7 @@ server <- function(input,output,session) {
             cat(paste('# Sinusoidal period', sprintf('%*s', max(nchar(trans$results$sinusoidales[,1])), trans$results$sinusoidales[i,1]), ':   Amplitude', formatting(trans$results$sinusoidales[i,2],1), '+/-', formatting(trans$results$sinusoidales[i,3],1), unit, '   Phase ', formatting(trans$results$sinusoidales[i,4],1), '+/-', formatting(trans$results$sinusoidales[i,5],1), 'rad'), file = file_out, sep = "\n", fill = F, append = T)
           }
         }
+        cat(paste("# Standard error scale factor:", formatting(trans$results$sigma,0)), file = file_out, sep = "\n", fill = F, append = T)
       } else if (input$fitType == 2 && length(trans$kalman) > 0) {
         if (input$kf == 1) {
           cat(paste0("# Model EKF: ",gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(x>", "if(x>", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))), file = file_out, sep = "\n", fill = F, append = T)
