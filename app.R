@@ -9417,6 +9417,7 @@ server <- function(input,output,session) {
       }
     }
     if (input$optionSecondary > 0) {
+      info$db1 <- "original"
       db2$original <- db2$resampled <- NULL
       info$last_optionSecondary <- 0
       updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
