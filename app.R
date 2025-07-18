@@ -16686,7 +16686,8 @@ server <- function(input,output,session) {
       } else {
         withBusyIndicatorServer(variable, {
           if (file.exists("www/PSMSL_database.txt")) {
-            stations_available <- do.call(paste, c(read.table("www/PSMSL_database.txt", sep = ";", quote = "@")[,c(1,2)], sep = ": "))
+            table <- read.table("www/PSMSL_database.txt", sep = ";", quote = "@")[,c(1,2)]
+            stations_available <- do.call(paste, c(table[order(table$V1),], sep = ": "))
             if (series == 1) {
               output$showStation1 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
