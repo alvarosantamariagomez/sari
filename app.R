@@ -5013,7 +5013,7 @@ server <- function(input,output,session) {
         } else if (input$sunits == 2) {
           cat("Series units: mm", "\n\n")
         }
-        print(formatting(stats,1), row.names = F)
+        print(stats, row.names = F)
       }, width = 280)
     } else {
       showNotification(HTML("Unable to compute the histogram.<br>Check the input series."), action = NULL, duration = 10, closeButton = T, id = "no_histogram", type = "error", session = getDefaultReactiveDomain())
@@ -17030,7 +17030,9 @@ server <- function(input,output,session) {
       info$digits <- 2
       info$nsmall <- decimals
     }
-    if (is.list(x) || is.matrix(x) || is.vector(x)) {
+    if (is.list(x)) {
+      formatted <- format(x, digits = info$digits + extra_dec, nsmall = info$nsmall + extra_dec, scientific = scientific, trim = F, width = width)
+    } else if (is.matrix(x) || is.vector(x)) {
       formatted <- format(x, digits = info$digits + extra_dec, nsmall = info$nsmall + extra_dec, scientific = scientific, trim = F, width = width)
       if (!scientific) {
         while (all(grepl("0$", formatted))) {
