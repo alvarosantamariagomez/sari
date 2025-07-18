@@ -5783,7 +5783,12 @@ server <- function(input,output,session) {
     req(trans$x, trans$y, trans$sy, input$series2filter)
     removeNotification("no_smooth")
     removeNotification("same_periods")
+    removeNotification("no_points")
     if (isTruthy(input$filter)) {
+      if (length(trans$y) < 4) {
+        showNotification(HTML("Not enough points.<br>Unable to smooth the series"), action = NULL, duration = 10, closeButton = T, id = "no_smooth", type = "error", session = getDefaultReactiveDomain())
+        req(info$stop)
+      }
       if (inputs$high == "" || is.na(inputs$high)) {
         high <- 0
       } else {
