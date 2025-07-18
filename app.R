@@ -791,7 +791,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                              The <span class='UIoption'>overview</span> button opens a new browser window containing a plot of the three coordinate components, if available.<br><br>
                                                                                              Outliers can be excluded manually or automatically with the <span class='UIoption'>toggle</span> and <span class='UIoption'>auto toggle</span> buttons.<br><br>
                                                                                              The removed outliers can be restored with the <span class='UIoption'>reset toggle</span> button.<br><br>
-                                                                                             The <span class='UIoption'>truncate</span> option removes the beginning and/or end of the series.<br><br>
+                                                                                             The <span class='UIoption'>truncate</span> option removes either the beginning and/or end of the series, or points above and/or below the limits.<br><br>
                                                                                              The <span class='UIoption'>remove period</span> option removes all the points between two provided epochs.<br><br>
                                                                                              The <span class='UIoption'>all components</span> option allows removing the outliers from all the components (if more than one) simultaneously or for each component individually.<br><br>
                                                                                              The <span class='UIoption'>permanent</span> option allows deleting permanently (i.e., not possible to be restored) the next outliers flagged to be toggled or truncated.<br><br>
@@ -821,7 +821,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             column(4,
                                                                                    checkboxInput(inputId = "cut",
                                                                                                  div("Truncate", style = "font-weight: bold",
-                                                                                                     helpPopup("This option reduces the time axis of the series by removing all points before and/or after the provided epochs.", anchor = "cut")),
+                                                                                                     helpPopup("This option either reduces the time axis of the series by removing all points before and/or after the provided epochs, or removes points above and/or below the provided limits.", anchor = "cut")),
                                                                                                  value = F) |> autoCompleteOff()
                                                                             ),
                                                                             conditionalPanel(
@@ -831,6 +831,17 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               ),
                                                                               column(4,
                                                                                      textInput(inputId = "cutEnd", label = "After", value = "") |> autoCompleteOff()
+                                                                              )
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.cut == true",
+                                                                            fluidRow(
+                                                                              column(4, offset = 4,
+                                                                                     textInput(inputId = "cutAbove", label = "Above", value = "") |> autoCompleteOff()
+                                                                              ),
+                                                                              column(4,
+                                                                                     textInput(inputId = "cutBelow", label = "Below", value = "") |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                           )
@@ -3143,6 +3154,16 @@ server <- function(input,output,session) {
   cutEnd_d <- reactive(input$cutEnd) %>% debounce(1000, priority = 1000)
   observeEvent(cutEnd_d(), {
     inputs$cutEnd <- suppressWarnings(as.numeric(trimws(cutEnd_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  cutAbove_d <- reactive(input$cutAbove) %>% debounce(1000, priority = 1000)
+  observeEvent(cutAbove_d(), {
+    inputs$cutAbove <- suppressWarnings(as.numeric(trimws(cutAbove_d(), which = "both", whitespace = "[ \t\r\n]")))
+  }, priority = 1000)
+  
+  cutBelow_d <- reactive(input$cutBelow) %>% debounce(1000, priority = 1000)
+  observeEvent(cutBelow_d(), {
+    inputs$cutBelow <- suppressWarnings(as.numeric(trimws(cutBelow_d(), which = "both", whitespace = "[ \t\r\n]")))
   }, priority = 1000)
 
   stripStart_d <- reactive(input$stripStart) %>% debounce(1000, priority = 1000)
@@ -7041,12 +7062,21 @@ server <- function(input,output,session) {
             disable("printSinfo")
             disable("printSoln")
             disable("printCustom")
+            if (!isTruthy(input$remove3D)) {
+              updateCheckboxInput(session, inputId = "remove3D", value = T)
+            }
+            disable("remove3D")
           } else {
             enable("loadSARI")
             enable("printLog")
             enable("printSinfo")
             enable("printSoln")
             enable("printCustom")
+            if (sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status2, na.rm = T) && sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status3, na.rm = T)) {
+              enable("remove3D")
+            } else {
+              disable("remove3D")
+            }
           }
           enable("midas")
           enable("entropy")
@@ -7096,6 +7126,10 @@ server <- function(input,output,session) {
           }
           if (input$format == 4) {
             disable("plotAll")
+            if (isTruthy(input$remove3D)) {
+              updateCheckboxInput(session, inputId = "remove3D", value = F)
+            }
+            disable("remove3D")
           } else {
             enable("plotAll")
           }
@@ -7112,11 +7146,6 @@ server <- function(input,output,session) {
           } else {
             disable("add_excluded")
             disable("delete_excluded")
-          }
-          if (sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status2, na.rm = T) && sum(db1[[info$db1]]$status1, na.rm = T) == sum(db1[[info$db1]]$status3, na.rm = T)) {
-            enable("remove3D")
-          } else {
-            disable("remove3D")
           }
           enable("histogram")
           enable("histogramType")
@@ -10877,6 +10906,126 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "cutEnd", value = "")
     }
   })
+  observeEvent(c(inputs$cutAbove, inputs$cutBelow), {
+    req(db1[[info$db1]], input$cut)
+    removeNotification("bad_cut")
+    removeNotification("bad_truncation")
+    if (isTruthy(inputs$cutAbove) || isTruthy(inputs$cutBelow)) {
+      if (messages > 0) cat(file = stderr(), mySession, "Cutting series: above", inputs$cutAbove, "& below", inputs$cutBelow, "\n")
+      if (input$tab < 4) {
+        y <- trans$y
+        y0 <- trans$y0
+        miny <- min(y, na.rm = T)
+        maxy <- max(y, na.rm = T)
+        above <- ifelse(isTruthy(inputs$cutAbove), inputs$cutAbove, maxy)
+        below <- ifelse(isTruthy(inputs$cutBelow), inputs$cutBelow, miny)
+        above <- ifelse(above > maxy, maxy, above)
+        below <- ifelse(below < miny, miny, below)
+      } else {
+        above <- ifelse(isTruthy(inputs$cutAbove), inputs$cutAbove, Inf)
+        below <- ifelse(isTruthy(inputs$cutBelow), inputs$cutBelow, -Inf)
+      }
+      if (above <= below) {
+        shinyjs::delay(500, showNotification(HTML("The Above epoch or the top of the series is equal or smaller than the Below epoch or the bottom of the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
+        req(info$stop)
+      }
+      if (isTruthy(input$permanent)) {
+        if (input$tab > 3) {
+          for (comp in seq(3)) {
+            index <- db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below
+            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1)) {
+              showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          }
+          for (comp in seq(3)) {
+            index <- db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below
+            db1[[info$db1]]$status1[index] <- NA
+            db1[[info$db1]]$status2[index] <- NA
+            db1[[info$db1]]$status3[index] <- NA
+          }
+        } else {
+          comp <- input$tab
+          index <- db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below
+          if (isTruthy(input$remove3D)) {
+            for (comps in seq(3)) {
+              if (!any((db1[[info$db1]][[paste0("status",comps)]] %in% T + !index) > 1)) {
+                showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
+                req(info$stop)
+              }
+            }
+            db1[[info$db1]]$status1[index] <- NA
+            db1[[info$db1]]$status2[index] <- NA
+            db1[[info$db1]]$status3[index] <- NA
+          } else {
+            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1)) {
+              showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+            db1[[info$db1]][[paste0("status",comp)]][index] <- NA
+          }
+        }
+        # setting new axis limits
+        if (isTruthy(input$remove3D) || input$format == 4) {
+          if (input$tab < 4) {
+            valid <- !is.na(db1[[info$db1]][[paste0("status", input$tab)]])
+          } else {
+            valid <- !is.na(colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0)
+          }
+          info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid])
+          info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid])
+          ranges$x0 <- c(info$minx, info$maxx)
+          if (isTruthy(input$fullSeries) && input$optionSecondary < 2) {
+            # show all points from primary & secondary series
+            info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
+            info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][valid], db2[[info$db2]][[paste0("x",input$tunits)]])
+          }
+          if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+            ranges$x1 <- c(info$minx, info$maxx)
+          }
+        }
+        updateCheckboxInput(session, inputId = "permanent", value = F)
+      } else {
+        if (input$tab > 3) {
+          for (comp in seq(3)) {
+            index <- (db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below) & !is.na(db1[[info$db1]][[paste0("status",comp)]])
+            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1)) {
+              showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+          }
+          for (comp in seq(3)) {
+            index <- (db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below) & !is.na(db1[[info$db1]][[paste0("status",comp)]])
+            db1[[info$db1]]$status1[index & !is.na(db1[[info$db1]]$status1)] <- F
+            db1[[info$db1]]$status2[index & !is.na(db1[[info$db1]]$status2)] <- F
+            db1[[info$db1]]$status3[index & !is.na(db1[[info$db1]]$status3)] <- F
+          }
+        } else {
+          comp <- input$tab
+          index <- (db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below) & !is.na(db1[[info$db1]][[paste0("status",comp)]])
+          if (isTruthy(input$remove3D)) {
+            for (comps in seq(3)) {
+              if (!any((db1[[info$db1]][[paste0("status",comps)]] %in% T + !index) > 1)) {
+                showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
+                req(info$stop)
+              }
+            }
+            db1[[info$db1]]$status1[index & !is.na(db1[[info$db1]]$status1)] <- F
+            db1[[info$db1]]$status2[index & !is.na(db1[[info$db1]]$status2)] <- F
+            db1[[info$db1]]$status3[index & !is.na(db1[[info$db1]]$status3)] <- F
+          } else {
+            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1)) {
+              showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
+            db1[[info$db1]][[paste0("status",comp)]][index] <- F
+          }
+        }
+      }
+      updateTextInput(session, inputId = "cutAbove", value = "")
+      updateTextInput(session, inputId = "cutBelow", value = "")
+    }
+  })
 
   # Observe strip ####
   observeEvent(c(inputs$stripStart, inputs$stripEnd), {
@@ -10973,6 +11122,8 @@ server <- function(input,output,session) {
     updateTextInput(session, "thresholdResN", value = "")
     updateTextInput(session, "cutStart", value = "")
     updateTextInput(session, "cutEnd", value = "")
+    updateTextInput(session, "cutAbove", value = "")
+    updateTextInput(session, "cutBelow", value = "")
     updateTextInput(session, "stripStart", value = "")
     updateTextInput(session, "stripEnd", value = "")
   }, priority = 4)
