@@ -4380,7 +4380,7 @@ server <- function(input,output,session) {
             # keeping estimated fit
             trans$names <- names(coef(fit))
             trans$unc <- unname(synthesis$coefficients[grepl("Rate",rownames(synthesis$coefficients)),2])
-            trans$equation <- sub("y ~","Model =",m$model_nls)
+            trans$equation <- gsub("x", "Epoch", sub("y ~","Model =",m$model_nls))
             trans$results <- synthesis
             trans$LScoefs <- synthesis$coefficients
             trans$res <- res
@@ -14862,7 +14862,7 @@ server <- function(input,output,session) {
     }
     if (input$tab < 4) {
       if (input$fitType == 1 && length(trans$results) > 0) {
-        cat(paste0("# Model LS: ", gsub("&" , " \\+ ", gsub("\\s+", "", gsub(" \\+ ", "&", gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE)))))))))))), file = file_out, sep = "\n", fill = F, append = T)
+        cat(paste0("# Model LS: ", gsub("Epoch", "x", gsub("\\(I", "I", sub("=", " = ", gsub("&" , " \\+ ", gsub("\\s+", "", gsub(" \\+ ", "&", gsub(" > ", ">", gsub(" - ", "-", gsub(" \\* ", "\\*", gsub("))", ")", gsub("I\\(", "if(", gsub("I\\(cos", "cos", gsub("I\\(sin", "sin", gsub("^ *|(?<= ) | *$", "", Reduce(paste, trans$equation), perl = TRUE))))))))))))))), file = file_out, sep = "\n", fill = F, append = T)
         param <- data.frame(formatting(trans$LScoefs[,c(1,2)],0), check.names = F)
         param <- cbind(e = rep("=",length(param[1])), param[1], s = rep("+/-",length(param[1])), param[2])
         rownames(param) <- format(paste("# Parameter:",rownames(param)), justify = "left")
