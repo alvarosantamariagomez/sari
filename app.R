@@ -10846,10 +10846,10 @@ server <- function(input,output,session) {
         x <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(statusAll)]
         x0 <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(db1[[info$db1]]$y1)]
       }
-      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, x[1])
-      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, x[length(x)])
-      start <- ifelse(start < x[1], x[1], start)
-      end <- ifelse(end > x[length(x)], x[length(x)], end)
+      start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, x0[1])
+      end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, x0[length(x0)])
+      start <- ifelse(start < x0[1], x0[1], start)
+      end <- ifelse(end > x0[length(x0)], x0[length(x0)], end)
       if (end <= start) {
         shinyjs::delay(500, showNotification(HTML("The End epoch or the end of the series is equal or smaller than the Start epoch or the start of the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
@@ -10860,7 +10860,7 @@ server <- function(input,output,session) {
         } else if (isTruthy(inputs$cutStart)) {
           end <- x0[length(x0)]
         } else if (isTruthy(inputs$cutEnd)) {
-          start <- x0
+          start <- x0[1]
         }
         if (isTruthy(input$remove3D)) {
           db1[[info$db1]]$status1[x0 < start | x0 > end] <- NA
@@ -15778,35 +15778,30 @@ server <- function(input,output,session) {
     setProgress(round(m/info$points, digits = 1))
     vel_f <- -999999
     vel_b <- -999999
-    if (input$format == 4) {
-      x <- db1$original[[paste0("x",input$tunits)]][db1$original$status1]
-    } else {
-      x <- db1$original[[paste0("x",input$tunits)]][db1$original$status3]
-    }
-    index_f <- which.min(abs(x - (x[m] + t)))
-    index_b <- which.min(abs(x - (x[m] - t)))
+    index_f <- which.min(abs(trans$x - (trans$x[m] + t)))
+    index_b <- which.min(abs(trans$x - (trans$x[m] - t)))
     # checking forward pair
-    if (abs(x[index_f] - x[m] - t) < info$tol) {
+    if (abs(trans$x[index_f] - trans$x[m] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(x[m] < as.numeric(trans$offsetEpochs) & x[index_f] > as.numeric(trans$offsetEpochs))) {
-            vel_f <- (series[index_f] - series[m]) / (x[index_f] - x[m])
+          if (!any(trans$x[m] < as.numeric(trans$offsetEpochs) & trans$x[index_f] > as.numeric(trans$offsetEpochs))) {
+            vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
           }
         }
       } else {
-        vel_f <- (series[index_f] - series[m]) / (x[index_f] - x[m])
+        vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
       }
     }
     # checking backward pair
-    if (abs(x[m] - x[index_b] - t) < info$tol) {
+    if (abs(trans$x[m] - trans$x[index_b] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(x[index_b] < as.numeric(trans$offsetEpochs) & x[m] > as.numeric(trans$offsetEpochs))) {
-            vel_b <- (series[m] - series[index_b]) / (x[m] - x[index_b])
+          if (!any(trans$x[index_b] < as.numeric(trans$offsetEpochs) & trans$x[m] > as.numeric(trans$offsetEpochs))) {
+            vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
           }
         }
       } else {
-        vel_b <- (series[m] - series[index_b]) / (x[m] - x[index_b])
+        vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
       }
     }
     return(c(vel_f,vel_b))
