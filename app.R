@@ -5117,54 +5117,62 @@ server <- function(input,output,session) {
       }
       if (length(trans$x) > 0 && (length(trans$res) > 0 || length(trans$filterRes) > 0) && isTruthy(input$waveform) && isTruthy(inputs$waveformPeriod)) {
         if (nchar(inputs$waveformPeriod) > 0 && !is.na(as.numeric(inputs$waveformPeriod)) && as.numeric(inputs$waveformPeriod) > 2*info$sampling  && as.numeric(inputs$waveformPeriod) < abs(info$rangex)/2) {
-          x <- trans$x %% as.numeric(inputs$waveformPeriod)
-          if (length(trans$res) > 0) {
-            serie <- data.frame(x0 = trans$x, x = x, y = trans$res, sy = trans$sy)[order(x),]
-          } else if (length(trans$filterRes) > 0) {
-            serie <- data.frame(x0 = trans$x, x = x, y = trans$filterRes, sy = trans$sy)[order(x),]
-          }
-          serie$z <- floor(serie$x/info$sampling)
-          table <- as.data.table(serie, keep.rownames = T)
-          uniques <- sum(setDT(table)[, .N, z]$N ==  1)
-          average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2), std = sd(y)), by = z])
-          result <- merge(serie,average, by = "z")
-          if (uniques > 0) {
-            result$std[is.na(result$std)] <- result$sy[is.na(result$std)]
-            showNotification(HTML(paste0(uniques," data epochs are not repeated in the series.<br>The waveform may be wrong at these epochs.")), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())
-          }
-          result <- result[order(result$x0),]
-          trans$pattern <- result$avg
-          if (messages > 0) cat(file = stderr(), mySession, "Computing periodic waveform", "\n")
-          if (length(trans$res) > 0) {
-            trans$mod <- trans$mod + trans$pattern
-            trans$res <- trans$res - trans$pattern
-          } else if (length(trans$filterRes) > 0) {
-            trans$filter <- trans$filter + trans$pattern
-            trans$filterRes <- trans$filterRes - trans$pattern
-          }
-          toplot <- !duplicated(result[,"z"])
-          output$waveform1 <- output$waveform2 <- output$waveform3 <- renderPlot({
-            if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
-              if (length(trans$res) > 0) {
-                title <- "Periodic waveform from model residuals"
-              } else if (length(trans$filterRes) > 0) {
-                title <- "Periodic waveform from filter residuals"
-              }
-              if (input$symbol == 0) {
-                symbol <- 'p'
-              } else if (input$symbol == 1) {
-                symbol <- 'l'
-              } else if (input$symbol == 2) {
-                symbol <- 'o'
-              }
-              waveform <- data.frame(x = result[toplot,]$x, y = result[toplot,]$avg, sy = result[toplot,]$std)
-              waveform <- waveform[order(waveform$x),]
-              plot(waveform$x,waveform$y, type = symbol, pch = 20, xlab = "Epoch of period", ylab = "Average value", main = title)
-              ba <- waveform$y + waveform$sy
-              bb <- waveform$y - waveform$sy
-              polygon(c(waveform$x, rev(waveform$x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
-            }
-          }, width = reactive(info$width))
+          withProgress(message = 'Computing the periodic waveform.',
+                       detail = 'This may take a while ...', value = 0.1, {
+                         x <- trans$x %% as.numeric(inputs$waveformPeriod)
+                         if (length(trans$res) > 0) {
+                           serie <- data.frame(x0 = trans$x, x = x, y = trans$res, sy = trans$sy)[order(x),]
+                         } else if (length(trans$filterRes) > 0) {
+                           serie <- data.frame(x0 = trans$x, x = x, y = trans$filterRes, sy = trans$sy)[order(x),]
+                         }
+                         serie$z <- floor(serie$x/info$sampling)
+                         table <- as.data.table(serie, keep.rownames = T)
+                         setProgress(0.2)
+                         uniques <- sum(setDT(table)[, .N, z]$N ==  1)
+                         average <- as.data.frame.matrix(table[,list(avg = weightedMedian(y,1/sy^2), std = sd(y)), by = z])
+                         result <- merge(serie,average, by = "z")
+                         if (uniques > 0) {
+                           result$std[is.na(result$std)] <- result$sy[is.na(result$std)]
+                           showNotification(HTML(paste0(uniques," data epochs are not repeated in the series.<br>The waveform may be wrong at these epochs.")), action = NULL, duration = 10, closeButton = T, id = "no_repeat", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         result <- result[order(result$x0),]
+                         trans$pattern <- result$avg
+                         if (messages > 0) cat(file = stderr(), mySession, "Computing periodic waveform", "\n")
+                         if (length(trans$res) > 0) {
+                           trans$mod <- trans$mod + trans$pattern
+                           trans$res <- trans$res - trans$pattern
+                         } else if (length(trans$filterRes) > 0) {
+                           trans$filter <- trans$filter + trans$pattern
+                           trans$filterRes <- trans$filterRes - trans$pattern
+                         }
+                         toplot <- !duplicated(result[,"z"])
+                         output$waveform1 <- output$waveform2 <- output$waveform3 <- renderPlot({
+                           if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
+                             if (length(trans$res) > 0) {
+                               title <- "Periodic waveform from model residuals"
+                             } else if (length(trans$filterRes) > 0) {
+                               title <- "Periodic waveform from filter residuals"
+                             }
+                             if (input$symbol == 0) {
+                               symbol <- 'p'
+                             } else if (input$symbol == 1) {
+                               symbol <- 'l'
+                             } else if (input$symbol == 2) {
+                               symbol <- 'o'
+                             }
+                             waveform <- data.frame(x = result[toplot,]$x, y = result[toplot,]$avg, sy = result[toplot,]$std)
+                             waveform <- waveform[order(waveform$x),]
+                             plot(waveform$x,waveform$y, type = symbol, pch = 20, xlab = "Epoch of period", ylab = "Average value", main = title)
+                             ba <- waveform$y + waveform$sy
+                             bb <- waveform$y - waveform$sy
+                             polygon(c(waveform$x, rev(waveform$x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
+                           }
+                         }, width = reactive(info$width))
+                         setProgress(0.7) # just for progress bar lovers
+                         Sys.sleep(1)
+                         setProgress(1)
+                         Sys.sleep(1)
+                       })
         } else {
           showNotification(HTML("The period of the waveform is not valid.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_waveform_period", type = "error", session = getDefaultReactiveDomain())
           if (length(trans$pattern) > 0) {
