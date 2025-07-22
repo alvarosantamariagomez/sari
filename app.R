@@ -10943,11 +10943,13 @@ server <- function(input,output,session) {
         shinyjs::delay(500, showNotification(HTML("The Above epoch or the top of the series is equal or smaller than the Below epoch or the bottom of the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
       }
+      all <- 0
       if (isTruthy(input$permanent)) {
         if (input$tab > 3) {
           for (comp in seq(3)) {
             index <- db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below
-            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1)) {
+            all <- all + sum(index)
+            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1) || all >= info$points) {
               showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
               req(info$stop)
             }
@@ -11001,9 +11003,11 @@ server <- function(input,output,session) {
         updateCheckboxInput(session, inputId = "permanent", value = F)
       } else {
         if (input$tab > 3) {
+          all <- 0
           for (comp in seq(3)) {
             index <- (db1[[info$db1]][[paste0("y",comp)]] > above | db1[[info$db1]][[paste0("y",comp)]] < below) & !is.na(db1[[info$db1]][[paste0("status",comp)]])
-            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1)) {
+            all <- all + sum(index)
+            if (!any((db1[[info$db1]][[paste0("status",comp)]] %in% T + !index) > 1) || all >= info$points) {
               showNotification(HTML("All the points were selected to be removed from the series.<br>Check the provided truncation limits"), action = NULL, duration = 10, closeButton = T, id = "bad_truncation", type = "warning", session = getDefaultReactiveDomain())
               req(info$stop)
             }
