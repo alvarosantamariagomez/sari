@@ -15176,16 +15176,16 @@ server <- function(input,output,session) {
         }
       }
       if (input$fitType == 2 && length(trans$res) > 0) {
+        colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
         if (isTruthy(info$scientific)) {
           OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,0))
         } else {
-          OutPut$df <- cbind(OutPut$df, format(as.numeric(sprintf("%.*f", info$decimalsy, trans$kalman)), scientific = F))
+          OutPut$df <- cbind(OutPut$df, format(apply(apply(trans$kalman, c(1, 2), sprintf, fmt = paste0("%.",info$decimalsy,"f")), c(1, 2), as.numeric), scientific = F))
         }
-        colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
         if (isTruthy(info$scientific)) {
           OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,0))
         } else {
-          OutPut$df <- cbind(OutPut$df, format(as.numeric(sprintf("%.*f", info$decimalsy, trans$kalman_unc)), scientific = F))
+          OutPut$df <- cbind(OutPut$df, format(apply(apply(trans$kalman_unc, c(1, 2), sprintf, fmt = paste0("%.",info$decimalsy,"f")), c(1, 2), as.numeric), scientific = F))
         }
       }
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
