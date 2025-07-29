@@ -2774,7 +2774,7 @@ server <- function(input,output,session) {
         x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
         rangex <- range(x)
         seriesInfo(x)
-        removed <- max(sum(db1[[info$db1]]$status1 %in% F), sum(db1[[info$db1]]$status2 %in% F), sum(db1[[info$db1]]$status3 %in% F), na.rm = T)
+        removed <- max(sum(!db1[[info$db1]]$status1 %in% T), sum(!db1[[info$db1]]$status2 %in% T), sum(!db1[[info$db1]]$status3 %in% T), na.rm = T)
       } else {
         rangex <- range(trans$x)
         removed <- info$removed
