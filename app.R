@@ -3299,12 +3299,12 @@ server <- function(input,output,session) {
     trans$x <- trans$x[status & !is.na(status)]
     trans$xe <- trans$xe[!status & !is.na(status)]
     info$removed <- length(trans$x[!status | is.na(status)])
-    trans$y <- trans$y0[!is.na(status)]
-    info$miny <- min(trans$y, na.rm = T)
-    info$maxy <- max(trans$y, na.rm = T)
+    transy <- trans$y0[!is.na(status)]
+    info$miny <- min(transy, na.rm = T)
+    info$maxy <- max(transy, na.rm = T)
     ids <- trans$x0[!is.na(status)] >= ranges$x1[1] & trans$x0[!is.na(status)] <= ranges$x1[2]
     if (sum(ids) > 0) {
-      ranges$y1 <- range(trans$y[ids], na.rm = T)
+      ranges$y1 <- range(transy[ids], na.rm = T)
       if (any(is.na(ranges$y1)) || any(is.infinite(ranges$y1))) {
         ranges$y1 <- c(info$miny, info$maxy)
       }
