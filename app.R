@@ -4756,7 +4756,8 @@ server <- function(input,output,session) {
                          trans$kalman_unc0[which(trans$kalman_unc0)] <- trans$kalman_unc
                          trans$kalman_unc0[!db1[[info$db1]][[paste0("status",input$tab)]]] <- NA
                          colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
-                         trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = F, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), 1)
+                         # trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = F, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), 1)
+                         trans$results <- psych::describe(trans$kalman, na.rm = F, interp = F, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
                          trans$kalman_info <- m
                          trans$equation <- sub("y ~","Model =",m$model)
                          end.time <- Sys.time()
@@ -15182,11 +15183,11 @@ server <- function(input,output,session) {
         } else {
           OutPut$df <- cbind(OutPut$df, format(apply(apply(trans$kalman, c(1, 2), sprintf, fmt = paste0("%.",info$decimalsy,"f")), c(1, 2), as.numeric), scientific = F))
         }
-        if (isTruthy(info$scientific)) {
+        # if (isTruthy(info$scientific)) {
           OutPut$df <- cbind(OutPut$df,formatting(trans$kalman_unc,0))
-        } else {
-          OutPut$df <- cbind(OutPut$df, format(apply(apply(trans$kalman_unc, c(1, 2), sprintf, fmt = paste0("%.",info$decimalsy,"f")), c(1, 2), as.numeric), scientific = F))
-        }
+        # } else {
+        #   OutPut$df <- cbind(OutPut$df, format(trans$kalman_unc, digits = 1, scientific = F))
+        # }
       }
       if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
         if (isTruthy(info$scientific)) {
@@ -15822,17 +15823,21 @@ server <- function(input,output,session) {
   decimalplaces <- function(x,extra) {
     if (all(is.numeric(x))) {
       info$scientific <- F
-      dif <- x - as.integer(x)
-      sort_diff <- abs(diff(sort(dif)))
-      sort_diff <- sort_diff[sort_diff != 0]
-      if (isTruthy(sort_diff)) {
-        min_diff <- format(min(sort_diff), digits = 1, scientific = F)
-        decimals <- nchar(min_diff) - 2
+      frac <- abs(x - as.integer(x))
+      frac <- frac[frac != 0]
+      fracEnt <- sub("[0-9]*\\.", "", format(frac, scientific = F))
+      decimals1 <- min(nchar(fracEnt))
+      incr <- abs(as.numeric(sprintf("%.*f", decimals1, diff(sort(frac)))))
+      incr <- incr[incr != 0]
+      if (isTruthy(incr)) {
+        min_incr <- format(min(incr), digits = 1, scientific = F)
+        decimals2 <- nchar(min_incr) - 2
+        decimals <- min(decimals1,decimals2)
         if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
           return(0)
         }
-      } else if (isempty(sort_diff)) {
-        epoch <- unique(sub("[0-9]*\\.", "", format(dif, scientific = F)))
+      } else if (isempty(incr)) {
+        epoch <- unique(fracEnt)
         if (length(epoch) == 1) {
           decimals <- nchar(epoch)
         } else {
