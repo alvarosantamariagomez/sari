@@ -5065,11 +5065,13 @@ server <- function(input,output,session) {
           listTag <- c(listTag, list(span("")))
         }
         listTag <- c(listTag, list(span("MIDAS rate estimate")))
-        listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel,1), "+/-", formatting(trans$midas_sig,1), units))))
+        formatted <- formatting(c(trans$midas_vel,trans$midas_sig),1)
+        listTag <- c(listTag, list(span(paste(formatted[1], "+/-", formatted[2], units))))
         if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
           listTag <- c(listTag, list(span("")))
           listTag <- c(listTag, list(span("MIDAS rate estimate (discontinuities skipped)")))
-          listTag <- c(listTag, list(span(paste(formatting(trans$midas_vel2,1), "+/-", formatting(trans$midas_sig2,1), units))))
+          formatted <- formatting(c(trans$midas_vel2,trans$midas_sig2),1)
+          listTag <- c(listTag, list(span(paste(formatted[1], "+/-", formatted[2], units))))
         }
       }
       # show entropy estimate
@@ -5078,7 +5080,8 @@ server <- function(input,output,session) {
           listTag <- c(listTag, list(span("")))
         }
         listTag <- c(listTag, list(span("Minimum entropy rate estimate")))
-        listTag <- c(listTag, list(span(paste(formatting(trans$entropy_vel,1), "+/-", formatting(trans$entropy_sig,1), units))))
+        formatted <- formatting(c(trans$entropy_vel,trans$entropy_sig),1)
+        listTag <- c(listTag, list(span(paste(formatted[1], "+/-", formatted[2], units))))
       }
       # show fit estimate
       if (isTruthy(info$run) && length(isolate(trans$results)) > 0) {
@@ -14905,14 +14908,18 @@ server <- function(input,output,session) {
       }
       if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
         if (isTruthy(trans$midas_vel2)) {
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,0), '+/-', formatting(trans$midas_sig,0), units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel2,0), '+/-', formatting(trans$midas_sig2,0), units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
+          formatted <- formatting(c(trans$midas_vel,trans$midas_sig),1)
+          cat(paste('# MIDAS rate:', formatted[1], '+/-', formatted[2], units, '#discontinuities included'), file = file_out, sep = "\n", fill = F, append = T)
+          formatted <- formatting(c(trans$midas_vel2,trans$midas_sig2),1)
+          cat(paste('# MIDAS rate:', formatted[1], '+/-', formatted[2], units, '#discontinuities skipped'), file = file_out, sep = "\n", fill = F, append = T)
         } else {
-          cat(paste('# MIDAS rate:', formatting(trans$midas_vel,0), '+/-', formatting(trans$midas_sig,0), units), file = file_out, sep = "\n", fill = F, append = T)
+          formatted <- formatting(c(trans$midas_vel,trans$midas_sig),1)
+          cat(paste('# MIDAS rate:', formatted[1], '+/-', formatted[2], units), file = file_out, sep = "\n", fill = F, append = T)
         }
       }
       if (isTruthy(trans$entropy_vel) && isTruthy(input$entropy)) {
-        cat(paste('# Minimum entropy rate:', formatting(trans$entropy_vel,0), '+/-', formatting(trans$entropy_sig,0), units), file = file_out, sep = "\n", fill = F, append = T)
+        formatted <- formatting(c(trans$entropy_vel,trans$entropy_sig),1)
+        cat(paste('# Minimum entropy rate:', formatted[1], '+/-', formatted[2], units), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (input$waveform && inputs$waveformPeriod > 0) {
         cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
