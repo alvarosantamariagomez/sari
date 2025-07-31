@@ -25,7 +25,7 @@
 - improving the format of the results in the downloaded file
 - improving the format of the midas/entropy velocity estimates for series in mm
 - improving the format of the statistics shown on the screen
-- hidding the blank section when the Pearson's correlation is not computed
+- hiding the blank section when the Pearson's correlation is not computed
 - adding an automatic scrolling for the plate, GIA, and fit type options
 - adding a progress bar to the periodic waveform option
 - changing the name of the FORMATER server to FORMATERRE
