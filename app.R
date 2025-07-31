@@ -454,7 +454,7 @@ options(shiny.reactlog = F)
 Sys.setenv(TZ = "UTC")
 
 # version ####
-version <- "SARI julio 2025"
+version <- "SARI agosto 2025"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
@@ -16621,7 +16621,7 @@ server <- function(input,output,session) {
     ## DORIS ####
     } else if (server == "DORIS") {
       format <- 1
-      solution <- "25wd02"
+      solution <- "25wd03"
       if (product == "ESA") {
         pattern <- "esa"
       } else if (product == "GOP") {

@@ -1,6 +1,45 @@
 # **SARI changelog**
 
 
+# agosto 2025 [2025.08]
+
+### Fixed
+- fixing an infinite loop when toggling residuals of a non-linear LS fit
+- fixing the midas estimate when there were points toggled and deleted with the truncate option
+- fixing the merging of the primary and secondary series when some points have been toggled/deleted from the primary series
+- improving the check when removing all the points with the truncate option
+- fixing the vertical offset of the secondary series in the overview plot
+- fixing the fullSeries option for the overview plot
+- fixing the number of removed points in the series summary
+- enabling the reading of the station coordinates from a local SPOTGINS series
+- isolating the circular flow of some renderUIs to avoid JS errors
+- avoiding sendCustomMessage to update several values simultaneously
+
+### Changed
+- undoing the combination of the primary and secondary series when loading a new secondary series
+- enabling the resampling of a single secondary series before plotting
+- adjusting the time axis of the residual plot when necessary
+- updating the number of removed points when deleting points on the 3D tab
+- adding the estimated LS standard error scale factor value to the downloaded file
+- disabling the Vondrak filter when there are not enough points left in the series
+- improving the format of the results in the downloaded file
+- improving the format of the midas/entropy velocity estimates for series in mm
+- improving the format of the statistics shown on the screen
+- hidding the blank section when the Pearson's correlation is not computed
+- adding an automatic scrolling for the plate, GIA, and fit type options
+- adding a progress bar to the periodic waveform option
+- changing the name of the FORMATER server to FORMATERRE
+- updating the path of the series from the RENAG server
+- replacing 'x' with 'Epoch' only in the LS model equation shown on screen
+
+### Added
+- extending the truncate option to the vertical axis of the series
+- extending the swap option to keep the removed points
+- adding the permanently deleted points in the downloaded file with the 'include in file' option
+- adding the New Zealand series from the FORMATERRE/ENS solution
+- adding the Japanese series from the FORMATERRE/UGA solution
+
+
 # julio 2025 [2025.07]
 
 ### Fixed

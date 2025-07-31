@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version julio 2025</title>
+  <title>SARI documentation - version agosto 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version julio 2025</h1>
+<h1 class="title">SARI documentation - version agosto 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 </header>
 <base target="_blank">
@@ -66,8 +66,8 @@ Currently tested in R version 4.4.3.</p>
 <p>SARI is available on all platforms, except mobile devices, and can be accessed in three ways:</p>
 <ul>
 <li>Online from the <a href="https://alvarosg.shinyapps.io/sari">Shinyapps server</a></li>
-<li>Offline, from a containerized environment available in <a href="https://hub.docker.com/r/alvarosg/sari">DockerHub</a>.</li>
-<li>Offline, after installing the code available in <a href="https://github.com/alvarosantamariagomez/sari">GitHub</a>.</li>
+<li>Offline, from a containerized environment available on <a href="https://hub.docker.com/r/alvarosg/sari">DockerHub</a>.</li>
+<li>Offline, after installing the code available on <a href="https://github.com/alvarosantamariagomez/sari">GitHub</a>.</li>
 </ul>
 <p>Depending on the way SARI is accessed, there are several ways to run SARI: bookmark on web browser, weblink, Docker Desktop, RStudio, R console or a UNIX-like console. The only requirement is to use a desktop environnment where a web browser can run.<br />
 All the different ways to run SARI are implemented in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh">SARI shell script</a>. This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click (see an example BAT file <a href="https://github.com/alvarosantamariagomez/sari/tree/main/scripts">here</a>).</p>
@@ -80,7 +80,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>julio 2025</em> – “Many machines on Ix. New machines.”</p>
+<p>Current SARI version: <em>agosto 2025</em> – “The sorcerers of antiquity called the use of this language ‘<em>spells</em>’. But if that word offends your modern sensibilities, you can call it a program.”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -126,8 +126,8 @@ When a <code>station</code> is selected, the series will be downloaded and plott
 Similar options are available for downloading a secondary series (see an example below and the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block for further details).</p></li>
 <li>The values for the <code>server</code>, <code>product</code> and <code>station</code> options can also be provided in any order as a <ins><strong>query string</strong></ins> after the base SARI URL on the address bar of the browser.<br />
 These three parameters can be defined for both the primary and secondary series at the same time. For example, adding this query string<br />
-<span style="color: red;">?product=SPOTGINS_POS&amp;station=CRAL00FRA&amp;server=FORMATER&amp;server2=NGL&amp;product2=IGS14&amp;station2=CRAL</span><br />
-at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the <em>SPOTGINS</em> GNSS position series of the station <em>CRAL00FRA</em> from the <em>FORMATER</em> server, and also the <em>NGL</em> <em>IGS14</em> series of the station <em>CRAL</em> as secondary series (see the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block).<br />
+<span style="color: red;">?product=SPOTGINS_POS&amp;station=CRAL00FRA&amp;server=FORMATERRE&amp;server2=NGL&amp;product2=IGS14&amp;station2=CRAL</span><br />
+at the end of the SARI base URL (both local on RStudio/Docker or remote on Shinyapps) will start a new SARI session, automatically upload and plot the <em>SPOTGINS</em> GNSS position series of the station <em>CRAL00FRA</em> from the <em>FORMATERRE</em> server, and also the <em>NGL</em> <em>IGS14</em> series of the station <em>CRAL</em> as secondary series (see the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block).<br />
 This feature allows webmasters of any GNSS series database to include a link on their webpages so that users can open a specific GNSS series directly with SARI on a new browser tab. Contact the <a href="#author"><a href="#author" target="_self">author</a></a> for more information.
 <p>
 </p>
@@ -168,7 +168,7 @@ file path
 <td style="text-align:left;">
 </td>
 <td style="text-align:left;">
-ENU, NEU, PBO, NGL
+ENU, NEU, PBO, NGL, SPOTGINS, 1D
 </td>
 </tr>
 <tr>
@@ -188,7 +188,7 @@ UGA
 </tr>
 <tr>
 <td style="text-align:left;">
-<a href="https://en.poleterresolide.fr/" target="_blank">FORMATER</a>
+<a href="https://en.poleterresolide.fr/" target="_blank">FORMATERRE</a>
 </td>
 <td style="text-align:center;">
 </td>

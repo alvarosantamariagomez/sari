@@ -1,6 +1,6 @@
 # Events file v2.0
 #
-# DATE            : 2025-06-30 at 14:59:17 (UTC)
+# DATE            : 2025-07-11 at 15:09:28 (UTC)
 # SITE            : 9-character site ID
 # DDDDD.DDDD      : Decimal modified Julian day
 # YYYYMMDDHRMN    : Year, month, day, hour, minute
@@ -346,6 +346,7 @@ ASPA00USA 58349.0132 201808190019 EQ     Fiji Islands Region, Mw 8.2
 ASPA00USA 59863.8438 202210112015 CHANGE Receiver change
 ASPA00USA 59961.7563 202301171809 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ASPA00USA 60074.6681 202305101602 EQ     Tonga Islands, Mw 7.6
+ASPA00USA 60849.8076 202506231923 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BHR400BHR 59508.0000 202110210000 CHANGE Receiver change
 CAGL00ITA 52101.0000 200107110000 CHANGE Receiver & Antenna change
 CAGL00ITA 53066.0000 200403020000 CHANGE Receiver change
@@ -866,6 +867,7 @@ NTUS00SGP 59906.2681 202211230626 CHANGE Other site log entry (firmware upgrade,
 NTUS00SGP 60171.7660 202308151823 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NTUS00SGP 60354.7597 202402141814 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NTUS00SGP 60683.2535 202501080605 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NTUS00SGP 60816.3174 202505210737 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NYAL00NOR 51417.0000 199908270000 CHANGE Receiver change
 NYAL00NOR 54963.5278 200905121240 CHANGE Receiver change
 NYAL00NOR 57834.5069 201703221210 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -989,6 +991,7 @@ QAQ100GRL 59227.6979 202101131645 CHANGE Other site log entry (firmware upgrade,
 QAQ100GRL 59421.9750 202107262324 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 QAQ100GRL 59831.4132 202209090955 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 QAQ100GRL 59954.7257 202301101725 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+QAQ100GRL 60821.3125 202505260730 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RIO200ARG 56209.0000 201210090000 CHANGE Receiver, Antenna & Radome change
 RIO200ARG 56300.0000 201301080000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RIO200ARG 57280.0000 201509150000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -1029,6 +1032,7 @@ SCOR00GRL 59421.9896 202107262345 CHANGE Other site log entry (firmware upgrade,
 SCOR00GRL 59466.6306 202109091508 CHANGE Antenna & Radome change
 SCOR00GRL 59830.5229 202209081233 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SCOR00GRL 60206.6181 202309191450 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SCOR00GRL 60822.4174 202505271001 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SCTB00ATA 53878.7153 200605231710 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SCTB00ATA 53880.6000 200605251424 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SCTB00ATA 55495.0000 201010260000 CHANGE Receiver & Antenna change
@@ -1210,6 +1214,7 @@ THU200GRL 59139.0000 202010170000 CHANGE Receiver change
 THU200GRL 59227.7812 202101131845 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 THU200GRL 59421.9993 202107262359 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 THU200GRL 59830.5167 202209081224 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+THU200GRL 60818.3090 202505230725 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TID100AUS 51410.0417 199908200100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TID100AUS 51632.0938 200003290215 CHANGE Receiver change
 TID100AUS 53351.0000 200412120000 CHANGE Antenna change
@@ -1671,6 +1676,7 @@ ULLO00GBR 59747.4375 202206171030 CHANGE Other site log entry (firmware upgrade,
 ULLO00GBR 60051.6146 202304171445 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ULLO00GBR 60195.5278 202309081240 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ULLO00GBR 60359.5799 202402191355 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+ULLO00GBR 60808.5556 202505131320 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VARS00NOR 50737.4674 199710161113 CHANGE Antenna & Radome change
 VARS00NOR 50980.8090 199806161925 CHANGE Antenna & Radome change
 VARS00NOR 51651.5000 200004171200 CHANGE Receiver change
@@ -1799,6 +1805,7 @@ CTGR00USA 59474.7687 202109171827 CHANGE Other site log entry (firmware upgrade,
 CTGR00USA 59550.6250 202112021500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CTGR00USA 60080.5417 202305161300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CTGR00USA 60325.6806 202401161620 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+CTGR00USA 60863.7424 202507071749 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 DARW00AUS 50265.0000 199607010000 CHANGE Radome change
 DARW00AUS 51298.0000 199904300000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 DARW00AUS 51380.4167 199907211000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -1914,6 +1921,7 @@ KIRI00KIR 52917.0000 200310050000 CHANGE Other site log entry (firmware upgrade,
 KIRI00KIR 53522.0000 200506010000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KIRI00KIR 54042.4875 200611031142 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KIRI00KIR 54540.0000 200803150000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+KIRI00KIR 55884.9375 201111192230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KIRI00KIR 55885.0417 201111200100 CHANGE Receiver, Antenna & Radome change
 KIRI00KIR 56170.1139 201208310244 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KIRI00KIR 56979.0000 201411180000 CHANGE Antenna change
@@ -1928,6 +1936,7 @@ KIRI00KIR 58910.2840 202003020649 CHANGE Other site log entry (firmware upgrade,
 KIRI00KIR 58911.0264 202003030038 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KIRI00KIR 59663.1222 202203250256 CHANGE Receiver change
 KIRI00KIR 59884.0917 202211010212 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+KIRI00KIR 60856.0000 202506300000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LAUT00FJI 53282.0000 200410040000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LAUT00FJI 54042.4875 200611031142 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LAUT00FJI 56042.0708 201204250142 CHANGE Receiver, Antenna & Radome change
@@ -2212,6 +2221,7 @@ CBE000GLP 58697.0000 201908020000 CHANGE Receiver change
 CBE000GLP 59149.6667 202010271600 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EQH200FRA 60102.4167 202306071000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EQH200FRA 60260.4167 202311121000 CHANGE Antenna change
+EQH200FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HOUE00GLP 51677.6667 200005131600 CHANGE Antenna & Radome change
 HOUE00GLP 52239.6667 200111261600 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HOUE00GLP 52341.8750 200203082100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -2233,6 +2243,7 @@ MAGT00GLP 59149.6667 202010271600 CHANGE Other site log entry (firmware upgrade,
 MPOM00MTQ 54433.7917 200711291900 EQ     Windward Islands, Mw 7.4
 MPOM00MTQ 58721.6250 201908261500 CHANGE Antenna & Radome change
 MPOM00MTQ 58786.0000 201910300000 CHANGE Receiver change
+NMTR00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SARS00FRA 59301.6250 202103281500 CHANGE Receiver change
 SLEU00REU 54552.0000 200803270000 CHANGE Receiver & Antenna change
 SLEU00REU 57652.1667 201609210400 CHANGE Antenna change
@@ -2258,7 +2269,6 @@ SAMO00WSM 59908.0250 202211250036 CHANGE Receiver change
 SAMO00WSM 60074.6681 202305101602 EQ     Tonga Islands, Mw 7.6
 SPT200ATF 56569.7264 201310041726 EQ     Mid-Indian Ridge, Mw 6.4
 SPT200ATF 59676.5000 202204071200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-SPT200ATF 60639.4167 202411251000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SPTG00ATF 56569.7264 201310041726 EQ     Mid-Indian Ridge, Mw 6.4
 SPTG00ATF 56743.5000 201403271200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SPTG00ATF 58226.5000 201804181200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -2455,6 +2465,7 @@ AND100NOR 59840.2917 202209180700 CHANGE Receiver change
 AND100NOR 60598.4306 202410151020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ANGL00FRA 55476.6667 201010071600 CHANGE Receiver, Antenna & Radome change
 ANGL00FRA 58109.5000 201712221200 CHANGE Receiver change
+ANGL00FRA 60852.5000 202506261200 CHANGE Receiver change
 ANLX00GBR 54965.5312 200905141245 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ANLX00GBR 55182.5056 200912171208 CHANGE Receiver change
 ANLX00GBR 55580.6042 201101191430 CHANGE Receiver change
@@ -2485,6 +2496,9 @@ AUKT00NZL 59277.5604 202103041327 EQ     Off E. Coast Of N. Islan, Mw 7.2
 AUKT00NZL 59827.9271 202209052215 CHANGE Receiver change
 AUKT00NZL 59861.9757 202210092325 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUKT00NZL 60033.0007 202303300001 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+AUKT00NZL 60452.9750 202405222324 CHANGE Antenna change
+AUKT00NZL 60507.1014 202407160226 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+AUKT00NZL 60753.9861 202503192340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUT100GRC 53783.0000 200602170000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUT100GRC 53802.0000 200603080000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUT100GRC 53808.4132 200603140955 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -2530,6 +2544,7 @@ BARH00USA 60067.7667 202305031824 CHANGE Other site log entry (firmware upgrade,
 BARH00USA 60144.4688 202307191115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BARH00USA 60354.8438 202402142015 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BARH00USA 60789.6292 202504241506 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BARH00USA 60809.5458 202505141306 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BCL100ESP 57804.5833 201702201400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BCL100ESP 59311.0000 202104070000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BCL100ESP 60115.5417 202306201300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -2643,6 +2658,7 @@ CABL00USA 59246.6257 202102011501 CHANGE Other site log entry (firmware upgrade,
 CABL00USA 59435.6674 202108091601 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CABL00USA 59577.7924 202112291901 CHANGE Antenna change
 CABL00USA 59961.7507 202301171801 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+CABL00USA 60803.3340 202505080801 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CACC00USA 53536.1181 200506150250 EQ     Off Coast Of Northern Ca, Mw 7.2
 CACC00USA 55206.0187 201001100027 EQ     Near Coast Of Northern C, Mw 6.5
 CACC00USA 56216.8250 201210161948 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -2657,6 +2673,7 @@ CACC00USA 58977.0028 202005080004 CHANGE Other site log entry (firmware upgrade,
 CACC00USA 59355.9215 202105212207 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CACC00USA 60373.9757 202403042325 CHANGE Receiver change
 CACC00USA 60649.7806 202412051844 EQ     Near Coast Of Northern C, Mw 7.0
+CACC00USA 60842.8472 202506162020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAGZ00ITA 52862.0000 200308110000 CHANGE Receiver change
 CAGZ00ITA 53103.0000 200404080000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAGZ00ITA 53142.4583 200405171100 CHANGE Receiver change
@@ -2685,6 +2702,7 @@ CANT00ESP 60108.5000 202306131200 CHANGE Other site log entry (firmware upgrade,
 CANT00ESP 60115.0000 202306200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CANT00ESP 60150.4583 202307251100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CANT00ESP 60717.5000 202502111200 CHANGE Receiver change
+CANT00ESP 60801.5000 202505061200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CARF00GBR 54585.4486 200804291046 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CARI00IND 53365.0403 200412260058 EQ     Off W Coast Of Northern, Mw 9.0
 CARI00IND 53575.6542 200507241542 EQ     Nicobar Islands, India R, Mw 7.2
@@ -2772,6 +2790,7 @@ COST00ROU 60649.5472 202412051308 CHANGE Other site log entry (firmware upgrade,
 COUD00FRA 55448.3750 201009090900 CHANGE Receiver, Antenna & Radome change
 COUD00FRA 57989.5417 201708241300 CHANGE Receiver change
 CRAU00FRA 58527.3333 201902130800 CHANGE Antenna change
+CRAU00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CRHS00USA 51409.0000 199908190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CRHS00USA 51842.0000 200010250000 CHANGE Antenna change
 CRHS00USA 53956.7708 200608091830 CHANGE Receiver change
@@ -3055,6 +3074,7 @@ GARI00ITA 57294.6250 201509291500 CHANGE Other site log entry (firmware upgrade,
 GARI00ITA 58585.6250 201904121500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GARI00ITA 59264.4167 202102191000 CHANGE Receiver change
 GARI00ITA 59849.6667 202209271600 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GARI00ITA 60727.0000 202502210000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GB1G00REU 58372.2396 201809110545 CHANGE Receiver & Antenna change
 GBNG00REU 55855.2701 201110210629 CHANGE Receiver change
 GBNG00REU 55869.0000 201111040000 CHANGE Receiver change
@@ -3522,6 +3542,8 @@ HOL200DEU 59641.2583 202203030612 CHANGE Other site log entry (firmware upgrade,
 HOL200DEU 59827.4736 202209051122 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HOL200DEU 59984.3958 202302090930 CHANGE Receiver change
 HOL200DEU 60355.3958 202402150930 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+HOL200DEU 60807.3333 202505120800 CHANGE Receiver change
+HOL200DEU 60810.6250 202505151500 CHANGE Receiver change
 HOLB00CAN 48872.9167 199209072200 CHANGE Receiver change
 HOLB00CAN 49020.1250 199302020300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HOLB00CAN 49162.8813 199306242109 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -3607,6 +3629,7 @@ IAAI00NCL 60083.1229 202305190257 EQ     Southeast Of Loyalty Isl, Mw 7.7
 IAAI00NCL 60285.5389 202312071256 EQ     Vanuatu Islands, Mw 7.0
 IAAI00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 IAAI00NCL 60661.0743 202412170147 EQ     Vanuatu Islands, Mw 7.3
+IAAI00NCL 60858.0000 202507020000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 IBIZ00ESP 57644.4583 201609131100 CHANGE Receiver change
 IBIZ00ESP 57804.5833 201702201400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 IBIZ00ESP 57807.5000 201702231200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -3946,6 +3969,7 @@ MAKO00NZL 58792.8660 201911052047 CHANGE Receiver change
 MAKO00NZL 59120.1562 202009280345 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MAKO00NZL 59277.5604 202103041327 EQ     Off E. Coast Of N. Islan, Mw 7.2
 MAKO00NZL 59863.8549 202210112031 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MAKO00NZL 60739.1417 202503050324 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MAL100ESP 57804.5833 201702201400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MAL100ESP 59311.0000 202104070000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MAL100ESP 60115.4590 202306201101 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -4083,6 +4107,7 @@ MEMA00USA 59893.0069 202211100010 CHANGE Other site log entry (firmware upgrade,
 MEMA00USA 60104.7500 202306091800 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MEMA00USA 60242.2632 202310250619 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MEMA00USA 60733.0000 202502270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MEMA00USA 60815.9889 202505202344 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MGL000GLP 53330.4868 200411211141 EQ     Leeward Islands, Mw 6.3
 MGL000GLP 54433.7917 200711291900 EQ     Windward Islands, Mw 7.4
 MGL000GLP 58093.0000 201712060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -4126,7 +4151,8 @@ MUTG00WLF 59777.0000 202207170000 CHANGE Receiver change
 MUTG00WLF 60074.6681 202305101602 EQ     Tonga Islands, Mw 7.6
 MZAN00FRA 58708.3229 201908130745 CHANGE Receiver change
 MZAN00FRA 60445.0000 202405150000 CHANGE Receiver change
-MZAN00FRA 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MZAN00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MZAN00FRA 60856.0000 202506300000 CHANGE Antenna change
 NAPL00USA 53837.0000 200604120000 CHANGE Receiver change
 NAPL00USA 54341.0000 200708290000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NAPL00USA 55974.0000 201202170000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -4672,6 +4698,7 @@ POOL00GBR 59746.6319 202206161510 CHANGE Other site log entry (firmware upgrade,
 POOL00GBR 60051.4062 202304170945 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 POOL00GBR 60191.5590 202309041325 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 POOL00GBR 60356.4444 202402161040 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+POOL00GBR 60808.3542 202505130830 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PORO00MYT 59178.5160 202011251223 CHANGE Receiver change
 POUM00NCL 55370.0000 201006230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 POUM00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region, Mw 7.3
@@ -5020,7 +5047,8 @@ SHOE00GBR 55461.4514 201009221050 CHANGE Other site log entry (firmware upgrade,
 SHOE00GBR 55650.6382 201103301519 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SHOE00GBR 56826.4375 201406181030 CHANGE Receiver change
 SHOE00GBR 57184.3299 201506110755 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-SHOE00GBR 58414.3576 201810230835 CHANGE Receiver change
+SHOE00GBR 58374.4757 201809131125 CHANGE Receiver change
+SHOE00GBR 58414.3576 201810230835 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SHOE00GBR 58759.3403 201910030810 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SHOE00GBR 58907.4236 202002281010 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SHOE00GBR 58982.5069 202005131210 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -5031,6 +5059,7 @@ SHOE00GBR 59747.3715 202206170855 CHANGE Other site log entry (firmware upgrade,
 SHOE00GBR 60051.4549 202304171055 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SHOE00GBR 60191.6181 202309041450 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SHOE00GBR 60395.3646 202403260845 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SHOE00GBR 60808.3993 202505130935 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SIO500USA 52648.0000 200301090000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SIO500USA 53277.0000 200409290000 CHANGE Antenna change
 SIO500USA 53383.0000 200501130000 CHANGE Antenna change
@@ -5246,6 +5275,7 @@ TGBF00DEU 59873.3646 202210210845 CHANGE Other site log entry (firmware upgrade,
 TGBF00DEU 60052.2208 202304180518 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBF00DEU 60312.5375 202401031254 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBF00DEU 60482.2042 202406210454 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGBF00DEU 60808.2840 202505130649 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGDE00NOR 54844.0000 200901130000 CHANGE Receiver change
 TGDE00NOR 56070.0000 201205230000 CHANGE Receiver change
 TGDE00NOR 56867.0000 201407290000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -5643,6 +5673,7 @@ VIKH00VIR 55518.6229 201011181457 CHANGE Other site log entry (firmware upgrade,
 VIKH00VIR 56349.6847 201302261626 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VIKH00VIR 58864.7222 202001161720 CHANGE Receiver & Antenna change
 VIKH00VIR 60325.7222 202401161720 CHANGE Receiver change
+VIKH00VIR 60849.7861 202506231852 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VIS000SWE 49200.0007 199308010001 CHANGE Receiver change
 VIS000SWE 49645.0000 199410200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VIS000SWE 49869.0000 199506010000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -5751,6 +5782,8 @@ WARN00DEU 59641.3056 202203030720 CHANGE Other site log entry (firmware upgrade,
 WARN00DEU 59983.4160 202302080959 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WARN00DEU 60355.4090 202402150949 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WARN00DEU 60800.2500 202505050600 CHANGE Receiver change
+WARN00DEU 60832.3549 202506060831 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WARN00DEU 60849.4583 202506231100 CHANGE Receiver change
 WEL100NZL 51764.0000 200008080000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WEL100NZL 51875.0000 200011270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WEL100NZL 52114.0000 200107240000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -5774,17 +5807,21 @@ WEYB00GBR 59747.6389 202206171520 CHANGE Other site log entry (firmware upgrade,
 WEYB00GBR 60051.6493 202304171535 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WEYB00GBR 60195.5556 202309081320 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WEYB00GBR 60359.6042 202402191430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WEYB00GBR 60808.5903 202505131410 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 50314.9257 199608192213 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 51342.6958 199906131642 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-WGTN00NZL 51493.0000 199911110000 CHANGE Radome change
+WGTN00NZL 51492.2389 199911100544 CHANGE Radome change
 WGTN00NZL 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 WGTN00NZL 53450.0833 200503210200 CHANGE Receiver, Antenna & Radome change
-WGTN00NZL 53846.0000 200604210000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTN00NZL 53845.4840 200604201137 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTN00NZL 53845.5993 200604201423 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 54207.9479 200704172245 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTN00NZL 54789.5806 200811191356 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 55514.9410 201011142235 CHANGE Receiver & Antenna change
 WGTN00NZL 56494.2146 201307210509 EQ     Cook Strait, New Zealand, Mw 6.5
 WGTN00NZL 56520.1049 201308160231 EQ     Cook Strait, New Zealand, Mw 6.5
-WGTN00NZL 57232.7083 201507291700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTN00NZL 57230.7597 201507271814 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTN00NZL 57232.7139 201507291708 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 57552.2931 201606130702 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 57651.3424 201609200813 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 57705.4597 201611131102 EQ     South Island, New Zealan, Mw 7.8
@@ -5794,6 +5831,7 @@ WGTN00NZL 58332.9361 201808022228 CHANGE Other site log entry (firmware upgrade,
 WGTN00NZL 58893.0528 202002140116 CHANGE Receiver & Antenna change
 WGTN00NZL 58946.9785 202004072329 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTN00NZL 59114.4021 202009220939 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTN00NZL 60776.0583 202504110124 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTT00NZL 51532.0000 199912200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTT00NZL 51549.0000 200001060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTT00NZL 51695.0000 200005310000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -5810,6 +5848,9 @@ WGTT00NZL 57705.4597 201611131102 EQ     South Island, New Zealan, Mw 7.8
 WGTT00NZL 58553.0722 201903110144 CHANGE Receiver change
 WGTT00NZL 58912.9701 202003042317 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WGTT00NZL 59105.9201 202009132205 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+WGTT00NZL 60506.0562 202407150121 CHANGE Receiver change
+WGTT00NZL 60507.1313 202407160309 CHANGE Antenna & Radome change
+WGTT00NZL 60754.1465 202503200331 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WHNG00NZL 53293.0000 200410150000 CHANGE Receiver change
 WHNG00NZL 53779.0417 200602130100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 WHNG00NZL 54012.9993 200610042359 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6120,12 +6161,14 @@ KULL00GRL 58346.4590 201808161101 CHANGE Receiver change
 KULL00GRL 59114.0000 202009220000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59121.7083 202009291700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59162.3958 202011090930 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+KULL00GRL 59226.6250 202101121500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59257.6965 202102121643 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59265.3278 202102200752 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59413.6507 202107181537 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59431.7083 202108051700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59473.3083 202109160724 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KULL00GRL 59829.5583 202209071324 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+KULL00GRL 60830.4750 202506041124 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PLPK00GRL 55431.0000 201008230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PLPK00GRL 56166.5840 201208271401 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PLPK00GRL 56166.6472 201208271532 CHANGE Antenna change
@@ -6162,7 +6205,7 @@ TGLO00DEU 59638.4458 202202281042 CHANGE Other site log entry (firmware upgrade,
 TGLO00DEU 59800.3076 202208090723 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGLO00DEU 60011.5014 202303081202 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGLO00DEU 60375.3806 202403060908 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGLO00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGLO00DEU 60808.2861 202505130652 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGGO00DEU 58172.2625 201802230618 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGGO00DEU 58336.3819 201808060910 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGGO00DEU 58420.4292 201810291018 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6187,7 +6230,7 @@ TGOD00DEU 59871.2347 202210190538 CHANGE Other site log entry (firmware upgrade,
 TGOD00DEU 60005.2597 202303020614 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGOD00DEU 60296.2660 202312180623 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGOD00DEU 60376.3424 202403070813 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGOD00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGOD00DEU 60811.2431 202505160550 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGOR00DEU 56474.6250 201307011500 CHANGE Receiver change
 TGOR00DEU 56537.6250 201309021500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGOR00DEU 56583.6250 201310181500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6211,6 +6254,7 @@ TGOR00DEU 59872.2236 202210200522 CHANGE Other site log entry (firmware upgrade,
 TGOR00DEU 60004.6521 202303011539 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGOR00DEU 60625.6146 202411111445 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGOR00DEU 60689.4583 202501141100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGOR00DEU 60811.2437 202505160551 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGST00DEU 57706.4806 201611141132 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGST00DEU 57807.3486 201702230822 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGST00DEU 57839.2736 201703270634 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6246,6 +6290,7 @@ TGW200DEU 60006.4312 202303031021 CHANGE Other site log entry (firmware upgrade,
 TGW200DEU 60264.3687 202311160851 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGW200DEU 60376.3618 202403070841 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGW200DEU 60758.4583 202503241100 CHANGE Antenna change
+TGW200DEU 60804.5125 202505091218 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWD00DEU 57041.4167 201501191000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWD00DEU 57702.3750 201611100900 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWD00DEU 57784.2917 201701310700 CHANGE Receiver change
@@ -6263,6 +6308,7 @@ TGWD00DEU 59870.4097 202210180950 CHANGE Other site log entry (firmware upgrade,
 TGWD00DEU 60011.2299 202303080531 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWD00DEU 60296.2687 202312180627 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWD00DEU 60376.3528 202403070828 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGWD00DEU 60807.3576 202505120835 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGAL00DEU 58814.4653 201911271110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGAL00DEU 59387.3319 202106220758 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGCA00DEU 59387.5507 202106221313 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6272,7 +6318,7 @@ TGCA00DEU 59793.5729 202208021345 CHANGE Other site log entry (firmware upgrade,
 TGCA00DEU 60011.2347 202303080538 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGCA00DEU 60292.6639 202312141556 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGCA00DEU 60375.3757 202403060901 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGCA00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGCA00DEU 60810.5694 202505151340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGFO00DEU 58421.3521 201810300827 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGFO00DEU 59388.3319 202106230758 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGFO00DEU 59527.4306 202111091020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6281,7 +6327,7 @@ TGFO00DEU 59872.2278 202210200528 CHANGE Other site log entry (firmware upgrade,
 TGFO00DEU 60011.2396 202303080545 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGFO00DEU 60199.3750 202309120900 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGFO00DEU 60375.3792 202403060906 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGFO00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGFO00DEU 60811.2694 202505160628 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWY00DEU 58814.3417 201911270812 CHANGE Receiver change
 TGWY00DEU 59389.3708 202106240854 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWY00DEU 59529.5944 202111111416 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6290,7 +6336,7 @@ TGWY00DEU 59870.4132 202210180955 CHANGE Other site log entry (firmware upgrade,
 TGWY00DEU 60005.5139 202303021220 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWY00DEU 60296.2924 202312180701 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWY00DEU 60376.3563 202403070833 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGWY00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGWY00DEU 60811.2437 202505160551 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGKS00DEU 58014.2972 201709180708 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGKS00DEU 58172.2625 201802230618 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGKS00DEU 58336.3125 201808060730 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6312,7 +6358,7 @@ TGBB00DEU 59792.5090 202208011213 CHANGE Other site log entry (firmware upgrade,
 TGBB00DEU 60052.2215 202304180519 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBB00DEU 60293.6014 202312151426 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBB00DEU 60375.3639 202403060844 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGBB00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGBB00DEU 60810.5674 202505151337 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PBAY00USA 52581.9250 200211032212 EQ     Central Alaska, Mw 7.8
 PBAY00USA 55733.9875 201106212342 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PBAY00USA 56280.8958 201212192130 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6571,21 +6617,23 @@ ESAP00DEU 59788.2306 202207280532 CHANGE Other site log entry (firmware upgrade,
 ESAP00DEU 59906.4174 202211231001 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ESAP00DEU 60297.3729 202312190857 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ESAP00DEU 60374.4688 202403051115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-ESAP00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+ESAP00DEU 60807.3486 202505120822 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MARI00DEU 60005.3653 202303020846 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MARI00DEU 60292.5986 202312141422 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MARI00DEU 60375.3549 202403060831 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-MARI00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MARI00DEU 60803.4965 202505081155 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GOIE00DEU 59988.3965 202302130931 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GOIE00DEU 60228.3514 202310110826 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GOIE00DEU 60381.3750 202403120900 CHANGE Antenna change
+GOIE00DEU 60804.3125 202505090730 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUDE00DEU 59792.3451 202208010817 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUDE00DEU 60005.3660 202303020847 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUDE00DEU 60299.4500 202312211048 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUDE00DEU 60381.5125 202403121218 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+RUDE00DEU 60803.4993 202505081159 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SPIE00DEU 60005.3646 202303020845 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SPIE00DEU 60361.3563 202402210833 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-SPIE00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SPIE00DEU 60808.2750 202505130636 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PNNL00USA 59788.8958 202207282130 CHANGE Antenna change
 CLUM00AUS 58591.0000 201904180000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CLUM00AUS 58888.9833 202002092336 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -7220,6 +7268,8 @@ LERI00GBR 59641.5486 202203031310 CHANGE Receiver change
 LERI00GBR 59746.4514 202206161050 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LERI00GBR 60047.6562 202304131545 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LERI00GBR 60188.5799 202309011355 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LERI00GBR 60345.5972 202402051420 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LERI00GBR 60803.6111 202505081440 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SWTG00GBR 54035.0000 200610270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SWTG00GBR 54810.0000 200812100000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SWTG00GBR 56608.0000 201311120000 CHANGE Receiver, Antenna & Radome change
@@ -7357,6 +7407,7 @@ SUR400EST 56432.4396 201305201033 CHANGE Other site log entry (firmware upgrade,
 SUR400EST 57128.5250 201504161236 CHANGE Receiver change
 SUR400EST 57330.8785 201511042105 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SUR400EST 57450.4583 201603031100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SUR400EST 57498.7917 201604201900 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SUR400EST 57540.7500 201606011800 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SUR400EST 57708.7083 201611161700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SUR400EST 57835.7083 201703231700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -7372,6 +7423,7 @@ SUR400EST 59800.5000 202208091200 CHANGE Other site log entry (firmware upgrade,
 SUR400EST 59949.5000 202301051200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SUR400EST 60151.2917 202307260700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SUR400EST 60445.3125 202405150730 CHANGE Receiver change
+SUR400EST 60838.4167 202506121000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MUS200EST 56799.5000 201405221200 CHANGE Receiver, Antenna & Radome change
 MUS200EST 57455.5417 201603081300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MUS200EST 58430.5000 201811081200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -7389,6 +7441,7 @@ MUS200EST 59948.5000 202301041200 CHANGE Other site log entry (firmware upgrade,
 MUS200EST 60150.5417 202307251300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MUS200EST 60443.4167 202405131000 CHANGE Receiver change
 MUS200EST 60594.3125 202410110730 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MUS200EST 60829.3750 202506030900 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MUST00EST 54587.0000 200805010000 CHANGE Receiver change
 GESR00DNK 53537.4167 200506161000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GESR00DNK 53652.0000 200510090000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -7965,6 +8018,7 @@ VAGP00USA 59505.8569 202110182034 CHANGE Other site log entry (firmware upgrade,
 VAGP00USA 59549.0174 202112010025 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VAGP00USA 59677.8778 202204082104 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VAGP00USA 60353.7792 202402131842 CHANGE Receiver change
+VAGP00USA 60849.7528 202506231804 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HARV00USA 48799.0000 199206260000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HARV00USA 48833.0000 199207300000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HARV00USA 48888.0000 199209230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8147,6 +8201,8 @@ CHIN00USA 58876.7986 202001281910 EQ     Cuba Region, Mw 7.7
 CHIN00USA 58920.5833 202003121400 CHANGE Receiver change
 CHIN00USA 59388.7951 202106231905 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CHIN00USA 59961.7479 202301171757 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+CHIN00USA 60814.7375 202505191742 CHANGE Antenna & Radome change
+CHIN00USA 60842.8250 202506161948 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KYW500USA 54895.0000 200903050000 CHANGE Receiver change
 KYW500USA 58876.7986 202001281910 EQ     Cuba Region, Mw 7.7
 CHA100USA 50434.0000 199612170000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8269,6 +8325,7 @@ PBOT00AUS 59347.1319 202105130310 CHANGE Antenna & Radome change
 PBOT00AUS 59423.2646 202107280621 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PBOT00AUS 60297.2757 202312190637 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PBOT00AUS 60698.3201 202501230741 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PBOT00AUS 60852.0250 202506260036 CHANGE Receiver change
 FTD200AUS 60157.1215 202308010255 CHANGE Receiver change
 FTD200AUS 60262.3181 202311140738 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 UNW200AUS 58427.0590 201811050125 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8278,6 +8335,7 @@ UNW200AUS 59423.4160 202107280959 CHANGE Other site log entry (firmware upgrade,
 UNW200AUS 60297.2611 202312190616 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 UNW200AUS 60653.0868 202412090205 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 UNW200AUS 60698.2861 202501230652 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+UNW200AUS 60852.0938 202506260215 CHANGE Receiver change
 MLHD00IRL 59611.0000 202202010000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MLHD00IRL 59926.8750 202212132100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TERC00PRT 54944.5104 200904231215 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8308,7 +8366,7 @@ TGCU00DEU 59785.2431 202207250550 CHANGE Other site log entry (firmware upgrade,
 TGCU00DEU 60012.4562 202303091057 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGCU00DEU 60271.5688 202311231339 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGCU00DEU 60394.4597 202403251102 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGCU00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGCU00DEU 60810.5694 202505151340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGZU00DEU 58814.4215 201911271007 CHANGE Receiver change
 TGZU00DEU 59395.5458 202106301306 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGZU00DEU 59556.2896 202112080657 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8370,7 +8428,7 @@ TGBH00DEU 59633.2840 202202230649 CHANGE Other site log entry (firmware upgrade,
 TGBH00DEU 60006.3896 202303030921 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBH00DEU 60292.6736 202312141610 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBH00DEU 60375.3660 202403060847 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGBH00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGBH00DEU 60810.5688 202505151339 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBU00DEU 55390.6250 201007131500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBU00DEU 57190.2500 201506170600 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBU00DEU 57933.5000 201706291200 CHANGE Receiver change
@@ -8386,7 +8444,7 @@ TGBU00DEU 59793.3076 202208020723 CHANGE Other site log entry (firmware upgrade,
 TGBU00DEU 60005.5139 202303021220 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBU00DEU 60318.6104 202401091439 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGBU00DEU 60383.4528 202403141052 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGBU00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGBU00DEU 60807.3479 202505120821 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGD200DEU 55389.6250 201007121500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGD200DEU 56693.6250 201402051500 CHANGE Receiver change
 TGD200DEU 56911.6250 201409111500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8411,6 +8469,7 @@ TGD200DEU 59886.3229 202211030745 CHANGE Other site log entry (firmware upgrade,
 TGD200DEU 60046.4257 202304121013 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGD200DEU 60312.5424 202401031301 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGD200DEU 60528.5097 202408061214 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGD200DEU 60808.2833 202505130648 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGDA00DEU 55389.6250 201007121500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGDA00DEU 56813.6250 201406051500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGDA00DEU 57036.6667 201501141600 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8427,7 +8486,7 @@ TGDA00DEU 59793.3285 202208020753 CHANGE Other site log entry (firmware upgrade,
 TGDA00DEU 60011.2424 202303080549 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGDA00DEU 60299.4569 202312211058 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGDA00DEU 60389.3132 202403200731 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGDA00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGDA00DEU 60807.3500 202505120824 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGEM00DEU 55390.6250 201007131500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGEM00DEU 55568.6250 201101071500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGEM00DEU 57043.5417 201501211300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8448,7 +8507,7 @@ TGEM00DEU 59878.2958 202210260706 CHANGE Other site log entry (firmware upgrade,
 TGEM00DEU 60033.5819 202303301358 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGEM00DEU 60312.5403 202401031258 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGEM00DEU 60375.3764 202403060902 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGEM00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGEM00DEU 60808.2840 202505130649 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGKN00DEU 54773.6250 200811031500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGKN00DEU 55420.6250 201008121500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGKN00DEU 55538.5000 201012081200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8471,7 +8530,7 @@ KNOC00DEU 59870.4215 202210181007 CHANGE Other site log entry (firmware upgrade,
 KNOC00DEU 60004.3104 202303010727 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KNOC00DEU 60312.5340 202401031249 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KNOC00DEU 60374.4924 202403051149 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-KNOC00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+KNOC00DEU 60808.2722 202505130632 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGME00DEU 55389.6250 201007121500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGME00DEU 55706.6250 201105251500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGME00DEU 55741.6250 201106291500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8520,7 +8579,7 @@ TGWV00DEU 59849.4201 202209271005 CHANGE Other site log entry (firmware upgrade,
 TGWV00DEU 60011.4354 202303081027 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWV00DEU 60296.2715 202312180631 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGWV00DEU 60376.4062 202403070945 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TGWV00DEU 60480.0000 202406190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGWV00DEU 60804.4875 202505091142 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TN0100ESP 59082.5000 202008211200 CHANGE Receiver change
 TN0100ESP 59206.5000 202012231200 CHANGE Antenna & Radome change
 TN0100ESP 59372.5000 202106071200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -8742,6 +8801,7 @@ AKSI00USA 59770.6424 202207101525 CHANGE Other site log entry (firmware upgrade,
 AKSI00USA 59793.6111 202208021440 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AKSI00USA 60292.7222 202312141720 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AKSI00USA 60502.7000 202407111648 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+AKSI00USA 60837.9299 202506112219 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PTSG00USA 52465.0000 200207100000 CHANGE Receiver change
 PTSG00USA 52744.0000 200304150000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PTSG00USA 52975.0000 200312020000 CHANGE Receiver change
@@ -8939,6 +8999,7 @@ AKSE00USA 58141.3965 201801230931 EQ     Gulf Of Alaska, Mw 7.9
 AKSE00USA 59233.9250 202101192212 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AKSE00USA 59536.8715 202111182055 CHANGE Receiver change
 AKSE00USA 59961.7660 202301171823 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+AKSE00USA 60842.8188 202506161939 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 OXUM00MEX 56611.7090 201311151701 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 OXUM00MEX 57415.7090 201601281701 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 OXUM00MEX 57415.7097 201601281702 CHANGE Antenna change
@@ -9069,6 +9130,7 @@ ZEEB00BEL 58178.4583 201803011100 CHANGE Receiver change
 ZEEB00BEL 58576.6250 201904031500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ZEEB00BEL 59662.5417 202203241300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ZEEB00BEL 60360.5000 202402201200 CHANGE Receiver change
+ZEEB00BEL 60814.6250 202505191500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAM200MEX 51347.0000 199906180000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAM200MEX 51411.0000 199908210000 CHANGE Receiver change
 CAM200MEX 51446.0000 199909250000 CHANGE Antenna change
@@ -9278,8 +9340,8 @@ YMBA00AUS 59851.3472 202209290820 CHANGE Other site log entry (firmware upgrade,
 YMBA00AUS 60026.3368 202303230805 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 YMBA00AUS 60262.3319 202311140758 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MBCH00AUS 59102.0819 202009100158 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-MBCH00AUS 59450.4583 202108241100 CHANGE Radome change
-MBCH00AUS 60453.0049 202405230007 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MBCH00AUS 59450.4583 202108241100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MBCH00AUS 60453.0049 202405230007 CHANGE Radome change
 WEIP00AUS 56329.0000 201302060000 CHANGE Receiver change
 WEIP00AUS 56356.0000 201303050000 CHANGE Antenna change
 WEIA00AUS 60121.1576 202306260347 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -9809,6 +9871,7 @@ DELZ00NLD 59872.4632 202210201107 CHANGE Other site log entry (firmware upgrade,
 DELZ00NLD 59905.6681 202211221602 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 DELZ00NLD 60088.3785 202305240905 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 DELZ00NLD 60258.4583 202311101100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+DELZ00NLD 60859.4729 202507031121 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HARL00NLD 59813.4722 202208221120 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HARL00NLD 60212.6125 202309251442 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HARL00NLD 60388.9132 202403192155 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -9845,8 +9908,10 @@ VEUR00BEL 59474.5278 202109171240 CHANGE Other site log entry (firmware upgrade,
 VEUR00BEL 59856.4583 202210041100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VEUR00BEL 60394.3750 202403250900 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VEUR00BEL 60440.3333 202405100800 CHANGE Receiver change
+VEUR00BEL 60814.6250 202505191500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SLAD00AUS 59268.2625 202102230618 CHANGE Receiver change
 SLAD00AUS 60662.0000 202412180000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SLAD00AUS 60824.0000 202505290000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MRT800AUS 58592.0000 201904190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MRT800AUS 60270.1840 202311220425 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MRT800AUS 60622.4375 202411081030 CHANGE Receiver change
@@ -9872,6 +9937,8 @@ KARU00AUS 59897.1764 202211140414 CHANGE Other site log entry (firmware upgrade,
 CRNS00AUS 59051.2528 202007210604 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CRNS00AUS 59787.3104 202207270727 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CRNS00AUS 60662.0000 202412180000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+CRNS00AUS 60782.0000 202504170000 CHANGE Antenna change
+CRNS00AUS 60824.0000 202505290000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 8GRD00AUS 59752.7028 202206221652 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 8GRD00AUS 59796.6132 202208051443 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 8GRD00AUS 59854.9472 202210022244 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -9891,6 +9958,7 @@ MCHY00AUS 59810.0528 202208190116 CHANGE Other site log entry (firmware upgrade,
 MCHY00AUS 60300.0000 202312220000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MCHY00AUS 60326.0000 202401170000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MCHY00AUS 60664.0000 202412200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MCHY00AUS 60824.0000 202505290000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MOSS00AUS 60121.0618 202306260129 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ALPA00COL 57315.6632 201510201555 CHANGE Receiver & Antenna change
 PTRF00CAN 54395.8125 200710221930 CHANGE Receiver change
@@ -10114,6 +10182,7 @@ KARD00EST 59800.5000 202208091200 CHANGE Other site log entry (firmware upgrade,
 KARD00EST 59948.5000 202301041200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KARD00EST 60150.4167 202307251000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KARD00EST 60493.5833 202407021400 CHANGE Receiver change
+KARD00EST 60857.4167 202507011000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMM100EST 58430.5000 201811081200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMM100EST 58751.5833 201909251400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMM100EST 58939.5000 202003311200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10123,6 +10192,7 @@ EMM100EST 59800.5000 202208091200 CHANGE Other site log entry (firmware upgrade,
 EMM100EST 59948.5000 202301041200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMM100EST 60150.2917 202307250700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMM100EST 60493.5208 202407021230 CHANGE Receiver change
+EMM100EST 60857.5833 202507011400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUDR00EST 57127.5417 201504151300 CHANGE Receiver change
 AUDR00EST 57903.5417 201705301300 CHANGE Antenna & Radome change
 AUDR00EST 58430.5000 201811081200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10134,6 +10204,7 @@ AUDR00EST 59800.5000 202208091200 CHANGE Other site log entry (firmware upgrade,
 AUDR00EST 59948.5000 202301041200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUDR00EST 60150.2917 202307250700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUDR00EST 60466.3333 202406050800 CHANGE Receiver change
+AUDR00EST 60843.5000 202506171200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KURE00EST 54753.4000 200810140936 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KURE00EST 54993.2500 200906110600 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 KURE00EST 54999.5000 200906171200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10171,6 +10242,7 @@ HANI00EST 59800.5000 202208091200 CHANGE Other site log entry (firmware upgrade,
 HANI00EST 59948.5000 202301041200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HANI00EST 60150.2917 202307250700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HANI00EST 60466.4167 202406051000 CHANGE Receiver change
+HANI00EST 60844.2917 202506180700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUHN00EST 58430.5000 201811081200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUHN00EST 58753.5833 201909271400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RUHN00EST 58940.6250 202004011500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10240,6 +10312,7 @@ MUJA00EST 59800.5000 202208091200 CHANGE Other site log entry (firmware upgrade,
 MUJA00EST 59948.5000 202301041200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MUJA00EST 60150.5417 202307251300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MUJA00EST 60523.4167 202408011000 CHANGE Receiver change
+MUJA00EST 60866.2917 202507100700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 DUPT00ATA 55846.0000 201110120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 DUPT00ATA 56224.3340 201210240801 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LNGS00ESP 60374.5000 202403051200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10272,6 +10345,7 @@ AASI00GRL 59225.9167 202101112200 CHANGE Other site log entry (firmware upgrade,
 AASI00GRL 59413.6042 202107181430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AASI00GRL 59828.8069 202209061922 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AAS200GRL 59828.7986 202209061910 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+AAS200GRL 60822.3542 202505270830 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ILUL00GRL 53767.7083 200602011700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ILUL00GRL 53886.6174 200605311449 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ILUL00GRL 54719.5854 200809101403 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10291,6 +10365,7 @@ ILUL00GRL 59226.4583 202101121100 CHANGE Other site log entry (firmware upgrade,
 ILUL00GRL 59285.4986 202103121158 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ILUL00GRL 59413.6264 202107181502 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ILUL00GRL 59829.5299 202209071243 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+ILUL00GRL 60830.3806 202506040908 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SISI00GRL 56278.0000 201212170000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SISI00GRL 56421.0000 201305090000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SISI00GRL 56583.0000 201310180000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10353,6 +10428,8 @@ BOIG00AUS 52525.7806 200209081844 EQ     Near N Coast Of Papua Ne, Mw 7.6
 BOIG00AUS 58174.7389 201802251744 EQ     New Guinea, Papua New Gu, Mw 7.5
 BOIG00AUS 59832.9910 202209102347 EQ     Eastern New Guinea Reg.,, Mw 7.6
 BOIG00AUS 60121.0250 202306260036 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+HOBA00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
+HOBA00AUS 60773.0000 202504080000 CHANGE Receiver change
 CN4000NLD 55770.0382 201107280055 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CN4000NLD 56085.4688 201206071115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CN4000NLD 56261.7083 201211301700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10564,6 +10641,7 @@ EMSH00DEU 59788.6319 202207281510 CHANGE Other site log entry (firmware upgrade,
 EMSH00DEU 60046.4681 202304121114 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMSH00DEU 60307.5861 202312291404 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 EMSH00DEU 60528.4306 202408061020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+EMSH00DEU 60808.2708 202505130630 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CNVL00AUS 59963.9979 202301192357 CHANGE Receiver change
 CNVL00AUS 59963.9986 202301192358 CHANGE Antenna change
 BLYT00USA 49377.0000 199401250000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10790,9 +10868,10 @@ TA0400DNK 59593.4375 202201141030 CHANGE Other site log entry (firmware upgrade,
 TA0400DNK 59897.5243 202211141235 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TA0400DNK 60503.0000 202407120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LTA200DEU 60689.4535 202501141053 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LTA200DEU 60810.5653 202505151334 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 POGU00DEU 60229.5083 202310121212 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 POGU00DEU 60375.3583 202403060836 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-POGU00DEU 60566.0000 202409130000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+POGU00DEU 60808.3715 202505130855 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SOLU00NOR 60374.6090 202403051437 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SOLU00NOR 60599.6604 202410161551 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TRAE00NOR 60360.0000 202402200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10844,6 +10923,7 @@ APPL00GBR 58710.4062 201908150945 CHANGE Other site log entry (firmware upgrade,
 APPL00GBR 58897.4306 202002181020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 APPL00GBR 59246.5174 202102011225 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 APPL00GBR 59822.5174 202208311225 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+KSUT00GRL 60830.4701 202506041117 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PRHL00USA 56345.0000 201302220000 CHANGE Receiver change
 PRHL00USA 56910.6604 201409101551 CHANGE Antenna change
 PRHL00USA 57189.9750 201506162324 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -10888,6 +10968,7 @@ BACO00USA 57570.6250 201607011500 CHANGE Other site log entry (firmware upgrade,
 BACO00USA 57615.6375 201608151518 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BACO00USA 59752.7826 202206221847 CHANGE Receiver change
 BACO00USA 60033.0000 202303300000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BACO00USA 60818.6139 202505231444 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NJI200USA 52088.0000 200106280000 CHANGE Receiver change
 NJI200USA 52904.0000 200309220000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NJI200USA 54637.0000 200806200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -11018,6 +11099,7 @@ LY2T00NZL 57432.0090 201602140013 EQ     South Island, New Zealan, Mw 5.7
 LY2T00NZL 57705.4597 201611131102 EQ     South Island, New Zealan, Mw 7.8
 LY2T00NZL 57706.0236 201611140034 EQ     South Island, New Zealan, Mw 6.4
 LY2T00NZL 60755.1118 202503210241 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SPIO00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LTAW00DEU 60018.4167 202303151000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SSFT00NZL 52872.5083 200308211212 EQ     South Island, New Zealan, Mw 7.2
 SSFT00NZL 53331.8514 200411222026 EQ     Off W. Coast Of S. Islan, Mw 7.1
@@ -11116,6 +11198,7 @@ TGF300DEU 60180.3361 202308240804 CHANGE Other site log entry (firmware upgrade,
 TGF300DEU 60402.5701 202404021341 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGF300DEU 60549.2917 202408270700 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TGF300DEU 60725.3021 202502190715 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TGF300DEU 60803.4917 202505081148 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAMB00IDN 51668.1812 200005040421 EQ     Sulawesi, Mw 7.5
 CAMB00IDN 51784.6285 200008281505 EQ     Banda Sea, Mw 6.8
 CAMB00IDN 51987.2444 200103190552 EQ     Banda Sea, Mw 6.5
@@ -11203,6 +11286,7 @@ BKAL00DEU 59788.5701 202207281341 CHANGE Other site log entry (firmware upgrade,
 BKAL00DEU 60006.4778 202303031128 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BKAL00DEU 60286.3257 202312080749 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BKAL00DEU 60374.4632 202403051107 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BKAL00DEU 60810.5632 202505151331 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAML00GBR 54819.7569 200812191810 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CAML00GBR 55054.4965 200908111155 CHANGE Receiver change
 CAML00GBR 55216.4688 201001201115 CHANGE Receiver change
@@ -11324,6 +11408,7 @@ UPVK00GRL 59227.6667 202101131600 CHANGE Other site log entry (firmware upgrade,
 UPVK00GRL 59416.6847 202107211626 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 UPVK00GRL 59431.4611 202108051104 CHANGE Antenna & Radome change
 UPVK00GRL 59829.6556 202209071544 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+UPVK00GRL 60830.5333 202506041248 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ARVL00ATA 58472.7090 201812201701 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ARVL00ATA 58750.9174 201909242201 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ARVL00ATA 58952.8757 202004132101 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -11339,6 +11424,7 @@ MERO00USA 59893.0174 202211100025 CHANGE Other site log entry (firmware upgrade,
 MERO00USA 60240.5000 202310231200 CHANGE Receiver change
 MERO00USA 60242.2632 202310250619 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 MERO00USA 60733.0000 202502270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+MERO00USA 60815.8819 202505202110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 FWTR00USA 58222.8854 201804142115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 FWTR00USA 59949.2083 202301050500 CHANGE Receiver, Antenna & Radome change
 FWTR00USA 60262.0000 202311140000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -11882,8 +11968,6 @@ PLOE00FRA 57687.5312 201610261245 CHANGE Receiver, Antenna & Radome change
 PLOE00FRA 59326.4076 202104220947 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PLOE00FRA 59667.2882 202203290655 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PLOE00FRA 59673.5104 202204041215 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BRMZ00FRA 58386.6042 201809251430 CHANGE Receiver change
-BRMZ00FRA 58736.6250 201909101500 CHANGE Antenna & Radome change
 CHBR00FRA 55462.4167 201009231000 CHANGE Receiver, Antenna & Radome change
 CHBR00FRA 58387.6250 201809261500 CHANGE Receiver change
 CHLN00FRA 55447.3750 201009080900 CHANGE Receiver, Antenna & Radome change
@@ -12159,10 +12243,6 @@ AMB200FRA 55473.5833 201010041400 CHANGE Receiver change
 AMB200FRA 56811.6250 201406031500 CHANGE Receiver change
 AMB200FRA 58392.6771 201810011615 CHANGE Receiver change
 AMB200FRA 60607.4583 202410241100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-ANGE00FRA 55127.0000 200910230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-ANGE00FRA 55132.0000 200910280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-ANGE00FRA 56342.0000 201302190000 CHANGE Receiver, Antenna & Radome change
-ANGE00FRA 59144.6250 202010221500 CHANGE Receiver change
 ANNY00FRA 59735.0000 202206050000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 ANNY00FRA 60745.0000 202503110000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 AUBU00FRA 57241.3882 201508070919 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -12374,9 +12454,6 @@ LACA00FRA 58661.5243 201906271235 CHANGE Other site log entry (firmware upgrade,
 LACA00FRA 58661.5250 201906271236 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LACA00FRA 59620.5903 202202101410 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LACA00FRA 59620.5910 202202101411 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-LACO00FRA 58219.4792 201804111130 CHANGE Receiver change
-LACO00FRA 58470.6007 201812181425 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-LACO00FRA 59735.0000 202206050000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 LCAU00FRA 55468.2917 201009290700 CHANGE Antenna & Radome change
 LCAU00FRA 55468.3333 201009290800 CHANGE Receiver change
 LCAU00FRA 57919.2917 201706150700 CHANGE Receiver change
@@ -12515,25 +12592,6 @@ PRNY00FRA 57815.3958 201703030930 CHANGE Receiver change
 PRNY00FRA 58471.4271 201812191015 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PRNY00FRA 59735.0000 202206050000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PRRS00FRA 57605.5000 201608051200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 53892.9993 200606062359 CHANGE Receiver change
-PUYA00FRA 53893.0000 200606070000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 53972.4292 200608251018 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 53972.4576 200608251059 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 54080.4312 200612111021 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 54080.4451 200612111041 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 54268.9993 200706172359 CHANGE Receiver change
-PUYA00FRA 54269.4993 200706181159 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 55414.4167 201008061000 CHANGE Receiver change
-PUYA00FRA 55467.4972 201009281156 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 55467.4979 201009281157 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 56300.5417 201301081300 CHANGE Receiver change
-PUYA00FRA 56300.5625 201301081330 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 56608.3937 201311120927 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 56608.3944 201311120928 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 57505.4007 201604270937 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 57505.4014 201604270938 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 59617.5556 202202071320 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PUYA00FRA 59617.5646 202202071333 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PUYO00FRA 58295.6667 201806261600 CHANGE Receiver change
 PXTN00FRA 57605.5000 201608051200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 RENN00FRA 55008.0000 200906260000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -12639,6 +12697,7 @@ IDP100NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl, Mw 7.5
 IDP100NCL 60083.1229 202305190257 EQ     Southeast Of Loyalty Isl, Mw 7.7
 IDP100NCL 60289.5000 202312111200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 IDP100NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+IDP100NCL 60858.0000 202507020000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BOMG00REU 56720.3681 201403040850 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BOMG00REU 58332.3951 201808020929 CHANGE Receiver change
 BOMG00REU 58337.3194 201808070740 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -28637,6 +28696,7 @@ QAQ200GRL 59128.3333 202010060800 CHANGE Other site log entry (firmware upgrade,
 QAQ200GRL 59226.9167 202101122200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 QAQ200GRL 59419.3472 202107240820 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 QAQ200GRL 59826.4132 202209040955 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+QAQ200GRL 60821.3208 202505260742 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 QEMD00PRT 58577.9583 201904042300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 QEQE00GRL 53887.0000 200606010000 CHANGE Receiver change
 QEQE00GRL 54151.0000 200702200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -35790,18 +35850,6 @@ BAL200FRA 59988.5000 202302131200 CHANGE Receiver change
 BAL200FRA 60101.0000 202306060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BAL200FRA 60453.0000 202405230000 CHANGE Receiver change
 BAL200FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 53409.4403 200502081034 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 53562.5417 200507111300 CHANGE Receiver change
-BANN00FRA 53569.3868 200507180917 CHANGE Receiver change
-BANN00FRA 53626.3743 200509130859 CHANGE Receiver change
-BANN00FRA 53944.4382 200607281031 CHANGE Receiver change
-BANN00FRA 54728.4035 200809190941 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 55853.4819 201110191134 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 56062.4167 201205151000 CHANGE Receiver change
-BANN00FRA 56088.5722 201206101344 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 56608.4007 201311120937 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 57505.4014 201604270938 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-BANN00FRA 59617.5465 202202071307 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BARD00FRA 57603.5000 201608031200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BARD00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 BAS200FRA 60555.5000 202409021200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -35879,12 +35927,6 @@ CHBL00FRA 58119.5833 201801011400 CHANGE Receiver change
 CHBL00FRA 59996.5833 202302211400 CHANGE Receiver change
 CHBL00FRA 60661.4583 202412171100 CHANGE Antenna change
 CHBL00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-CHBS00FRA 55477.7083 201010081700 CHANGE Receiver, Antenna & Radome change
-CHBS00FRA 57904.3958 201705310930 CHANGE Receiver change
-CHBS00FRA 58459.5764 201812071350 CHANGE Receiver change
-CHBS00FRA 58521.5417 201902071300 CHANGE Receiver change
-CHBS00FRA 59735.0000 202206050000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-CHBS00FRA 60822.4167 202505271000 CHANGE Receiver change
 CHE200FRA 60425.7083 202404251700 CHANGE Antenna & Radome change
 CHE200FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 CHIZ00FRA 57142.4583 201504301100 CHANGE Receiver change
@@ -36269,11 +36311,6 @@ SLVT00FRA 58864.4236 202001161010 CHANGE Receiver change
 SLVT00FRA 60273.4653 202311251110 CHANGE Receiver change
 SLVT00FRA 60290.5514 202312121314 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 SMCR00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-SMTG00FRA 58597.4292 201904241018 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-SMTG00FRA 58878.6931 202001301638 CHANGE Receiver change
-SMTG00FRA 59436.3681 202108100850 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-SMTG00FRA 60737.5000 202503031200 CHANGE Antenna change
-SMTG00FRA 60844.3750 202506180900 CHANGE Antenna change
 SNNT00FRA 60250.5000 202311021200 CHANGE Receiver change
 SNNT00FRA 60291.5833 202312131400 CHANGE Antenna change
 SNNT00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -36297,18 +36334,6 @@ SOUS00FRA 59002.7500 202006021800 CHANGE Receiver change
 SOUS00FRA 60837.5000 202506111200 CHANGE Receiver change
 STAZ00FRA 60335.5000 202401261200 CHANGE Receiver change
 STAZ00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 53474.5299 200504141243 CHANGE Receiver change
-STEY00FRA 53723.4181 200512191002 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 53925.0000 200607090000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 53926.3729 200607100857 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 54497.3778 200802010904 CHANGE Receiver change
-STEY00FRA 54724.3854 200809150915 CHANGE Receiver change
-STEY00FRA 55798.3972 201108250932 CHANGE Receiver change
-STEY00FRA 55896.6028 201112011428 CHANGE Receiver change
-STEY00FRA 56506.4583 201308021100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 57505.5625 201604271330 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 58731.4118 201909050953 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-STEY00FRA 59673.3958 202204040930 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 STGN00FRA 57605.5000 201608051200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 STGN00FRA 60793.5000 202504281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 STGS00FRA 59975.5000 202301311200 CHANGE Receiver change
@@ -36440,6 +36465,67 @@ GAMB00PYF 59010.0903 202006100210 CHANGE Other site log entry (firmware upgrade,
 GAMB00PYF 60024.7132 202303211707 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GAMB00PYF 60167.8417 202308112012 CHANGE Receiver change
 GAMB00PYF 60289.5799 202312111355 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+ANGE00FRA 55132.0000 200910280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+ANGE00FRA 56342.0000 201302190000 CHANGE Receiver, Antenna & Radome change
+ANGE00FRA 59144.6250 202010221500 CHANGE Receiver change
+ANGE00FRA 60853.6250 202506271500 CHANGE Receiver change
+BANN00FRA 53409.4403 200502081034 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 53562.5417 200507111300 CHANGE Receiver change
+BANN00FRA 53569.3868 200507180917 CHANGE Receiver change
+BANN00FRA 53626.3743 200509130859 CHANGE Receiver change
+BANN00FRA 53944.4382 200607281031 CHANGE Receiver change
+BANN00FRA 54728.4035 200809190941 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 55853.4819 201110191134 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 56062.4167 201205151000 CHANGE Receiver change
+BANN00FRA 56088.5722 201206101344 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 56608.4007 201311120937 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 57505.4014 201604270938 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 59617.5465 202202071307 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BANN00FRA 60852.5278 202506261240 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+BRMZ00FRA 58386.6042 201809251430 CHANGE Receiver change
+BRMZ00FRA 58736.6250 201909101500 CHANGE Antenna & Radome change
+BRMZ00FRA 60853.6250 202506271500 CHANGE Receiver change
+CHBS00FRA 55477.7083 201010081700 CHANGE Receiver, Antenna & Radome change
+CHBS00FRA 57904.3958 201705310930 CHANGE Receiver change
+CHBS00FRA 58459.5764 201812071350 CHANGE Receiver change
+CHBS00FRA 58521.5417 201902071300 CHANGE Receiver change
+CHBS00FRA 59735.0000 202206050000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+CHBS00FRA 60822.4167 202505271000 CHANGE Receiver change
+CHBS00FRA 60850.6250 202506241500 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LACO00FRA 58219.4792 201804111130 CHANGE Receiver change
+LACO00FRA 58470.6007 201812181425 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LACO00FRA 59735.0000 202206050000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LACO00FRA 60851.4167 202506251000 CHANGE Receiver change
+PUYA00FRA 53893.0000 200606070000 CHANGE Receiver change
+PUYA00FRA 53972.4576 200608251059 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PUYA00FRA 54080.4451 200612111041 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PUYA00FRA 54269.4993 200706181159 CHANGE Receiver change
+PUYA00FRA 55414.4167 201008061000 CHANGE Receiver change
+PUYA00FRA 55467.4979 201009281157 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PUYA00FRA 56300.5625 201301081330 CHANGE Receiver change
+PUYA00FRA 56608.3944 201311120928 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PUYA00FRA 57505.4014 201604270938 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PUYA00FRA 59617.5646 202202071333 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PUYA00FRA 60852.5278 202506261240 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SMTG00FRA 58597.4292 201904241018 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SMTG00FRA 58878.6931 202001301638 CHANGE Receiver change
+SMTG00FRA 59436.3681 202108100850 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+SMTG00FRA 60737.5000 202503031200 CHANGE Antenna change
+SMTG00FRA 60844.3542 202506180830 CHANGE Antenna change
+STEY00FRA 53474.5299 200504141243 CHANGE Receiver change
+STEY00FRA 53723.4181 200512191002 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 53925.0000 200607090000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 53926.3729 200607100857 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 54497.3778 200802010904 CHANGE Receiver change
+STEY00FRA 54724.3854 200809150915 CHANGE Receiver change
+STEY00FRA 55798.3972 201108250932 CHANGE Receiver change
+STEY00FRA 55896.6028 201112011428 CHANGE Receiver change
+STEY00FRA 56506.4583 201308021100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 57505.5625 201604271330 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 58731.4118 201909050953 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 59673.3958 202204040930 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+STEY00FRA 60853.3611 202506270840 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TRIG00FRA 60852.6250 202506261500 CHANGE Receiver change
 NISY00GRC 57954.9382 201707202231 EQ     Dodecanese Islands, Gree, Mw 6.6
 NISY00GRC 59152.4937 202010301151 EQ     Dodecanese Islands, Gree, Mw 7.0
 NISY00GRC 59317.8528 202104132028 EQ     Dodecanese Islands, Gree, Mw 5.3
@@ -37486,7 +37572,6 @@ BOTH00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 BRUI00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 CBEL00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 DERB00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
-HOBA00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 LILY00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 POAR00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
 QUEE00AUS 53362.6243 200412231459 EQ     North Of Macquarie Islan, Mw 8.1
@@ -38106,4 +38191,4 @@ LJUT00SVN 59212.4715 202012291119 EQ     Northwestern Balkan Regi, Mw 6.4
 RUBO00RWA 59358.0160 202105240023 EQ     Lake Tanganyika Region, Mw 5.0
 MTBU00AUS 59478.9688 202109212315 EQ     Near S.E. Coast Of Austr, Mw 5.9
 IDI000GRC 59484.2618 202109270617 EQ     Crete, Greece, Mw 5.9
-OUCA00MAR 60195.9243 202309082211 EQ     Morocco, Mw 6.9s
+OUCA00MAR 60195.9243 202309082211 EQ     Morocco, Mw 6.9

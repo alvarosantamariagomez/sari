@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version julio 2025'
+title: 'SARI documentation - version agosto 2025'
 author: 'Alvaro Santamaría'
 ---
 
@@ -47,8 +47,8 @@ The development of SARI started in 2017 to analyze GNSS position time series fro
 SARI is available on all platforms, except mobile devices, and can be accessed in three ways:
 
 * Online from the [Shinyapps server](https://alvarosg.shinyapps.io/sari)
-* Offline, from a containerized environment available in [DockerHub](https://hub.docker.com/r/alvarosg/sari).
-* Offline, after installing the code available in [GitHub](https://github.com/alvarosantamariagomez/sari).
+* Offline, from a containerized environment available on [DockerHub](https://hub.docker.com/r/alvarosg/sari).
+* Offline, after installing the code available on [GitHub](https://github.com/alvarosantamariagomez/sari).
 
 Depending on the way SARI is accessed, there are several ways to run SARI: bookmark on web browser, weblink, Docker Desktop, RStudio, R console or a UNIX-like console. The only requirement is to use a desktop environnment where a web browser can run.  
 All the different ways to run SARI are implemented in the [SARI shell script](https://github.com/alvarosantamariagomez/sari/blob/main/scripts/sari.sh). This script can be used to start SARI while loading series on a local or remote session. For the ultimate easiness, the SARI shell script also allows creating convenient desktop shorcuts on any system to run SARI with just one click (see an example BAT file [here](https://github.com/alvarosantamariagomez/sari/tree/main/scripts)).
@@ -67,7 +67,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *julio 2025*  --  "Many machines on Ix. New machines."
+Current SARI version: *agosto 2025*  --  "The sorcerers of antiquity called the use of this language '*spells*'. But if that word offends your modern sensibilities, you can call it a program."
 
 -----------------
 
