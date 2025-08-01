@@ -51,24 +51,24 @@ check_load <- function(packages) {
 }
 
 # Shinyapps & local version
-suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-  library(mvcwt, verbose = F, quietly = T)
-  library(leaflet, verbose = F, quietly = T)
-  library(geojsonio, verbose = F, quietly = T)
-  library(Rcpp, verbose = F, quietly = T)
-  library(RcppArmadillo, verbose = F, quietly = T)
-  library(RcppEigen, verbose = F, quietly = T)
-})))
+# suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+#   library(mvcwt, verbose = F, quietly = T)
+#   library(leaflet, verbose = F, quietly = T)
+#   library(geojsonio, verbose = F, quietly = T)
+#   library(Rcpp, verbose = F, quietly = T)
+#   library(RcppArmadillo, verbose = F, quietly = T)
+#   library(RcppEigen, verbose = F, quietly = T)
+# })))
 # GitHub version
-# optionalPackages <- c(
-#   "mvcwt",
-#   "leaflet",
-#   "geojsonio",
-#   "Rcpp",
-#   "RcppArmadillo",
-#   "RcppEigen"
-# )
-# check_load(optionalPackages)
+optionalPackages <- c(
+  "mvcwt",
+  "leaflet",
+  "geojsonio",
+  "Rcpp",
+  "RcppArmadillo",
+  "RcppEigen"
+)
+check_load(optionalPackages)
 
 # GUI addons ####
 
@@ -447,7 +447,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
 options(shiny.trace = F)
 devmode(F)
-options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = F, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
