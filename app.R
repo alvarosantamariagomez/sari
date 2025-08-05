@@ -15027,7 +15027,7 @@ server <- function(input,output,session) {
       } else {
         component_list <- list(component1, component2, component3)
         OutPut$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)
-        names(OutPut$df) <- c("# Epoch", sub(" component",info$components[1]), sub(" component",info$components[2]), sub(" component",info$components[3]))
+        names(OutPut$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]))
       }
     } else if (input$tab == 5) {
       component1 <- data.frame(x = db1[[info$db1]][[paste0("x",input$tunits)]][db1[[info$db1]]$status1 %in% T], y = db1[[info$db1]]$res1[db1[[info$db1]]$status1 %in% T])
@@ -15293,7 +15293,11 @@ server <- function(input,output,session) {
           }
         }
         component_list <- list(component1, component2, component3)
-        output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
+        if (isTruthy(useSigmas)) {
+          output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
+        } else {
+          output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y")]
+        }
         if (input$tab == 5) {
           names(output_excluded$df)[1] <- "# Epoch"
           if (isTruthy(input$sigmas)) {
