@@ -15835,6 +15835,9 @@ server <- function(input,output,session) {
     if (all(is.numeric(x))) {
       info$scientific <- F
       frac <- abs(x - as.integer(x))
+      if (all(frac == 0)) {
+        return(extra)
+      }
       frac <- frac[frac != 0]
       fracEnt <- sub("[0-9]*\\.", "", format(frac, scientific = F))
       decimals1 <- min(nchar(fracEnt))
@@ -15845,17 +15848,17 @@ server <- function(input,output,session) {
         decimals2 <- nchar(min_incr) - 2
         decimals <- min(decimals1,decimals2)
         if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
-          return(0)
+          return(extra)
         }
       } else if (isempty(incr)) {
         epoch <- unique(fracEnt)
         if (length(epoch) == 1) {
           decimals <- nchar(epoch)
         } else {
-          return(0)
+          return(extra)
         }
       } else {
-        return(0)
+        return(extra)
       }
       zeroDecimals <- min(nchar(sub("(^0*).*", "\\1", sub("[0-9]*\\.", "", format(x, scientific = F)))))
       if (zeroDecimals > 5) {
