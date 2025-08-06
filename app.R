@@ -6667,7 +6667,7 @@ server <- function(input,output,session) {
     filename = function() {
       if (input$format != 4) {
         if (input$tab == 4) {
-          paste0(file$primary$name, "_detrend.sari")
+          paste0(file$primary$name, "_3D.sari")
         } else if (input$tab == 5) {
           paste0(file$primary$name, "_res.sari")
         } else {
