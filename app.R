@@ -3737,11 +3737,11 @@ server <- function(input,output,session) {
           } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
             # NA
           } else {
-            tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
-            tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
+            tie1 <- sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix
+            tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
+            pointsBias <- median(pointsY1[tie1] - pointsY2[tie2], na.rm = T)
             if (input$fullSeries) {
               if (range1 >= range2) {
                 rangesy12 <- rangesy12 + (rangesy1[1] - rangesy12[1]) - pointsBias
