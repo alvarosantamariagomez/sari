@@ -2761,7 +2761,7 @@ server <- function(input,output,session) {
   # Series summary ####
   output$information1 <- output$information2 <- renderUI({
     req(db1[[info$db1]])
-    isolate({
+    # isolate({
       if (input$tunits == 1) {
         units <- "days"
       } else if (input$tunits == 2) {
@@ -2786,7 +2786,7 @@ server <- function(input,output,session) {
       line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
       line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
       HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
-    })
+    # })
   })
 
   # Debouncers & checks for user typed inputs ####
