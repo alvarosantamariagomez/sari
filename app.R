@@ -8098,8 +8098,15 @@ server <- function(input,output,session) {
         showNotification(paste("Product", input$product2, "for station", inputs$station2, "not found in", input$server2, "server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
         updateSelectInput(session, inputId = "station2", selected = "")
       }
-    } else if (isTruthy(input$server2) && isTruthy(input$product2)) {
+    } else {
       url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$datapath <- NULL
+      if (info$db1 == "merged") {
+        if (isTruthy(input$step) && isTruthy(db1$resampled)) {
+          info$db1 <- "resampled"
+        } else {
+          info$db1 <- "original"
+        }
+      }
       info$last_optionSecondary <- 0
       updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 0)
     }
