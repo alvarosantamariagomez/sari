@@ -9254,6 +9254,10 @@ server <- function(input,output,session) {
       info$db1 <- "original"
       updateTextInput(session, inputId = "step", value = "")
       info$step <- NULL
+      if (input$optionSecondary > 1) {
+        info$last_optionSecondary <- 1
+        updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
+      }
     }
     if (input$tunits == 1) {
       info$samplingRaw[1] <- min(diff(db1[[info$db1]]$x1,1))
@@ -9375,6 +9379,10 @@ server <- function(input,output,session) {
       info$db2 <- "original"
       updateTextInput(session, inputId = "step2", value = "")
       info$step <- NULL
+      if (input$optionSecondary > 1) {
+        info$last_optionSecondary <- 1
+        updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
+      }
     }
   }, priority = 6)
 
