@@ -3711,7 +3711,11 @@ server <- function(input,output,session) {
         pointsY2 <- trans$y2[trans$x2 > ranges$x1[1] & trans$x2 < ranges$x1[2]]
         if (isTruthy(input$sameScale)) {
           rangesy12 <- range(pointsY2)
-          range1 <- diff(rangesy1)
+          if (isTruthy(rangesy1)) {
+            range1 <- diff(rangesy1)
+          } else {
+            range1 <- diff(range(pointsY1))
+          }
           range2 <- diff(rangesy12)
           if (input$fullSeries) {
             if (range1 >= range2) {
@@ -3753,7 +3757,11 @@ server <- function(input,output,session) {
             range <- range(c(pointsY1,pointsY2))
             rangesy12 <- rangesy1 <- range
           } else {
-            rangesy12 <- rangesy1
+            if (isTruthy(rangesy1)) {
+              rangesy12 <- rangesy1
+            } else {
+              rangesy12 <- range(pointsY1)
+            }
           }
         } else {
           ids <- trans$x2 >= ranges$x1[1] & trans$x2 <= ranges$x1[2]
