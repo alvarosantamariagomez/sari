@@ -9540,33 +9540,18 @@ server <- function(input,output,session) {
         }
       }
       # computing the shift period between the primary and secondary series
-      deltas <- NULL
-      xmin <- max(c(table1$x1[1],table2$x1[1]))
-      xmax <- min(c(table1$x1[length(table1$x1)],table2$x1[length(table2$x1)]))
-      x1 <- table1$x1[table1$x1 >= xmin & table1$x1 <= xmax]
-      x2 <- table2$x1[table2$x1 >= xmin & table2$x1 <= xmax]
-      if (length(x1) < length(x2)) {
-        closest_values <- sapply(x1, function(x) { x2[which.min(abs(x2 - x))] })
-        deltas <- abs(closest_values - x1)
-      } else if (length(x1) > 0 && length(x2) > 0) {
-        closest_values <- sapply(x2, function(x) { x1[which.min(abs(x1 - x))] })
-        deltas <- abs(x2 - closest_values)
-      }
-      if (isTruthy(deltas)) {
-        if (length(deltas) > 10) {
-          delta <- median(deltas)
-        } else {
-          delta <- min(deltas)
+      delta <- computeTimeShift(table1$x1,table2$x1)
+      if (isTruthy(delta) && is.numeric(delta) && delta <= info$samplingRaw[1] && abs(delta) > 0) {
+        table2$x1 <- table2$x1 + delta
+        showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+        if (abs(delta) == info$sampling/2) {
+          showNotification("The time shift of the secondary series is equal to half the sampling of the primary series and the direction of the sifht is ambiguous.", action = NULL, duration = 15, closeButton = T, id = "ambiguous_shift", type = "error", session = getDefaultReactiveDomain())
         }
-        if (isTruthy(is.numeric(delta)) && delta > 0 && delta <= info$samplingRaw[1]) {
-          table2$x1 <- table2$x1 + delta
-          showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-          if (input$optionSecondary == 4) {
-            table2$x2 <- mjd2week(table2$x1)
-            table2$x3 <- mjd2year(table2$x1)
-          }
-        }  
-      }
+        if (input$optionSecondary == 4) {
+          table2$x2 <- mjd2week(table2$x1)
+          table2$x3 <- mjd2year(table2$x1)
+        }
+      }  
       # merging the primary and secondary series
       if (input$optionSecondary == 2) {
         if (info$format == 4) {
@@ -11989,6 +11974,7 @@ server <- function(input,output,session) {
     removeNotification("bad_window")
     removeNotification("unknown_components")
     removeNotification("time_shift")
+    removeNotification("ambiguous_shift")
     removeNotification("parsing_url1")
     lat <- lon <- lat2 <- lon2 <- NULL
     removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
@@ -12303,9 +12289,9 @@ server <- function(input,output,session) {
           if (!is.null(table2)) {
             if (!is.null(table_stack)) {
               # shifting the next secondary series if necessary
-              delta <- as.numeric(names(sort(table(table_stack$x1 - floor(table_stack$x1))))) - as.numeric(names(sort(table(table2$x1 - floor(table2$x1)))))
-              if (length(delta) == 1 && isTruthy(is.numeric(delta))) {
-                if (delta != 0) {
+              delta <- computeTimeShift(table_stack$x1,table2$x1)
+              if (isTruthy(delta) && is.numeric(delta)) {
+                if (abs(delta) > 0) {
                   table2$x1 <- table2$x1 + delta
                   table2$x2 <- mjd2week(table2$x1)
                   table2$x3 <- mjd2year(table2$x1)
@@ -16558,12 +16544,16 @@ server <- function(input,output,session) {
               output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
-              if (input$tunits == 1) {
-                step <- 1
-              } else if (input$tunits == 2) {
-                step <- 1/7
-              } else if (input$tunits == 3) {
-                step <- 1/daysInYear
+              if (isTruthy(inputs$step) && info$db1 == "resampled") {
+                step <- inputs$step
+              } else {
+                if (input$tunits == 1) {
+                  step <- 1
+                } else if (input$tunits == 2) {
+                  step <- 1/7
+                } else if (input$tunits == 3) {
+                  step <- 1/daysInYear
+                }
               }
               updateTextInput(session, inputId = "step2", value = step)
               if (input$sunits == 1) {
@@ -17387,6 +17377,24 @@ server <- function(input,output,session) {
       list <- list[-toremove]
     }
     list
+  }
+  #
+  computeTimeShift <- function(series1,series2) {
+    delta <- NULL
+    if (any(!is.numeric(series1)) || any(!is.numeric(series2)) || length(series1) == 0 || length(series2) == 0) {
+      return(delta)
+    }
+    if (length(series1) < length(series2)) {
+      closest_values <- sapply(series1, function(x) { series2[which.min(abs(series2 - x))] })
+      deltas <- series1 - closest_values
+    } else {
+      closest_values <- sapply(series2, function(x) { series1[which.min(abs(series1 - x))] })
+      deltas <- closest_values - series2
+    }
+    if (isTruthy(deltas) && any(is.numeric(deltas)) && length(deltas) > 0) {
+      delta <- median(deltas, na.rm = T)
+    }
+    return(delta)
   }
 }
 
