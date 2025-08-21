@@ -2476,7 +2476,8 @@ server <- function(input,output,session) {
                          last_eulerType = 0, last_giaType = 0,
                          overview = F,
                          clickX = NULL, clickY = NULL, closestX = NULL, closestY = NULL,
-                         LStol = 1e-5, parameters = NULL)
+                         LStol = 1e-5, parameters = NULL,
+                         redo_step2 = 0)
 
   # 4. database:
   #   1 = original
@@ -9274,7 +9275,7 @@ server <- function(input,output,session) {
     }
   }, priority = 6)
 
-  observeEvent(c(inputs$step2), {
+  observeEvent(c(inputs$step2, info$redo_step2), {
     req(db2$original)
     removeNotification("bad_window")
     if (messages > 0) cat(file = stderr(), mySession, "Averaging secondary series", "\n")
@@ -9372,8 +9373,10 @@ server <- function(input,output,session) {
       } else {
         info$db2 <- "original"
         info$step2 <- NULL
-        updateTextInput(session, inputId = "step2", value = "")
-        showNotification(HTML("The resampling period of the secondary series is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+        if (inputs$step2 != min(diff(x,1))) {
+          updateTextInput(session, inputId = "step2", value = "")
+          showNotification(HTML("The XXX resampling period of the secondary series is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+        }
       }
     } else {
       info$db2 <- "original"
@@ -12248,47 +12251,51 @@ server <- function(input,output,session) {
               showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
             }
           } else if (isTruthy(inputs$step2)) {
-            if (input$tunits == 1) {
-              x <- table2$x1
-            } else if (input$tunits == 2) {
-              x <- table2$x2
-            } else if (input$tunits == 3) {
-              x <- table2$x3
-            }
-            if (inputs$step2 >= 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
-              tolerance <- min(diff(x,1))/3
-              info$step2 <- inputs$step2
-              withProgress(message = paste('Averaging the', files$name[i], 'series.'),
-                           detail = 'This may take a while ...', value = 0, {
-                             w <- as.integer((max(x) - min(x))/inputs$step2)
-                             if (info$format2 == 4) {
-                               averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                               table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
-                             } else {
-                               if (url$server2 == "EOSTLS") {
-                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
-                               } else {
-                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
-                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
-                               }
-                             }
-                           })
-              table2 <- na.omit(table2)
+            if (num > 1) {
               if (input$tunits == 1) {
-                table2$x2 <- mjd2week(table2$x1)
-                table2$x3 <- mjd2year(table2$x1)
+                x <- table2$x1
               } else if (input$tunits == 2) {
-                table2$x2 <- table2$x1
-                table2$x3 <- week2year(table2$x1)
-                table2$x1 <- week2mjd(table2$x1)
+                x <- table2$x2
               } else if (input$tunits == 3) {
-                table2$x3 <- table2$x1
-                table2$x2 <- year2week(table2$x1)
-                table2$x1 <- year2mjd(table2$x1)
+                x <- table2$x3
+              }
+              if (inputs$step2 >= 2*min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
+                tolerance <- min(diff(x,1))/3
+                info$step2 <- inputs$step2
+                withProgress(message = paste('Averaging the', files$name[i], 'series.'),
+                             detail = 'This may take a while ...', value = 0, {
+                               w <- as.integer((max(x) - min(x))/inputs$step2)
+                               if (info$format2 == 4) {
+                                 averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = NULL, y3 = NULL, sy1 = table2$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                                 table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(table2$x)))
+                               } else {
+                                 if (url$server2 == "EOSTLS") {
+                                   averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                                   table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,])))
+                                 } else {
+                                   averaged <- sapply(1:w, function(p) average(p, x = x, y1 = table2$y1, y2 = table2$y2, y3 = table2$y3, sy1 = table2$sy1, sy2 = table2$sy2, sy3 = table2$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                                   table2 <- data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,])
+                                 }
+                               }
+                             })
+                table2 <- na.omit(table2)
+                if (input$tunits == 1) {
+                  table2$x2 <- mjd2week(table2$x1)
+                  table2$x3 <- mjd2year(table2$x1)
+                } else if (input$tunits == 2) {
+                  table2$x2 <- table2$x1
+                  table2$x3 <- week2year(table2$x1)
+                  table2$x1 <- week2mjd(table2$x1)
+                } else if (input$tunits == 3) {
+                  table2$x3 <- table2$x1
+                  table2$x2 <- year2week(table2$x1)
+                  table2$x1 <- year2mjd(table2$x1)
+                }
+              } else {
+                info$step2 <- NULL
               }
             } else {
-              info$step2 <- NULL
+              info$redo_step2 <- info$redo_step2 + 1
             }
           } else {
             info$step2 <- NULL
@@ -12441,6 +12448,9 @@ server <- function(input,output,session) {
     if (input$optionSecondary > 1 && isTruthy(db1$merged)) {
       info$last_optionSecondary <- 1
       updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
+    }
+    if (!isTruthy(format)) {
+      format <- 1
     }
     removeNotification("no_weeks")
     removeNotification("no_error_bars")
