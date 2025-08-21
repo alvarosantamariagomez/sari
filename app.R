@@ -10236,8 +10236,8 @@ server <- function(input,output,session) {
           } else if (x.range[1] > x2.common[length(x2.common)]) {
             # NA
           } else {
-            tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
-            tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
+            tie1 <- sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix
+            tie2 <- sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(y1[valid3][tie1] - y2.common[tie2])
@@ -10349,8 +10349,8 @@ server <- function(input,output,session) {
           } else if (x.range[1] > x2.common[length(x2.common)]) {
             # NA
           } else {
-            tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
-            tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
+            tie1 <- sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix
+            tie2 <- sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(y2[valid2][tie1] - y2.common[tie2])
@@ -10463,8 +10463,8 @@ server <- function(input,output,session) {
           } else if (x.range[1] > x2.common[length(x2.common)]) {
             # NA
           } else {
-            tie1 <- head(sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix, 100)
-            tie2 <- head(sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix, 100)
+            tie1 <- sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix
+            tie2 <- sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(y3[valid3][tie1] - y2.common[tie2])
@@ -14514,8 +14514,8 @@ server <- function(input,output,session) {
           } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
             # NA
           } else {
-            tie1 <- head(sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix, 100)
-            tie2 <- head(sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix, 100)
+            tie1 <- sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix
+            tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
             tie1 <- tie1[1:min(length(tie1),length(tie2))]
             tie2 <- tie2[1:min(length(tie1),length(tie2))]
             pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
