@@ -3936,7 +3936,7 @@ server <- function(input,output,session) {
         withProgress(message = 'Computing MIDAS trend.',
                      detail = 'This may take a while ...', value = 0, {
                        setProgress(0)
-                       vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0, trans$y))
+                       vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 0, trans$x, trans$y))
                        vel <- c(vel[1,],vel[2,])
                        vel <- vel[vel > -999999]
                        if (length(vel) > 9) {
@@ -3953,7 +3953,7 @@ server <- function(input,output,session) {
                        }
                        if (length(trans$offsetEpochs) > 0 && "Offset" %in% isolate(input$model)) {
                          setProgress(0)
-                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1, trans$y))
+                         vel <- sapply(1:length(trans$x), function(x) midas_vel(m = x, t = period, disc = 1, trans$x, trans$y))
                          vel <- c(vel[1,],vel[2,])
                          vel <- vel[vel > -999999]
                          if (length(vel) > 9) {
@@ -8306,6 +8306,7 @@ server <- function(input,output,session) {
   }, priority = 3)
   observeEvent(c(input$neuenu, input$tunits, input$sunits, allCoordinates()), {
     req(db1[[info$db1]], input$euler)
+    removeNotification("unknown_units")
     removeNotification("no_rotation")
     if (((isTruthy(inputs$pole_x) && isTruthy(inputs$pole_y) && isTruthy(inputs$pole_z)) || (isTruthy(inputs$pole_lat) && isTruthy(inputs$pole_lon) && isTruthy(inputs$pole_rot))) &&
         (((isTruthy(inputs$station_x) && isTruthy(inputs$station_y) && isTruthy(inputs$station_z)) || (isTruthy(inputs$station_lat) && isTruthy(inputs$station_lon))) ||
@@ -8322,35 +8323,46 @@ server <- function(input,output,session) {
       } else if (input$sunits == 2) {
         scaling <- 1000
       } else { #guessing the series units
+        if (isTruthy(input$plateModel)) {
+          showNotification(HTML("The series units have not been defined on the left panel.<br>Unable to set the correct units of the plate motion rate."), action = NULL, duration = 15, closeButton = T, id = "unknown_units", type = "error", session = getDefaultReactiveDomain())
+          shinyjs::delay(10000, updateSelectInput(session, inputId = "plateModel", selected = ""))
+        }
+        req(info$stop)
         if (input$tunits == 1) {
-          period <- 365.25
+          period <- daysInYear
+          x <- db1[[info$db1]]$x1
         } else if (input$tunits == 2) {
           period <- 365.25/7
+          x <- db1[[info$db1]]$x2
         } else if (input$tunits == 3) {
           period <- 1
+          x <- db1[[info$db1]]$x3
         }
         if (input$format == 4) {
           selected <- db1[[info$db1]]$y1 # current series
         } else {
           selected <- db1[[info$db1]]$y3 # up series
         }
-        if (diff(range(db1[[info$db1]]$x3))/period < 1 || length(db1[[info$db1]]$x3) < 6) {
-          rate <- (mean(selected[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(selected[1:as.integer(length(db1[[info$db1]]$x3*0.1))])) / (mean(db1[[info$db1]]$x3[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(db1[[info$db1]]$x3[1:as.integer(length(db1[[info$db1]]$x3*0.1))]))
+        if (diff(range(x))/period < 1 || length(x) < 6) {
+          rate <- (mean(selected[-1*as.integer(length(x)*0.1):length(x)]) - mean(selected[1:as.integer(length(x)*0.1)])) / (mean(x[-1*as.integer(length(x)*0.1):length(x)]) - mean(x[1:as.integer(length(x)*0.1)]))
         } else {
           withProgress(message = 'Series units not defined.',
                        detail = 'Trying to guess the units ...', value = 0, {
                          setProgress(0)
-                         vel <- sapply(1:length(db1[[info$db1]]$x3), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                         vel <- sapply(1:length(x), function(i) midas_vel(m = i, t = period, disc = 0, x, selected))
                          vel <- c(vel[1,],vel[2,])
                          vel <- vel[vel > -999999]
                          vel_sig <- 1.4826*mad(vel, na.rm = T)
                          vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
-                         rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                         vel_good <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                         rate <- median(vel_good, na.rm = T)
                        })
         }
-        if (abs(rate) > 0.05 && sd(selected - rate*(db1[[info$db1]]$x3 - mean(db1[[info$db1]]$x3))) > 0.05) {
+        if (abs(rate) > 0.05 && sum(abs(selected) > 3*0.05)*100/length(selected) > 10) {
           scaling <- 1000 # series units are mm most likely
           updateRadioButtons(session, inputId = "sunits", selected = 2)
+        } else if (abs(rate) > 0.05 || sum(abs(selected) > 3*0.05)*100/length(selected) > 10) {
+          # ambiguous time units
         } else {
           scaling <- 1 # series units are m most likely
           updateRadioButtons(session, inputId = "sunits", selected = 1)
@@ -8526,20 +8538,29 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (isTruthy(input$gia) || isTruthy(trans$gia)) {
       if (messages > 0) cat(file = stderr(), mySession, "GIA model:", input$giaModel, "\n")
+      removeNotification("unknown_units")
       removeNotification("bad_coordinates")
       z1 <- z2 <- NULL
       if (input$tunits == 1) {
         scaling <- 1/daysInYear
+        x <- db1[[info$db1]]$x1
       } else if (input$tunits == 2) {
         scaling <- 7/daysInYear
+        x <- db1[[info$db1]]$x2
       } else {
         scaling <- 1
+        x <- db1[[info$db1]]$x3
       }
       if (input$sunits == 1) {
         scaling <- scaling/1000
       } else if (input$sunits == 2) {
         scaling <- scaling
       } else { #guessing the series units
+        if (isTruthy(input$giaModel)) {
+          showNotification(HTML("The series units have not been defined on the left panel.<br>Unable to set the correct units of the GIA rate."), action = NULL, duration = 15, closeButton = T, id = "unknown_units", type = "error", session = getDefaultReactiveDomain())
+          shinyjs::delay(10000, updateSelectInput(session, inputId = "giaModel", selected = ""))
+        }
+        req(info$stop)
         if (input$tunits == 1) {
           period <- 365.25
         } else if (input$tunits == 2) {
@@ -8552,23 +8573,26 @@ server <- function(input,output,session) {
         } else {
           selected <- db1[[info$db1]]$y3 # up series
         }
-        if (diff(range(db1[[info$db1]]$x3))/period < 1 || length(db1[[info$db1]]$x3) < 6) {
-          rate <- (mean(selected[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(selected[1:as.integer(length(db1[[info$db1]]$x3*0.1))])) / (mean(db1[[info$db1]]$x3[-1*as.integer(length(db1[[info$db1]]$x3*0.1)):length(db1[[info$db1]]$x3)]) - mean(db1[[info$db1]]$x3[1:as.integer(length(db1[[info$db1]]$x3*0.1))]))
+        if (diff(range(x))/period < 1 || length(x) < 6) {
+          rate <- (mean(selected[-1*as.integer(length(x)*0.1):length(x)]) - mean(selected[1:as.integer(length(x)*0.1)])) / (mean(x[-1*as.integer(length(x)*0.1):length(x)]) - mean(x[1:as.integer(length(x)*0.1)]))
         } else {
           withProgress(message = 'Series units not defined.',
                        detail = 'Trying to guess the units ...', value = 0, {
                          setProgress(0)
-                         vel <- sapply(1:length(db1[[info$db1]]$x3), function(x) midas_vel(m = x, t = period, disc = 0, selected))
+                         vel <- sapply(1:length(x), function(i) midas_vel(m = i, t = period, disc = 0, x, selected))
                          vel <- c(vel[1,],vel[2,])
                          vel <- vel[vel > -999999]
                          vel_sig <- 1.4826*mad(vel, na.rm = T)
                          vel_lim <- c(median(vel) + 2*vel_sig, median(vel) - 2*vel_sig)
-                         rate <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                         vel_good <- vel[vel < vel_lim[1] & vel > vel_lim[2]]
+                         rate <- median(vel_good, na.rm = T)
                        })
         }
-        if (abs(rate) > 0.05 && sd(selected - rate*(db1[[info$db1]]$x3 - mean(db1[[info$db1]]$x3))) > 0.05) {
+        if (abs(rate) > 0.1 && sum(abs(selected) > 3*0.05)*100/length(selected) > 10) {
           scaling <- 1000 # series units are mm most likely
           updateRadioButtons(session, inputId = "sunits", selected = 2)
+        } else if (abs(rate) > 0.1 || sum(abs(selected) > 3*0.05)*100/length(selected) > 10) {
+          # ambiguous time units
         } else {
           scaling <- 1 # series units are m most likely
           updateRadioButtons(session, inputId = "sunits", selected = 1)
@@ -12449,9 +12473,6 @@ server <- function(input,output,session) {
       info$last_optionSecondary <- 1
       updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
     }
-    if (!isTruthy(format)) {
-      format <- 1
-    }
     removeNotification("no_weeks")
     removeNotification("no_error_bars")
     removeNotification("bad_coordinates")
@@ -15817,34 +15838,34 @@ server <- function(input,output,session) {
     })
   }
   #
-  midas_vel <- function(m,t,disc,series) {
+  midas_vel <- function(m,t,disc,x,y) {
     setProgress(round(m/info$points, digits = 1))
     vel_f <- -999999
     vel_b <- -999999
-    index_f <- which.min(abs(trans$x - (trans$x[m] + t)))
-    index_b <- which.min(abs(trans$x - (trans$x[m] - t)))
+    index_f <- which.min(abs(x - (x[m] + t)))
+    index_b <- which.min(abs(x - (x[m] - t)))
     # checking forward pair
-    if (abs(trans$x[index_f] - trans$x[m] - t) < info$tol) {
+    if (abs(x[index_f] - x[m] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(trans$x[m] < as.numeric(trans$offsetEpochs) & trans$x[index_f] > as.numeric(trans$offsetEpochs))) {
-            vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
+          if (!any(x[m] < as.numeric(trans$offsetEpochs) & x[index_f] > as.numeric(trans$offsetEpochs))) {
+            vel_f <- (y[index_f] - y[m]) / (x[index_f] - x[m])
           }
         }
       } else {
-        vel_f <- (series[index_f] - series[m]) / (trans$x[index_f] - trans$x[m])
+        vel_f <- (y[index_f] - y[m]) / (x[index_f] - x[m])
       }
     }
     # checking backward pair
-    if (abs(trans$x[m] - trans$x[index_b] - t) < info$tol) {
+    if (abs(x[m] - x[index_b] - t) < info$tol) {
       if (disc == 1) {
         if (length(trans$offsetEpochs > 0)) {
-          if (!any(trans$x[index_b] < as.numeric(trans$offsetEpochs) & trans$x[m] > as.numeric(trans$offsetEpochs))) {
-            vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
+          if (!any(x[index_b] < as.numeric(trans$offsetEpochs) & x[m] > as.numeric(trans$offsetEpochs))) {
+            vel_b <- (y[m] - y[index_b]) / (x[m] - x[index_b])
           }
         }
       } else {
-        vel_b <- (series[m] - series[index_b]) / (trans$x[m] - trans$x[index_b])
+        vel_b <- (y[m] - y[index_b]) / (x[m] - x[index_b])
       }
     }
     return(c(vel_f,vel_b))
