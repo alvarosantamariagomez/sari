@@ -9859,6 +9859,35 @@ server <- function(input,output,session) {
   observeEvent(throttledSwap(), {
     req(db1[[info$db1]], db2[[info$db2]])
     if (messages > 0) cat(file = stderr(), mySession, "Swapping primary and secondary series", "\n")
+    # axis scale
+    if (isTruthy(inputs$scaleFactor)) {
+      updateTextInput(session, inputId = "scaleFactor", value = 1/inputs$scaleFactor)
+      inputs$scaleFactor <- 1/inputs$scaleFactor
+    }
+    # plate model
+    plate2 <- trans$plate2
+    if (isTruthy(trans$plate)) {
+      trans$plate2 <- trans$plate
+    } else {
+      trans$plate2 <- c(0,0,0)
+    }
+    if (isTruthy(plate2)) {
+      trans$plate <- plate2
+    } else {
+      trans$plate <- c(0,0,0)
+    }
+    # GIA model
+    gia2 <- trans$gia2
+    if (isTruthy(trans$gia)) {
+      trans$gia2 <- trans$gia
+    } else {
+      trans$gia2 <- c(0,0,0)
+    }
+    if (isTruthy(plate2)) {
+      trans$gia <- gia2
+    } else {
+      trans$gia <- c(0,0,0)
+    }
     # data base
     infodb1 <- info$db1
     info$db1 <- info$db2
@@ -9888,9 +9917,6 @@ server <- function(input,output,session) {
     samplingRaw <- info$samplingRaw
     info$samplingRaw <- info$samplingRaw2
     info$samplingRaw2 <- samplingRaw
-    if (isTruthy(inputs$scaleFactor)) {
-      updateTextInput(session, inputId = "scaleFactor", value = 1/inputs$scaleFactor)
-    }
     # resampling periods
     step <- isolate(inputs$step)
     step2 <- isolate(inputs$step2)
@@ -14608,10 +14634,10 @@ server <- function(input,output,session) {
       if (input$tab == 4 && input$optionSecondary == 1 && isTruthy(db2[[info$db2]]) && sum(abs(db2[[info$db2]][[paste0("y",component2)]]), na.rm = T) > 0) {
         sy2 <- db2[[info$db2]][[paste0("sy",component2)]] * inputs$scaleFactor
         if (component2 < 3 && isTruthy(trans$plate2) && input$eulerType == 2 && isTruthy(allCoordinates()[c(10,11,12)])) {
-          y2 <- y2 - trans$plate2[component2]*(x2 - centerx) - centery
+          y2 <- y2 - trans$plate2[component2]*(x2 - centerx)*inputs$scaleFactor - centery
         }
         if (component2 > 2  && isTruthy(trans$gia2) && input$giaType == 2) {
-          y2 <- y2 - trans$gia2[component2]*(x2 - centerx) - centery
+          y2 <- y2 - trans$gia2[component2]*(x2 - centerx)*inputs$scaleFactor - centery
         }
         if (input$symbol == 0) {
           symbol <- 'p'
@@ -14620,7 +14646,7 @@ server <- function(input,output,session) {
         } else if (input$symbol == 2) {
           symbol <- 'o'
         }
-        if (isTruthy(input$sameScale)) {
+        if (input$sameScale) {
           pointsX1 <- x1[x1 >= rangeX[1] & x1 <= rangeX[2]]
           pointsX2 <- x2[x2 >= rangeX[1] & x2 <= rangeX[2]]
           pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
