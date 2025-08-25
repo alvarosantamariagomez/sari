@@ -2460,10 +2460,13 @@ server <- function(input,output,session) {
                            y3D11 = NULL, y3D21 = NULL, y3D31 = NULL, y3D12 = NULL, y3D22 = NULL, y3D32 = NULL)
 
   # 3. series info
+  #   sampling = current sampling of the series in the current time units
+  #   sampling0 = sampling of the series in the current time units and before resampling
+  #   samplingRaw = sampling of the uploaded series for each time unit
   info <- reactiveValues(points = NULL, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, menu = c(1),
                          decimalsx = NULL, decimalsy = NULL, decimalsyList = c(), scientific = F, scientificList = c(), nsmall = NULL, digits = NULL,
-                         sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), rangex = NULL, errorbars = T,
+                         sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), samplingRaw2 = c(0,0,0), rangex = NULL, errorbars = T,
                          step = NULL, step2 = NULL, stepUnit = NULL,
                          minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits.label = NULL, tunits.known1 = F, tunits.known2 = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
@@ -7277,7 +7280,11 @@ server <- function(input,output,session) {
               } else {
                 enable("sameScale")
               }
-              enable("swap")
+              if (input$tab == 5) {
+                disable("swap")
+              } else {
+                enable("swap") 
+              }
             } else {
               updateCheckboxInput(session, inputId = "fullSeries", value = F)
               updateCheckboxInput(session, inputId = "sameScale", value = F)
@@ -9173,6 +9180,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$step), {
     req(db1$original)
     removeNotification("bad_window")
+    if (isTruthy(inputs$step) && inputs$step == info$sampling) req(info$stop)
     if (messages > 0) cat(file = stderr(), mySession, "Averaging primary series", "\n")
     if (input$fitType == 2) {
       info$run <- NULL
@@ -9302,6 +9310,7 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$step2, info$redo_step2), {
     req(db2$original)
     removeNotification("bad_window")
+    if (isTruthy(inputs$step2) && inputs$step2 == min(diff(db2[[info$db2]][[paste0("x",input$tunits)]],1))) req(info$stop)
     if (messages > 0) cat(file = stderr(), mySession, "Averaging secondary series", "\n")
     if (input$optionSecondary > 1) {
       if (input$fitType == 2) {
@@ -9384,14 +9393,23 @@ server <- function(input,output,session) {
         if (input$tunits == 1) {
           db2$resampled$x2 <- mjd2week(db2$resampled$x1)
           db2$resampled$x3 <- mjd2year(db2$resampled$x1)
+          info$samplingRaw2[1] <- min(diff(db2$resampled$x1,1))
+          info$samplingRaw2[2] <- info$samplingRaw2[1]/7
+          info$samplingRaw2[3] <- info$samplingRaw2[1]/daysInYear
         } else if (input$tunits == 2) {
           db2$resampled$x2 <- db2$resampled$x1
           db2$resampled$x3 <- week2year(db2$resampled$x1)
           db2$resampled$x1 <- week2mjd(db2$resampled$x1)
+          info$samplingRaw2[2] <- min(diff(db2$resampled$x2,1))
+          info$samplingRaw2[1] <- info$samplingRaw2[2]*7
+          info$samplingRaw2[3] <- info$samplingRaw2[1]/daysInYear
         } else if (input$tunits == 3) {
           db2$resampled$x3 <- db2$resampled$x1
           db2$resampled$x2 <- year2week(db2$resampled$x1)
           db2$resampled$x1 <- year2mjd(db2$resampled$x1)
+          info$samplingRaw2[3] <- min(diff(db2$resampled$x3,1))
+          info$samplingRaw2[1] <- info$samplingRaw2[3]*daysInYear
+          info$samplingRaw2[2] <- info$samplingRaw2[1]/7
         }
         info$db2 <- "resampled"
       } else {
@@ -9836,37 +9854,52 @@ server <- function(input,output,session) {
   }, priority = 0)
 
   # Observe swap ####
-  observeEvent(input$swap, {
+  swapClicks <- reactive(input$swap)
+  throttledSwap <- throttle(swapClicks, 6000)
+  observeEvent(throttledSwap(), {
     req(db1[[info$db1]], db2[[info$db2]])
     if (messages > 0) cat(file = stderr(), mySession, "Swapping primary and secondary series", "\n")
     # data base
-    info$db1 <- info$db2 <- NULL
-    info$db1 <- info$db2 <- "original"
-    db1_tmp <- db1[[info$db1]]
-    db2_tmp <- db2[[info$db2]]
-    db1[[info$db1]] <- db2_tmp
+    infodb1 <- info$db1
+    info$db1 <- info$db2
+    info$db2 <- infodb1
+    db1_tmp <- isolate(list(original = db1$original, resampled = db1$resampled, merged = db1$merged))
     # keeping only if all components are valid
-    if (input$format < 4) {
-      db2[[info$db1]] <- db1_tmp[db1_tmp$status1 %in% T & db1_tmp$status2 %in% T & db1_tmp$status3 %in% T,]
-    } else {
-      db2[[info$db1]] <- db1_tmp[db1_tmp$status1 %in% T,]
+    for (type in names(db1_tmp)) {
+      db1[[type]] <- db2[[type]]
+      if (isTruthy(db1[[type]]) && !isTruthy(db1[[type]]$status1)) {
+        db1[[type]]$status1 <- rep(T, length(db1[[type]]$x1))
+        db1[[type]]$status2 <- rep(T, length(db1[[type]]$x2))
+        db1[[type]]$status3 <- rep(T, length(db1[[type]]$x3))
+      }
+      if (input$format < 4) {
+        db2[[type]] <- db1_tmp[[type]][db1_tmp[[type]]$status1 %in% T & db1_tmp[[type]]$status2 %in% T & db1_tmp[[type]]$status3 %in% T,]
+      } else {
+        db2[[type]] <- db1_tmp[[type]][db1_tmp[[type]]$status1 %in% T,]
+      }
     }
-    if (!isTruthy(db1[[info$db1]]$status1)) {
-      db1[[info$db1]]$status1 <- rep(T, length(db1[[info$db1]]$x1))
-      db1[[info$db1]]$status2 <- rep(T, length(db1[[info$db1]]$x1))
-      db1[[info$db1]]$status3 <- rep(T, length(db1[[info$db1]]$x1))
-    }
-    db2[[info$db1]]$status1 <- NULL
-    db2[[info$db1]]$status2 <- NULL
-    db2[[info$db1]]$status3 <- NULL
+    rm(db1_tmp)
     if (input$optionSecondary == 1 && isTruthy(input$fullSeries)) {
       ranges$x1 <- range(c(db1[[info$db1]][[paste0("x",input$tunits)]], db2[[info$db2]][[paste0("x",input$tunits)]]), na.rm = T)
     } else {
       ranges$x0 <- ranges$x1 <- range(db1[[info$db1]][[paste0("x",input$tunits)]], na.rm = T)
     }
     ranges$x2 <- NULL
+    samplingRaw <- info$samplingRaw
+    info$samplingRaw <- info$samplingRaw2
+    info$samplingRaw2 <- samplingRaw
     if (isTruthy(inputs$scaleFactor)) {
       updateTextInput(session, inputId = "scaleFactor", value = 1/inputs$scaleFactor)
+    }
+    # resampling periods
+    step <- isolate(inputs$step)
+    step2 <- isolate(inputs$step2)
+    updateTextInput(session, inputId = "step2", value = step)
+    if (isTruthy(step2) && !input$average) {
+      updateCheckboxInput(session, inputId = "average", value = T)
+      shinyjs::delay(100, updateTextInput(session, inputId = "step", value = step2))
+    } else {
+      updateTextInput(session, inputId = "step", value = step2)
     }
     # file names
     file1 <- file$primary
@@ -9911,7 +9944,7 @@ server <- function(input,output,session) {
       ids_info <- paste(id2, id1, sep = " & ")
       updateTextInput(session, inputId = "ids", value = ids_info)
     }
-  })
+  }, priority = 200)
 
   # Observe ids ####
   observeEvent(c(inputs$ids, input$optionSecondary), {
@@ -12261,7 +12294,15 @@ server <- function(input,output,session) {
         if (!isTruthy(file.exists(files$datapath[i]))) {
           showNotification(paste("Problem downloading the", files$name[i], "series from the remote server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
         } else {
-          table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,url$server2,2)
+          if (!isTruthy(info$format2)) {
+            info$format2 <- input$format2
+          }
+          if (isTruthy(url$server2)) {
+            server2 <- url$server2
+          } else {
+            server2 <- ""
+          }
+          table2 <- extract_table(files$datapath[i],sep2,info$format2,as.numeric(inputs$epoch2),as.numeric(inputs$variable2),as.numeric(inputs$errorBar2),input$ne,server2,2)
           # starting EOSTLS series at epoch .0, except for daily series
           if (url$server2 == "EOSTLS" && num > 1 && any(unique(table2$x1 %% 1) == 0)) {
             while (table2$x1[1] %% 1 > 0) {
@@ -12600,6 +12641,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[1] <- min(diff(days,1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+              } else {
+                info$samplingRaw2[1] <- min(diff(days,1))
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
             } else if (server == "SONEL") {
               if (series == 1) {
@@ -12614,6 +12659,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[3] <- min(diff(extracted$x3,1))
                 info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
+              } else {
+                info$samplingRaw2[3] <- min(diff(extracted$x3,1))
+                info$samplingRaw2[1] <- info$samplingRaw[3]*daysInYear
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
               }
             } else if (server == "SIRGAS") {
               if (series == 1) {
@@ -12629,6 +12678,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[1] <- min(diff(days,1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+              } else {
+                info$samplingRaw2[1] <- min(diff(days,1))
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
             } else if (server == "IGS") {
               if (series == 1) {
@@ -12643,6 +12696,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[1] <- min(diff(tableAll[,1],1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+              } else {
+                info$samplingRaw2[1] <- min(diff(tableAll[,1],1))
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
             } else if (server == "FORMATERRE" || isTruthy(spotgins)) { # SPOTGINS series
               if (series == 1) {
@@ -12657,6 +12714,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[1] <- min(diff(tableAll[,1],1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+              } else {
+                info$samplingRaw2[1] <- min(diff(tableAll[,1],1))
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
             } else if (server == "EARTHSCOPE") {
               if (series == 1) {
@@ -12671,6 +12732,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[1] <- min(diff(extracted$x1,1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+              } else {
+                info$samplingRaw2[1] <- min(diff(extracted$x1,1))
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
             } else if (server == "EOSTLS") {
               if (series == 1) {
@@ -12685,6 +12750,10 @@ server <- function(input,output,session) {
                 info$samplingRaw[1] <- min(diff(tableAll[,1],1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
                 info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+              } else {
+                info$samplingRaw2[1] <- min(diff(tableAll[,1],1))
+                info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
             } else { #plain ENU series
               # ISO 8601 dates
@@ -12703,6 +12772,10 @@ server <- function(input,output,session) {
                   info$samplingRaw[1] <- min(diff(extracted$x1,1))
                   info$samplingRaw[2] <- info$samplingRaw[1]/7
                   info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+                } else {
+                  info$samplingRaw2[1] <- min(diff(extracted$x1,1))
+                  info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                  info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYea
                 }
               } else {
                 if (!isTruthy(input$tunits)) {
@@ -12722,6 +12795,10 @@ server <- function(input,output,session) {
                     info$samplingRaw[1] <- min(diff(extracted$x1,1))
                     info$samplingRaw[2] <- info$samplingRaw[1]/7
                     info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+                  } else {
+                    info$samplingRaw2[1] <- min(diff(extracted$x1,1))
+                    info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                    info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
                   }
                 } else if (input$tunits == 2) {
                   extracted$x2 <- tableAll[,1]
@@ -12735,6 +12812,10 @@ server <- function(input,output,session) {
                     info$samplingRaw[2] <- min(diff(extracted$x2,1))
                     info$samplingRaw[1] <- info$samplingRaw[2]*7
                     info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+                  } else {
+                    info$samplingRaw2[2] <- min(diff(extracted$x2,1))
+                    info$samplingRaw2[1] <- info$samplingRaw[2]*7
+                    info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
                   }
                 } else if (input$tunits == 3) {
                   extracted$x3 <- tableAll[,1]
@@ -12748,6 +12829,10 @@ server <- function(input,output,session) {
                     info$samplingRaw[3] <- min(diff(extracted$x3,1))
                     info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
                     info$samplingRaw[2] <- info$samplingRaw[1]/7
+                  } else {
+                    info$samplingRaw2[3] <- min(diff(extracted$x3,1))
+                    info$samplingRaw2[1] <- info$samplingRaw[3]*daysInYear
+                    info$samplingRaw2[2] <- info$samplingRaw[1]/7
                   }
                 }
               }
@@ -12787,6 +12872,10 @@ server <- function(input,output,session) {
           info$samplingRaw[1] <- min(diff(tableAll[,3],1))
           info$samplingRaw[2] <- info$samplingRaw[1]/7
           info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+        } else {
+          info$samplingRaw2[1] <- min(diff(tableAll[,3],1))
+          info$samplingRaw2[2] <- info$samplingRaw[1]/7
+          info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
         }
       }
     ## NGL ####
@@ -12806,6 +12895,10 @@ server <- function(input,output,session) {
           info$samplingRaw[1] <- min(diff(extracted$x1,1))
           info$samplingRaw[2] <- info$samplingRaw[1]/7
           info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+        } else {
+          info$samplingRaw2[1] <- min(diff(extracted$x1,1))
+          info$samplingRaw2[2] <- info$samplingRaw[1]/7
+          info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
         }
         if (isTruthy(swap)) {
           extracted$y2 <- tableAll[,8] - tableAll[1,8] + tableAll[,9] #East
@@ -12852,6 +12945,10 @@ server <- function(input,output,session) {
                   info$samplingRaw[1] <- min(diff(extracted$x1,1))
                   info$samplingRaw[2] <- info$samplingRaw[1]/7
                   info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+                } else {
+                  info$samplingRaw2[1] <- min(diff(extracted$x1,1))
+                  info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                  info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
                 }
               } else if (server == "PSMSL") {
                 if (series == 1) {
@@ -12866,6 +12963,10 @@ server <- function(input,output,session) {
                   info$samplingRaw[3] <- min(diff(extracted$x3,1))
                   info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
                   info$samplingRaw[2] <- info$samplingRaw[1]/7
+                } else {
+                  info$samplingRaw2[3] <- min(diff(extracted$x3,1))
+                  info$samplingRaw2[1] <- info$samplingRaw[3]*daysInYear
+                  info$samplingRaw2[2] <- info$samplingRaw[1]/7
                 }
               } else {
                 if (!isTruthy(input$tunits)) {
@@ -12882,6 +12983,10 @@ server <- function(input,output,session) {
                       info$samplingRaw[1] <- min(diff(extracted$x1,1))
                       info$samplingRaw[2] <- info$samplingRaw[1]/7
                       info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+                    } else {
+                      info$samplingRaw2[1] <- min(diff(extracted$x1,1))
+                      info$samplingRaw2[2] <- info$samplingRaw[1]/7
+                      info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
                     }
                   } else if (input$tunits == 2) {
                     extracted$x2 <- extracted$x1
@@ -12891,6 +12996,10 @@ server <- function(input,output,session) {
                       info$samplingRaw[2] <- min(diff(extracted$x2,1))
                       info$samplingRaw[1] <- info$samplingRaw[2]*7
                       info$samplingRaw[3] <- info$samplingRaw[1]/daysInYear
+                    } else {
+                      info$samplingRaw2[2] <- min(diff(extracted$x2,1))
+                      info$samplingRaw2[1] <- info$samplingRaw[2]*7
+                      info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
                     }
                   } else if (input$tunits == 3) {
                     extracted$x3 <- extracted$x1
@@ -12900,6 +13009,10 @@ server <- function(input,output,session) {
                       info$samplingRaw[3] <- min(diff(extracted$x3,1))
                       info$samplingRaw[1] <- info$samplingRaw[3]*daysInYear
                       info$samplingRaw[2] <- info$samplingRaw[1]/7
+                    } else {
+                      info$samplingRaw2[3] <- min(diff(extracted$x3,1))
+                      info$samplingRaw2[1] <- info$samplingRaw[3]*daysInYear
+                      info$samplingRaw2[2] <- info$samplingRaw[1]/7
                     }
                   }
                 } else {
