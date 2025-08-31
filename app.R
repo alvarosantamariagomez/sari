@@ -2765,32 +2765,30 @@ server <- function(input,output,session) {
   # Series summary ####
   output$information1 <- output$information2 <- renderUI({
     req(db1[[info$db1]])
-    # isolate({
-      if (input$tunits == 1) {
-        units <- "days"
-      } else if (input$tunits == 2) {
-        units <- "weeks"
-      } else if (input$tunits == 3) {
-        units <- "years"
-      }
-      if (input$tab > 3) {
-        statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
-        x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
-        rangex <- range(x)
-        seriesInfo(x)
-        removed <- max(sum(!db1[[info$db1]]$status1 %in% T), sum(!db1[[info$db1]]$status2 %in% T), sum(!db1[[info$db1]]$status3 %in% T), na.rm = T)
-      } else {
-        rangex <- range(trans$x)
-        removed <- info$removed
-      }
-      line1 <- sprintf("Number of points = %d",info$points)
-      line2 <- sprintf("Number of points removed = %d",removed)
-      line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
-      line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
-      line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
-      line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
-      HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
-    # })
+    if (input$tunits == 1) {
+      units <- "days"
+    } else if (input$tunits == 2) {
+      units <- "weeks"
+    } else if (input$tunits == 3) {
+      units <- "years"
+    }
+    if (input$tab > 3) {
+      statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
+      x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
+      rangex <- range(x)
+      seriesInfo(x)
+      removed <- max(sum(!db1[[info$db1]]$status1 %in% T), sum(!db1[[info$db1]]$status2 %in% T), sum(!db1[[info$db1]]$status3 %in% T), na.rm = T)
+    } else {
+      rangex <- range(trans$x)
+      removed <- info$removed
+    }
+    line1 <- sprintf("Number of points = %d",info$points)
+    line2 <- sprintf("Number of points removed = %d",removed)
+    line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
+    line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
+    line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
+    line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
+    HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
   })
 
   # Debouncers & checks for user typed inputs ####
@@ -2938,7 +2936,7 @@ server <- function(input,output,session) {
     if (grepl("^=", trimws(step_d()), perl = T)) {
       step <- try(eval(parse(text = sub("=", "", trimws(step_d())))), silent = T)
       if (isTruthy(step) && !inherits(step,"try-error")) {
-        updateTextInput(session, inputId = "step", value = step)
+        updateTextInput(session, inputId = "step", value = sprintf("%.*f",info$decimalsx, step))
       }
       req(info$stop)
     } else {
@@ -2951,7 +2949,7 @@ server <- function(input,output,session) {
     if (grepl("^=", trimws(step2_d()), perl = T)) {
       step <- try(eval(parse(text = sub("=","",trimws(step2_d())))), silent = T)
       if (isTruthy(step) && !inherits(step,"try-error")) {
-        updateTextInput(session, inputId = "step2", value = step)
+        updateTextInput(session, inputId = "step2", value = sprintf("%.*f",info$decimalsx, step))
       }
       req(info$stop)
     } else {
@@ -8705,6 +8703,7 @@ server <- function(input,output,session) {
   # Observe time units ####
   observeEvent(input$tunits, {
     req(db1[[info$db1]], input$tunits != info$tunits.last)
+print("input$tunits")
     if (input$tunits == 1) {
       x1 <- db1[[info$db1]]$x1
       x2 <- db2[[info$db2]]$x1
@@ -8737,10 +8736,11 @@ server <- function(input,output,session) {
       }
     }
     if (isTruthy(inputs$step)) {
-      session$sendCustomMessage("step", median(diff(x1,1)))
+print(paste("change tunits",inputs$step,"/",info$sampling,"by",scale,"=>",inputs$step*scale,"in 0.2 s"))
+      shinyjs::delay(500, updateTextInput(session, inputId = "step", value = sprintf("%.*f",info$decimalsx, inputs$step*scale)))
     }
     if (isTruthy(inputs$step2)) {
-      session$sendCustomMessage("step2", median(diff(x2,1)))
+      shinyjs::delay(500, updateTextInput(session, inputId = "step2", value = sprintf("%.*f",info$decimalsx, inputs$step2*scale)))
     }
     if (isTruthy(inputs$trendRef)) {
       if (info$tunits.last == 1) {
@@ -9180,7 +9180,8 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$step), {
     req(db1$original)
     removeNotification("bad_window")
-    if (isTruthy(inputs$step) && inputs$step == info$sampling) req(info$stop)
+    if (isTruthy(inputs$step) && abs(inputs$step - info$sampling) < info$tol) req(info$stop)
+print(paste("averaging from",info$sampling,"to",inputs$step,"dif",inputs$step - info$sampling,"wrt",info$tol))
     if (messages > 0) cat(file = stderr(), mySession, "Averaging primary series", "\n")
     if (input$fitType == 2) {
       info$run <- NULL
@@ -9310,7 +9311,8 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$step2, info$redo_step2), {
     req(db2$original)
     removeNotification("bad_window")
-    if (isTruthy(inputs$step2) && inputs$step2 == min(diff(db2[[info$db2]][[paste0("x",input$tunits)]],1))) req(info$stop)
+    if (isTruthy(inputs$step2) && abs(inputs$step2 / min(diff(db2[[info$db2]][[paste0("x",input$tunits)]],1)) - 1) < 1/4) req(info$stop)
+print(paste(inputs$step2, min(diff(db2[[info$db2]][[paste0("x",input$tunits)]],1))))
     if (messages > 0) cat(file = stderr(), mySession, "Averaging secondary series", "\n")
     if (input$optionSecondary > 1) {
       if (input$fitType == 2) {
@@ -9606,6 +9608,7 @@ server <- function(input,output,session) {
         }
       }  
       # merging the primary and secondary series
+      table2$status1 <- table2$status2 <- table2$status3 <- NULL
       if (input$optionSecondary == 2) {
         if (info$format == 4) {
           table_common <- data.frame(within(merge(table1,table2,by = "x1"), {
@@ -9920,6 +9923,7 @@ server <- function(input,output,session) {
     # resampling periods
     step <- isolate(inputs$step)
     step2 <- isolate(inputs$step2)
+print(paste("steps",step,step2))
     updateTextInput(session, inputId = "step2", value = step)
     if (isTruthy(step2) && !input$average) {
       updateCheckboxInput(session, inputId = "average", value = T)
@@ -16023,7 +16027,7 @@ server <- function(input,output,session) {
       incr <- abs(as.numeric(sprintf("%.*f", decimals1, diff(sort(frac)))))
       incr <- incr[incr != 0]
       if (isTruthy(incr)) {
-        min_incr <- format(min(incr), digits = 1, scientific = F)
+        min_incr <- format(min(incr), nsmall = 1, scientific = F)
         decimals2 <- nchar(min_incr) - 2
         decimals <- min(decimals1,decimals2)
         if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
@@ -17048,7 +17052,7 @@ server <- function(input,output,session) {
     if (all(x < 35000)) {
       offset <- 33282
     }
-    decimals <- decimalplaces(x, 0) + 2
+    decimals <- decimalplaces(x, 0) + 3
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, (x + offset - 44244)/7)))
   }
@@ -17082,7 +17086,7 @@ server <- function(input,output,session) {
   }
   #
   year2week <- function(x) {
-    decimals <- decimalplaces(x, 0) - 1
+    decimals <- decimalplaces(x, 0) - 0
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, difftime(date_decimal(x), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks"))))
   }
@@ -17298,6 +17302,7 @@ server <- function(input,output,session) {
       trans$gaps <- rep(T, length(x))
     }
     info$decimalsx <- decimalplaces(x,0)
+print(paste("current sampling",info$sampling,"decimals",info$decimalsx))
     if (!isTruthy(input$tunits) || input$tunits == 3) {
       info$tunits.label <- "years"
     } else if (input$tunits == 1) {
