@@ -8701,9 +8701,10 @@ server <- function(input,output,session) {
   })
 
   # Observe time units ####
-  observeEvent(input$tunits, {
+  tunitsClicks <- reactive(input$tunits)
+  throttledTunits <- debounce(tunitsClicks, 1000)
+  observeEvent(throttledTunits(), {
     req(db1[[info$db1]], input$tunits != info$tunits.last)
-print("input$tunits")
     if (input$tunits == 1) {
       x1 <- db1[[info$db1]]$x1
       x2 <- db2[[info$db2]]$x1
@@ -8736,11 +8737,16 @@ print("input$tunits")
       }
     }
     if (isTruthy(inputs$step)) {
-print(paste("change tunits",inputs$step,"/",info$sampling,"by",scale,"=>",inputs$step*scale,"in 0.2 s"))
-      shinyjs::delay(500, updateTextInput(session, inputId = "step", value = sprintf("%.*f",info$decimalsx, inputs$step*scale)))
+      # shinyjs::delay(200, updateTextInput(session, inputId = "step", value = sprintf("%.*f",info$decimalsx, inputs$step*scale)))
+      shinyjs::delay(100, {
+print(paste("change step",info$step,"by",scale,"=>",info$step*scale))
+        info$step <- as.numeric(sprintf("%.*f",info$decimalsx, info$step*scale))
+        session$sendCustomMessage("step", sprintf("%.*f",info$decimalsx, info$step))
+        updateTextInput(session, inputId = "step", value = sprintf("%.*f",info$decimalsx, info$step))
+      })
     }
     if (isTruthy(inputs$step2)) {
-      shinyjs::delay(500, updateTextInput(session, inputId = "step2", value = sprintf("%.*f",info$decimalsx, inputs$step2*scale)))
+      shinyjs::delay(200, updateTextInput(session, inputId = "step2", value = sprintf("%.*f",info$decimalsx, inputs$step2*scale)))
     }
     if (isTruthy(inputs$trendRef)) {
       if (info$tunits.last == 1) {
