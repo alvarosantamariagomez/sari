@@ -147,7 +147,8 @@
  AC43  A    2 P 12:095:00000 16:024:37830 P - EQ M7.1 - 47 km ESE of Pedro Bay, Alaska
  AC43  A    3 P 16:024:37830 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
  AC43  A    4 P 18:023:34301 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
- AC43  A    5 P 21:210:22549 00:000:00000 P - 
+ AC43  A    5 P 21:210:22549 25:168:72120 P - antenna change
+ AC43  A    6 P 25:168:72120 00:000:00000 P - 
  AC43  A    1 P 00:000:00000 12:095:00000 V - non-linearity
  AC43  A    2 P 12:095:00000 16:024:37830 V - EQ M7.1 - 47 km ESE of Pedro Bay, Alaska
  AC43  A    3 P 16:024:37830 18:023:34301 V - EQ M7.9 - 261 km SE of Chiniak, Alaska
@@ -986,7 +987,8 @@
  BSHM  A    2 P 23:037:04654 00:000:00000 V - 
 *
  BSMK  A    1 P 00:000:00000 09:201:00000 P - antenna change
- BSMK  A    2 P 09:201:00000 00:000:00000 P - 
+ BSMK  A    2 P 09:201:00000 25:167:00000 P - station decommissioned
+ BSMK  A    3 P 25:167:00000 00:000:00000 P - 
  BSMK  A    1 P 00:000:00000 00:000:00000 V - 
 *
  BTNG  A    1 P 00:000:00000 19:318:58661 P - EQ M7.1 - 141 km NW of Ternate, Indonesia
@@ -1418,7 +1420,8 @@
  CKSV  A    1 P 00:000:00000 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
  CKSV  A    2 P 12:102:31117 16:036:71847 P - EQ M6.4 - 25 km SE of Yujing, Taiwan
  CKSV  A    3 P 16:036:71847 22:261:24253 P - EQ M6.9 - south-east of Lugu, Taiwan
- CKSV  A    4 P 22:261:24253 00:000:00000 P - 
+ CKSV  A    4 P 22:261:24253 25:133:00000 P - unknown
+ CKSV  A    5 P 25:133:00000 00:000:00000 P - 
  CKSV  A    1 P 00:000:00000 22:261:24253 V - EQ M6.9 - south-east of Lugu, Taiwan
  CKSV  A    2 P 22:261:24253 00:000:00000 V - 
 *
@@ -1771,7 +1774,8 @@
  CUSV  A    1 P 00:000:00000 11:052:00000 P - non-linearity
  CUSV  A    2 P 11:052:00000 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
  CUSV  A    3 P 12:102:31117 15:166:03600 P - antenna change
- CUSV  A    4 P 15:166:03600 00:000:00000 P - 
+ CUSV  A    4 P 15:166:03600 25:087:22852 P - EQ M7.7 - 2025 Mandalay, Burma (Myanmar) Earthquake
+ CUSV  A    5 P 25:087:22852 00:000:00000 P - 
  CUSV  A    1 P 00:000:00000 11:052:00000 V - non-linearity
  CUSV  A    2 P 11:052:00000 12:102:31117 V - EQ M8.6 - off the west coast of northern Sumatra
  CUSV  A    3 P 12:102:31117 15:166:03600 V - antenna change
@@ -2546,8 +2550,8 @@
  GODE  A    2 P 98:262:00000 12:220:47940 P - antenna change
  GODE  A    3 P 12:220:47940 12:348:66480 P - antenna change
  GODE  A    4 P 12:348:66480 13:030:65700 P - antenna change
- GODE  A    5 P 13:030:65700 24:096:00000 P - unknown
- GODE  A    6 P 24:096:00000 00:000:00000 P -
+ GODE  A    5 P 13:030:65700 24:263:00000 P - unknown
+ GODE  A    6 P 24:263:00000 00:000:00000 P -
  GODE  A    1 P 00:000:00000 00:000:00000 V - 
 *
  GODN  A    1 P 00:000:00000 00:000:00000 P - 
@@ -3254,14 +3258,16 @@
  ISHI  A    2 P 24:001:25809 00:000:00000 V -
 *
  ISPA  A    1 P 00:000:00000 12:279:00000 P - antenna change
- ISPA  A    2 P 12:279:00000 00:000:00000 P - 
+ ISPA  A    2 P 12:279:00000 25:187:00000 P - unknown
+ ISPA  A    3 P 25:187:00000 00:000:00000 P -
  ISPA  A    1 P 00:000:00000 12:279:00000 V - antenna change
  ISPA  A    2 P 12:279:00000 00:000:00000 V - 
 *
  ISTA  A    1 P 00:000:00000 16:054:00000 P - unknown
  ISTA  A    2 P 16:054:00000 16:130:25200 P - antenna change
  ISTA  A    3 P 16:130:25200 23:037:04656 P - EQ M7.8 - Pazarcik earthquake
- ISTA  A    4 P 23:037:04656 00:000:00000 P - 
+ ISTA  A    4 P 23:037:04656 25:113:35351 P - EQ M6.2 - 24 km SE of Marmara Ereglisi, Turkey
+ ISTA  A    5 P 25:113:35351 00:000:00000 P -
  ISTA  A    1 P 00:000:00000 16:130:25200 V - antenna change
  ISTA  A    2 P 16:130:25200 23:037:04656 V - EQ M7.8 - Pazarcik earthquake
  ISTA  A    3 P 23:037:04656 00:000:00000 V -
@@ -3855,7 +3861,8 @@
  LEIJ  A    3 P 10:128:00000 10:182:46800 P - antenna change
  LEIJ  A    4 P 10:182:46800 19:224:28200 P - antenna change
  LEIJ  A    5 P 19:224:28200 25:077:52200 P - antenna change
- LEIJ  A    6 P 25:077:52200 00:000:00000 P -
+ LEIJ  A    6 P 25:077:52200 25:167:00000 P - unknown
+ LEIJ  A    7 P 25:167:00000 00:000:00000 P -
  LEIJ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  LEPO  A    1 P 00:000:00000 00:000:00000 P - 
@@ -4955,7 +4962,8 @@
 *
  NOT1  A    1 P 00:000:00000 15:281:44100 P - receiver change
  NOT1  A    2 P 15:281:44100 17:284:34200 P - antenna change
- NOT1  A    3 P 17:284:34200 00:000:00000 P - 
+ NOT1  A    3 P 17:284:34200 25:182:36300 P - antenna change
+ NOT1  A    4 P 25:182:36300 00:000:00000 P -
  NOT1  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NOTO  A    1 P 00:000:00000 98:211:00000 P - antenna change
@@ -5132,7 +5140,8 @@
  NYQN  A    1 P 00:000:00000 00:000:00000 V - 
 *
  OAFA  A    1 P 00:000:00000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
- OAFA  A    2 P 15:259:82473 00:000:00000 P - 
+ OAFA  A    2 P 15:259:82473 20:339:43200 P - antenna change
+ OAFA  A    3 P 20:339:43200 00:000:00000 P -
  OAFA  A    1 P 00:000:00000 00:000:00000 V - 
 *
  OAK1  A    1 P 00:000:00000 00:000:00000 P - 
@@ -5934,7 +5943,8 @@
  PTGG  A    2 P 16:210:07140 18:045:02700 P - antenna change
  PTGG  A    3 P 18:045:02700 19:176:00000 P - unknown
  PTGG  A    4 P 19:176:00000 20:016:00000 P - unknown
- PTGG  A    5 P 20:016:00000 00:000:00000 P - 
+ PTGG  A    5 P 20:016:00000 25:154:00000 P - unknown
+ PTGG  A    6 P 25:154:00000 00:000:00000 P -
  PTGG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PTHL  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6015,7 +6025,8 @@
  PWEL  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PYGR  A    1 P 00:000:00000 09:196:33749 P - EQ M7.8 - 97 km WSW of Te Anau, New Zealand
- PYGR  A    2 P 09:196:33749 00:000:00000 P - 
+ PYGR  A    2 P 09:196:33749 25:084:06192 P - EQ M6.7 - 170 km WSW of Riverton, New Zealand
+ PYGR  A    3 P 25:084:06192 00:000:00000 P -
  PYGR  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PYRG  A    1 P 00:000:00000 00:000:00000 P - 
@@ -7591,7 +7602,8 @@
 *
  TUKT  A    1 P 00:000:00000 11:330:00000 P - unknown
  TUKT  A    2 P 11:330:00000 13:001:00000 P - non-linearity
- TUKT  A    3 P 13:001:00000 00:000:00000 P - 
+ TUKT  A    3 P 13:001:00000 25:119:00000 P - unknown
+ TUKT  A    4 P 25:119:00000 00:000:00000 P -
  TUKT  A    1 P 00:000:00000 13:001:00000 V - non-linearity
  TUKT  A    2 P 13:001:00000 00:000:00000 V - 
 *
@@ -7902,7 +7914,8 @@
  UZHL  A    1 P 00:000:00000 10:354:42000 P - antenna change
  UZHL  A    2 P 10:354:42000 12:312:33600 P - antenna change
  UZHL  A    3 P 12:312:33600 13:316:28080 P - antenna change
- UZHL  A    4 P 13:316:28080 00:000:00000 P - 
+ UZHL  A    4 P 13:316:28080 25:085:00000 P - antenna change
+ UZHL  A    5 P 25:085:00000 00:000:00000 P -
  UZHL  A    1 P 00:000:00000 00:000:00000 V - 
 *
  VACS  A    1 P 00:000:00000 18:172:00000 P - antenna change
@@ -8025,7 +8038,8 @@
  VILL  A    2 P 06:333:36000 12:362:36900 V - antenna change
  VILL  A    3 P 12:362:36900 00:000:00000 V - 
 *
- VIS0  A    1 P 00:000:00000 00:000:00000 P - 
+ VIS0  A    1 P 00:000:00000 25:085:41400 P - antenna change
+ VIS0  A    2 P 25:085:41400 00:000:00000 P -
  VIS0  A    1 P 00:000:00000 00:000:00000 V - 
 *
  VIS6  A    1 P 00:000:00000 00:000:00000 P - 
@@ -8324,7 +8338,8 @@
  WIND  A    3 P 06:313:00000 11:059:64800 P - antenna change
  WIND  A    4 P 11:059:64800 14:309:00000 P - unknown
  WIND  A    5 P 14:309:00000 19:134:00000 P - antenna change
- WIND  A    6 P 19:134:00000 00:000:00000 P - 
+ WIND  A    6 P 19:134:00000 25:072:00000 P - unknown
+ WIND  A    7 P 25:072:00000 00:000:00000 P - unknown
  WIND  A    1 P 00:000:00000 19:134:00000 V - antenna change
  WIND  A    2 P 19:134:00000 00:000:00000 V - 
 *
