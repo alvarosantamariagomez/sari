@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Alvaro Santamaría" />
-  <title>SARI documentation - version agosto 2025</title>
+  <title>SARI documentation - version septiembre 2025</title>
   <style type="text/css">
       code{white-space: pre-wrap;}
       span.smallcaps{font-variant: small-caps;}
@@ -35,7 +35,7 @@
 </div> 
 <div style='margin-left:10%; padding: 1% 5%;'>
 <header id="title-block-header">
-<h1 class="title">SARI documentation - version agosto 2025</h1>
+<h1 class="title">SARI documentation - version septiembre 2025</h1>
 <p class="author">Alvaro Santamaría</p>
 </header>
 <base target="_blank">
@@ -80,7 +80,7 @@ and in Santamaría-Gómez, A. (2019) SARI: interactive GNSS position time series
 <p>A ~40 min video tutorial is also available on <a href="https://youtu.be/Zt61jzehhoc">YouTube</a>. This tutorial was made with SARI version “mayo 2021” and does not include the latest additions and corrections, but it is still valid to learn the general usage of the app.</p>
 <p>The history of changes and corrections is available in the <a href="https://github.com/alvarosantamariagomez/sari/blob/main/www/changelog.md">changelog file</a>.</p>
 <p><br></p>
-<p>Current SARI version: <em>agosto 2025</em> – “The sorcerers of antiquity called the use of this language ‘<em>spells</em>’. But if that word offends your modern sensibilities, you can call it a program.”</p>
+<p>Current SARI version: <em>septiembre 2025</em> – “No ego trips, no pride. A computer program for the common good.”</p>
 <hr />
 <h3 id="input-format">
 </h3>
@@ -391,7 +391,8 @@ When plotting a primary and a secondary series with different formats, the optio
 For GNSS time series, the station ID is extracted from the first characters of the input file name and will be shown in the <code>series ID</code> box under the loaded series. The station ID can be modified by the user if necessary. For more information on the use of the station ID, see the <a href="#iii.-ancillary-information"><a href="#ancillary-information" target="_self">Ancillary information</a></a> block. For other type of series, this feature can be neglected.
 <p id="average">
 </p>
-It is possible to average and reduce the sampling of the input series, for instance from daily values to weekly, by using the <code>reduce sampling</code> option. The user needs to provide the new sampling period in the same time units of the series. This option also accepts expressions identified by a starting <em>=</em>, such as <em>=7/365.25</em> for transforming a daily sampling into weekly sampling using year time units.<br />
+It is possible to average and reduce the sampling of the input series, for instance from daily values to weekly, by using the <code>reduce sampling</code> option. The user needs to provide the new sampling period in the same time units of the series. This option also accepts mathematical expressions identified by a starting <em>=</em>, such as <em>=7/365.2425</em> for reducing a daily sampling into weekly sampling using (Gregorian) year time units.<br />
+Note that, when the sampling of the series is daily or weekly (as is common for GNSS position time series), it is preferable to change the time units to days or weeks, reduce the sampling of the series using an exact period given in days or weeks, and then change the time units back to years if necessary. This way, the new resampled epochs will be more precise than if an approximate value for the number of days in a year is used (i.e. <em>365.2425</em> for the Gregorian year used by SARI).<br />
 If high-frequency data are not needed, averaging the series will save a lot of time when fitting models, finding discontinuities or when estimating the colored noise in the series (see the <a href="#v.-additional-fit"><a href="#additional-fit" target="_self">Additional fit</a></a> block).<br />
 If the series was computed with a constant integration period, like the common 24 h in GNSS position series, this option is useful to transform daily GNSS series with irregular sampling into daily GNSS series with regular sampling, i.e., points separated by exactly 24 h, except when data gaps exist.<br />
 If there were points already removed from the series before reducing the sampling, these points will not contribute to the new averaged values. Also, if there is a secondary series being used with the <code>correct</code> or <code>average</code> options, the reduced sampling will be obtained before the secondary series is used. This means that the primary and secondary series would be compared after their original sampling has been reduced.
@@ -475,7 +476,7 @@ The user can upload any combination of the following possibilities:</p>
 </li>
 <li>If several <em>secondary series</em> are uploaded manually by the user, the series are added together as they are provided, so it is the user’s reponsability to verify that they have consistent time units and sampling.<br />
 </li>
-<li>The <code>Swap</code> button exchanges the role of the <em>primary</em> and <em>secondary series</em> so that the <em>secondary series</em> can be now analysed as if it was loaded as the <em>primary series</em>. Both the <em>primary</em> and <em>secondary series</em> will be reset to their original values, i.e., neglecting any resampling, excluded points or plate motion corrections.<br />
+<li>The <code>Swap</code> button exchanges the role of the <em>primary</em> and <em>secondary series</em> so that the <em>secondary series</em> can be now analysed as if it was loaded as the <em>primary series</em>. Both the <em>primary</em> and <em>secondary series</em> will be reset to their original values, i.e., neglecting any resampling or plate motion corrections.<br />
 </li>
 <li>When uploading a <em>secondary series</em>, both station IDs will be shown in the <code>series ID</code> box on the left panel, together with a “&amp;” when using the option <code>show</code>, a “–” when using the option <code>correct</code>, a “:” when using the option <code>average</code>, or a “+” when using the option <code>merge</code>. When the <em>primary series</em> is combined with a <em>secondary series</em> (using <code>correct</code>, <code>average</code>, or <code>merge</code>, but not <code>show</code>), the IDs from both series will be extracted from the <em>station.info</em>, <em>soln</em>, and <em>customized offset</em> files. Otherwise only the ID from the primary series will be used.<br />
 </li>
@@ -816,7 +817,7 @@ A warning should appear on the screen when a very long computation time is expec
 </li>
 <li>Upload a secondary series to correct the loading displacements (atmospheric, oceanic and hydrology) using the series available at the EOSTLS server.<br />
 </li>
-<li>If the series is very long (more than 10 years) and it has daily sampling, reduce it to weekly sampling using the <code>reduce sampling</code> option with a period of <em>=7/365.25</em> years (or the equivalent 7 days or 1 week, depending on the series time unit).<br />
+<li>If the series is very long (more than 15 years) and it has daily sampling, reduce it to weekly sampling using the <code>reduce sampling</code> option with a period of <em>=7/365.2425</em> years if the time units are years (or the equivalent 7 days or 1 week, depending on the series time unit). If the series time units are years, it will be more precise and preferable to change the time units to days or weeks, use the <code>reduce sampling</code> with a period of <em>7</em> or <em>1</em>, and then change the time units back to years if necessary.<br />
 </li>
 <li>Upload a previously unfinished fit or the fit from another series, if comparison is needed, with the <code>load SARI model</code> button.<br />
 </li>

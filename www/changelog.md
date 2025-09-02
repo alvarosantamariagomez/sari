@@ -1,6 +1,25 @@
 # **SARI changelog**
 
 
+# septiembre 2025 [2025.09]
+
+### Fixed
+- fixing the estimation of the time shift between the primary and secondary series when the primary series sampling period is larger than one day
+- fixing the use of the sameScale option when the y-axis of the primary series is not defined
+- fixing the creation of the results file from the 3D tab without the error bars and including the removed points
+
+### Changed
+- stopping the extraction of the plate and GIA rates if the series units are not defined by the user
+- improving the vertical centering of the secondary series on the 3D and overview plots with the sameScale option
+- allowing the use of the original sampling period of the secondary series after a resampling during upload and in case only one secondary series is uploaded
+- undoing the merge of the primary and secondary series when changing the sampling of the primary series
+- undoing the merge of the primary and secondary series when changing the inputs of the remote secondary series
+- changing 'detrend' by '3D' when downloading the results file from the 3D tab
+- removing the warning on screen when reading daily ISO dates with no decimals
+
+### Added
+
+
 # agosto 2025 [2025.08]
 
 ### Fixed
