@@ -12575,8 +12575,8 @@ server <- function(input,output,session) {
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
       tunitsKnown <- F
-      spotgins <- try(grepl("# SPOTGINS SOLUTION [POSITION]", readLines(file, n = 1, warn = F), fixed = T), silent = T)
-      spotgins <- isTruthy(spotgins)
+      spotgins2 <- try(grepl("^# SPOTGINS SOLUTION \\[POSITION\\]$|^# SPOTGINS SOLUTION \\[POSITION\\] v2$", readLines(file, n = 1, warn = F), perl = T), silent = T)
+      spotgins3 <- try(grepl("# SPOTGINS SOLUTION [POSITION] v3", readLines(file, n = 1, warn = F), fixed = T), silent = T)
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
         sirgas_new <- grep(" IGb14 ", readLines(file, warn = F), ignore.case = F, value = T, fixed = T)
@@ -12746,15 +12746,20 @@ server <- function(input,output,session) {
                 info$samplingRaw2[2] <- info$samplingRaw[1]/7
                 info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
               }
-            } else if (server == "FORMATERRE" || isTruthy(spotgins)) { # SPOTGINS series
+            } else if (isTruthy(spotgins2) || isTruthy(spotgins3)) { # SPOTGINS series
               if (series == 1) {
                 info$tunits.known1 <- T
               } else if (series == 2) {
                 info$tunits.known2 <- T
               }
               extracted$x1 <- as.numeric(sprintf("%.*f", 1, tableAll[,1]))
-              extracted$x2 <- as.numeric(sprintf("%.*f", 2, difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
-              extracted$x3 <- as.numeric(sprintf("%.*f", 4, tableAll[,9]))
+              if (isTruthy(spotgins2)) {
+                extracted$x2 <- as.numeric(sprintf("%.*f", 2, difftime(strptime(tableAll[,8], format = '%Y%m%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
+                extracted$x3 <- as.numeric(sprintf("%.*f", 4, tableAll[,9]))
+              } else if (isTruthy(spotgins3)) {
+                extracted$x2 <- as.numeric(sprintf("%.*f", 2, difftime(strptime(tableAll[,11], format = '%Y-%m-%d', tz = "GMT"), strptime(paste(sprintf("%08d",19800106),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "weeks")))
+                extracted$x3 <- as.numeric(sprintf("%.*f", 4, tableAll[,12]))
+              }
               if (series == 1) {
                 info$samplingRaw[1] <- min(diff(tableAll[,1],1))
                 info$samplingRaw[2] <- info$samplingRaw[1]/7
