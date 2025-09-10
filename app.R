@@ -2627,7 +2627,9 @@ server <- function(input,output,session) {
         textInput(inputId = "station1", label = "Station", value = "")
       })
       output$showStation2 <- renderUI({
-        textInput(inputId = "station2", label = "Station", value = "")
+        if (isTruthy(inputs$station2)) {
+          textInput(inputId = "station2", label = "Station", value = "")
+        }
       })
       output$fileSeries1 <- renderUI({
         tags$a(href = "SPOTGINS_CRAL00FRA.enu", "Show file example", targe = "_blank")
