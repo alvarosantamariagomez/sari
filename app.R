@@ -17066,6 +17066,7 @@ server <- function(input,output,session) {
       return(1)
     }
     down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, quiet = T, mode = "w", cacheOK = T), silent = T))
+    # down <- suppressWarnings(try(download.file(remote, destfile = local, method = method, quiet = F, mode = "w", cacheOK = T, extra = list("--ssl-no-revoke")), silent = T))
     return(down)
   }
   #
