@@ -12817,7 +12817,6 @@ server <- function(input,output,session) {
                 }
                 updateRadioButtons(session, inputId = "tunits", selected = 1)
                 extracted$x1 <- as.numeric(difftime(ymd_hms(tableAll[,1]), strptime(paste(sprintf("%08d",18581117),sprintf("%06d",000000)),format = '%Y%m%d %H%M%S', tz = "GMT"), units = "days"))
-                extracted$x1 <- as.numeric(formatting(extracted$x1,1))
                 extracted$x2 <- mjd2week(extracted$x1)
                 extracted$x3 <- mjd2year(extracted$x1)
                 if (series == 1) {
