@@ -12616,7 +12616,12 @@ server <- function(input,output,session) {
           req(info$stop)
         }
       } else {
-        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip), silent = T)
+        if (spotgins2 || spotgins3) {
+          fill <- T
+        } else {
+          fill <- F
+        }
+        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip, fill = fill), silent = T)
       }
       # extracting series from SONEL format into ENU format
       if (server == "SONEL") {
