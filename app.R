@@ -12577,7 +12577,7 @@ server <- function(input,output,session) {
       b <- 6356752.314140347
       e2 <- (a^2 - b^2) / a^2
       tunitsKnown <- F
-      spotgins2 <- try(grepl("^# SPOTGINS SOLUTION \\[POSITION\\]$|^# SPOTGINS SOLUTION \\[POSITION\\] v2$", readLines(file, n = 1, warn = F), perl = T), silent = T)
+      spotgins2 <- try(grepl("^# SPOTGINS SOLUTION \\[POSITION\\]$|^# SPOTGINS SOLUTION \\[POSITION\\] v1$|^# SPOTGINS SOLUTION \\[POSITION\\] v2$", readLines(file, n = 1, warn = F), perl = T), silent = T)
       spotgins3 <- try(grepl("# SPOTGINS SOLUTION [POSITION] v3", readLines(file, n = 1, warn = F), fixed = T), silent = T)
       # extracting series from SIRGAS format and transforming lat lon into ENU format
       if (server == "SIRGAS") {
