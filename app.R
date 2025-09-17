@@ -17324,6 +17324,9 @@ server <- function(input,output,session) {
     times <- round(diff(x)/info$sampling)
     if (isTruthy(times) && length(times) > 1 && all(!is.na(times)) && all(times > 0) && all(!is.infinite(times))) {
       trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+    } else if (any(times == 0) && any(times > 0)) {
+      showNotification(HTML(paste("The sampling of the series is not regular.<br>Unable to assess data gaps in the series.")), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
+      trans$gaps <- rep(T, length(x))
     } else {
       showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
       trans$gaps <- rep(T, length(x))
