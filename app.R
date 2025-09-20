@@ -9707,10 +9707,10 @@ server <- function(input,output,session) {
           })[,c("x1","x2","x3","y1","sy1","status1")])
         } else {
           table2$status2 <- table2$status3 <- T
-          table1$y2 <- ifelse(table1$status1 == T, table1$y2, NA)
-          table1$y3 <- ifelse(table1$status1 == T, table1$y3, NA)
-          table1$sy2 <- ifelse(table1$status1 == T, table1$sy2, NA)
-          table1$sy3 <- ifelse(table1$status1 == T, table1$sy3, NA)
+          table1$y2 <- ifelse(table1$status2 == T, table1$y2, NA)
+          table1$y3 <- ifelse(table1$status3 == T, table1$y3, NA)
+          table1$sy2 <- ifelse(table1$status2 == T, table1$sy2, NA)
+          table1$sy3 <- ifelse(table1$status3 == T, table1$sy3, NA)
           table_common <- data.frame(within(merge(table1, table2, by = "x1", all = T), {
             if (info$format2 == 4) {
               x2 <- ifelse(is.na(x2.x),x2.y,x2.x)
