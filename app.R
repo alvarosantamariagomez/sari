@@ -12132,7 +12132,7 @@ server <- function(input,output,session) {
         table <- extract_table(filein,sep,info$format,as.numeric(inputs$epoch),as.numeric(inputs$variable),as.numeric(inputs$errorBar),F,"",1)
       }
       # Checking series values and time order
-      if (!is.null(table)) {
+      if (!is.null(table) && nrow(table) > 0) {
         if (isTruthy(info$format)) {
           if (info$format == 4) {
             updateTabsetPanel(session, inputId = "tab", selected = "1")
@@ -12183,7 +12183,7 @@ server <- function(input,output,session) {
         })
         req(info$stop)
       }
-      if (is.null(table)) {
+      if (is.null(table)  || nrow(table) == 0) {
         showNotification(HTML("All records in the series were removed.<br> Check the series format."), action = NULL, duration = 10, closeButton = T, id = "bad_series", type = "error", session = getDefaultReactiveDomain())
         req(info$stop)
       }
@@ -12413,7 +12413,7 @@ server <- function(input,output,session) {
             info$step2 <- NULL
           }
           # computing the sum of secondary series
-          if (!is.null(table2)) {
+          if (!is.null(table2)  && nrow(table2) > 0) {
             if (!is.null(table_stack)) {
               # shifting the next secondary series if necessary
               delta <- computeTimeShift(table_stack$x1,table2$x1)
@@ -12471,7 +12471,7 @@ server <- function(input,output,session) {
         showNotification(paste("There are", minRows, "epochs in common between the secondary series out of", maxRows, "in total."), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
       }
       # create secondary series merged file
-      if (!is.null(table_stack)) {
+      if (!is.null(table_stack)  && nrow(table_stack) > 0) {
         if (isTruthy(url$file2) && isTruthy(url$station2)) {
           info$last_optionSecondary <- 1
           updateRadioButtons(session, inputId = "optionSecondary", selected = 1)
