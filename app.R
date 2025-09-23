@@ -6786,6 +6786,7 @@ server <- function(input,output,session) {
       }
       ranges$x2 <- ranges$x4 <- ranges$x1
       ranges$y2 <- NULL
+      updateCheckboxInput(session, inputId = "fullSeries", value = F)
     } else {
       ranges$x1 <- c(info$minx, info$maxx)
       ranges$y1 <- c(info$miny, info$maxy)
@@ -6817,6 +6818,7 @@ server <- function(input,output,session) {
     if (!is.null(brush) && !all(is.na(x0[x0 > brush$xmin & x0 < brush$xmax]))) {
       ranges$x1 <- ranges$x2 <- ranges$x4 <- c(brush$xmin, brush$xmax)
       ranges$y1 <- ranges$y2 <- NULL
+      updateCheckboxInput(session, inputId = "fullSeries", value = F)
     } else {
       ranges$x1 <- c(info$minx, info$maxx)
       ranges$y1 <- NULL
@@ -6869,6 +6871,7 @@ server <- function(input,output,session) {
           ranges$y12 <- range(trans$y2, na.rm = T)
         }
       }
+      updateCheckboxInput(session, inputId = "fullSeries", value = F)
     } else {
       ranges$x4 <- NULL
       ranges$y4 <- NULL
@@ -11857,10 +11860,15 @@ server <- function(input,output,session) {
         info$maxx <- max(x1, xe, x2, na.rm = T)
         ranges$x1 <- c(info$minx, info$maxx)
       } else {
-        # show all points from primary series only
-        info$minx <- min(x1, xe, na.rm = T)
-        info$maxx <- max(x1, xe, na.rm = T)
-        ranges$x1 <- c(info$minx, info$maxx)
+        if (ranges$x1[1] > info$minx || ranges$x1[2] < info$maxx) {
+          # fullSeries is deactivated while on zoom in
+          req(info$stop)
+        } else {
+          # show all points from primary series only
+          info$minx <- min(x1, xe, na.rm = T)
+          info$maxx <- max(x1, xe, na.rm = T)
+          ranges$x1 <- c(info$minx, info$maxx)
+        }
       }
     }
   }, priority = 6)
