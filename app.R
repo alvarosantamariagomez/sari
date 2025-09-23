@@ -8546,7 +8546,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2, input$tunits), {
     req(db1[[info$db1]])
-    if (isTruthy(input$gia) || isTruthy(trans$gia)) {
+    if (isTruthy(input$gia) || (isTruthy(trans$gia) && any(trans$gia) != 0)) {
       if (messages > 0) cat(file = stderr(), mySession, "GIA model:", input$giaModel, "\n")
       removeNotification("unknown_units")
       removeNotification("bad_coordinates")
@@ -9045,6 +9045,10 @@ server <- function(input,output,session) {
     file$primary <- isolate(input$series)
   }, priority = 6)
   observeEvent(file$primary, {
+    if (info$db1 != "stop") {
+      # new file from swap option
+      req(info$stop)
+    }
     header <- readLines(file$primary$datapath, n = 1)
     if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
       updateRadioButtons(inputId = "sunits", selected = 1)
@@ -9105,34 +9109,7 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "sunits", selected = 0)
     }
     info$run <- NULL
-    trans$x <- NULL
-    trans$y <- NULL
-    trans$sy <- NULL
-    trans$xe <- NULL
-    trans$ye <- NULL
-    trans$sye <- NULL
-    trans$res <- NULL
-    trans$reserror <- NULL
-    trans$results <- NULL
-    trans$mod <- NULL
-    trans$filter <- NULL
-    trans$filterRes <- NULL
-    trans$kalman <- NULL
-    trans$equation <- NULL
-    trans$ordinate <- NULL
-    trans$midas_vel <- NULL
-    trans$midas_all <- NULL
     info$points <- NULL
-    info$log <- NULL
-    trans$mle <- F
-    trans$verif <- NULL
-    trans$pattern <- NULL
-    updateTabsetPanel(session, inputId = "tab", selected = "1")
-    updateTextInput(session, "ObsError", value = "")
-    updateTextInput(session, "waveformPeriod", value = "")
-    if (isTruthy(input$correct_waveform)) {
-      updateCheckboxInput(session, inputId = "correct_waveform", value = F)
-    }
   }, priority = 6)
 
   # Observe format 1D ####
@@ -9455,8 +9432,8 @@ server <- function(input,output,session) {
     file$secondary <- isolate(input$series2)
     updateSelectInput(inputId = "server2", selected = "")
     updateSelectInput(inputId = "product2", selected = "")
-  }, priority = 8)
-  observeEvent(file$secondary, {
+  }, priority = 9)
+  observeEvent(c(input$series2, url$file2), {
     if (isTruthy(url$logfile2)) {
       url$logfile2 <- info$log <- NULL
       session$sendCustomMessage("log", "")
