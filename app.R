@@ -14713,29 +14713,6 @@ server <- function(input,output,session) {
             middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
             rangeY2 <- c(middle - range1/2, middle + range1/2)
           }
-          # adjusting the vertical offset within the same scale (range)
-          if (length(pointsX1) == 0 || length(pointsX2) == 0) {
-            # NA
-          } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
-            # NA
-          } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
-            # NA
-          } else {
-            tie1 <- sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix
-            tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
-            tie1 <- tie1[1:min(length(tie1),length(tie2))]
-            tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(pointsY1[tie1] - pointsY2[tie2])
-            if (input$fullSeries) {
-              if (range1 >= range2) {
-                rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
-              } else {
-                rangeY <- rangeY + (rangeY2[1] - rangeY[1]) + pointsBias
-              } 
-            } else {
-              rangeY2 <- rangeY2 + (rangeY[1] - rangeY2[1]) - pointsBias
-            }
-          }
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
