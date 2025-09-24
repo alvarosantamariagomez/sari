@@ -11494,12 +11494,11 @@ server <- function(input,output,session) {
     reset("side-panel")
     reset("main-panel")
     updateCollapse(session, id = "menu", open = 1, close = c(2,3,4,5,6))
-    db1[[info$db1]] <- NULL
-    db2[[info$db2]] <- NULL
     for (i in names(db1)) {
       db1[[i]] <- NULL
       db2[[i]] <- NULL
     }
+    info$db1 <- info$db2 <- "stop"
     updateRadioButtons(session, inputId = "tunits", selected = character(0))
     ranges$x0 <- NULL
     ranges$x1 <- NULL
