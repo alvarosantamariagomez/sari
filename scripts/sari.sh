@@ -287,6 +287,37 @@ else
 	contains "$products" $product2
 fi
 
+badStationID() {
+	echo "Station ID '${1^^}' does not have the required number of characters ($3) for the ${2^^} server"
+	exit 1
+}
+
+[[ $server1 == renag ]]      && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == formater ]]   && [[ ${#station1} -ne 9 ]]  && badStationID $station1 $server1 9
+[[ $server1 == epos ]]       && [[ ${#station1} -ne 9 ]]  && badStationID $station1 $server1 9
+[[ $server1 == sonel ]]      && [[ ${#station1} -ne 9 ]]  && badStationID $station1 $server1 9
+[[ $server1 == igs ]]        && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == euref ]]      && [[ ${#station1} -ne 9 ]]  && badStationID $station1 $server1 9
+[[ $server1 == ngl ]]        && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == jpl ]]        && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == earthscope ]] && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == sirgas ]]     && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == doris ]]      && [[ ${#station1} -ne 4 ]]  && badStationID $station1 $server1 4
+[[ $server1 == eostls ]]     && [[ ${#station1} -ne 14 ]] && badStationID $station1 $server1 4
+
+[[ $server2 == renag ]]      && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == formater ]]   && [[ ${#station2} -ne 9 ]]  && badStationID $station2 $server2 9
+[[ $server2 == epos ]]       && [[ ${#station2} -ne 9 ]]  && badStationID $station2 $server2 9
+[[ $server2 == sonel ]]      && [[ ${#station2} -ne 9 ]]  && badStationID $station2 $server2 9
+[[ $server2 == igs ]]        && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == euref ]]      && [[ ${#station2} -ne 9 ]]  && badStationID $station2 $server2 9
+[[ $server2 == ngl ]]        && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == jpl ]]        && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == earthscope ]] && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == sirgas ]]     && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == doris ]]      && [[ ${#station2} -ne 4 ]]  && badStationID $station2 $server2 4
+[[ $server2 == eostls ]]     && [[ ${#station2} -ne 14 ]] && badStationID $station2 $server2 4
+
 # Catching SARI installation error
 checkR() {
 	if ! ps -p $pid > /dev/null; then
