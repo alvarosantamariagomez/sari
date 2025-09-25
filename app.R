@@ -7738,8 +7738,8 @@ server <- function(input,output,session) {
                   file$primary$datapath <- paste0("www/tempFiles/",file$primary$name)
                   down <- download(url$server, url$file, file$primary$datapath)
                   if (file.exists(file$primary$datapath)) {
-                    downloaded <- try(fromJSON(file$primary$datapath), silent = T)
-                    if (!isTruthy(downloaded) || inherits(downloaded,"try-error") || isempty(downloaded)) {
+                    isJSON <- try(validate(file$primary$datapath)[1], silent = T)
+                    if (!isTruthy(isJSON) || inherits(downloaded,"try-error") || isempty(downloaded)) {
                       downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
                       if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                           length(downloaded) < 2) {
@@ -7793,8 +7793,8 @@ server <- function(input,output,session) {
                         file$secondary$datapath <- tempfile()
                         down <- download(url$server2, url$file2, file$secondary$datapath)
                         if (file.exists(file$secondary$datapath)) {
-                          downloaded <- try(fromJSON(file$secondary$datapath), silent = T)
-                          if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
+                          isJSON <- try(validate(file$primary$datapath)[1], silent = T)
+                          if (!isTruthy(isJSON) || inherits(downloaded,"try-error") || isempty(downloaded)) {
                             downloaded <- readLines(file$secondary$datapath, n = 2, warn = F)
                             if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                                 length(downloaded) < 2) {
@@ -9064,6 +9064,7 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      info$format <- 1
       url$server <- "EARTHSCOPE"
       url$file <- file$primary
     } else if (grepl(".enu$", file$primary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
