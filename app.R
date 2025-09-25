@@ -7739,7 +7739,7 @@ server <- function(input,output,session) {
                   down <- download(url$server, url$file, file$primary$datapath)
                   if (file.exists(file$primary$datapath)) {
                     downloaded <- try(fromJSON(file$primary$datapath), silent = T)
-                    if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
+                    if (!isTruthy(downloaded) || inherits(downloaded,"try-error") || isempty(downloaded)) {
                       downloaded <- readLines(file$primary$datapath, n = 2, warn = F)
                       if (grepl("DOCTYPE", downloaded[1], ignore.case = F) ||
                           length(downloaded) < 2) {
@@ -7760,7 +7760,7 @@ server <- function(input,output,session) {
                       session$sendCustomMessage("log", basename(url$logfile))
                       shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
                     } else {
-                      showNotification(HTML(paste0("Logfile not found in ", url$server,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                      showNotification(HTML(paste0("Logfile not found in the ", url$server," server.<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                       file$primary$logfile <- NULL
                       url$logfile <- NULL
                     }
@@ -7822,17 +7822,17 @@ server <- function(input,output,session) {
                             session$sendCustomMessage("log", basename(url$logfile2))
                             shinyjs::delay(100, updateCheckboxInput(inputId = "traceLog", value = T))
                           } else {
-                            showNotification(HTML(paste0("Logfile not found in ", url$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                            showNotification(HTML(paste0("Logfile not found in the ", url$server2," server.<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                             file$secondary$logfile <- NULL
                           }
                         }
                       } else {
                         removeNotification("parsing_url2")
-                        showNotification(HTML(paste0("File ",file$secondary$name," not found in ",toupper(query[['server2']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                        showNotification(HTML(paste0("File ",file$secondary$name," not found in the ",toupper(query[['server2']])," server.<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                       }
                     }
                   }
-                  shinyjs::delay(200, {
+                  shinyjs::delay(800, {
                     if (messages > 4) cat(file = stderr(), mySession, "From: observe url\n")
                     db1$original <- db1$resampled <- db1$merged <- NULL
                     digest(1)
@@ -7849,7 +7849,7 @@ server <- function(input,output,session) {
                   })
                 } else {
                   removeNotification("parsing_url1")
-                  showNotification(HTML(paste0("File ",file$primary$name," is empty or is not found in ",toupper(query[['server']]),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+                  showNotification(HTML(paste0("File ",file$primary$name," is empty or is not found in the ",toupper(query[['server']])," server.<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
                   url$station <- NULL
                   url$file <- NULL
                 }
@@ -9049,7 +9049,7 @@ server <- function(input,output,session) {
       # new file from swap option
       req(info$stop)
     }
-    header <- readLines(file$primary$datapath, n = 1)
+    header <- readLines(file$primary$datapath, n = 1, warn = F)
     if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "format", selected = 3)
