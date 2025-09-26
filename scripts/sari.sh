@@ -29,33 +29,40 @@ There are two options to open a local session:
 Time series can be uploaded from the command line using local or remote files from specific servers and products
 indicaded below.
 
-Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
+Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series1+series2 -v -h]
 
 	-l 			: starts a local SARI session using the SARI source code
 	-d			: starts a local SARI session using a Docker image
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
-	-w server1+server2	: uploads primary (+secondary) file from server (see available servers below)
-	-p product1+product2 	: uploads primary (+secondary) file from product (see available products below)
+	-w server1[+server2]	: uploads primary (& secondary if different from primary) series from a remote server
+				  (see available servers below)
+	-p product1[+product2] 	: uploads primary (& secondary if different from primary) file for a given product
+				  (see available products below)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
 				  or more 14 (e.g., PIMI_10025M001) depending on the server used
 	-v 			: keeps the log of the current local SARI session in $saridir
 	-h			: shows this help
 
-	Six different sessions can be started:
+	Six different types of sessions can be started:
 
-	Empty local session from source code	$(basename $0) -l
-	Empty local session from Docker image	$(basename $0) -d
-	Empty remote session 			$(basename $0) -r
-	Local session with local series		$(basename $0) -l -w local -p product -s path/to/my/series
-	Local session with remote series	$(basename $0) -l -w server -p product -s ID
-	Remote session with remote series	$(basename $0) -r -w server -p product -s ID
+	Empty local session from source code			$(basename $0) -l
+	Empty local session from Docker image			$(basename $0) -d
+	Empty remote session 					$(basename $0) -r
+	Local session (code/docker) with local series		$(basename $0) -l -s path/to/my/series
+	Local session (code/docker) with remote series		$(basename $0) -d -w server -p product -s ID
+	Remote session with remote series			$(basename $0) -r -w server -p product -s ID
 
 	server1+server2, product1+product2 and station1+station2 are used to load one or two series (primary+secondary)
-	at the same time from the same or different servers/products.
+	at the same time from the same or different servers/products. If the server and product of the primary and
+	secondary series are the same, it is enough to provide only the server and/or product of the primary series.
+	For example:    $(basename $0) -r -w formaterre -p spotgins -s cral00fra+iraf00fra
+	                will open a remote SARI session and download the SPOTGINS series of the CRAL00FRA & IRAF00FRA
+	                stations from the FormaTerre server.
 
 	The remote series will be downloaded to the local server (your machine) or the remote server (Shinyapps).
-	It is not possible to upload a local series to the Shinyapps server via this script. The in-app SARI interface 
-	must be used for that.
+	If uploading a local series file, the server and product options are not necessary.
+	It is not possible to upload a local series to the remote Shinyapps server via this script. The in-app SARI
+	interface must be used for that.
 
 	In a local session, the SARI app runs in the background of your machine till this script is interrupted by 
 	pressing Ctrl+C. The script also exits if the SARI app stops.
@@ -63,13 +70,12 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         +------------+--------------------------------------+---------+------------------------------------------------+
         | Server     | Product                              | Station | Reference                                      |
         +------------+--------------------------------------+---------+------------------------------------------------+
-        | LOCAL      | ENU, NEU, PBO, NGL, SPOTGINS, 1D*    |    path |                                                |
         | RENAG      | UGA                                  |  4 char | http://renag.resif.fr                          |
-        | FORMATER   | SPOTGINS, UGA, IGS20, ENS            |  9 char | https://en.poleterresolide.fr                  |
+        | FORMATERRE | SPOTGINS, UGA, IGS20, ENS            |  9 char | https://en.poleterresolide.fr                  |
         | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  |  9 char | https://www.epos-eu.org                        |
 	| SONEL      | ULR7A                                |  9 char | https://www.sonel.org                          |
-	| IGS        | IGS20                                |  4 char | https://igs.org/products                       |
-        | EUREF      | IGb14                                |  9 char | https://epncb.eu/_organisation/about.php       |
+	| IGS        | IGS20                                |  4 char | https://igs.org                                |
+        | EUREF      | IGb14                                |  9 char | https://epncb.eu                               |
         | NGL        | IGS20, IGS14, RAPID                  |  4 char | http://geodesy.unr.edu                         |
         | JPL        | REPRO2018A                           |  4 char | https://sideshow.jpl.nasa.gov/post/series.html |
         | EARTHSCOPE | CWU, PBO, NMT                        |  4 char | https://www.earthscope.org                     |
@@ -88,13 +94,15 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 " 1>&2; exit 1; }
 
 usage_short () { echo "
-Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series1+series2 -v]
+Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series1+series2 -v -h]
 
 	-l 			: starts a local SARI session using the SARI source code
 	-d			: starts a local SARI session using a Docker image
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
-	-w server1+server2	: uploads primary (+secondary) file from server (see available servers with option -h)
-	-p product1+product2 	: uploads primary (+secondary) file from product (see available products with option -h)
+	-w server1[+server2]	: uploads primary (& secondary if different from primary) series from a remote server
+				  (see available servers with option -h)
+	-p product1[+product2] 	: uploads primary (& secondary if different from primary) file for a given product
+				  (see available products with option -h)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
 				  or more 14 (e.g., PIMI_10025M001) depending on the server used
 	-v 			: keeps the log of the current SARI session in $saridir
@@ -112,7 +120,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 #########################################################################################################################
 
 # Setting list of available URL parameters
-servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas doris eostls psmsl "
+servers=" local renag formaterre epos sonel igs euref ngl jpl earthscope sirgas doris eostls psmsl "
 products=" enu neu pbo ngl uga spotgins ens ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a esa gop grg gsc ids ign atmib atmib(d) atmmo ecco ecco2 era5ib era5ib(d) era5tugo era5tugo(d) era5hyd era5hyd(d) era5land grace gldas2 gldas2(d) glorys merra2atm merra2atm(d) merra2hyd merra2hyd(d) rlr "
 products_local=" enu neu pbo ngl 1d spotgins "
 
@@ -133,6 +141,10 @@ cleaning () {
 	fi
 }
 trap cleaning EXIT
+
+# Setting directory paths
+currentdir="$(pwd)"
+saridir="$(dirname $(dirname $(realpath $0)))"
 
 # Getting input command-line options
 while getopts :ldrw:p:s:vh option; do
@@ -209,9 +221,7 @@ if [[ ! -z $docker ]]; then
 	fi
 fi
 
-# Setting directory paths and checking the SARI app file for local sessions
-currentdir="$(pwd)"
-saridir="$(dirname $(dirname $(realpath $0)))"
+# Checking the SARI app file for local sessions
 if [[ ! -z $local ]]; then
 	if [[ ! -f $saridir/app.R ]]; then
 		echo Unable to find the SARI app.R script in $saridir
@@ -268,6 +278,8 @@ fi
 if [[ ! -z $station ]]; then
 	IFS=+ read -r station1 station2 <<< $station
 fi
+[[ -n $station2 ]] && [[ -z $server2 ]] && server2=$server1
+[[ -n $station2 ]] && [[ -z $product2 ]] && product2=$product1
 
 # Checking valid arguments
 contains() {
