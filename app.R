@@ -7790,7 +7790,7 @@ server <- function(input,output,session) {
                         file$secondary$datapath <- url$file2
                       } else {
                         showNotification(paste0("Downloading secondary series file ",file$secondary$name," from ",toupper(query[['server2']]),"."), action = NULL, duration = 30, closeButton = T, id = "parsing_url2", type = "warning", session = getDefaultReactiveDomain())
-                        file$secondary$datapath <- tempfile()
+                        file$secondary$datapath <- paste0("www/tempFiles/",file$secondary$name)
                         down <- download(url$server2, url$file2, file$secondary$datapath)
                         if (file.exists(file$secondary$datapath)) {
                           isJSON <- try(validate(file$primary$datapath)[1], silent = T)
