@@ -63,23 +63,25 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
         +------------+--------------------------------------+---------+------------------------------------------------+
         | Server     | Product                              | Station | Reference                                      |
         +------------+--------------------------------------+---------+------------------------------------------------+
-        | LOCAL      | ENU, NEU, PBO, NGL, SPOTGINS, 1D*    | path    |                                                |
-        | RENAG      | UGA                                  | 4 char  | http://renag.resif.fr/en/                      |
-        | FORMATER   | SPOTGINS, UGA, IGS20, ENS            | 9 char  | https://en.poleterresolide.fr/                 |
-        | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  | 9 char  | https://www.epos-eu.org/                       |
-	| SONEL      | ULR7A                                | 9 char  | https://www.sonel.org/                         |
-	| IGS        | IGS20                                | 4 char  | https://igs.org/products/                      |
-        | EUREF      | IGb14                                | 9 char  | https://epncb.eu/_organisation/about.php       |
-        | NGL        | IGS20, IGS14, RAPID                  | 4 char  | http://geodesy.unr.edu/                        |
-        | JPL        | REPRO2018A                           | 4 char  | https://sideshow.jpl.nasa.gov/post/series.html |
-        | EARTHSCOPE | CWU, PBO, NMT                        | 4 char  | https://www.earthscope.org                     |
-        | SIRGAS     | IGb14                                | 4 char  | https://www.sirgas.org/en/                     |
-        | DORIS      | ESA, GOP, GRG, GSC, IDS, IGN         | 4 char  | https://ids-doris.org/                         |
-        | EOSTLS     | ATMIB, ATMMO, ECCO, ECCO2, ERA5IB,   | 14 char | http://loading.u-strasbg.fr/                   |
-        |            | ERA5TUGO, ERA5HYD, ERAHYD, ERAIN,    |         |                                                |
-        |            | GRACE, GLDAS, GLDAS2, GLORYS, MERRA, |         |                                                |
-        |            | MERRA2ATM, MERRA2HYD, ERA5LAND       |         |                                                |
-        | PSMSL      | RLR                                  | number  | https://psmsl.org/                             |
+        | LOCAL      | ENU, NEU, PBO, NGL, SPOTGINS, 1D*    |    path |                                                |
+        | RENAG      | UGA                                  |  4 char | http://renag.resif.fr                          |
+        | FORMATER   | SPOTGINS, UGA, IGS20, ENS            |  9 char | https://en.poleterresolide.fr                  |
+        | EPOS       | INGV, SGO-EPND, UGA-CNRS, ROB-EUREF  |  9 char | https://www.epos-eu.org                        |
+	| SONEL      | ULR7A                                |  9 char | https://www.sonel.org                          |
+	| IGS        | IGS20                                |  4 char | https://igs.org/products                       |
+        | EUREF      | IGb14                                |  9 char | https://epncb.eu/_organisation/about.php       |
+        | NGL        | IGS20, IGS14, RAPID                  |  4 char | http://geodesy.unr.edu                         |
+        | JPL        | REPRO2018A                           |  4 char | https://sideshow.jpl.nasa.gov/post/series.html |
+        | EARTHSCOPE | CWU, PBO, NMT                        |  4 char | https://www.earthscope.org                     |
+        | SIRGAS     | IGb14                                |  4 char | https://www.sirgas.org                         |
+        | DORIS      | ESA, GOP, GRG, GSC, IDS, IGN         |  4 char | https://ids-doris.org                          |
+	| EOSTLS     | ATMIB, ATMIB(d), ATMMO, ECCO, ECCO2, | 14 char | http://loading.u-strasbg.fr                    |
+	|            | ERA5IB, ERA5IB(d), ERA5TUGO,         |         |                                                |
+	|            | ERA5TUGO(d), ERA5HYD, ERA5HYD(d),    |         |                                                |
+	|            | ERA5LAND, GRACE, GLDAS2, GLDAS2(d),  |         |                                                |
+	|            | GLORYS, MERRA2ATM, MERRA2ATM(d),     |         |                                                |
+	|            | MERRA2HYD, MERRA2HYD(d)              |         |                                                |
+        | PSMSL      | RLR                                  |  number | https://psmsl.org                              |
         +------------+--------------------------------------+---------+------------------------------------------------+
 	* 1D products must have the epochs in the first column, the data in the second and the errorbars in the third
 
@@ -111,7 +113,7 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 
 # Setting list of available URL parameters
 servers=" local renag formater epos sonel igs euref ngl jpl earthscope sirgas doris eostls psmsl "
-products=" enu neu pbo ngl uga spotgins ens ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igs14 igb14 final rapid cwu nmt repro2018a esa gop grg gsc ids ign atmib atmmo ecco ecco2 era5ib era5tugo era5hyd erahyd erain grace gldas gldas2 glorys merra merra2atm merra2hyd rlr "
+products=" enu neu pbo ngl uga spotgins ens ingv sgo-epnd uga-cnrs rob-euref ulr7a igs20 igb14 final rapid cwu nmt repro2018a esa gop grg gsc ids ign atmib atmib(d) atmmo ecco ecco2 era5ib era5ib(d) era5tugo era5tugo(d) era5hyd era5hyd(d) era5land grace gldas2 gldas2(d) glorys merra2atm merra2atm(d) merra2hyd merra2hyd(d) rlr "
 products_local=" enu neu pbo ngl 1d spotgins "
 
 # Setting a trap to do a clean exit
