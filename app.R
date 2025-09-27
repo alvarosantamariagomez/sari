@@ -3743,9 +3743,9 @@ server <- function(input,output,session) {
           } else {
             tie1 <- sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix
             tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
-            tie1 <- tie1[1:min(length(tie1),length(tie2))]
-            tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(pointsY1[tie1] - pointsY2[tie2], na.rm = T)
+            tie1c <- tie1[1:min(length(tie1),length(tie2))]
+            tie2c <- tie2[1:min(length(tie1),length(tie2))]
+            pointsBias <- median(pointsY1[tie1c] - pointsY2[tie2c], na.rm = T)
             if (input$fullSeries) {
               if (range1 >= range2) {
                 rangesy12 <- rangesy12 + (rangesy1[1] - rangesy12[1]) - pointsBias
@@ -14682,14 +14682,51 @@ server <- function(input,output,session) {
             if (range1 >= range2) {
               rangeY2[1] <- rangeY2[1] - (range1 - range2)/2
               rangeY2[2] <- rangeY2[2] + (range1 - range2)/2
+              range2 <- diff(rangeY2)
             } else {
               rangeY[1] <- rangeY[1] - (range2 - range1)/2
               rangeY[2] <- rangeY[2] + (range2 - range1)/2
+              range1 <- diff(rangeY)
             }
           } else {
             middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
             rangeY2 <- c(middle - range1/2, middle + range1/2)
+            range2 <- diff(rangeY2)
           }
+          # adjusting the vertical offset within the same scale (range)
+          if (length(pointsX1) == 0 || length(pointsX2) == 0) {
+            # NA
+          } else if (pointsX2[1] > pointsX1[length(pointsX1)]) {
+            # NA
+          } else if (pointsX1[1] > pointsX2[length(pointsX2)]) {
+            # NA
+          } else {
+            tie1 <- sort(sapply(pointsX1, function(x) min(abs(pointsX2 - x))), index.return = T)$ix
+            tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
+            tie1c <- tie1[1:min(length(tie1),length(tie2))]
+            tie2c <- tie2[1:min(length(tie1),length(tie2))]
+            # pointsBias <- median(pointsY1[tie1c] - pointsY2[tie2c])
+            relPosFromBottom1 <- median(pointsY1[tie1c], na.rm = T) - rangeY[1]
+            relPosFromBottom2 <- median(pointsY2[tie2c], na.rm = T) - rangeY2[1]
+            pointsBias <- relPosFromBottom1 - relPosFromBottom2
+            rangeY2 <- rangeY2 - pointsBias
+            if (input$fullSeries) {
+              if (pointsBias > 0) {
+                rangeY[2] <- rangeY[2] + pointsBias
+                rangeY2[2] <- rangeY2[2] + pointsBias
+              } else {
+                rangeY[1] <- rangeY[1] + pointsBias
+                rangeY2[1] <- rangeY2[1] + pointsBias
+              }
+            }
+          }
+          cutBelow <- min(abs(c(min(pointsY1) - rangeY[1], min(pointsY2) - rangeY2[1])))
+          cutAbove <- min(abs(c(max(pointsY1) - rangeY[2], max(pointsY2) - rangeY2[2])))
+          rangeY[1] <- rangeY[1] + cutBelow
+          rangeY2[1] <- rangeY2[1] + cutBelow
+          rangeY[2] <- rangeY[2] - cutAbove
+          rangeY2[2] <- rangeY2[2] - cutAbove
+print(paste(diff(rangeY),diff(rangeY2)))
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
