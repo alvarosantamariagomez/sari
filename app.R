@@ -9054,16 +9054,19 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "format", selected = 3)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       info$format <- 3
     } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
       updateRadioButtons(inputId = "format", selected = 2)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       info$format <- 2
     } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       info$format <- 1
       url$server <- "EARTHSCOPE"
       url$file <- file$primary
@@ -9071,17 +9074,20 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       info$product1 <- "SPOTGINS"
     } else if (grepl(".PLH$", file$primary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       url$server <- "SIRGAS"
       url$file <- file$primary
     } else if (grepl(".series$", file$primary$name, perl = T) && grepl(pattern = "\\.00\\s{2}\\d{4}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}$", header, perl = T)) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       url$server <- "JPL"
       url$file <- file$primary
     } else if (grepl("rlrdata", file$primary$name, perl = T) && grepl(";", header, perl = T)) {
@@ -9090,6 +9096,7 @@ server <- function(input,output,session) {
       updateCheckboxInput(inputId = "sigmas", value = F)
       updateRadioButtons(inputId = "sunits", selected = 2)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "1")
       url$server <- "PSMSL"
       url$file <- file$primary
       info$format <- 4
@@ -9097,12 +9104,14 @@ server <- function(input,output,session) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 3)
+      updateNavbarPage(session, "tab", selected = "4")
       url$server <- "IGS"
       url$file <- file$primary
     } else if (grepl(".stcd.", file$primary$name, perl = T)) {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 1)
       updateRadioButtons(inputId = "tunits", selected = 1)
+      updateNavbarPage(session, "tab", selected = "4")
       url$server <- "DORIS"
       url$file <- file$primary
     } else {
