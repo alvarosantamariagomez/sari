@@ -8546,7 +8546,7 @@ server <- function(input,output,session) {
   })
   observeEvent(c(input$giaModel, inputs$station_lon, inputs$station_lat, inputs$station_lat2, inputs$station_lon2, input$tunits), {
     req(db1[[info$db1]])
-    if (isTruthy(input$gia) || (isTruthy(trans$gia) && any(trans$gia) != 0)) {
+    if (isTruthy(input$gia) || (isTruthy(trans$gia) && any(trans$gia != 0))) {
       if (messages > 0) cat(file = stderr(), mySession, "GIA model:", input$giaModel, "\n")
       removeNotification("unknown_units")
       removeNotification("bad_coordinates")
