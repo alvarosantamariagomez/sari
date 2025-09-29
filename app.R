@@ -3725,13 +3725,16 @@ server <- function(input,output,session) {
             if (range1 >= range2) {
               rangesy12[1] <- rangesy12[1] - (range1 - range2)/2
               rangesy12[2] <- rangesy12[2] + (range1 - range2)/2
+              range2 <- diff(rangesy12)
             } else {
               rangesy1[1] <- ranges$y1[1] - (range2 - range1)/2
               rangesy1[2] <- ranges$y1[2] + (range2 - range1)/2
+              range1 <- diff(rangesy1)
             }
           } else {
             middle <- ifelse(isTruthy(pointsY2), median(pointsY2), 0)
             rangesy12 <- c(middle - range1/2, middle + range1/2)
+            range2 <- diff(rangesy12)
           }
           # adjusting the vertical offset within the same scale (range)
           if (length(pointsX1) == 0 || length(pointsX2) == 0) {
@@ -3745,17 +3748,26 @@ server <- function(input,output,session) {
             tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
             tie1c <- tie1[1:min(length(tie1),length(tie2))]
             tie2c <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(pointsY1[tie1c] - pointsY2[tie2c], na.rm = T)
+            relPosFromBottom1 <- median(pointsY1[tie1c], na.rm = T) - rangesy1[1]
+            relPosFromBottom2 <- median(pointsY2[tie2c], na.rm = T) - rangesy12[1]
+            pointsBias <- relPosFromBottom1 - relPosFromBottom2
+            rangesy12 <- rangesy12 - pointsBias
             if (input$fullSeries) {
-              if (range1 >= range2) {
-                rangesy12 <- rangesy12 + (rangesy1[1] - rangesy12[1]) - pointsBias
+              if (pointsBias > 0) {
+                rangesy1[2] <- rangesy1[2] + pointsBias
+                rangesy12[2] <- rangesy12[2] + pointsBias
               } else {
-                rangesy1 <- rangesy1 + (rangesy12[1] - rangesy1[1]) + pointsBias
+                rangesy1[1] <- rangesy1[1] + pointsBias
+                rangesy12[1] <- rangesy12[1] + pointsBias
               }
-            } else {
-              rangesy12 <- rangesy12 + (rangesy1[1] - rangesy12[1]) - pointsBias
             }
           }
+          cutBelow <- min(abs(c(min(pointsY1) - rangesy1[1], min(pointsY2) - rangesy12[1])))
+          cutAbove <- min(abs(c(max(pointsY1) - rangesy1[2], max(pointsY2) - rangesy12[2])))
+          rangesy1[1] <- rangesy1[1] + cutBelow
+          rangesy12[1] <- rangesy12[1] + cutBelow
+          rangesy1[2] <- rangesy1[2] - cutAbove
+          rangesy12[2] <- rangesy12[2] - cutAbove
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             range <- range(c(pointsY1,pointsY2))
@@ -10322,8 +10334,8 @@ server <- function(input,output,session) {
           range2 <- diff(y2.range)
           if (input$fullSeries) {
             if (range1 >= range2) {
-              y.range[1] <- y2.range[1] - (range1 - range2)/2
-              y.range[2] <- y2.range[2] + (range1 - range2)/2
+              y2.range[1] <- y2.range[1] - (range1 - range2)/2
+              y2.range[2] <- y2.range[2] + (range1 - range2)/2
             } else {
               y.range[1] <- y.range[1] - (range2 - range1)/2
               y.range[2] <- y.range[2] + (range2 - range1)/2
@@ -10341,11 +10353,28 @@ server <- function(input,output,session) {
           } else {
             tie1 <- sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix
             tie2 <- sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix
-            tie1 <- tie1[1:min(length(tie1),length(tie2))]
-            tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y1[valid3][tie1] - y2.common[tie2])
-            y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
+            tie1c <- tie1[1:min(length(tie1),length(tie2))]
+            tie2c <- tie2[1:min(length(tie1),length(tie2))]
+            relPosFromBottom1 <- median(y1[valid1][tie1c], na.rm = T) - y.range[1]
+            relPosFromBottom2 <- median(y2.common[tie2c], na.rm = T) - y2.range[1]
+            pointsBias <- relPosFromBottom1 - relPosFromBottom2
+            y2.range <- y2.range - pointsBias
+            if (input$fullSeries) {
+              if (pointsBias > 0) {
+                y.range[2] <- y.range[2] + pointsBias
+                y2.range[2] <- y2.range[2] + pointsBias
+              } else {
+                y.range[1] <- y.range[1] + pointsBias
+                y2.range[1] <- y2.range[1] + pointsBias
+              }
+            }
           }
+          cutBelow <- min(abs(c(min(y1[valid1]) - y.range[1], min(y2.common) - y2.range[1])))
+          cutAbove <- min(abs(c(max(y1[valid1]) - y.range[2], max(y2.common) - y2.range[2])))
+          y.range[1] <- y.range[1] + cutBelow
+          y2.range[1] <- y2.range[1] + cutBelow
+          y.range[2] <- y.range[2] - cutAbove
+          y2.range[2] <- y2.range[2] - cutAbove
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             pointsY1 <- y1[valid1][x[valid1] >= x.range[1] & x[valid1] <= x.range[2]]
@@ -10435,8 +10464,8 @@ server <- function(input,output,session) {
           range2 <- diff(y2.range)
           if (input$fullSeries) {
             if (range1 >= range2) {
-              y.range[1] <- y2.range[1] - (range1 - range2)/2
-              y.range[2] <- y2.range[2] + (range1 - range2)/2
+              y2.range[1] <- y2.range[1] - (range1 - range2)/2
+              y2.range[2] <- y2.range[2] + (range1 - range2)/2
             } else {
               y.range[1] <- y.range[1] - (range2 - range1)/2
               y.range[2] <- y.range[2] + (range2 - range1)/2
@@ -10454,11 +10483,28 @@ server <- function(input,output,session) {
           } else {
             tie1 <- sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix
             tie2 <- sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix
-            tie1 <- tie1[1:min(length(tie1),length(tie2))]
-            tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y2[valid2][tie1] - y2.common[tie2])
-            y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
+            tie1c <- tie1[1:min(length(tie1),length(tie2))]
+            tie2c <- tie2[1:min(length(tie1),length(tie2))]
+            relPosFromBottom1 <- median(y2[valid2][tie1c], na.rm = T) - y.range[1]
+            relPosFromBottom2 <- median(y2.common[tie2c], na.rm = T) - y2.range[1]
+            pointsBias <- relPosFromBottom1 - relPosFromBottom2
+            y2.range <- y2.range - pointsBias
+            if (input$fullSeries) {
+              if (pointsBias > 0) {
+                y.range[2] <- y.range[2] + pointsBias
+                y2.range[2] <- y2.range[2] + pointsBias
+              } else {
+                y.range[1] <- y.range[1] + pointsBias
+                y2.range[1] <- y2.range[1] + pointsBias
+              }
+            }
           }
+          cutBelow <- min(abs(c(min(y2[valid2]) - y.range[1], min(y2.common) - y2.range[1])))
+          cutAbove <- min(abs(c(max(y2[valid2]) - y.range[2], max(y2.common) - y2.range[2])))
+          y.range[1] <- y.range[1] + cutBelow
+          y2.range[1] <- y2.range[1] + cutBelow
+          y.range[2] <- y.range[2] - cutAbove
+          y2.range[2] <- y2.range[2] - cutAbove
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             pointsY1 <- y2[valid2][x[valid2] >= x.range[1] & x[valid2] <= x.range[2]]
@@ -10466,7 +10512,7 @@ server <- function(input,output,session) {
             range <- range(c(pointsY1,pointsY2))
             y.range <- y2.range <- range
           } else {
-            y2.range <- y.range 
+            y2.range <- y.range
           }
         } else {
           y2.range <- suppressWarnings(range(y22[x2 >= x.range[1] & x2 <= x.range[2]]))
@@ -10549,8 +10595,8 @@ server <- function(input,output,session) {
           range2 <- diff(y2.range)
           if (input$fullSeries) {
             if (range1 >= range2) {
-              y.range[1] <- y2.range[1] - (range1 - range2)/2
-              y.range[2] <- y2.range[2] + (range1 - range2)/2
+              y2.range[1] <- y2.range[1] - (range1 - range2)/2
+              y2.range[2] <- y2.range[2] + (range1 - range2)/2
             } else {
               y.range[1] <- y.range[1] - (range2 - range1)/2
               y.range[2] <- y.range[2] + (range2 - range1)/2
@@ -10568,11 +10614,28 @@ server <- function(input,output,session) {
           } else {
             tie1 <- sort(sapply(x, function(i) min(abs(x2.common - i))), index.return = T)$ix
             tie2 <- sort(sapply(x2.common, function(i) min(abs(x - i))), index.return = T)$ix
-            tie1 <- tie1[1:min(length(tie1),length(tie2))]
-            tie2 <- tie2[1:min(length(tie1),length(tie2))]
-            pointsBias <- median(y3[valid3][tie1] - y2.common[tie2])
-            y2.range <- y2.range + (y.range[1] - y2.range[1]) - pointsBias
+            tie1c <- tie1[1:min(length(tie1),length(tie2))]
+            tie2c <- tie2[1:min(length(tie1),length(tie2))]
+            relPosFromBottom1 <- median(y3[valid3][tie1c], na.rm = T) - y.range[1]
+            relPosFromBottom2 <- median(y2.common[tie2c], na.rm = T) - y2.range[1]
+            pointsBias <- relPosFromBottom1 - relPosFromBottom2
+            y2.range <- y2.range - pointsBias
+            if (input$fullSeries) {
+              if (pointsBias > 0) {
+                y.range[2] <- y.range[2] + pointsBias
+                y2.range[2] <- y2.range[2] + pointsBias
+              } else {
+                y.range[1] <- y.range[1] + pointsBias
+                y2.range[1] <- y2.range[1] + pointsBias
+              }
+            }
           }
+          cutBelow <- min(abs(c(min(y3[valid3]) - y.range[1], min(y2.common) - y2.range[1])))
+          cutAbove <- min(abs(c(max(y3[valid3]) - y.range[2], max(y2.common) - y2.range[2])))
+          y.range[1] <- y.range[1] + cutBelow
+          y2.range[1] <- y2.range[1] + cutBelow
+          y.range[2] <- y.range[2] - cutAbove
+          y2.range[2] <- y2.range[2] - cutAbove
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             pointsY1 <- y3[valid3][x[valid3] >= x.range[1] & x[valid3] <= x.range[2]]
@@ -10580,7 +10643,7 @@ server <- function(input,output,session) {
             range <- range(c(pointsY1,pointsY2))
             y.range <- y2.range <- range
           } else {
-            y2.range <- y.range 
+            y2.range <- y.range
           }
         } else {
           y2.range <- suppressWarnings(range(y32[x2 >= x.range[1] & x2 <= x.range[2]]))
@@ -14735,7 +14798,6 @@ server <- function(input,output,session) {
           rangeY2[1] <- rangeY2[1] + cutBelow
           rangeY[2] <- rangeY[2] - cutAbove
           rangeY2[2] <- rangeY2[2] - cutAbove
-print(paste(diff(rangeY),diff(rangeY2)))
         } else if (isTruthy(input$same_axis)) {
           if (input$fullSeries) {
             pointsY1 <- y1[x1 >= rangeX[1] & x1 <= rangeX[2]]
