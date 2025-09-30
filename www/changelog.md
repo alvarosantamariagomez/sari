@@ -1,6 +1,31 @@
 # **SARI changelog**
 
 
+# octubre 2025 [2025.10]
+
+### Fixed
+- fixing the name of the polynomial component in the string of the fitted model
+- adding checks on the station's ID
+- improving the checks on the downloaded series in JSON format
+- correcting the vertical axes of the merged series
+- fixing the formatting the MJD epochs computed from calendar dates
+- fixing the deactivation of the secondary series when uploaded from a URL query
+
+### Changed
+- making the overview plot react to the N@E option
+- updating the overview plot from changes on the 3D plot
+- maximizing the plot area when using the sameScale and fullSeries options simultaneously
+- downloading the remote secondary series to the tempFiles directory
+- deactivating the fullSeries option when zooming in on the series
+- improving the loading of series using the sari.sh script
+- checking the series sampling when merging the primary and secondary series
+- allowing extra metadata columns in the Spotgins series
+- improving the change of the time units after swapping resampled primary and/or secondary series
+- keeping the removed points and the sampling period of the primary and secondary series when using the swap option
+
+### Added
+
+
 # septiembre 2025 [2025.09]
 
 ### Fixed

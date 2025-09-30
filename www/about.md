@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version septiembre 2025'
+title: 'SARI documentation - version octubre 2025'
 author: 'Alvaro Santamaría'
 ---
 
@@ -67,7 +67,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *septiembre 2025*  --  "No ego trips, no pride. A computer program for the common good."
+Current SARI version: *octubre 2025*  --  "It took us decades just to crack the GPS codes."
 
 -----------------
 
