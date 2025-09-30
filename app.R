@@ -14367,7 +14367,7 @@ server <- function(input,output,session) {
                     model_lm <- ifelse(nchar(model_lm) > 3, paste(model_lm,"+"), model_lm)
                   }
                   model_lm <- paste0(model_lm, " P(-Inf,Inf,",degree,")")
-                  model_nsl <- paste(model_nls, paste0(label,"*(x-",text_rate,")^",degree), sep = " + ")
+                  model_nls <- paste(model_nls, paste0(label,"*(x-",text_rate,")^",degree), sep = " + ")
                 }
               } else if (input$fitType == 2) {
                 label <- paste0("P",degree)
