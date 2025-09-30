@@ -1106,18 +1106,18 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                           ),
                                                                           fluidRow(
                                                                             column(4,
-                                                                                   div(style = "margin-bottom: -1em",
+                                                                                   div(style = "margin-bottom: 2em",
                                                                                        selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                                    )
                                                                             ),
                                                                             column(4,
-                                                                                   div(style = "margin-bottom: -1em",
+                                                                                   div(style = "margin-bottom: 2em",
                                                                                        selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
                                                                                    )
                                                                             ),
                                                                             column(4,
                                                                                    withBusyIndicatorUI(
-                                                                                     div(style = "margin-bottom: -1em",
+                                                                                     div(style = "margin-bottom: 2em",
                                                                                          uiOutput("showStation2")
                                                                                      )
                                                                                    )
