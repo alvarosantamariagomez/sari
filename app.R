@@ -2526,6 +2526,10 @@ server <- function(input,output,session) {
   # 8. input parameters via URL
   url <- reactiveValues(station = NULL, server = NULL, file = NULL, station2 = NULL, server2 = NULL, file2 = NULL, logfile = NULL, logfile2 = NULL)
 
+  
+  # 9. update overview plot
+  debounceOverview <- throttle(reactive(input$plotAll), 5000, priority = 1000)
+  
   # Resetting all parameters to default values each time the page loads (avoids problems when clicking back on the browser)
   reset("side-panel")
   reset("main-panel")
@@ -10225,7 +10229,7 @@ server <- function(input,output,session) {
   }, priority = 4)
 
   # Observe overview ####
-  observeEvent(input$plotAll, {
+  observeEvent(debounceOverview(), {
     req(db1[[info$db1]])
     if (input$format < 4) {
       if (messages > 0) cat(file = stderr(), mySession, "Overview plot", "\n")
@@ -14777,7 +14781,6 @@ server <- function(input,output,session) {
             tie2 <- sort(sapply(pointsX2, function(x) min(abs(pointsX1 - x))), index.return = T)$ix
             tie1c <- tie1[1:min(length(tie1),length(tie2))]
             tie2c <- tie2[1:min(length(tie1),length(tie2))]
-            # pointsBias <- median(pointsY1[tie1c] - pointsY2[tie2c])
             relPosFromBottom1 <- median(pointsY1[tie1c], na.rm = T) - rangeY[1]
             relPosFromBottom2 <- median(pointsY2[tie2c], na.rm = T) - rangeY2[1]
             pointsBias <- relPosFromBottom1 - relPosFromBottom2
@@ -14832,6 +14835,7 @@ server <- function(input,output,session) {
       plot_series(x1,y1,sy1,rangeX,rangeY,sigmas,title,input$symbol,T,info$tunits.label)
       points(xe, ye, type = "p", col = SARIcolors[2], bg = 2, pch = 21)
       output[[paste0("component",input$tab,component)]] <- renderText(sub(" component", "", info$components[component]))
+      updateOverview()
       xx <- median(x1[x1 > rangeX[1] & x1 < rangeX[2]], na.rm = T)
       yy <- median(y1[x1 > rangeX[1] & x1 < rangeX[2]], na.rm = T)
       centerx <- which(abs(x1 - xx) == min(abs(x1 - xx)))[1]
