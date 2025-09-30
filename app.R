@@ -10310,6 +10310,14 @@ server <- function(input,output,session) {
         sy22 <- db2[[info$db2]]$sy2
         sy32 <- db2[[info$db2]]$sy3
       }
+      if (input$ne) {
+        y12b <- y12
+        y12 <- y22
+        y22 <- y12b
+        sy12b <- sy12
+        sy12 <- sy22
+        sy22 <- sy12b
+      }
       valid1 <- db1[[info$db1]]$status1 & !is.na(db1[[info$db1]]$status1)
       valid2 <- db1[[info$db1]]$status2 & !is.na(db1[[info$db1]]$status2)
       valid3 <- db1[[info$db1]]$status3 & !is.na(db1[[info$db1]]$status3)
