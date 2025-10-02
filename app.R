@@ -12698,11 +12698,15 @@ server <- function(input,output,session) {
         }
       } else {
         if (spotgins2 || spotgins3) {
-          fill <- T
+          maxCol <- max(count.fields(file, sep = sep, comment.char = "#"))
+          if (spotgins2) {
+            tableAll <- read.table(file = file, comment.char = "#", sep = sep, skip = skip, fill = T, colClasses = c(rep("numeric",9),rep("NULL",maxCol - 9)))
+          } else if (spotgins3) {
+            tableAll <- read.table(file = file, comment.char = "#", sep = sep, skip = skip, fill = T, colClasses = c(rep("numeric",10),"character","numeric",rep("NULL",maxCol - 12)))
+          }
         } else {
-          fill <- F
+          tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip, fill = F), silent = T)
         }
-        tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip, fill = fill), silent = T)
       }
       # extracting series from SONEL format into ENU format
       if (server == "SONEL") {
