@@ -6949,7 +6949,7 @@ server <- function(input,output,session) {
       disable("fitType")
       disable("autoDownload")
       disable("white")
-      disable("reset")
+      enable("reset")
       disable("cut")
       disable("strip")
       disable("delete_excluded")
@@ -11562,7 +11562,6 @@ server <- function(input,output,session) {
 
   # Observe reset ####
   observeEvent(input$reset, {
-    req(file$primary)
     if (messages > 0) cat(file = stderr(), mySession, "Reset all", "\n")
     if (session$clientData$url_search != "") {
       if (session$clientData$url_pathname == "/") {
