@@ -16583,9 +16583,12 @@ server <- function(input,output,session) {
           name <- paste0(toupper(station),pattern)
           filepath <- paste0(url,name)
           url_log <- "https://gnss-metadata.eu/data/station/log/"
-          found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
-          if (isTruthy(found)) {
-            logfile <- paste0(url_log,found)
+          dir_contents <- try(readLines(url_log), silent = T)
+          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+            found <- grep(paste0(tolower(station),""), readHTMLTable(dir_contents, header = F)$list$V1, perl = F, value = T, fixed = T)
+            if (isTruthy(found)) {
+              logfile <- paste0(url_log,found)
+            }
           }
         } else {
           withBusyIndicatorServer(variable, {
@@ -16658,9 +16661,12 @@ server <- function(input,output,session) {
               }
             } else if (product == "UGA" || product == "UGA_POS") {
               url_log <- "https://gnss-metadata.eu/data/station/log/"
-              found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
-              if (isTruthy(found)) {
-                logfile <- paste0(url_log,found)
+              dir_contents <- try(readLines(url_log), silent = T)
+              if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                found <- grep(paste0(tolower(station),""), readHTMLTable(dir_contents, header = F)$list$V1, perl = F, value = T, fixed = T)
+                if (isTruthy(found)) {
+                  logfile <- paste0(url_log,found)
+                }
               }
             } else if (product == "IGS20") {
               if (file.exists("www/soln.snx") && series == 1) {
@@ -16721,9 +16727,12 @@ server <- function(input,output,session) {
           name <- paste0("timeseries", station, "_", product, ".json")
           filepath <- paste0("https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/products/timeseries/", station, "/", product, "/enu/json/?file=true")
           url_log <- "https://gnss-metadata.eu/data/station/log/"
-          found <- grep(paste0(tolower(station),""), readHTMLTable(readLines(url_log), header = F)$list$V1, perl = F, value = T, fixed = T)
-          if (isTruthy(found)) {
-            logfile <- paste0(url_log,found)
+          dir_contents <- try(readLines(url_log), silent = T)
+          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+            found <- grep(paste0(tolower(station),""), readHTMLTable(dir_contents, header = F)$list$V1, perl = F, value = T, fixed = T)
+            if (isTruthy(found)) {
+              logfile <- paste0(url_log,found)
+            }
           }
         } else {
           withBusyIndicatorServer(variable, {
