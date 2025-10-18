@@ -1091,341 +1091,394 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
 
                                                                       ## % Secondary series ####
-                                                                      div(style = "padding: 0px 0px; margin-top:0em",
-                                                                          fluidRow(
-                                                                            column(8,
-                                                                                   div(style = "margin-right:0; padding-right:0",
-                                                                                       fileInput(inputId = "series2",
-                                                                                                 div("Secondary series file",
-                                                                                                     helpPopup("This option allows loading a secondary series to be shown next to, subtracted from or averaged with the primary series.", anchor = "notes-on-the-secondary-series")),
-                                                                                                 multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
-                                                                                   )
-                                                                            ),
-                                                                            column(3, align = "left", offset = 1,
-                                                                                   div(style = "padding: 0px 0px; margin-top:+1.9em",
-                                                                                       actionButton(inputId = "swap", label = "Swap", icon = icon("refresh", class = NULL, lib = "font-awesome"), style = "font-size: small")
-                                                                                   )
-                                                                            )
-                                                                          ),
-                                                                          fluidRow(
-                                                                            column(4,
-                                                                                   div(style = "margin-bottom: 2em",
-                                                                                       selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
-                                                                                   )
-                                                                            ),
-                                                                            column(4,
-                                                                                   div(style = "margin-bottom: 2em",
-                                                                                       selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
-                                                                                   )
-                                                                            ),
-                                                                            column(4,
-                                                                                   withBusyIndicatorUI(
-                                                                                     div(style = "margin-bottom: 2em",
-                                                                                         uiOutput("showStation2")
-                                                                                     )
-                                                                                   )
-                                                                            )
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "output.series2",
+                                                                      conditionalPanel(
+                                                                        condition = "output.tabRes == true",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
                                                                             fluidRow(
-                                                                              column(12,
-                                                                                     radioButtons(inputId = "optionSecondary", 
-                                                                                                  div("Secondary series option",
-                                                                                                      helpPopup("None: hides the secondary series<br/>
+                                                                              column(8,
+                                                                                     div(style = "font-weight: bold; margin-right:0; padding-right:0", "Secondary series file",
+                                                                                         helpPopup("This option allows loading a secondary series to be shown next to, subtracted from or averaged with the primary series.", anchor = "notes-on-the-secondary-series")
+                                                                                     )
+                                                                              )
+                                                                            )
+                                                                        ),
+                                                                        br(),
+                                                                        div(style = "text-align: center;", "Select the tab of a coordinate component to enable this option."),
+                                                                        br()
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "output.tabRes == false",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
+                                                                            fluidRow(
+                                                                              column(8,
+                                                                                     div(style = "margin-right:0; padding-right:0",
+                                                                                         fileInput(inputId = "series2",
+                                                                                                   div("Secondary series file",
+                                                                                                       helpPopup("This option allows loading a secondary series to be shown next to, subtracted from or averaged with the primary series.", anchor = "notes-on-the-secondary-series")),
+                                                                                                   multiple = T, buttonLabel = "Browse file ...", placeholder = "Empty")
+                                                                                     )
+                                                                              ),
+                                                                              column(3, align = "left", offset = 1,
+                                                                                     div(style = "padding: 0px 0px; margin-top:+1.9em",
+                                                                                         actionButton(inputId = "swap", label = "Swap", icon = icon("refresh", class = NULL, lib = "font-awesome"), style = "font-size: small")
+                                                                                     )
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              column(4,
+                                                                                     div(style = "margin-bottom: 2em",
+                                                                                         selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                     )
+                                                                              ),
+                                                                              column(4,
+                                                                                     div(style = "margin-bottom: 2em",
+                                                                                         selectizeInput(inputId = "product2", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
+                                                                                     )
+                                                                              ),
+                                                                              column(4,
+                                                                                     withBusyIndicatorUI(
+                                                                                       div(style = "margin-bottom: 2em",
+                                                                                           uiOutput("showStation2")
+                                                                                       )
+                                                                                     )
+                                                                              )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "output.series2",
+                                                                              fluidRow(
+                                                                                column(12,
+                                                                                       radioButtons(inputId = "optionSecondary", 
+                                                                                                    div("Secondary series option",
+                                                                                                        helpPopup("None: hides the secondary series<br/>
                                                                                                                 Show: plots the secondary series underneath the primary series, in green color on the right axis<br/>
                                                                                                                 Correct: subtracts the secondary series from the primary series at common epochs<br/>
                                                                                                                 Average: averages the secondary and primary series at common epochs<br/>
                                                                                                                 Merge: adds the secondary series to the primary series at uncommon epochs.", anchor = "notes-on-the-secondary-series")),
-                                                                                                  choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3, "Merge" = 4), selected = 0, inline = T, width = NULL) |> autoCompleteOff()
+                                                                                                    choices = list("None" = 0, "Show" = 1, "Correct" = 2, "Average" = 3, "Merge" = 4), selected = 0, inline = T, width = NULL) |> autoCompleteOff()
+                                                                                )
+                                                                              )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "output.series2",
+                                                                              fluidRow(
+                                                                                column(8,
+                                                                                       # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T) |> autoCompleteOff(),
+                                                                                       radioButtons(inputId = "format2", label = "Secondary series format", choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto") |> autoCompleteOff(),
+                                                                                       fluidRow(
+                                                                                         column(6,
+                                                                                                textInput(inputId = "scaleFactor",
+                                                                                                          div("Scale factor",
+                                                                                                              helpPopup("Enter the multiplicative coefficient to scale the y-axis of the secondary series.", anchor = "notes-on-the-secondary-series")),
+                                                                                                          value = "1") |> autoCompleteOff()
+                                                                                         ),
+                                                                                         column(6,
+                                                                                                div( # dummy div to avoid sendCustomMessage to update the previous scaleFactor and the next step2 values both at the same time (maybe a bug?)
+                                                                                                  textInput(inputId = "step2",
+                                                                                                            div("Averaging",
+                                                                                                                helpPopup("This option computes the moving average of the secondary series for a given non-overlapping time pediod between the time series sampling and half the time series length.<br>
+                                                                                                                      The period must be given in the same units as the time axis in the series.<br>
+                                                                                                                      Expressions are allowed starting by <span class='UIoption'>=</span>, as in <span class='UIoption'>=7/365.25</span>.", anchor = "notes-on-the-secondary-series")),
+                                                                                                            value = "") |> autoCompleteOff()
+                                                                                                )
+                                                                                         )
+                                                                                       ),
+                                                                                       div(style = "margin-right: -1em", uiOutput("fileSeries2"))
+                                                                                ),
+                                                                                column(4,
+                                                                                       div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                           checkboxInput(inputId = "fullSeries",
+                                                                                                         div("Full series",
+                                                                                                             helpPopup("This option shows the total length of the secondary series.<br>
+                                                                                                                     By default, only the common time period with the primary series will be shown.", anchor = "notes-on-the-secondary-series")),
+                                                                                                         value = F) |> autoCompleteOff(),
+                                                                                           checkboxInput(inputId = "sameScale",
+                                                                                                         div("Same scale",
+                                                                                                             helpPopup("This option forces the y-axis of the secondary series on the right of the plot to have the same scale as the y-axis of the primary series on the left.", anchor = "notes-on-the-secondary-series")),
+                                                                                                         value = F) |> autoCompleteOff(),
+                                                                                           checkboxInput(inputId = "same_axis",
+                                                                                                         div("Same axis",
+                                                                                                             helpPopup("This option forces the y-axis of the secondary series on the right of the plot to be the same as the y-axis of the primary series on the left.", anchor = "notes-on-the-secondary-series")),
+                                                                                                         value = F) |> autoCompleteOff(),
+                                                                                           checkboxInput(inputId = "ne",
+                                                                                                         div(HTML("N @ E"),
+                                                                                                             helpPopup("This option swaps the columns of the North and East components of the secondary series to match those of the primary series.", anchor = "notes-on-the-secondary-series")),
+                                                                                                         value = F) |> autoCompleteOff()
+                                                                                       )
+                                                                                )
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              conditionalPanel(
+                                                                                condition = "input.format2 == 4 && output.series2 == true",
+                                                                                column(6,
+                                                                                       selectInput(inputId = "separator2", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                ),
+                                                                                column(6,
+                                                                                       div(style = "font-weight: bold", "Column selection",
+                                                                                           helpPopup("Enter the column number for the epochs, data and the errorbars, respectively, of the secondary series.", anchor = NULL)
+                                                                                       ),
+                                                                                       div(style = "margin-top:-1em",
+                                                                                           fluidRow(
+                                                                                             column(4,
+                                                                                                    textInput(inputId = "epoch2", label = "", value = "1") |> autoCompleteOff()
+                                                                                             ),
+                                                                                             column(4, offset = -2,
+                                                                                                    textInput(inputId = "variable2", label = "", value = "2") |> autoCompleteOff()
+                                                                                             ),
+                                                                                             column(4, offset = -2,
+                                                                                                    textInput(inputId = "errorBar2", label = "", value = "3") |> autoCompleteOff()
+                                                                                             )
+                                                                                           )
+                                                                                       )
+                                                                                )
+                                                                              )
+                                                                            )
+                                                                        ),
+                                                                        div(style = "padding: 0px 0px; margin-top: -1em",
+                                                                            tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
+                                                                        )
+                                                                      ),
+
+                                                                      ## % Euler ####
+                                                                      conditionalPanel(
+                                                                        condition = "output.tabRes == true",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     div(style = "font-weight: bold", "Plate motion model",
+                                                                                         helpPopup("This option shows or removes a plate motion model at the series location given the parameters of an Euler pole.", anchor = "notes-on-the-plate-motion-model")
+                                                                                     )
+                                                                              )
+                                                                            )
+                                                                        ),
+                                                                        br(),
+                                                                        div(style = "text-align: center;", "Select the tab of a coordinate component to enable this option."),
+                                                                        br()
+                                                                      ),
+                                                                      conditionalPanel(
+                                                                        condition = "output.tabRes == false",
+                                                                        fluidRow(
+                                                                          column(6,
+                                                                                 checkboxInput(inputId = "euler",
+                                                                                               div(style = "font-weight: bold", "Plate motion model",
+                                                                                                   helpPopup("This option shows or removes a plate motion model at the series location given the parameters of an Euler pole.", anchor = "notes-on-the-plate-motion-model")),
+                                                                                               value = F) |> autoCompleteOff()
+                                                                          ),
+                                                                          column(6,
+                                                                                 conditionalPanel(
+                                                                                   condition = "input.euler == true",
+                                                                                   div(style = "margin-top: 0.75em",
+                                                                                       radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
+                                                                                   )
+                                                                                 )
+                                                                          )
+                                                                        ),
+                                                                        fluidRow(
+                                                                          conditionalPanel(
+                                                                            condition = "input.euler == true && input.format == 1",
+                                                                            column(6,
+                                                                                   div("Select NEU or ENU format:")
+                                                                            ),
+                                                                            column(6,
+                                                                                   radioButtons(inputId = "neuenu", label = NULL, choices = list("ENU" = 1, "NEU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL) |> autoCompleteOff()
+                                                                            )
+                                                                          ),
+                                                                          conditionalPanel(
+                                                                            condition = "input.euler == true && input.format == 4",
+                                                                            column(6,
+                                                                                   div("Select component of 1D series:")
+                                                                            ),
+                                                                            column(6,
+                                                                                   radioButtons(inputId = "neu1D", label = NULL, choices = list("North" = 1, "East" = 2, "Up" = 3), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL) |> autoCompleteOff()
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        conditionalPanel(
+                                                                          condition = "input.euler == true",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2020", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T) |> autoCompleteOff(),
+                                                                                   div(style = "margin-top: -1em", uiOutput("pmm"))
+                                                                            ),
+                                                                            column(6,
+                                                                                   selectizeInput(inputId = "plate", label = "Plate name", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            div(style = "margin-top: 2em",
+                                                                                column(8,
+                                                                                       div(style = "font-weight: bold", "Upload a custom plate model",
+                                                                                           helpPopup("This option allows loading a file with a list of station coordinates and their associated Euler poles.", anchor = "notes-on-the-plate-motion-model")
+                                                                                       )
+                                                                                ),
+                                                                                column(4, align = "right",
+                                                                                       tags$a(href = "euler.txt", "Show file example", target = "_blank")
+                                                                                )
+                                                                            )
+                                                                          ),
+                                                                          fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty"),
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   div("Station coordinates", helpPopup("Option 1: Cartesian coordinates in the same units as the series.<br>
+                                                                                                                      Option 2: geographic coordinates in decimal degrees.", anchor = "notes-on-the-plate-motion-model"))
+                                                                            ),
+                                                                            column(6, align = "right",
+                                                                                   radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
+                                                                            )
+                                                                          ),
+                                                                          fluidRow(
+                                                                            conditionalPanel(
+                                                                              condition = "input.station_coordinates == 1",
+                                                                              column(4,
+                                                                                     textInput(inputId = "station_x", label = "Station X", value = "") |> autoCompleteOff()
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "station_y", label = "Station Y", value = "") |> autoCompleteOff()
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "station_z", label = "Station Z", value = "") |> autoCompleteOff()
+                                                                              )
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "input.station_coordinates == 2",
+                                                                              column(4,
+                                                                                     textInput(inputId = "station_lat", label = "Station latitude", value = "") |> autoCompleteOff()
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "station_lon", label = "Station longitude", value = "") |> autoCompleteOff()
                                                                               )
                                                                             )
                                                                           ),
                                                                           conditionalPanel(
                                                                             condition = "output.series2",
                                                                             fluidRow(
-                                                                              column(8,
-                                                                                     # radioButtons(inputId = "typeSecondary", label = NULL, choices = list("Original" = 1, "Residual" = 2), selected = 1, inline = T) |> autoCompleteOff(),
-                                                                                     radioButtons(inputId = "format2", label = "Secondary series format", choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 1, inline = T, width = "auto") |> autoCompleteOff(),
-                                                                                     fluidRow(
-                                                                                       column(6,
-                                                                                              textInput(inputId = "scaleFactor",
-                                                                                                        div("Scale factor",
-                                                                                                            helpPopup("Enter the multiplicative coefficient to scale the y-axis of the secondary series.", anchor = "notes-on-the-secondary-series")),
-                                                                                                        value = "1") |> autoCompleteOff()
-                                                                                       ),
-                                                                                       column(6,
-                                                                                              div( # dummy div to avoid sendCustomMessage to update the previous scaleFactor and the next step2 values both at the same time (maybe a bug?)
-                                                                                              textInput(inputId = "step2",
-                                                                                                        div("Averaging",
-                                                                                                            helpPopup("This option computes the moving average of the secondary series for a given non-overlapping time pediod between the time series sampling and half the time series length.<br>
-                                                                                                                      The period must be given in the same units as the time axis in the series.<br>
-                                                                                                                      Expressions are allowed starting by <span class='UIoption'>=</span>, as in <span class='UIoption'>=7/365.25</span>.", anchor = "notes-on-the-secondary-series")),
-                                                                                                        value = "") |> autoCompleteOff()
-                                                                                              )
-                                                                                       )
-                                                                                     ),
-                                                                                     div(style = "margin-right: -1em", uiOutput("fileSeries2"))
-                                                                              ),
-                                                                              column(4,
-                                                                                     div(style = "padding: 0px 0px; margin-top:1em",
-                                                                                         checkboxInput(inputId = "fullSeries",
-                                                                                                       div("Full series",
-                                                                                                           helpPopup("This option shows the total length of the secondary series.<br>
-                                                                                                                     By default, only the common time period with the primary series will be shown.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F) |> autoCompleteOff(),
-                                                                                         checkboxInput(inputId = "sameScale",
-                                                                                                       div("Same scale",
-                                                                                                           helpPopup("This option forces the y-axis of the secondary series on the right of the plot to have the same scale as the y-axis of the primary series on the left.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F) |> autoCompleteOff(),
-                                                                                         checkboxInput(inputId = "same_axis",
-                                                                                                       div("Same axis",
-                                                                                                           helpPopup("This option forces the y-axis of the secondary series on the right of the plot to be the same as the y-axis of the primary series on the left.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F) |> autoCompleteOff(),
-                                                                                         checkboxInput(inputId = "ne",
-                                                                                                       div(HTML("N @ E"),
-                                                                                                           helpPopup("This option swaps the columns of the North and East components of the secondary series to match those of the primary series.", anchor = "notes-on-the-secondary-series")),
-                                                                                                       value = F) |> autoCompleteOff()
-                                                                                     )
-                                                                              )
-                                                                            )
-                                                                          ),
-                                                                          fluidRow(
-                                                                            conditionalPanel(
-                                                                              condition = "input.format2 == 4 && output.series2 == true",
                                                                               column(6,
-                                                                                     selectInput(inputId = "separator2", label = "Column separation", choices = list("Blank/Tab" = 1, "Comma" = 2, "Semi-colon" = 3), selected = 1, multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                     div("Secondary station coordinates", helpPopup("Option 1: Cartesian coordinates in the same units as the series.<br>
+                                                                                                                                  Option 2: geographic coordinates in decimal degrees.", anchor = "notes-on-the-plate-motion-model"))
                                                                               ),
-                                                                              column(6,
-                                                                                     div(style = "font-weight: bold", "Column selection",
-                                                                                         helpPopup("Enter the column number for the epochs, data and the errorbars, respectively, of the secondary series.", anchor = NULL)
-                                                                                     ),
-                                                                                     div(style = "margin-top:-1em",
-                                                                                         fluidRow(
-                                                                                           column(4,
-                                                                                                  textInput(inputId = "epoch2", label = "", value = "1") |> autoCompleteOff()
-                                                                                           ),
-                                                                                           column(4, offset = -2,
-                                                                                                  textInput(inputId = "variable2", label = "", value = "2") |> autoCompleteOff()
-                                                                                           ),
-                                                                                           column(4, offset = -2,
-                                                                                                  textInput(inputId = "errorBar2", label = "", value = "3") |> autoCompleteOff()
-                                                                                           )
-                                                                                         )
-                                                                                     )
+                                                                              column(6, align = "right",
+                                                                                     radioButtons(inputId = "station_coordinates2", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
+                                                                              )
+                                                                            ),
+                                                                            fluidRow(
+                                                                              conditionalPanel(
+                                                                                condition = "input.station_coordinates2 == 1",
+                                                                                column(4,
+                                                                                       textInput(inputId = "station_x2", label = "Station X", value = "") |> autoCompleteOff()
+                                                                                ),
+                                                                                column(4, offset = -2,
+                                                                                       textInput(inputId = "station_y2", label = "Station Y", value = "") |> autoCompleteOff()
+                                                                                ),
+                                                                                column(4, offset = -2,
+                                                                                       textInput(inputId = "station_z2", label = "Station Z", value = "") |> autoCompleteOff()
+                                                                                )
+                                                                              ),
+                                                                              conditionalPanel(
+                                                                                condition = "input.station_coordinates2 == 2",
+                                                                                column(4,
+                                                                                       textInput(inputId = "station_lat2", label = "Station latitude", value = "") |> autoCompleteOff()
+                                                                                ),
+                                                                                column(4, offset = -2,
+                                                                                       textInput(inputId = "station_lon2", label = "Station longitude", value = "") |> autoCompleteOff()
+                                                                                )
                                                                               )
                                                                             )
-                                                                          )
-                                                                      ),
-
-                                                                      div(style = "padding: 0px 0px; margin-top: -1em",
-                                                                          tags$hr(style = "border-color: #333333; border-top: 1px solid #333333;")
-                                                                      ),
-
-                                                                      ## % Euler ####
-                                                                      fluidRow(
-                                                                        column(6,
-                                                                               checkboxInput(inputId = "euler",
-                                                                                             div(style = "font-weight: bold", "Plate motion model",
-                                                                                                 helpPopup("This option shows or removes a plate motion model at the series location given the parameters of an Euler pole.", anchor = "notes-on-the-plate-motion-model")),
-                                                                                             value = F) |> autoCompleteOff()
-                                                                               ),
-                                                                        column(6,
-                                                                               conditionalPanel(
-                                                                                 condition = "input.euler == true",
-                                                                                 div(style = "margin-top: 0.75em",
-                                                                                     radioButtons(inputId = "eulerType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
-                                                                                 )
-                                                                               )
-                                                                        )
-                                                                      ),
-                                                                      fluidRow(
-                                                                        conditionalPanel(
-                                                                          condition = "input.euler == true && input.format == 1",
-                                                                          column(6,
-                                                                                 div("Select NEU or ENU format:")
                                                                           ),
-                                                                          column(6,
-                                                                                 radioButtons(inputId = "neuenu", label = NULL, choices = list("ENU" = 1, "NEU" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL) |> autoCompleteOff()
-                                                                          )
-                                                                        ),
-                                                                        conditionalPanel(
-                                                                          condition = "input.euler == true && input.format == 4",
-                                                                          column(6,
-                                                                                 div("Select component of 1D series:")
-                                                                          ),
-                                                                          column(6,
-                                                                                 radioButtons(inputId = "neu1D", label = NULL, choices = list("North" = 1, "East" = 2, "Up" = 3), selected = 1, inline = T, width = NULL, choiceNames = NULL, choiceValues = NULL) |> autoCompleteOff()
-                                                                          )
-                                                                        )
-                                                                      ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.euler == true",
-                                                                        fluidRow(
-                                                                          column(6,
-                                                                                 selectInput(inputId = "plateModel", label = "Select a plate model", choices = list("", "ITRF2020", "NNR-MORVEL56", "NNR-GSRM"), selected = "", multiple = F, selectize = T) |> autoCompleteOff(),
-                                                                                 div(style = "margin-top: -1em", uiOutput("pmm"))
-                                                                          ),
-                                                                          column(6,
-                                                                                 selectizeInput(inputId = "plate", label = "Plate name", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
-                                                                          )
-                                                                        ),
-                                                                        fluidRow(
-                                                                          div(style = "margin-top: 2em",
-                                                                              column(8,
-                                                                                     div(style = "font-weight: bold", "Upload a custom plate model",
-                                                                                         helpPopup("This option allows loading a file with a list of station coordinates and their associated Euler poles.", anchor = "notes-on-the-plate-motion-model")
-                                                                                     )
-                                                                              ),
-                                                                              column(4, align = "right",
-                                                                                     tags$a(href = "euler.txt", "Show file example", target = "_blank")
-                                                                              )
-                                                                          )
-                                                                        ),
-                                                                        fileInput(inputId = "eulers", label = NULL, multiple = F, buttonLabel = "Browse file ...", placeholder = "Empty"),
-                                                                        fluidRow(
-                                                                          column(6,
-                                                                                 div("Station coordinates", helpPopup("Option 1: Cartesian coordinates in the same units as the series.<br>
-                                                                                                                      Option 2: geographic coordinates in decimal degrees.", anchor = "notes-on-the-plate-motion-model"))
-                                                                          ),
-                                                                          column(6, align = "right",
-                                                                                 radioButtons(inputId = "station_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
-                                                                          )
-                                                                        ),
-                                                                        fluidRow(
-                                                                          conditionalPanel(
-                                                                            condition = "input.station_coordinates == 1",
-                                                                            column(4,
-                                                                                   textInput(inputId = "station_x", label = "Station X", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "station_y", label = "Station Y", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "station_z", label = "Station Z", value = "") |> autoCompleteOff()
-                                                                            )
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "input.station_coordinates == 2",
-                                                                            column(4,
-                                                                                   textInput(inputId = "station_lat", label = "Station latitude", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "station_lon", label = "Station longitude", value = "") |> autoCompleteOff()
-                                                                            )
-                                                                          )
-                                                                        ),
-                                                                        conditionalPanel(
-                                                                          condition = "output.series2",
                                                                           fluidRow(
                                                                             column(6,
-                                                                                   div("Secondary station coordinates", helpPopup("Option 1: Cartesian coordinates in the same units as the series.<br>
-                                                                                                                                  Option 2: geographic coordinates in decimal degrees.", anchor = "notes-on-the-plate-motion-model"))
+                                                                                   div("Euler's pole", helpPopup("Option 1: Cartesian rotation rates in decimal degrees/Ma.<br>
+                                                                                                               Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma.", anchor = "notes-on-the-plate-motion-model"))
                                                                             ),
                                                                             column(6, align = "right",
-                                                                                   radioButtons(inputId = "station_coordinates2", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
+                                                                                   radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                             )
                                                                           ),
                                                                           fluidRow(
                                                                             conditionalPanel(
-                                                                              condition = "input.station_coordinates2 == 1",
+                                                                              condition = "input.pole_coordinates == 1",
                                                                               column(4,
-                                                                                     textInput(inputId = "station_x2", label = "Station X", value = "") |> autoCompleteOff()
+                                                                                     textInput(inputId = "pole_x", label = "Pole rotation X", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4, offset = -2,
-                                                                                     textInput(inputId = "station_y2", label = "Station Y", value = "") |> autoCompleteOff()
+                                                                                     textInput(inputId = "pole_y", label = "Pole rotation Y", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4, offset = -2,
-                                                                                     textInput(inputId = "station_z2", label = "Station Z", value = "") |> autoCompleteOff()
+                                                                                     textInput(inputId = "pole_z", label = "Pole rotation Z", value = "") |> autoCompleteOff()
                                                                               )
                                                                             ),
                                                                             conditionalPanel(
-                                                                              condition = "input.station_coordinates2 == 2",
+                                                                              condition = "input.pole_coordinates == 2",
                                                                               column(4,
-                                                                                     textInput(inputId = "station_lat2", label = "Station latitude", value = "") |> autoCompleteOff()
+                                                                                     textInput(inputId = "pole_lat", label = "Pole latitude", value = "") |> autoCompleteOff()
                                                                               ),
                                                                               column(4, offset = -2,
-                                                                                     textInput(inputId = "station_lon2", label = "Station longitude", value = "") |> autoCompleteOff()
+                                                                                     textInput(inputId = "pole_lon", label = "Pole longitude", value = "") |> autoCompleteOff()
+                                                                              ),
+                                                                              column(4, offset = -2,
+                                                                                     textInput(inputId = "pole_rot", label = "Pole rotation", value = "") |> autoCompleteOff()
                                                                               )
-                                                                            )
-                                                                          )
-                                                                        ),
-                                                                        fluidRow(
-                                                                          column(6,
-                                                                                 div("Euler's pole", helpPopup("Option 1: Cartesian rotation rates in decimal degrees/Ma.<br>
-                                                                                                               Option 2: geographic pole position in decimal degrees and rotation rate in decimal degrees/Ma.", anchor = "notes-on-the-plate-motion-model"))
-                                                                          ),
-                                                                          column(6, align = "right",
-                                                                                 radioButtons(inputId = "pole_coordinates", label = NULL, choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
-                                                                          )
-                                                                        ),
-                                                                        fluidRow(
-                                                                          conditionalPanel(
-                                                                            condition = "input.pole_coordinates == 1",
-                                                                            column(4,
-                                                                                   textInput(inputId = "pole_x", label = "Pole rotation X", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_y", label = "Pole rotation Y", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_z", label = "Pole rotation Z", value = "") |> autoCompleteOff()
-                                                                            )
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "input.pole_coordinates == 2",
-                                                                            column(4,
-                                                                                   textInput(inputId = "pole_lat", label = "Pole latitude", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_lon", label = "Pole longitude", value = "") |> autoCompleteOff()
-                                                                            ),
-                                                                            column(4, offset = -2,
-                                                                                   textInput(inputId = "pole_rot", label = "Pole rotation", value = "") |> autoCompleteOff()
                                                                             )
                                                                           )
                                                                         )
                                                                       ),
 
                                                                       ## % GIA ####
-                                                                      fluidRow(
-                                                                        column(4,
-                                                                               checkboxInput(inputId = "gia",
-                                                                                             div(style = "font-weight: bold", "GIA",
-                                                                                                 helpPopup("This option shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location.", anchor = "notes-on-the-gia-model")),
-                                                                                             value = F) |> autoCompleteOff()
-                                                                        )
+                                                                      conditionalPanel(
+                                                                        condition = "output.tabRes == true",
+                                                                        div(style = "padding: 0px 0px; margin-top:0em",
+                                                                            fluidRow(
+                                                                              column(6,
+                                                                                     div(style = "font-weight: bold", "GIA",
+                                                                                         helpPopup("This option shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location.", anchor = "notes-on-the-gia-model")
+                                                                                     )
+                                                                              )
+                                                                            )
+                                                                        ),
+                                                                        br(),
+                                                                        div(style = "text-align: center;", "Select the tab of a coordinate component to enable this option."),
+                                                                        br()
                                                                       ),
                                                                       conditionalPanel(
-                                                                        condition = "input.gia == true",
+                                                                        condition = "output.tabRes == false",
                                                                         fluidRow(
-                                                                          column(6,
-                                                                                 selectInput(inputId = "giaModel", label = "Select a GIA model", choices = list("", "Caron & Ivins", "ICE-6G-VM5a", "ICE-6G-ANU"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
-                                                                          ),
-                                                                          column(6,
-                                                                                 conditionalPanel(
-                                                                                   condition = "input.gia == true",
-                                                                                   div(style = "margin-top: 2em",
-                                                                                       radioButtons(inputId = "giaType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
-                                                                                   )
-                                                                                 )
+                                                                          column(4,
+                                                                                 checkboxInput(inputId = "gia",
+                                                                                               div(style = "font-weight: bold", "GIA",
+                                                                                                   helpPopup("This option shows or removes the vertical land motion predicted by a Glacial Isostatic Adjustment model at the series location.", anchor = "notes-on-the-gia-model")),
+                                                                                               value = F) |> autoCompleteOff()
                                                                           )
-                                                                        )
-                                                                      ),
-                                                                      conditionalPanel(
-                                                                        condition = "input.gia == true",
-                                                                        fluidRow(
-                                                                          column(6,
-                                                                                 textInput(inputId = "giaTrend",
-                                                                                           div(style = "font-weight: bold", "Vertical land motion trend",
-                                                                                               helpPopup("This text field shows the vertical land motion trend in the same units as the series.<br>
-                                                                                                         Modify the value of the VLM trend if necessary.", anchor = "notes-on-the-gia-model")),
-                                                                                           value = "") |> autoCompleteOff()
-                                                                          ),
-                                                                          conditionalPanel(
-                                                                            condition = "output.series2",
+                                                                        ),
+                                                                        conditionalPanel(
+                                                                          condition = "input.gia == true",
+                                                                          fluidRow(
                                                                             column(6,
-                                                                                   textInput(inputId = "giaTrend2", "Secondary", value = "") |> autoCompleteOff()
+                                                                                   selectInput(inputId = "giaModel", label = "Select a GIA model", choices = list("", "Caron & Ivins", "ICE-6G-VM5a", "ICE-6G-ANU"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                            ),
+                                                                            column(6,
+                                                                                   conditionalPanel(
+                                                                                     condition = "input.gia == true",
+                                                                                     div(style = "margin-top: 2em",
+                                                                                         radioButtons(inputId = "giaType", label = NULL, choices = list("None" = 0, "Show" = 1, "Remove" = 2), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
+                                                                                     )
+                                                                                   )
+                                                                            )
+                                                                          )
+                                                                        ),
+                                                                        conditionalPanel(
+                                                                          condition = "input.gia == true",
+                                                                          fluidRow(
+                                                                            column(6,
+                                                                                   textInput(inputId = "giaTrend",
+                                                                                             div(style = "font-weight: bold", "Vertical land motion trend",
+                                                                                                 helpPopup("This text field shows the vertical land motion trend in the same units as the series.<br>
+                                                                                                         Modify the value of the VLM trend if necessary.", anchor = "notes-on-the-gia-model")),
+                                                                                             value = "") |> autoCompleteOff()
+                                                                            ),
+                                                                            conditionalPanel(
+                                                                              condition = "output.series2",
+                                                                              column(6,
+                                                                                     textInput(inputId = "giaTrend2", "Secondary", value = "") |> autoCompleteOff()
+                                                                              )
                                                                             )
                                                                           )
                                                                         )
@@ -2679,6 +2732,11 @@ server <- function(input,output,session) {
     return(input$tab == 4 || input$tab == 5)
   })
   outputOptions(output, "tab3D", suspendWhenHidden = F)
+  
+  output$tabRes <- reactive({
+    return(input$tab == 5)
+  })
+  outputOptions(output, "tabRes", suspendWhenHidden = F)
 
   output$wavelet <- reactive({
     return(exists("get.nscales", mode = "function"))
