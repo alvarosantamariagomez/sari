@@ -1534,8 +1534,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                               ),
                                                                               checkboxInput(inputId = "errorm",
                                                                                             div("Optimize measurement noise",
-                                                                                                helpPopup("This option estimates the measurement noise within the given bounds and with respect to the provided process noise.<br>
-                                                                                                        <span class='warning'>WARNING</span>: several iterations of the KF fit.", anchor = "notes-on-the-kalman-filter")),
+                                                                                                helpPopup("This option provides an optimal value for the measurement noise, within the bounds given below, with respect to the process noise of the KF fit.<br>
+                                                                                                        <span class='warning'>WARNING</span>: requires several iterations of the KF fit.", anchor = "notes-on-the-kalman-filter")),
                                                                                             value = F) |> autoCompleteOff(),
                                                                               fluidRow(
                                                                                 column(4,
@@ -4699,16 +4699,16 @@ server <- function(input,output,session) {
                            removeNotification("KF_iter")
                            if (mod$convergence == 0) {
                              sigmaR <- sqrt(exp(mod$par))
-                             seParms <- sqrt(diag(solve(mod$hessian)))
+                             # seParms <- sqrt(diag(solve(mod$hessian)))
                              max_decimals <- signifdecimal(sigmaR, F) + 2
                              updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
-                             if (isTruthy(seParms)) {
-                               rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
-                               max_decimals <- max(signifdecimal(rangoR, F)) + 2
-                               updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, rangoR[1]))
-                               updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, rangoR[2]))
-                               updateCheckboxInput(inputId = "errorm", value = F)
-                             }
+                             # if (isTruthy(seParms)) {
+                             #   rangoR <- sqrt(exp(mod$par + qnorm(.05/2)*seParms %o% c(1,-1)))
+                             #   max_decimals <- decimalplaces(c(rangoR),1)
+                             #   updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, rangoR[1]))
+                             #   updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, rangoR[2]))
+                             # }
+                             updateCheckboxInput(inputId = "errorm", value = F)
                            }
                          } else {
                            showNotification(HTML("The input measurement error bounds are not valid.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
@@ -4847,6 +4847,8 @@ server <- function(input,output,session) {
                          colnames(trans$kalman_unc0) <- colnames(trans$kalman_unc)
                          # trans$results <- formatting(psych::describe(trans$kalman, na.rm = F, interp = F, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T), 1)
                          trans$results <- psych::describe(trans$kalman, na.rm = F, interp = F, skew = F, ranges = T, trim = 0, type = 3, check = T, fast = F, quant = c(.05,.25,.75,.95), IQR = T)
+                         decimals <- signifdecimal(min(abs(trans$results$mean)),F) + 1
+                         trans$results <- print(trans$results, digits = decimals)
                          trans$kalman_info <- m
                          trans$equation <- sub("y ~","Model =",m$model)
                          end.time <- Sys.time()
@@ -12218,6 +12220,25 @@ server <- function(input,output,session) {
       }
     }
   }, priority = 3)
+  
+  # Observe KF noise optimization ####
+  observeEvent(c(input$errorm), {
+    if (input$errorm) {
+      if (!isTruthy(inputs$min_optirange)) {
+        min_optirange <- info$noise/10
+        max_decimals <- signifdecimal(min_optirange, F) + 2
+        updateTextInput(session, "min_optirange", value = sprintf("%.*f", max_decimals, min_optirange))
+      }
+      if (!isTruthy(inputs$max_optirange)) {
+        max_optirange <- info$noise*10
+        max_decimals <- signifdecimal(max_optirange, F) + 2
+        updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, max_optirange))
+      }
+    } else {
+      updateTextInput(session, "min_optirange", value = "")
+      updateTextInput(session, "max_optirange", value = "")
+    }
+  })
 
   # Functions ####
   digest <- function(series) {
@@ -16208,7 +16229,8 @@ server <- function(input,output,session) {
       incr <- abs(as.numeric(sprintf("%.*f", decimals1, diff(sort(frac)))))
       incr <- incr[incr != 0]
       if (isTruthy(incr)) {
-        min_incr <- format(min(incr), nsmall = 1, scientific = F)
+        # min_incr <- format(min(incr), nsmall = 1, scientific = F)
+        min_incr <- format(min(incr), nsmall = 2, digits = 1, scientific = F)
         decimals2 <- nchar(min_incr) - 2
         decimals <- min(decimals1,decimals2)
         if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
@@ -16242,7 +16264,7 @@ server <- function(input,output,session) {
     if (abs(x) >= 1) {
       return(0)
     } else {
-      decimal <- nchar(format(signif(x,1), scientific = F)) - 3
+      decimal <- nchar(format(signif(x,1), scientific = F)) - 2
       if (rounded) {
         if (round(x, decimal) > 0) {
           return(decimal)
