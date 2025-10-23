@@ -12994,7 +12994,7 @@ server <- function(input,output,session) {
                 } else {
                   info$samplingRaw2[1] <- min(diff(extracted$x1,1))
                   info$samplingRaw2[2] <- info$samplingRaw[1]/7
-                  info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYea
+                  info$samplingRaw2[3] <- info$samplingRaw[1]/daysInYear
                 }
               } else {
                 if (!isTruthy(input$tunits)) {
