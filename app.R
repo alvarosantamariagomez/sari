@@ -3000,27 +3000,31 @@ server <- function(input,output,session) {
 
   step_d <- reactive(input$step) %>% debounce(1000, priority = 1000)
   observeEvent(c(step_d()), {
-    if (grepl("^=", trimws(step_d()), perl = T)) {
-      step <- try(eval(parse(text = sub("=", "", trimws(step_d())))), silent = T)
+    inputStep <- step_d()
+    if (grepl("^=", trimws(inputStep), perl = T)) {
+      step <- try(eval(parse(text = sub("=", "", trimws(inputStep)))), silent = T)
       if (isTruthy(step) && !inherits(step,"try-error")) {
         updateTextInput(session, inputId = "step", value = sprintf("%.*f",info$decimalsx, step))
       }
       req(info$stop)
     } else {
-      inputs$step <- suppressWarnings(as.numeric(trimws(step_d(), which = "both", whitespace = "[ \t\r\n]")))
+      inputs$step <- NULL
+      inputs$step <- suppressWarnings(as.numeric(trimws(inputStep, which = "both", whitespace = "[ \t\r\n]")))
     }
   }, priority = 1000)
 
   step2_d <- reactive(input$step2) %>% debounce(1000, priority = 1000)
   observeEvent(c(step2_d()), {
-    if (grepl("^=", trimws(step2_d()), perl = T)) {
-      step <- try(eval(parse(text = sub("=","",trimws(step2_d())))), silent = T)
+    inputStep2 <- step2_d()
+    if (grepl("^=", trimws(inputStep2), perl = T)) {
+      step <- try(eval(parse(text = sub("=","",trimws(inputStep2)))), silent = T)
       if (isTruthy(step) && !inherits(step,"try-error")) {
         updateTextInput(session, inputId = "step2", value = sprintf("%.*f",info$decimalsx, step))
       }
       req(info$stop)
     } else {
-      inputs$step2 <- suppressWarnings(as.numeric(trimws(step2_d(), which = "both", whitespace = "[ \t\r\n]")))
+      inputs$step2 <- NULL
+      inputs$step2 <- suppressWarnings(as.numeric(trimws(inputStep2, which = "both", whitespace = "[ \t\r\n]")))
     }
   }, priority = 1000)
 
@@ -9258,20 +9262,19 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$step), {
     req(db1$original)
     removeNotification("bad_window")
-    if (nchar(input$step) > 0 && is.na(inputs$step)) {
-      info$step <- NULL
-      showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-    } else if (isTruthy(inputs$step)) {
+    if (nchar(input$step) > 0 && isTruthy(inputs$step)) {
       info$step <- inputs$step
+    } else if (nchar(input$step) > 0 && is.na(inputs$step)) {
+      shinyjs::delay(300, showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
+      req(info$stop)
     } else {
+      info$step <- NULL
       info$db1 <- "original"
       updateTextInput(session, inputId = "step", value = "")
-      info$step <- NULL
       if (input$optionSecondary > 1) {
         info$last_optionSecondary <- 1
         updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
       }
-      req(info$stop)
     }
     if (isTruthy(inputs$step) && abs(inputs$step - info$sampling) < info$tol) req(info$stop)
     if (messages > 0) cat(file = stderr(), mySession, "Averaging primary series", "\n")
@@ -9310,67 +9313,69 @@ server <- function(input,output,session) {
       x <- db1$original$x3
     }
     db1$resampled <- NULL
-    if (inputs$step > info$sampling0 && inputs$step <= (max(x) - min(x))/2) {
-      tolerance <- min(diff(x,1))/3
-      info$step <- inputs$step
-      info$stepUnit <- input$tunits
-      withProgress(message = 'Averaging the series.',
-                   detail = 'This may take a while ...', value = 0, {
-                     w <- as.integer((max(x) - min(x))/inputs$step)
-                     if (info$format == 4) {
-                       if (input$sigmas) {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = db1$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
-                         db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
-                         db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$sy1 <- as.numeric(format(db1$resampled$sy1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+    if (isTruthy(info$step)) {
+      if (inputs$step > info$sampling0 && inputs$step <= (max(x) - min(x))/2) {
+        tolerance <- min(diff(x,1))/3
+        info$step <- inputs$step
+        info$stepUnit <- input$tunits
+        withProgress(message = 'Averaging the series.',
+                     detail = 'This may take a while ...', value = 0, {
+                       w <- as.integer((max(x) - min(x))/inputs$step)
+                       if (info$format == 4) {
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = db1$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$sy1 <- as.numeric(format(db1$resampled$sy1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                         }
                        } else {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
-                         db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
-                         db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = db1$original$sy1, sy2 = db1$original$sy2, sy3 = db1$original$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$y2 <- as.numeric(format(db1$resampled$y2, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$y3 <- as.numeric(format(db1$resampled$y3, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$sy1 <- as.numeric(format(db1$resampled$sy1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$sy2 <- as.numeric(format(db1$resampled$sy2, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$sy3 <- as.numeric(format(db1$resampled$sy3, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
+                           db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
+                           db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$y2 <- as.numeric(format(db1$resampled$y2, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                           db1$resampled$y3 <- as.numeric(format(db1$resampled$y3, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
+                         }
                        }
-                     } else {
-                       if (input$sigmas) {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = db1$original$sy1, sy2 = db1$original$sy2, sy3 = db1$original$sy3, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = T), simplify = T)
-                         db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
-                         db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$y2 <- as.numeric(format(db1$resampled$y2, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$y3 <- as.numeric(format(db1$resampled$y3, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$sy1 <- as.numeric(format(db1$resampled$sy1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$sy2 <- as.numeric(format(db1$resampled$sy2, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$sy3 <- as.numeric(format(db1$resampled$sy3, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                       } else {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db1$original$y1, y2 = db1$original$y2, y3 = db1$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step, second = F, sigmas = F), simplify = T)
-                         db1$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
-                         db1$resampled$x1 <- as.numeric(format(db1$resampled$x1, digits = 2, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         db1$resampled$y1 <- as.numeric(format(db1$resampled$y1, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$y2 <- as.numeric(format(db1$resampled$y2, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                         db1$resampled$y3 <- as.numeric(format(db1$resampled$y3, digits = 2, nsmall = info$decimalsy, trim = F, scientific = info$scientific, width = info$decimalsy))
-                       }
-                     }
-                   })
-      if (input$tunits == 1) {
-        db1$resampled$x2 <- mjd2week(db1$resampled$x1)
-        db1$resampled$x3 <- mjd2year(db1$resampled$x1)
-      } else if (input$tunits == 2) {
-        db1$resampled$x2 <- db1$resampled$x1
-        db1$resampled$x3 <- week2year(db1$resampled$x1)
-        db1$resampled$x1 <- week2mjd(db1$resampled$x1)
-      } else if (input$tunits == 3) {
-        db1$resampled$x3 <- db1$resampled$x1
-        db1$resampled$x2 <- year2week(db1$resampled$x1)
-        db1$resampled$x1 <- year2mjd(db1$resampled$x1)
+                     })
+        if (input$tunits == 1) {
+          db1$resampled$x2 <- mjd2week(db1$resampled$x1)
+          db1$resampled$x3 <- mjd2year(db1$resampled$x1)
+        } else if (input$tunits == 2) {
+          db1$resampled$x2 <- db1$resampled$x1
+          db1$resampled$x3 <- week2year(db1$resampled$x1)
+          db1$resampled$x1 <- week2mjd(db1$resampled$x1)
+        } else if (input$tunits == 3) {
+          db1$resampled$x3 <- db1$resampled$x1
+          db1$resampled$x2 <- year2week(db1$resampled$x1)
+          db1$resampled$x1 <- year2mjd(db1$resampled$x1)
+        }
+        info$db1 <- "resampled"
+        db1$resampled$status1 <- db1$resampled$status2 <- db1$resampled$status3 <- rep(T, length(db1$resampled$x1))
+      } else {
+        shinyjs::delay(300, showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
+        info$db1 <- "original"
+        info$step <- NULL
+        info$stepUnit <- NULL
+        updateTextInput(session, inputId = "step", value = "")
       }
-      info$db1 <- "resampled"
-      db1$resampled$status1 <- db1$resampled$status2 <- db1$resampled$status3 <- rep(T, length(db1$resampled$x1))
-    } else {
-      info$db1 <- "original"
-      updateTextInput(session, inputId = "step", value = "")
-      info$step <- NULL
-      info$stepUnit <- NULL
-      showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
     }
     if (input$tunits == 1) {
       info$samplingRaw[1] <- min(diff(db1[[info$db1]]$x1,1))
@@ -9390,11 +9395,11 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$step2, info$redo_step2), {
     req(db2$original)
     removeNotification("bad_window")
-    if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
-      info$step2 <- NULL
-      showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
-    } else if (isTruthy(inputs$step2)) {
+    if (nchar(input$step2) > 0 && isTruthy(inputs$step2)) {
       info$step2 <- inputs$step2
+    } else if (nchar(input$step2) > 0 && is.na(inputs$step2)) {
+      shinyjs::delay(300, showNotification(HTML("The resampling period of the secondary series is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
+      req(info$stop)
     } else {
       info$db2 <- "original"
       updateTextInput(session, inputId = "step2", value = "")
@@ -9403,7 +9408,6 @@ server <- function(input,output,session) {
         info$last_optionSecondary <- 1
         updateRadioButtons(session, inputId = "optionSecondary", label = NULL, selected = 1)
       }
-      req(info$stop)
     }
     if (isTruthy(inputs$step2) && abs(inputs$step2 / min(diff(db2[[info$db2]][[paste0("x",input$tunits)]],1)) - 1) < 1/4) req(info$stop)
     if (messages > 0) cat(file = stderr(), mySession, "Averaging secondary series", "\n")
@@ -9441,74 +9445,76 @@ server <- function(input,output,session) {
       x <- db2$original$x3
     }
     db2$resampled <- NULL
-    if (inputs$step2 > min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
-      tolerance <- min(diff(x,1))/3
-      info$step2 <- inputs$step2
-      withProgress(message = 'Averaging the secondary series.',
-                   detail = 'This may take a while ...', value = 0, {
-                     w <- as.integer((max(x) - min(x))/inputs$step2)
-                     if (info$format == 4) {
-                       if (input$sigmas) {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = db2$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
-                         db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
-                         db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
-                         # db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
+    if (isTruthy(info$step2)) {
+      if (inputs$step2 > min(diff(x,1)) && inputs$step2 <= (max(x) - min(x))/2) {
+        tolerance <- min(diff(x,1))/3
+        info$step2 <- inputs$step2
+        withProgress(message = 'Averaging the secondary series.',
+                     detail = 'This may take a while ...', value = 0, {
+                       w <- as.integer((max(x) - min(x))/inputs$step2)
+                       if (info$format == 4) {
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = db2$original$sy1, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = averaged[3,]))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                         }
                        } else {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = NULL, y3 = NULL, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                         db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], sy1 = rep(1, length(averaged[1,]))))
-                         db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                         if (input$sigmas) {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = db2$original$sy1, sy2 = db2$original$sy2, sy3 = db2$original$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
+                           # db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
+                           # db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
+                           # db2$resampled$sy2 <- as.numeric(formatting(db2$resampled$sy2,0))
+                           # db2$resampled$sy3 <- as.numeric(formatting(db2$resampled$sy3,0))
+                         } else {
+                           averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
+                           db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
+                           db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
+                           # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
+                           # db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
+                           # db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
+                         }
                        }
-                     } else {
-                       if (input$sigmas) {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = db2$original$sy1, sy2 = db2$original$sy2, sy3 = db2$original$sy3, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = T), simplify = T)
-                         db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = averaged[5,], sy2 = averaged[6,], sy3 = averaged[7,]))
-                         db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
-                         # db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
-                         # db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
-                         # db2$resampled$sy1 <- as.numeric(formatting(db2$resampled$sy1,0))
-                         # db2$resampled$sy2 <- as.numeric(formatting(db2$resampled$sy2,0))
-                         # db2$resampled$sy3 <- as.numeric(formatting(db2$resampled$sy3,0))
-                       } else {
-                         averaged <- sapply(1:w, function(p) average(p, x = x, y1 = db2$original$y1, y2 = db2$original$y2, y3 = db2$original$y3, sy1 = NULL, sy2 = NULL, sy3 = NULL, tol = tolerance, w = w, s = inputs$step2, second = T, sigmas = F), simplify = T)
-                         db2$resampled <- na.omit(data.frame(x1 = averaged[1,], y1 = averaged[2,], y2 = averaged[3,], y3 = averaged[4,], sy1 = rep(1, length(averaged[1,])), sy2 = rep(1, length(averaged[1,])), sy3 = rep(1, length(averaged[1,]))))
-                         db2$resampled$x1 <- as.numeric(format(db2$resampled$x1, nsmall = info$decimalsx, trim = F, scientific = F, width = info$decimalsx))
-                         # db2$resampled$y1 <- as.numeric(formatting(db2$resampled$y1,0))
-                         # db2$resampled$y2 <- as.numeric(formatting(db2$resampled$y2,0))
-                         # db2$resampled$y3 <- as.numeric(formatting(db2$resampled$y3,0))
-                       }
-                     }
-                   })
-      if (input$tunits == 1) {
-        db2$resampled$x2 <- mjd2week(db2$resampled$x1)
-        db2$resampled$x3 <- mjd2year(db2$resampled$x1)
-        info$samplingRaw2[1] <- min(diff(db2$resampled$x1,1))
-        info$samplingRaw2[2] <- info$samplingRaw2[1]/7
-        info$samplingRaw2[3] <- info$samplingRaw2[1]/daysInYear
-      } else if (input$tunits == 2) {
-        db2$resampled$x2 <- db2$resampled$x1
-        db2$resampled$x3 <- week2year(db2$resampled$x1)
-        db2$resampled$x1 <- week2mjd(db2$resampled$x1)
-        info$samplingRaw2[2] <- min(diff(db2$resampled$x2,1))
-        info$samplingRaw2[1] <- info$samplingRaw2[2]*7
-        info$samplingRaw2[3] <- info$samplingRaw2[1]/daysInYear
-      } else if (input$tunits == 3) {
-        db2$resampled$x3 <- db2$resampled$x1
-        db2$resampled$x2 <- year2week(db2$resampled$x1)
-        db2$resampled$x1 <- year2mjd(db2$resampled$x1)
-        info$samplingRaw2[3] <- min(diff(db2$resampled$x3,1))
-        info$samplingRaw2[1] <- info$samplingRaw2[3]*daysInYear
-        info$samplingRaw2[2] <- info$samplingRaw2[1]/7
-      }
-      info$db2 <- "resampled"
-    } else {
-      info$db2 <- "original"
-      info$step2 <- NULL
-      if (inputs$step2 != min(diff(x,1))) {
-        updateTextInput(session, inputId = "step2", value = "")
-        showNotification(HTML("The XXX resampling period of the secondary series is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain())
+                     })
+        if (input$tunits == 1) {
+          db2$resampled$x2 <- mjd2week(db2$resampled$x1)
+          db2$resampled$x3 <- mjd2year(db2$resampled$x1)
+          info$samplingRaw2[1] <- min(diff(db2$resampled$x1,1))
+          info$samplingRaw2[2] <- info$samplingRaw2[1]/7
+          info$samplingRaw2[3] <- info$samplingRaw2[1]/daysInYear
+        } else if (input$tunits == 2) {
+          db2$resampled$x2 <- db2$resampled$x1
+          db2$resampled$x3 <- week2year(db2$resampled$x1)
+          db2$resampled$x1 <- week2mjd(db2$resampled$x1)
+          info$samplingRaw2[2] <- min(diff(db2$resampled$x2,1))
+          info$samplingRaw2[1] <- info$samplingRaw2[2]*7
+          info$samplingRaw2[3] <- info$samplingRaw2[1]/daysInYear
+        } else if (input$tunits == 3) {
+          db2$resampled$x3 <- db2$resampled$x1
+          db2$resampled$x2 <- year2week(db2$resampled$x1)
+          db2$resampled$x1 <- year2mjd(db2$resampled$x1)
+          info$samplingRaw2[3] <- min(diff(db2$resampled$x3,1))
+          info$samplingRaw2[1] <- info$samplingRaw2[3]*daysInYear
+          info$samplingRaw2[2] <- info$samplingRaw2[1]/7
+        }
+        info$db2 <- "resampled"
+      } else {
+        info$db2 <- "original"
+        info$step2 <- NULL
+        if (inputs$step2 != min(diff(x,1))) {
+          shinyjs::delay(300, showNotification(HTML("The XXX resampling period of the secondary series is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
+          updateTextInput(session, inputId = "step2", value = "")
+        }
       }
     }
   }, priority = 6)
@@ -11694,6 +11700,7 @@ server <- function(input,output,session) {
     info$log <- NULL
     info$rangex <- NULL
     info$sampling <- NULL
+    info$sampling0 <- NULL
     info$errorbars <- T
     info$last_optionSecondary <- 0
     info$trendRef <- NULL
@@ -11779,7 +11786,7 @@ server <- function(input,output,session) {
           (input$tab < 4 && length(trans$y) > 0 &&
            (  length(trans$filter) > 0 ||
               length(trans$res) > 0 ||
-              (nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) ||
+              (isTruthy(inputs$step) && nchar(inputs$step) > 0 && !is.na(inputs$step) && inputs$step > 0) ||
               input$optionSecondary > 1 ||
               (input$eulerType == 2 && length(trans$plate) > 0) ||
               (input$giaType == 2 && length(trans$gia) > 0 && (input$format == 4 || input$tab == 3)) )
@@ -17498,6 +17505,7 @@ server <- function(input,output,session) {
   }
   #
   seriesInfo <- function(x) {
+    if (messages > 0) cat(file = stderr(), mySession, "Series info", "\n")
     removeNotification("bad_gaps")
     info$points <- length(x)
     info$sampling <- info$samplingRaw[as.numeric(input$tunits)]
