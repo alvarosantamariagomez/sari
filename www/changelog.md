@@ -1,6 +1,23 @@
 # **SARI changelog**
 
 
+# noviembre 2025 [2025.11]
+
+### Fixed
+- fixing the averaging of the series in the 3D tab
+- improving the handling of wrong input values of the averaging option
+- correcting a typo when converting the ISO dates of the secondary series into decimal years
+- checking the download of sitelogs from the gnss-metadata.eu server
+
+### Changed
+- improving the output format of the Kalman filter measurement noise and fitted parameters
+- disabling some ancillary options on the 3D residuals tab
+- enabling the reset button on the help page
+- reading Spotgins series with extra metadata columns
+
+### Added
+
+
 # octubre 2025 [2025.10]
 
 ### Fixed

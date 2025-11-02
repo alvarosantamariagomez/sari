@@ -34,7 +34,8 @@
  AB07  A    5 P 20:204:22365 20:293:75279 P - EQ M7.6 - 99 km SE of Sand Point, Alaska
  AB07  A    6 P 20:293:75279 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
  AB07  A    7 P 21:210:22549 23:197:24501 P - EQ M7.2 - 106 km S of Sand Point, Alaska
- AB07  A    8 P 23:197:24501 00:000:00000 P - 
+ AB07  A    8 P 23:197:24501 25:197:74261 P - EQ M7.3 - 2025 Sand Point, Alaska Earthquake 
+ AB07  A    9 P 25:197:74261 00:000:00000 P - 
  AB07  A    1 P 00:000:00000 11:006:00000 V - non-linearity
  AB07  A    2 P 11:006:00000 11:268:00000 V - non-linearity
  AB07  A    3 P 11:268:00000 20:204:22365 V - EQ M7.8 - 99 km SSE of Perryville, Alaska
@@ -170,7 +171,8 @@
  AC60  A    4 P 17:198:84854 19:164:00000 P - non-linearity
  AC60  A    5 P 19:164:00000 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
  AC60  A    6 P 21:210:22549 25:110:00000 P - unknown
- AC60  A    7 P 25:110:00000 00:000:00000 P -
+ AC60  A    7 P 25:110:00000 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake 
+ AC60  A    8 P 25:210:84291 00:000:00000 P -
  AC60  A    1 P 00:000:00000 14:174:75190 V - EQ M7.9 - Rat Islands, Aleutian Islands, Alaska
  AC60  A    2 P 14:174:75190 17:198:84854 V - EQ M7.7 - Komandorskiye Ostrova, Russia region
  AC60  A    3 P 17:198:84854 19:164:00000 V - non-linearity
@@ -588,7 +590,8 @@
  BADG  A    5 P 07:092:00000 08:239:00000 P - unknown
  BADG  A    6 P 08:239:00000 10:074:00000 P - antenna change
  BADG  A    7 P 10:074:00000 11:070:20783 P - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- BADG  A    8 P 11:070:20783 00:000:00000 P - 
+ BADG  A    8 P 11:070:20783 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake
+ BADG  A    9 P 25:210:84291 00:000:00000 P -
  BADG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  BADH  A    1 P 00:000:00000 12:262:21600 P - antenna change
@@ -874,7 +877,9 @@
  BOGT  A    9 P 09:252:54000 12:150:00000 P - non-linearity
  BOGT  A   10 P 12:150:00000 15:231:75600 P - antenna change
  BOGT  A   11 P 15:231:75600 18:241:00000 P - non-linearity
- BOGT  A   12 P 18:241:00000 00:000:00000 P - 
+ BOGT  A   12 P 18:241:00000 23:229:61488 P - EQ M6.1 - 10 km E of El Calvario, Colombia 
+ BOGT  A   13 P 23:229:61488 25:159:47285 P - EQ M6.3 - 15 km NE of Paratebueno, Colombia 
+ BOGT  A   14 P 25:159:47285 00:000:00000 P -
  BOGT  A    1 P 00:000:00000 05:193:00000 V - antenna change
  BOGT  A    2 P 05:193:00000 09:252:54000 V - antenna change
  BOGT  A    3 P 09:252:54000 12:150:00000 V - non-linearity
@@ -987,8 +992,8 @@
  BSHM  A    2 P 23:037:04654 00:000:00000 V - 
 *
  BSMK  A    1 P 00:000:00000 09:201:00000 P - antenna change
- BSMK  A    2 P 09:201:00000 25:167:00000 P - station decommissioned
- BSMK  A    3 P 25:167:00000 00:000:00000 P - 
+ BSMK  A    2 P 09:201:00000 25:168:00000 P - station decommissioned
+ BSMK  A    3 P 25:168:00000 00:000:00000 P -
  BSMK  A    1 P 00:000:00000 00:000:00000 V - 
 *
  BTNG  A    1 P 00:000:00000 19:318:58661 P - EQ M7.1 - 141 km NW of Ternate, Indonesia
@@ -1294,7 +1299,8 @@
  CHAN  A    5 P 16:071:00000 20:324:00000 P - freezing rain
  CHAN  A    6 P 20:324:00000 20:357:00000 P - unknown
  CHAN  A    7 P 20:357:00000 21:022:03600 P - antenna change
- CHAN  A    8 P 21:022:03600 00:000:00000 P - 
+ CHAN  A    8 P 21:022:03600 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake 
+ CHAN  A    9 P 25:210:84291 00:000:00000 P - 
  CHAN  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  CHAN  A    2 P 11:070:20783 00:000:00000 V - 
 *
@@ -2550,9 +2556,10 @@
  GODE  A    2 P 98:262:00000 12:220:47940 P - antenna change
  GODE  A    3 P 12:220:47940 12:348:66480 P - antenna change
  GODE  A    4 P 12:348:66480 13:030:65700 P - antenna change
- GODE  A    5 P 13:030:65700 24:263:00000 P - unknown
- GODE  A    6 P 24:263:00000 00:000:00000 P -
- GODE  A    1 P 00:000:00000 00:000:00000 V - 
+ GODE  A    5 P 13:030:65700 24:279:00000 P - unknown
+ GODE  A    6 P 24:279:00000 00:000:00000 P -
+ GODE  A    1 P 00:000:00000 24:279:00000 V - unknown
+ GODE  A    2 P 24:279:00000 00:000:00000 V -
 *
  GODN  A    1 P 00:000:00000 00:000:00000 P - 
  GODN  A    1 P 00:000:00000 00:000:00000 V - 
@@ -3525,7 +3532,8 @@
  KIR0  A    3 P 23:290:54000 00:000:00000 P - 
  KIR0  A    1 P 00:000:00000 00:000:00000 V - 
 *
- KIR8  A    1 P 00:000:00000 00:000:00000 P - 
+ KIR8  A    1 P 00:000:00000 25:189:39600 P - antenna change 
+ KIR8  A    2 P 25:189:39600 00:000:00000 P - 
  KIR8  A    1 P 00:000:00000 00:000:00000 V - 
 *
  KIRI  A    1 P 00:000:00000 07:091:74396 P - EQ M8.1 - 45 km SSE of Gizo, Solomon Islands
@@ -4577,7 +4585,8 @@
  MORP  A    5 P 08:329:00000 11:048:00000 P - unknown
  MORP  A    6 P 11:048:00000 22:331:00000 P - switch to IGS20/igs20.atx?
  MORP  A    7 P 22:331:00000 23:176:00000 P - unknown
- MORP  A    8 P 23:176:00000 00:000:00000 P -
+ MORP  A    8 P 23:176:00000 25:200:00000 P - antenna accidentally dislodged from forced centring position
+ MORP  A    9 P 25:200:00000 00:000:00000 P -
  MORP  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MOS0  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6834,7 +6843,8 @@
 *
  SOFI  A    1 P 00:000:00000 99:229:00099 P - EQ M7.6 - 4 km ESE of Derince, Turkey
  SOFI  A    2 P 99:229:00099 10:119:46800 P - antenna change
- SOFI  A    3 P 10:119:46800 00:000:00000 P - 
+ SOFI  A    3 P 10:119:46800 23:037:04654 P - EQ M7.8 - Pazarcik earthquake
+ SOFI  A    4 P 23:037:04654 00:000:00000 P - 
  SOFI  A    1 P 00:000:00000 10:119:46800 V - antenna change
  SOFI  A    2 P 10:119:46800 00:000:00000 V - 
 *
@@ -6974,7 +6984,8 @@
  STK2  A    4 P 11:070:20783 11:341:14400 P - antenna change
  STK2  A    5 P 11:341:14400 12:045:04320 P - antenna change
  STK2  A    6 P 12:045:04320 15:286:00000 P - unknown
- STK2  A    7 P 15:286:00000 00:000:00000 P - 
+ STK2  A    7 P 15:286:00000 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake 
+ STK2  A    8 P 25:210:84291 00:000:00000 P - 
  STK2  A    1 P 00:000:00000 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  STK2  A    2 P 11:070:20783 00:000:00000 V - 
 *
@@ -7184,7 +7195,8 @@
  TDOU  A    2 P 14:361:00000 17:125:00000 P - unknown
  TDOU  A    3 P 17:125:00000 19:344:00000 P - unknown
  TDOU  A    4 P 19:344:00000 21:321:00000 P - receiver change
- TDOU  A    5 P 21:321:00000 00:000:00000 P - 
+ TDOU  A    5 P 21:321:00000 23:113:36000 P - antenna change
+ TDOU  A    6 P 23:113:36000 00:000:00000 P - 
  TDOU  A    1 P 00:000:00000 14:361:00000 V - non-linearity
  TDOU  A    2 P 14:361:00000 00:000:00000 V - 
 *
