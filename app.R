@@ -3402,8 +3402,6 @@ server <- function(input,output,session) {
     }
     # getting data sampling
     seriesInfo(trans$x)
-    info$decimalsy <- info$decimalsyList[as.numeric(input$tab)]
-    info$scientific <- info$scientificList[as.numeric(input$tab)]
     trans$ordinate <- median(trans$y)
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     # dealing with the kalman filter series
@@ -17507,6 +17505,8 @@ server <- function(input,output,session) {
   seriesInfo <- function(x) {
     if (messages > 0) cat(file = stderr(), mySession, "Series info", "\n")
     removeNotification("bad_gaps")
+    info$decimalsy <- info$decimalsyList[as.numeric(input$tab)]
+    info$scientific <- info$scientificList[as.numeric(input$tab)]
     info$points <- length(x)
     info$sampling <- info$samplingRaw[as.numeric(input$tunits)]
     if (!isTruthy(info$step)) {
