@@ -2537,7 +2537,7 @@ server <- function(input,output,session) {
                          clickX = NULL, clickY = NULL, closestX = NULL, closestY = NULL,
                          LStol = 1e-5, parameters = NULL,
                          redo_step2 = 0,
-                         dorisol = NULL)
+                         dorisol = NULL, eurefsol = NULL)
 
   # 4. database:
   #   1 = original
@@ -16657,8 +16657,19 @@ server <- function(input,output,session) {
     ## EUREF ####
     } else if (server == "EUREF") {
       format <- 2
+      if (isTruthy(info$eurefsol)) {
+        solution <- info$eurefsol
+      } else {
+        dir_contents <- try(getURL("https://epncb.eu/ftp/product/cumulative/", crlf = T), silent = T)
+        if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+          solution <- info$eurefsol <- sub("/", "", tail(grep("^C[0-9]{4}", readHTMLTable(dir_contents, trim = T)[[1]]$Name, perl = T, value = T), n = 1))
+        } else {
+          solution <- info$eurefsol <- "C2235"
+          showNotification(paste0("Unable to access the list of available EUREF solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+        }
+      }
       if (product == "IGB14") {
-        url <- "https://epncb.eu/ftp/product/cumulative/C2235/pbo/"
+        url <- paste0("https://epncb.eu/ftp/product/cumulative/",solution,"/pbo/")
         pattern <- ".pos"
         if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
