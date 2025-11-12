@@ -2536,7 +2536,8 @@ server <- function(input,output,session) {
                          overview = F,
                          clickX = NULL, clickY = NULL, closestX = NULL, closestY = NULL,
                          LStol = 1e-5, parameters = NULL,
-                         redo_step2 = 0)
+                         redo_step2 = 0,
+                         dorisol = NULL)
 
   # 4. database:
   #   1 = original
@@ -7788,7 +7789,6 @@ server <- function(input,output,session) {
             if (messages > 0) cat(file = stderr(), mySession, "Analyzing URL from", toupper(query[['server']]), "&", toupper(query[['product']]), "\n")
             info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # info$local needs to be set here too
             if (!is.null(query[['server']]) && !is.null(query[['station']]) && !is.null(query[['product']])) {
-              removeNotification("bad_url")
               if (!isTruthy(info$local) && tolower(query[['server']]) == "local") {
                 showNotification(paste0("Local server is not available on remote connections."), action = NULL, duration = 10, closeButton = T, id = "no_local", type = "warning", session = getDefaultReactiveDomain())
                 url$station <- NULL
@@ -8023,9 +8023,7 @@ server <- function(input,output,session) {
   observeEvent(c(input$product1), {
     req(input$server1,input$product1)
     removeNotification("bad_remote")
-    removeNotification("bad_url")
     removeNotification("parsing_url1")
-    removeNotification("no_answer")
     info$product1 <- input$product1
     get_URL_info(input$server1,NULL,input$product1,1)
   })
@@ -8033,7 +8031,6 @@ server <- function(input,output,session) {
   observeEvent(c(inputs$station1), {
     if (isTruthy(inputs$station1) && isTruthy(input$server1) && isTruthy(input$product1)) {
       removeNotification("bad_remote")
-      removeNotification("bad_url")
       removeNotification("parsing_url1")
       url_info <- unlist(get_URL_info(input$server1,inputs$station1,input$product1,1))
       if (isTruthy(url_info)) {
@@ -8098,8 +8095,6 @@ server <- function(input,output,session) {
   observeEvent(c(input$product2), {
     req(input$server2)
     removeNotification("bad_remote")
-    removeNotification("bad_url")
-    removeNotification("no_answer")
     file$secondary <- NULL
     info$last_optionSecondary <- 0
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
@@ -8114,7 +8109,6 @@ server <- function(input,output,session) {
     }
     if (isTruthy(inputs$station2) && isTruthy(input$server2) && isTruthy(input$product2)) {
       removeNotification("bad_remote")
-      removeNotification("bad_url")
       url_info <- get_URL_info(input$server2,inputs$station2,input$product2,2)
       if (isTruthy(url_info)) {
         url$station2 <- url_info[[1]]
@@ -16371,6 +16365,8 @@ server <- function(input,output,session) {
   }
   #
   get_URL_info <- function(server,station,product,series) {
+    removeNotification("bad_url")
+    removeNotification("no_answer")
     if (isTruthy(series)) {
       if (series == 1) {
         variable <- "station1"
@@ -17032,7 +17028,17 @@ server <- function(input,output,session) {
     ## DORIS ####
     } else if (server == "DORIS") {
       format <- 1
-      solution <- "25wd04"
+      if (isTruthy(info$dorisol)) {
+        solution <- info$dorisol
+      } else {
+        dir_contents <- try(getURL("ftp://doris.ensg.ign.fr/pub/doris/products/stcd/", verbose = F, ftp.use.epsv = F, dirlistonly = T, crlf = T), silent = T)
+        if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+          solution <- info$dorisol <- sub("ids", "", tail(grep("^ids[0-9]{2}wd[0-9]{2}", strsplit(dir_contents, "\r*\n")[[1]], ignore.case = F, perl = T, value = T), n = 1))
+        } else {
+          solution <- info$dorisol <- "25wd04"
+          showNotification(paste0("Unable to access the list of available IDS solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+        }
+      }
       if (product == "ESA") {
         pattern <- "esa"
       } else if (product == "GOP") {
