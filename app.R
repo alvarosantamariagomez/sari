@@ -2516,15 +2516,17 @@ server <- function(input,output,session) {
                            y3D11 = NULL, y3D21 = NULL, y3D31 = NULL, y3D12 = NULL, y3D22 = NULL, y3D32 = NULL)
 
   # 3. series info
-  #   sampling = current sampling of the series in the current time units
-  #   sampling0 = sampling of the series in the current time units and before resampling
-  #   samplingRaw = sampling of the uploaded series for each time unit
-  info <- reactiveValues(points = NULL, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
+  #   sampling          = current sampling of the primary series in the current time units and after resampling
+  #   sampling_regular  = median value of the current sampling of the primary series in the current time units and after resampling
+  #   sampling0         = sampling of the primary series in the current time units and before resampling
+  #   samplingRaw       = sampling of the uploaded primary series for each time unit
+  #   samplingRaw2      = sampling of the uploaded secondary series for each time unit
+  info <- reactiveValues(points = NULL, errorbars = T, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, menu = c(1),
                          decimalsx = NULL, decimalsy = NULL, decimalsyList = c(), scientific = F, scientificList = c(), nsmall = NULL, digits = NULL,
-                         sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), samplingRaw2 = c(0,0,0), rangex = NULL, errorbars = T,
+                         sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), samplingRaw2 = c(0,0,0),
                          step = NULL, step2 = NULL, stepUnit = NULL,
-                         minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
+                         length = NULL, minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits.label = NULL, tunits.known1 = F, tunits.known2 = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = 0, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
                          white = NULL, flicker = NULL, randomw = NULL, powerl = NULL, timeMLE = NULL, components = NULL, local = F,
@@ -2852,10 +2854,10 @@ server <- function(input,output,session) {
     }
     line1 <- sprintf("Number of points = %d",info$points)
     line2 <- sprintf("Number of points removed = %d",removed)
-    line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$rangex), units)
+    line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$length), units)
     line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
     line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
-    line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$rangex/info$sampling))
+    line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$length/info$sampling))
     HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
   })
 
@@ -4009,7 +4011,7 @@ server <- function(input,output,session) {
       } else if (input$tunits == 3) {
         period <- 1
       }
-      if ((info$rangex / period) < 1) {
+      if ((info$length / period) < 1) {
         showNotification("Not enough data available to compute interannual differences.", action = NULL, duration = 10, closeButton = T, id = "no_interannual", type = "error", session = getDefaultReactiveDomain())
         updateCheckboxInput(session, inputId = "midas", label = NULL, value = F)
         req(info$stop)
@@ -4095,7 +4097,7 @@ server <- function(input,output,session) {
   }, width = reactive(info$width))
 
   # Minimum entropy ####
-  observeEvent(c(input$entropy, trans$y, trans$offsetEpochs, inputs$offsetEpoch.entropy, info$rangex), {
+  observeEvent(c(input$entropy, trans$y, trans$offsetEpochs, inputs$offsetEpoch.entropy, info$length), {
     removeNotification("bad_entropy")
     removeNotification("different_offsets")
     removeNotification("bad_offset_epoch")
@@ -4190,7 +4192,7 @@ server <- function(input,output,session) {
         }
         l <- (n + 2*info$points) / (3*info$points) # longest segment counts at least 2/3 of total length
         # compute the velocity uncertainty
-        trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$rangex * l)
+        trans$entropy_sig <- 2^(min(H) - 2.0471) / (info$length * l)
       }
     } else {
       trans$entropy_vel <- trans$entropy_sig <- NULL
@@ -5214,7 +5216,7 @@ server <- function(input,output,session) {
         trans$filterRes <- trans$filterRes + trans$pattern
       }
       if (length(trans$x) > 0 && (length(trans$res) > 0 || length(trans$filterRes) > 0) && isTruthy(input$waveform) && isTruthy(inputs$waveformPeriod)) {
-        if (nchar(inputs$waveformPeriod) > 0 && !is.na(as.numeric(inputs$waveformPeriod)) && as.numeric(inputs$waveformPeriod) > 2*info$sampling  && as.numeric(inputs$waveformPeriod) < abs(info$rangex)/2) {
+        if (nchar(inputs$waveformPeriod) > 0 && !is.na(as.numeric(inputs$waveformPeriod)) && as.numeric(inputs$waveformPeriod) > 2*info$sampling  && as.numeric(inputs$waveformPeriod) < abs(info$length)/2) {
           withProgress(message = 'Computing the periodic waveform.',
                        detail = 'This may take a while ...', value = 0.1, {
                          x <- trans$x %% as.numeric(inputs$waveformPeriod)
@@ -5317,8 +5319,8 @@ server <- function(input,output,session) {
     if (messages > 0) cat(file = stderr(), mySession, "Setting periodogram limits", "\n")
     trans$fs <- NULL
     trans$title <- c("Lomb-Scargle periodogram: ")
-    # max_period <- as.numeric(sprintf("%.*f", info$decimalsx, info$rangex)) # full range
-    max_period <- trunc(info$rangex * 10^info$decimalsx) / 10^info$decimalsx # truncated range
+    # max_period <- as.numeric(sprintf("%.*f", info$decimalsx, info$length)) # full range
+    max_period <- trunc(info$length * 10^info$decimalsx) / 10^info$decimalsx # truncated range
     intervals <- as.data.frame(table(diff(trans$x)), stringsAsFactors = F)
     # min_period <- 2*gcd(trans$x[-1]*10^info$decimalsx-trans$x[1]*10^info$decimalsx)/10^info$decimalsx #following Eyer and Bartholdi 1999
     min_period <- 2*as.numeric(sort(intervals$Var1[intervals$Freq/(length(trans$x) - 1) >= 0.5], decreasing = T)[1]) #approximate the shortest period by twice the shortest interval repeating itself at least 50% of the time
@@ -5756,11 +5758,11 @@ server <- function(input,output,session) {
       } else {
         units <- ""
       }
-      if (nchar(inputs$min_wavelet) > 0 && !is.na(inputs$min_wavelet) && nchar(inputs$max_wavelet) > 0 && !is.na(inputs$max_wavelet) && nchar(inputs$res_wavelet) > 0 && !is.na(as.numeric(inputs$res_wavelet)) && nchar(inputs$loc_wavelet) > 0 && !is.na(as.numeric(inputs$loc_wavelet)) && as.numeric(inputs$loc_wavelet) > 0 && as.numeric(inputs$loc_wavelet) <= info$rangex/2 && inputs$max_wavelet > inputs$min_wavelet) {
+      if (nchar(inputs$min_wavelet) > 0 && !is.na(inputs$min_wavelet) && nchar(inputs$max_wavelet) > 0 && !is.na(inputs$max_wavelet) && nchar(inputs$res_wavelet) > 0 && !is.na(as.numeric(inputs$res_wavelet)) && nchar(inputs$loc_wavelet) > 0 && !is.na(as.numeric(inputs$loc_wavelet)) && as.numeric(inputs$loc_wavelet) > 0 && as.numeric(inputs$loc_wavelet) <= info$length/2 && inputs$max_wavelet > inputs$min_wavelet) {
         min_scale <- inputs$min_wavelet*t
         max_scale <- inputs$max_wavelet*t
         num_scale <- as.integer((max_scale - min_scale)/(as.numeric(inputs$res_wavelet)*t))
-        locs <- info$rangex/as.numeric(inputs$loc_wavelet)
+        locs <- info$length/as.numeric(inputs$loc_wavelet)
       } else {
         min_scale <- get.min.scale(trans$x)
         max_scale <- get.max.scale(trans$x)
@@ -5771,7 +5773,7 @@ server <- function(input,output,session) {
         } else {
           num_epochs <- 500
         }
-        loc <- info$rangex/num_epochs
+        loc <- info$length/num_epochs
         if (loc < info$sampling) {
           loc <- info$sampling
         }
@@ -8758,10 +8760,10 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     if (isTruthy(inputs$min_wavelet) && isTruthy(inputs$max_wavelet) && isTruthy(inputs$res_wavelet) && isTruthy(inputs$loc_wavelet)) {
       removeNotification("bad_wavelet")
-      if (inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && inputs$res_wavelet > 0 && inputs$loc_wavelet >= info$sampling && inputs$loc_wavelet <= info$rangex/2) {
+      if (inputs$max_wavelet > 0 && inputs$min_wavelet > 0 && inputs$res_wavelet > 0 && inputs$loc_wavelet >= info$sampling && inputs$loc_wavelet <= info$length/2) {
         removeNotification("time_wavelet")
         num_scale <- as.integer((inputs$max_wavelet - inputs$min_wavelet)/as.numeric(inputs$res_wavelet))
-        num_epochs <- info$rangex/as.numeric(inputs$loc_wavelet)
+        num_epochs <- info$length/as.numeric(inputs$loc_wavelet)
         time_needed <- ceiling(0.000588*num_scale*num_epochs/60)
         if (time_needed > 29) {
           if (isTruthy(info$local)) {
@@ -9363,10 +9365,8 @@ server <- function(input,output,session) {
         db1$resampled$status1 <- db1$resampled$status2 <- db1$resampled$status3 <- rep(T, length(db1$resampled$x1))
       } else {
         shinyjs::delay(300, showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
-        info$db1 <- "original"
         info$step <- NULL
         info$stepUnit <- NULL
-        updateTextInput(session, inputId = "step", value = "")
       }
     }
     if (input$tunits == 1) {
@@ -11690,7 +11690,7 @@ server <- function(input,output,session) {
     trans$gia <- NULL
     info$points <- NULL
     info$log <- NULL
-    info$rangex <- NULL
+    info$length <- NULL
     info$sampling <- NULL
     info$sampling0 <- NULL
     info$errorbars <- T
@@ -13799,9 +13799,9 @@ server <- function(input,output,session) {
                 f <- NULL
               }
             }
-            if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$rangex))) {
-              if (f < 1/abs(info$rangex)) {
-                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$rangex, nsmall = info$decimalsx, scientific = F, trim = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
+            if (length(f) > 0 && f < 1/(2*info$sampling) && f > 1/(10*abs(info$length))) {
+              if (f < 1/abs(info$length)) {
+                showNotification(HTML(paste0("At least one of the input sinusoidal periods is larger than the series length (",format(info$length, nsmall = info$decimalsx, scientific = F, trim = F)," ",info$tunits.label,").<br>The fitting results may be unreliable.")), action = NULL, duration = 10, closeButton = T, id = "bad_sinusoidal_period", type = "warning", session = getDefaultReactiveDomain())
               }
               info$run <- T
               label_sin <- paste0("S",i)
@@ -15215,7 +15215,7 @@ server <- function(input,output,session) {
       units <- ""
     }
     cat(paste('# Series units:', unit, periods, units), file = file_out, sep = "\n", fill = F, append = T)
-    if (isTruthy(inputs$step) && inputs$step > 0) {
+    if (isTruthy(info$step) && isTruthy(info$stepUnit)) {
       if (info$stepUnit == 1) {
         stepUnit <- "days"
       } else if (info$stepUnit == 2) {
@@ -15223,7 +15223,7 @@ server <- function(input,output,session) {
       } else if (info$stepUnit == 3) {
         stepUnit <- "years"
       }
-      cat(paste('# Resampling:', inputs$step, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Resampling:', info$step, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
       if (length(file$secondary$name) > 1) {
@@ -17531,7 +17531,7 @@ server <- function(input,output,session) {
     }
     info$sampling_regular <- median(diff(x), na.rm = T)
     info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
-    info$rangex <- x[length(x)] - x[1]
+    info$length <- x[length(x)] - x[1]
     times <- round(diff(x)/info$sampling)
     if (isTruthy(times) && length(times) > 1 && all(!is.na(times)) && all(times > 0) && all(!is.infinite(times))) {
       trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
