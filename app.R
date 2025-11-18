@@ -447,7 +447,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 }
 
 # Shiny/R general options ####
-options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 280, max.print = 50)
+options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 1000, max.print = 50000)
 options(shiny.trace = F)
 devmode(F)
 options(shiny.autoreload = F, shiny.autoreload.pattern = "app.R")
@@ -5194,7 +5194,6 @@ server <- function(input,output,session) {
             trans$results$formula <- sub("y ~","Model =",trans$results$formula)
           })
         }
-        options(max.print = 3000)
         listTag <- c(listTag, list(customPrint(isolate(trans$results))))
       }
       tagList(pre(listTag))
