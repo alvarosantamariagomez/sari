@@ -34,12 +34,12 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 	-l 			: starts a local SARI session using the SARI source code
 	-d			: starts a local SARI session using a Docker image
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
-	-w server1[+server2]	: uploads primary (& secondary if different from primary) series from a remote server
+	-w server1[+server2]	: downloads primary (& secondary if different from primary) series from a remote server
 				  (see available servers below)
-	-p product1[+product2] 	: uploads primary (& secondary if different from primary) file for a given product
+	-p product1[+product2] 	: downloads primary (& secondary if different from primary) file for a given product
 				  (see available products below)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
-				  or more 14 (e.g., PIMI_10025M001) depending on the server used
+				  or more 14 (e.g., PIMI_10025M001) depending on the remote server used
 	-v 			: keeps the log of the current local SARI session in $saridir
 	-h			: shows this help
 
@@ -98,12 +98,12 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 	-l 			: starts a local SARI session using the SARI source code
 	-d			: starts a local SARI session using a Docker image
 	-r 			: starts a remote SARI session on Shinyapps.io (no series uploaded)
-	-w server1[+server2]	: uploads primary (& secondary if different from primary) series from a remote server
-				  (see available servers with option -h)
-	-p product1[+product2] 	: uploads primary (& secondary if different from primary) file for a given product
-				  (see available products with option -h)
+	-w server1[+server2]	: downloads primary (& secondary if different from primary) series from a remote server
+				  (see available servers below)
+	-p product1[+product2] 	: downloads primary (& secondary if different from primary) file for a given product
+				  (see available products below)
 	-s series1+series2	: path to a local file or remote station ID with 4 (e.g., PIMI), 9 (e.g., PIMI00FRA)
-				  or more 14 (e.g., PIMI_10025M001) depending on the server used
+				  or more 14 (e.g., PIMI_10025M001) depending on the remote server used
 	-v 			: keeps the log of the current SARI session in $saridir
 	-h			: shows detailed help
 
