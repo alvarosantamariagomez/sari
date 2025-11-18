@@ -2518,9 +2518,9 @@ server <- function(input,output,session) {
   # 3. series info
   #   sampling          = current sampling of the primary series in the current time units and after resampling
   #   sampling_regular  = median value of the current sampling of the primary series in the current time units and after resampling
-  #   sampling0         = sampling of the primary series in the current time units and before resampling
-  #   samplingRaw       = sampling of the uploaded primary series for each time unit
-  #   samplingRaw2      = sampling of the uploaded secondary series for each time unit
+  #   sampling0         = sampling of the uploaded primary series in the current time units and before resampling
+  #   samplingRaw       = current sampling of the primary series for each time unit and after resampling
+  #   samplingRaw2      = current sampling of the secondary series for each time unit and after resampling
   info <- reactiveValues(points = NULL, errorbars = T, removed = NULL, directory = NULL, log = NULL, log_years = NULL, sinfo = NULL, sinfo_years = NULL, soln = NULL, soln_years = NULL, custom = NULL, custom_years = NULL,
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, menu = c(1),
                          decimalsx = NULL, decimalsy = NULL, decimalsyList = c(), scientific = F, scientificList = c(), nsmall = NULL, digits = NULL,
@@ -17530,7 +17530,7 @@ server <- function(input,output,session) {
     info$scientific <- info$scientificList[as.numeric(input$tab)]
     info$points <- length(x)
     info$sampling <- info$samplingRaw[as.numeric(input$tunits)]
-    if (!isTruthy(info$step)) {
+    if (!isTruthy(info$sampling0)) {
       info$sampling0 <- info$sampling
     }
     info$sampling_regular <- median(diff(x), na.rm = T)
