@@ -4516,7 +4516,7 @@ server <- function(input,output,session) {
             }
             info$run <- T
           } else {
-            if ((grepl("L1",m$model_nls) || grepl("E1",trans$equation)) && grepl("minFactor", fit[1]) && info$LStol < 1e-2) {
+            if ((grepl("L1",m$model_nls) || grepl("E1",m$model_nls)) && grepl("minFactor", fit[1]) && info$LStol < 1e-2) {
               info$LStol <- info$LStol*10
               req(info$stop)
             } else {
@@ -4526,7 +4526,7 @@ server <- function(input,output,session) {
               trans$mod <- NULL
               trans$LScoefs <- NULL
               trans$names <- NULL
-              showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 5, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain())
+              shinyjs::delay(300, showNotification(HTML("Unable to fit the LS model.<br>Change the model components."), action = NULL, duration = 5, closeButton = T, id = "bad_LS", type = "error", session = getDefaultReactiveDomain()))
             }
           }
         } else {
