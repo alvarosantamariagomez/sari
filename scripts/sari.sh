@@ -89,7 +89,6 @@ Syntax: $(basename $0) -l|d|r [-w server1+server2 -p product1+product2 -s series
 	|            | MERRA2HYD, MERRA2HYD(d)              |         |                                                |
         | PSMSL      | RLR                                  |  number | https://psmsl.org                              |
         +------------+--------------------------------------+---------+------------------------------------------------+
-	* 1D products must have the epochs in the first column, the data in the second and the errorbars in the third
 
 " 1>&2; exit 1; }
 
