@@ -4474,7 +4474,7 @@ server <- function(input,output,session) {
             # keeping estimated fit
             trans$names <- names(coef(fit))
             trans$unc <- unname(synthesis$coefficients[grepl("Rate",rownames(synthesis$coefficients)),2])
-            trans$equation <- gsub("x", "Epoch", sub("y ~","Model =",m$model_nls))
+            trans$equation <- gsub("([^[:alnum:]])x([^[:alnum:]])", "\\1Epoch\\2", sub("y ~","Model =",m$model_nls))
             trans$results <- synthesis
             trans$LScoefs <- synthesis$coefficients
             trans$res <- res
