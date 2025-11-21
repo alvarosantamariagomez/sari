@@ -4311,6 +4311,7 @@ server <- function(input,output,session) {
     removeNotification("bad_sinusoidal")
     removeNotification("bad_LS")
     removeNotification("overfit")
+    removeNotification("too_big")
     if (input$tab > 3) {
       req(info$stop)
     }
@@ -4479,7 +4480,14 @@ server <- function(input,output,session) {
             trans$LScoefs <- synthesis$coefficients
             trans$res <- res
             trans$mod <- mod
-            trans$moderror <- sqrt( diag(jacobian %*% synthesis$cov.unscaled %*% t(jacobian)) )
+            moderror <- try(jacobian %*% synthesis$cov.unscaled %*% t(jacobian), silent = F)
+            if (!inherits(moderror,"try-error") && !is.null(moderror)) {
+              trans$moderror <- sqrt(diag(moderror))
+              rm(moderror)
+            } else {
+              showNotification(HTML("Unable to compute the observation errors.<br>The size of the system might be too big"), action = NULL, duration = 10, closeButton = T, id = "too_big", type = "error", session = getDefaultReactiveDomain())
+              req(info$stop)
+            }
             trans$reserror <- synthesis$sigma * trans$sy
             if (!any(is.na(trans$moderror))) {
               if (isTruthy(synthesis$sigma)) {
