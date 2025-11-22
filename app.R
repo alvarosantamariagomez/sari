@@ -9133,71 +9133,76 @@ server <- function(input,output,session) {
       # new file from swap option
       req(info$stop)
     }
-    header <- readLines(file$primary$datapath, n = 1, warn = F)
-    if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "format", selected = 3)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      info$format <- 3
-    } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
-      updateRadioButtons(inputId = "format", selected = 2)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      info$format <- 2
-    } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
-      updateRadioButtons(inputId = "format", selected = 1)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      info$format <- 1
-      url$server <- "EARTHSCOPE"
-      url$file <- file$primary
-    } else if (grepl(".enu$", file$primary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
-      updateRadioButtons(inputId = "format", selected = 1)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      info$product1 <- "SPOTGINS"
-    } else if (grepl(".PLH$", file$primary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
-      updateRadioButtons(inputId = "format", selected = 1)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      url$server <- "SIRGAS"
-      url$file <- file$primary
-    } else if (grepl(".series$", file$primary$name, perl = T) && grepl(pattern = "\\.00\\s{2}\\d{4}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}$", header, perl = T)) {
-      updateRadioButtons(inputId = "format", selected = 1)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      url$server <- "JPL"
-      url$file <- file$primary
-    } else if (grepl("rlrdata", file$primary$name, perl = T) && grepl(";", header, perl = T)) {
-      updateRadioButtons(inputId = "format", selected = 4)
-      updateSelectInput(inputId = "separator", selected = 3)
-      updateCheckboxInput(inputId = "sigmas", value = F)
-      updateRadioButtons(inputId = "sunits", selected = 2)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "1")
-      url$server <- "PSMSL"
-      url$file <- file$primary
-      info$format <- 4
-    } else if (grepl("_igs.plh$", file$primary$name, perl = T)) {
-      updateRadioButtons(inputId = "format", selected = 1)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 3)
-      updateNavbarPage(session, "tab", selected = "4")
-      url$server <- "IGS"
-      url$file <- file$primary
-    } else if (grepl(".stcd.", file$primary$name, perl = T)) {
-      updateRadioButtons(inputId = "format", selected = 1)
-      updateRadioButtons(inputId = "sunits", selected = 1)
-      updateRadioButtons(inputId = "tunits", selected = 1)
-      updateNavbarPage(session, "tab", selected = "4")
-      url$server <- "DORIS"
-      url$file <- file$primary
+    if (isTruthy(file$primary)) {
+      header <- readLines(file$primary$datapath, n = 1, warn = F)
+      if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "format", selected = 3)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        info$format <- 3
+      } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("PBO Station Position Time Series", header, fixed = T)) {
+        updateRadioButtons(inputId = "format", selected = 2)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        info$format <- 2
+      } else if (grepl(".pos$", file$primary$name, perl = T) && grepl("GeoCSV", header, fixed = T)) {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        info$format <- 1
+        url$server <- "EARTHSCOPE"
+        url$file <- file$primary
+      } else if (grepl(".enu$", file$primary$name, perl = T) && grepl("SPOTGINS SOLUTION [POSITION]", header, fixed = T)) {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        info$product1 <- "SPOTGINS"
+      } else if (grepl(".PLH$", file$primary$name, perl = T) && grepl("^DGFI-TUM:", header, perl = T)) {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        url$server <- "SIRGAS"
+        url$file <- file$primary
+      } else if (grepl(".series$", file$primary$name, perl = T) && grepl(pattern = "\\.00\\s{2}\\d{4}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}\\s{1,2}\\d{1,2}$", header, perl = T)) {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        url$server <- "JPL"
+        url$file <- file$primary
+      } else if (grepl("rlrdata", file$primary$name, perl = T) && grepl(";", header, perl = T)) {
+        updateRadioButtons(inputId = "format", selected = 4)
+        updateSelectInput(inputId = "separator", selected = 3)
+        updateCheckboxInput(inputId = "sigmas", value = F)
+        updateRadioButtons(inputId = "sunits", selected = 2)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "1")
+        url$server <- "PSMSL"
+        url$file <- file$primary
+        info$format <- 4
+      } else if (grepl("_igs.plh$", file$primary$name, perl = T)) {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 3)
+        updateNavbarPage(session, "tab", selected = "4")
+        url$server <- "IGS"
+        url$file <- file$primary
+      } else if (grepl(".stcd.", file$primary$name, perl = T)) {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 1)
+        updateRadioButtons(inputId = "tunits", selected = 1)
+        updateNavbarPage(session, "tab", selected = "4")
+        url$server <- "DORIS"
+        url$file <- file$primary
+      } else {
+        updateRadioButtons(inputId = "format", selected = 1)
+        updateRadioButtons(inputId = "sunits", selected = 0)
+      }
     } else {
       updateRadioButtons(inputId = "format", selected = 1)
       updateRadioButtons(inputId = "sunits", selected = 0)
@@ -14597,7 +14602,7 @@ server <- function(input,output,session) {
       antes_4char <- substring(grep(' P -', grep("antenna|radome", grep(paste0(" ",substr(x, 1, 4)," "),readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = F), value = T), 17, 28)
       reces_4char <- substring(grep(' P -', grep("antenna|radome", grep(paste0(" ",substr(x, 1, 4)," "),readLines(z$datapath, warn = F),value = T), ignore.case = T, value = T, invert = T), value = T), 17, 28)
       if (length(antes_4char) + length(reces_4char) != 0) {
-        showNotification(HTML(paste("WARNING: the station",x,"was not found in the soln file, but the station",substr(x, 1, 4),"was found.<br>Change the series ID on the left panel if you are sure it corresponds to the same station.")), action = NULL, duration = 10, closeButton = T, id = "bad_id9", type = "warning", session = getDefaultReactiveDomain())
+        showNotification(HTML(paste("WARNING: the station",x,"was not found in the soln file, but the station",substr(x, 1, 4),"was found.<br>Change the series ID on the left panel if you are sure it corresponds to the same station.")), action = NULL, duration = 15, closeButton = T, id = "bad_id9", type = "warning", session = getDefaultReactiveDomain())
       }
     }
     if (!is.null(y)) {
