@@ -16961,18 +16961,20 @@ server <- function(input,output,session) {
               output$showStation2 <- renderUI({
                 suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
               })
-              if (isTruthy(inputs$step) && info$db1 == "resampled") {
-                step <- inputs$step
-              } else {
-                if (input$tunits == 1) {
-                  step <- 1
-                } else if (input$tunits == 2) {
-                  step <- 1/7
-                } else if (input$tunits == 3) {
-                  step <- 1/daysInYear
+              if (!any(tolower(product) == "grace")) {
+                if (isTruthy(inputs$step) && info$db1 == "resampled") {
+                  step <- inputs$step
+                } else {
+                  if (input$tunits == 1) {
+                    step <- 1
+                  } else if (input$tunits == 2) {
+                    step <- 1/7
+                  } else if (input$tunits == 3) {
+                    step <- 1/daysInYear
+                  }
                 }
+                updateTextInput(session, inputId = "step2", value = step)
               }
-              updateTextInput(session, inputId = "step2", value = step)
               if (input$sunits == 1) {
                 updateTextInput(session, inputId = "scaleFactor", value = "0.001")
               } else {
