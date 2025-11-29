@@ -3642,110 +3642,112 @@ server <- function(input,output,session) {
           # This is a LS fit
           model <- grep("^# Model LS:", comments, ignore.case = F, perl = T, value = T)
           if (nchar(model) > 18) {
-            breakpoints <- unlist(strsplit(sub("# Breakpoints at: ", "", grep("^# Breakpoints at:", comments, ignore.case = F, perl = T, value = T)), ","))
-            trendType <- grepl("Rate2", model)
-            sinusoidType <- grepl("S12", model)
-            polyType <- grepl("P21", model)
-            if (length(breakpoints) > 0) {
-              updateCheckboxInput(session, inputId = "breaking", value = T)
-              updateTextInput(session, inputId = "breakEpoch", value = breakpoints)
-              if (trendType) {
-                updateRadioButtons(session, inputId = "trendType", selected = 1)
+            shinyjs::delay(500, {
+              breakpoints <- unlist(strsplit(sub("# Breakpoints at: ", "", grep("^# Breakpoints at:", comments, ignore.case = F, perl = T, value = T)), ","))
+              trendType <- grepl("Rate2", model)
+              sinusoidType <- grepl("S12", model)
+              polyType <- grepl("P21", model)
+              if (length(breakpoints) > 0) {
+                updateCheckboxInput(session, inputId = "breaking", value = T)
+                updateTextInput(session, inputId = "breakEpoch", value = breakpoints)
+                if (trendType) {
+                  updateRadioButtons(session, inputId = "trendType", selected = 1)
+                } else {
+                  updateRadioButtons(session, inputId = "trendType", selected = 0)
+                }
+                if (polyType) {
+                  model <- gsub("P..\\*\\(\\(x-\\d+\\.\\d+\\)\\^\\d+\\)\\*if\\(x\\>\\d+\\.\\d+", "", model, perl = T)
+                  updateRadioButtons(session, inputId = "polyType", selected = 1)
+                } else {
+                  updateRadioButtons(session, inputId = "polyType", selected = 0)
+                }
+                if (sinusoidType) {
+                  model <- gsub("...\\*...\\(2\\*pi\\*\\(x-\\d+\\.\\d+\\)\\*\\d+\\)\\*if\\(x>\\d+\\.\\d+", "", model, perl = T)
+                  updateRadioButtons(session, inputId = "sinusoidType", selected = 1)
+                } else {
+                  updateRadioButtons(session, inputId = "sinusoidType", selected = 0)
+                }
               } else {
                 updateRadioButtons(session, inputId = "trendType", selected = 0)
-              }
-              if (polyType) {
-                model <- gsub("P..\\*\\(\\(x-\\d+\\.\\d+\\)\\^\\d+\\)\\*if\\(x\\>\\d+\\.\\d+", "", model, perl = T)
-                updateRadioButtons(session, inputId = "polyType", selected = 1)
-              } else {
                 updateRadioButtons(session, inputId = "polyType", selected = 0)
-              }
-              if (sinusoidType) {
-                model <- gsub("...\\*...\\(2\\*pi\\*\\(x-\\d+\\.\\d+\\)\\*\\d+\\)\\*if\\(x>\\d+\\.\\d+", "", model, perl = T)
-                updateRadioButtons(session, inputId = "sinusoidType", selected = 1)
-              } else {
                 updateRadioButtons(session, inputId = "sinusoidType", selected = 0)
+                updateTextInput(session, inputId = "breakEpoch", value = "")
+                updateCheckboxInput(session, inputId = "breaking", value = F)
               }
-            } else {
-              updateRadioButtons(session, inputId = "trendType", selected = 0)
-              updateRadioButtons(session, inputId = "polyType", selected = 0)
-              updateRadioButtons(session, inputId = "sinusoidType", selected = 0)
-              updateTextInput(session, inputId = "breakEpoch", value = "")
-              updateCheckboxInput(session, inputId = "breaking", value = F)
-            }
-            text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
-            parameters <- grep("^# Parameter: ", comments, ignore.case = F, perl = T, value = T)
-            components <- c()
-            # Extracting Rate info
-            if (grepl(" \\+ Rate", model, ignore.case = F, perl = T)) {
-              updateTextInput(session, "trendRef", value = text[2])
-              info$trendRef <- T
-              components <- c(components, "Linear")
-            }
-            # Extracting Polynomial info
-            if (grepl(" \\+ P", model, ignore.case = F, perl = T)) {
-              index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              updateTextInput(session, "PolyRef", value = text[index[1] + 1])
-              updateTextInput(session, "PolyCoef", value = text[index[length(index)] + 3])
-              info$PolyRef <- T
-              components <- c(components, "Polynomial")
-            }
-            # Extracting Sinusoidal info
-            if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
-              updateCheckboxInput(session, inputId = "GPSdrac", value = F)
-              updateCheckboxInput(session, inputId = "GALdrac", value = F)
-              updateCheckboxInput(session, inputId = "GLOdrac", value = F)
-              updateCheckboxInput(session, inputId = "BDSdrac", value = F)
-              index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              inputs$periodRef <- unique(text[index + 1])
-              updateTextInput(session, "periodRef", value = inputs$periodRef)
-              info$periodRef <- T
-              if (input$tunits == 1) {
-                units <- "d"
-              } else if (input$tunits == 2) {
-                units <- "w"
-              } else if (input$tunits == 3) {
-                units <- "y"
+              text <- strsplit(model, ")\\*|-|)|>|\\^")[[1]]
+              parameters <- grep("^# Parameter: ", comments, ignore.case = F, perl = T, value = T)
+              components <- c()
+              # Extracting Rate info
+              if (grepl(" \\+ Rate", model, ignore.case = F, perl = T)) {
+                updateTextInput(session, "trendRef", value = text[2])
+                info$trendRef <- T
+                components <- c(components, "Linear")
               }
-              updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
-              components <- c(components, "Sinusoidal")
-            }
-            # Extracting Offset info
-            if (grepl(" \\+ O", model, ignore.case = F, perl = T)) {
-              index <- grep(" + O", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              updateTextInput(session, "offsetEpoch", value = paste(text[index + 1], collapse = ", "))
-              components <- c(components, "Offset")
-            }
-            # Extracting Exponential info
-            if (grepl(" \\+ E", model, ignore.case = F, perl = T)) {
-              index <- grep(" + E", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              updateTextInput(session, "ExponenRef", value = paste(text[index + 1], collapse = ","))
-              index <- grep(" Parameter: E", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "E0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
-              index <- grep(" Parameter: TauE", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "TE0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
-              components <- c(components, "Exponential")
-            }
-            # Extracting Logarithmic info
-            if (grepl(" \\+ L", model, ignore.case = F, perl = T)) {
-              index <- grep(" + L", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              updateTextInput(session, "LogariRef", value = paste(text[index + 1], collapse = ","))
-              index <- grep(" Parameter: L", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "L0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
-              index <- grep(" Parameter: TauL", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
-              values <- strsplit(parameters[index], "=|\\+\\/-")
-              updateTextInput(session, "TL0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
-              components <- c(components, "Logarithmic")
-            }
-            info$menu <- unique(c(info$menu, 4))
-            updateCollapse(session, id = "menu", open = info$menu)
-            showNotification("Updating the model from the uploaded SARI file.", action = NULL, duration = 10, closeButton = T, id = "update_model", type = "warning", session = getDefaultReactiveDomain())
-            shinyjs::delay(2000, updateRadioButtons(session, inputId = "fitType", selected = 1))
-            shinyjs::delay(2100, updateCheckboxGroupInput(session, inputId = "model", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), inline = T, selected = components))
-            shinyjs::delay(3000, removeNotification("update_model"))
+              # Extracting Polynomial info
+              if (grepl(" \\+ P", model, ignore.case = F, perl = T)) {
+                index <- grep(" + P", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                updateTextInput(session, "PolyRef", value = text[index[1] + 1])
+                updateTextInput(session, "PolyCoef", value = text[index[length(index)] + 3])
+                info$PolyRef <- T
+                components <- c(components, "Polynomial")
+              }
+              # Extracting Sinusoidal info
+              if (grepl(" \\+ S", model, ignore.case = F, perl = T)) {
+                updateCheckboxInput(session, inputId = "GPSdrac", value = F)
+                updateCheckboxInput(session, inputId = "GALdrac", value = F)
+                updateCheckboxInput(session, inputId = "GLOdrac", value = F)
+                updateCheckboxInput(session, inputId = "BDSdrac", value = F)
+                index <- grep(" + S", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                inputs$periodRef <- unique(text[index + 1])
+                updateTextInput(session, "periodRef", value = inputs$periodRef)
+                info$periodRef <- T
+                if (input$tunits == 1) {
+                  units <- "d"
+                } else if (input$tunits == 2) {
+                  units <- "w"
+                } else if (input$tunits == 3) {
+                  units <- "y"
+                }
+                updateTextInput(session, "period", value = paste(paste0(1/as.numeric(text[index + 2]), units), collapse = ","))
+                components <- c(components, "Sinusoidal")
+              }
+              # Extracting Offset info
+              if (grepl(" \\+ O", model, ignore.case = F, perl = T)) {
+                index <- grep(" + O", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                updateTextInput(session, "offsetEpoch", value = paste(text[index + 1], collapse = ", "))
+                components <- c(components, "Offset")
+              }
+              # Extracting Exponential info
+              if (grepl(" \\+ E", model, ignore.case = F, perl = T)) {
+                index <- grep(" + E", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                updateTextInput(session, "ExponenRef", value = paste(text[index + 1], collapse = ","))
+                index <- grep(" Parameter: E", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                values <- strsplit(parameters[index], "=|\\+\\/-")
+                updateTextInput(session, "E0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+                index <- grep(" Parameter: TauE", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                values <- strsplit(parameters[index], "=|\\+\\/-")
+                updateTextInput(session, "TE0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+                components <- c(components, "Exponential")
+              }
+              # Extracting Logarithmic info
+              if (grepl(" \\+ L", model, ignore.case = F, perl = T)) {
+                index <- grep(" + L", text, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                updateTextInput(session, "LogariRef", value = paste(text[index + 1], collapse = ","))
+                index <- grep(" Parameter: L", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                l0 <- paste(trimws(sapply(strsplit(parameters[index], "=|\\+\\/-"), "[[", 2)), collapse = ", ")
+                updateTextInput(session, "L0", value = l0)
+                index <- grep(" Parameter: TauL", parameters, ignore.case = F, perl = F, value = F, fixed = T, useBytes = F, invert = F)
+                values <- strsplit(parameters[index], "=|\\+\\/-")
+                updateTextInput(session, "TL0", value = paste(trimws(sapply(values, "[[", 2)), collapse = ", "))
+                components <- c(components, "Logarithmic")
+              }
+              info$menu <- unique(c(info$menu, 4))
+              updateCollapse(session, id = "menu", open = info$menu)
+              showNotification("Updating the model from the uploaded SARI file.", action = NULL, duration = 10, closeButton = T, id = "update_model", type = "warning", session = getDefaultReactiveDomain())
+              shinyjs::delay(2000, updateRadioButtons(session, inputId = "fitType", selected = 1))
+              shinyjs::delay(4000, updateCheckboxGroupInput(session, inputId = "model", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), inline = T, selected = components))
+              shinyjs::delay(5000, removeNotification("update_model"))
+            })
           }
         }
       }
