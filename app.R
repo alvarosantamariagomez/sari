@@ -4512,8 +4512,8 @@ server <- function(input,output,session) {
               isolate({
                 if (all(is.na(db1[[info$db1]][[paste0("res", input$tab)]])) ||
                     length(trans$res) != length(db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])]) ||
-                    any(trans$res - db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])] != 0) ||
-                    any(trans$mod - db1[[info$db1]][[paste0("mod", input$tab)]][!is.na(db1[[info$db1]][[paste0("mod", input$tab)]])] != 0)) {
+                    any(as.numeric(sprintf("%.*f", info$decimalsy, trans$res - db1[[info$db1]][[paste0("res", input$tab)]][!is.na(db1[[info$db1]][[paste0("res", input$tab)]])])) != 0) ||
+                    any(as.numeric(sprintf("%.*f", info$decimalsy, trans$mod - db1[[info$db1]][[paste0("mod", input$tab)]][!is.na(db1[[info$db1]][[paste0("mod", input$tab)]])])) != 0)) {
                   db1[[info$db1]][[paste0("res", input$tab)]] <- NA
                   db1[[info$db1]][[paste0("mod", input$tab)]] <- NA
                   db1[[info$db1]][[paste0("reserror", input$tab)]] <- NA
