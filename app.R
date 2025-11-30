@@ -12784,7 +12784,7 @@ server <- function(input,output,session) {
         }
       } else if (server == "DORIS") { # extracting ENU format from DORIS JSON series
         tableAll <- try(fromJSON(txt = file), silent = T)
-        if (isTruthy(tableAll) && !inherits(tableAll, "try-error")) {
+        if (isTruthy(tableAll) && !inherits(tableAll, "try-error") && length(tableAll) == 15 && isTruthy(tableAll$serie)) {
           tableAll <- tableAll[, c("date", "de", "dn", "du", "se", "sn", "su")]
           tableAll[,c("de", "dn", "du", "se", "sn", "su")] <- tableAll[,c("de", "dn", "du", "se", "sn", "su")]/1000
         } else {
