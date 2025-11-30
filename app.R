@@ -2525,7 +2525,7 @@ server <- function(input,output,session) {
                          custom_warn = 0, tab = NULL, stop = NULL, noise = NULL, menu = c(1),
                          decimalsx = NULL, decimalsy = NULL, decimalsyList = c(), scientific = F, scientificList = c(), nsmall = NULL, digits = NULL,
                          sampling = NULL, sampling0 = NULL, sampling_regular = NULL, samplingRaw = c(0,0,0), samplingRaw2 = c(0,0,0),
-                         step = NULL, step2 = NULL, stepUnit = NULL,
+                         step = NULL, step0 = NULL, step2 = NULL, stepUnit = NULL,
                          length = NULL, minx = NULL, maxx = NULL, miny = NULL, maxy = NULL, width = isolate(session$clientData$output_plot1_width),
                          run = F, tunits.label = NULL, tunits.known1 = F, tunits.known2 = F, tunits.last = NULL, run_wavelet = T, pixelratio = NULL, welcome = F,
                          last_optionSecondary = 0, format = NULL, format2 = NULL, intro = T, KFiter = NULL, tol = NULL,
@@ -9277,7 +9277,7 @@ server <- function(input,output,session) {
       shinyjs::delay(300, showNotification(HTML("The resampling period is not numeric.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
       req(info$stop)
     } else { # deleted input value
-      info$step <- NULL
+      info$step <- info$step0 <- NULL
       info$db1 <- "original"
       updateTextInput(session, inputId = "step", value = "")
       if (input$optionSecondary > 1) {
@@ -9298,7 +9298,7 @@ server <- function(input,output,session) {
         shinyjs::delay(300, showNotification(HTML("The resampling period is not valid.<br>Check input value."), action = NULL, duration = 10, closeButton = T, id = "bad_window", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
       } else {
-        info$step <- inputs$step
+        info$step <- info$step0 <- inputs$step
       }
     }
     # we go for a new series sampling
@@ -9333,7 +9333,6 @@ server <- function(input,output,session) {
       updateTextInput(session, "ObsError", value = "")
       db1$resampled <- NULL
       tolerance <- min(diff(x,1))/3
-      info$step <- inputs$step
       info$stepUnit <- input$tunits
       withProgress(message = 'Averaging the series.',
                    detail = 'This may take a while ...', value = 0, {
@@ -11720,6 +11719,7 @@ server <- function(input,output,session) {
     info$tunits.known2 <- F
     info$product1 <- NULL
     info$step <- NULL
+    info$step0 <- NULL
     info$step2 <- NULL
     info$stepUnit <- NULL
     url$file <- NULL
@@ -15241,7 +15241,7 @@ server <- function(input,output,session) {
       } else if (info$stepUnit == 3) {
         stepUnit <- "years"
       }
-      cat(paste('# Resampling:', info$step, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
+      cat(paste('# Resampling:', info$step0, stepUnit), file = file_out, sep = "\n", fill = F, append = T)
     }
     if (input$optionSecondary == 2) {
       if (length(file$secondary$name) > 1) {
