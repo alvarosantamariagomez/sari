@@ -16970,7 +16970,7 @@ server <- function(input,output,session) {
               })
               if (!any(tolower(product) == "grace")) {
                 if (isTruthy(inputs$step) && info$db1 == "resampled") {
-                  step <- inputs$step
+                  step <- info$step
                 } else {
                   if (input$tunits == 1) {
                     step <- 1
