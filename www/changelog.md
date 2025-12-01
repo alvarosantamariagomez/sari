@@ -1,6 +1,28 @@
 # **SARI changelog**
 
 
+# diciembre 2025 [2025.12]
+
+### Fixed
+- improving the checks of the averaging period of the primary series
+- fixing the translation of the epoch variable when printing the fitted equation
+- fixing the non-linear fit iterations when the fitted equation has not been saved before
+- checking if the remote series was downloaded before trying to assess its format
+- allowing to load a model from a SARI file when another model has already been fitted
+- reducing the possibility of an endless loop of the LS fit
+- checking the validity of the downloaded series from the DORIS server
+
+### Changed
+- automatically selecting the latest solution version from the DORIS server
+- automatically selecting the latest solution version from the EUREF server
+- avoiding updating and removing the resampling period when its value is not valid
+- increasing the length and width of the fitting results printed on the screen
+- checking the size of the equation system
+- printing the original resampling period when changing the time units
+
+### Added
+
+
 # noviembre 2025 [2025.11]
 
 ### Fixed

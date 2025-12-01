@@ -15,7 +15,8 @@
  AB01  A    4 P 15:313:57826 16:072:65205 P - EQ M6.3 - 72 km SSE of Atka, Alaska
  AB01  A    5 P 16:072:65205 21:311:00000 P - unknown
  AB01  A    6 P 21:311:00000 25:047:00000 P - unknown
- AB01  A    7 P 25:047:00000 00:000:00000 P -
+ AB01  A    7 P 25:047:00000 25:210:84291 P - EQ M 8.8 - 2025 Kamchatka Peninsula, Russia Earthquake 
+ AB01  A    8 P 25:210:84291 00:000:00000 P -
  AB01  A    1 P 00:000:00000 13:242:59103 V - EQ M7.0 - 101 km SW of Atka, Alaska
  AB01  A    2 P 13:242:59103 00:000:00000 V -
 *
@@ -424,12 +425,12 @@
  ANP6  A    1 P 00:000:00000 00:000:00000 P - 
  ANP6  A    1 P 00:000:00000 00:000:00000 V - 
 *
- ANTC  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- ANTC  A    2 P 10:058:23656 11:042:72331 P - EQ M6.9 - 21 km N of Tomé, Chile
+ ANTC  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ ANTC  A    2 P 10:058:23651 11:042:72331 P - EQ M6.9 - 21 km N of Tomé, Chile
  ANTC  A    3 P 11:042:72331 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  ANTC  A    4 P 15:259:82473 00:000:00000 P - 
- ANTC  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- ANTC  A    2 P 10:058:23656 00:000:00000 V - 
+ ANTC  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ ANTC  A    2 P 10:058:23651 00:000:00000 V - 
 *
  ANTO  A    1 P 00:000:00000 00:000:00000 P - 
  ANTO  A    1 P 00:000:00000 00:000:00000 V - 
@@ -1015,17 +1016,17 @@
  BUE1  A    2 P 00:046:00000 00:098:00000 P - unknown
  BUE1  A    3 P 00:098:00000 02:029:00000 P - non-linearity
  BUE1  A    4 P 02:029:00000 06:013:00000 P - unknown
- BUE1  A    5 P 06:013:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- BUE1  A    6 P 10:058:23656 00:000:00000 P - 
+ BUE1  A    5 P 06:013:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ BUE1  A    6 P 10:058:23651 00:000:00000 P - 
  BUE1  A    1 P 00:000:00000 02:029:00000 V - non-linearity
- BUE1  A    2 P 02:029:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- BUE1  A    3 P 10:058:23656 00:000:00000 V - 
+ BUE1  A    2 P 02:029:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ BUE1  A    3 P 10:058:23651 00:000:00000 V - 
 *
  BUE2  A    1 P 00:000:00000 06:013:00000 P - unknown
- BUE2  A    2 P 06:013:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- BUE2  A    3 P 10:058:23656 00:000:00000 P - 
- BUE2  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- BUE2  A    2 P 10:058:23656 00:000:00000 V - 
+ BUE2  A    2 P 06:013:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ BUE2  A    3 P 10:058:23651 00:000:00000 P - 
+ BUE2  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ BUE2  A    2 P 10:058:23651 00:000:00000 V - 
 *
  BUEN  A    1 P 00:000:00000 12:274:59496 P - EQ M7.3 - 11 km WNW of San Agustín, Colombia
  BUEN  A    2 P 12:274:59496 00:000:00000 P - 
@@ -1174,8 +1175,8 @@
  CAT2  A    1 P 00:000:00000 00:000:00000 P - 
  CAT2  A    1 P 00:000:00000 00:000:00000 V - 
 *
- CATA  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- CATA  A    2 P 10:058:23656 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
+ CATA  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CATA  A    2 P 10:058:23651 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  CATA  A    3 P 15:259:82473 00:000:00000 P - 
  CATA  A    1 P 00:000:00000 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
  CATA  A    2 P 15:259:82473 00:000:00000 V - 
@@ -1272,11 +1273,11 @@
  CEUT  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CFAG  A    1 P 00:000:00000 04:017:00000 P - non-linearity
- CFAG  A    2 P 04:017:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- CFAG  A    3 P 10:058:23656 00:000:00000 P - 
+ CFAG  A    2 P 04:017:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CFAG  A    3 P 10:058:23651 00:000:00000 P - 
  CFAG  A    1 P 00:000:00000 04:017:00000 V - non-linearity
- CFAG  A    2 P 04:017:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- CFAG  A    3 P 10:058:23656 00:000:00000 V - 
+ CFAG  A    2 P 04:017:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CFAG  A    3 P 10:058:23651 00:000:00000 V - 
 *
  CGGN  A    1 P 00:000:00000 12:155:44760 P - antenna change
  CGGN  A    2 P 12:155:44760 12:221:00000 P - unknown
@@ -1330,14 +1331,14 @@
 *
  CHOF  A    1 P 00:000:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
  CHOF  A    2 P 24:001:25809 00:000:00000 P - 
- CHOF  A    1 P 00:000:00000 24:001:25809 V- EQ M7.5 - Noto Peninsula, Japan
+ CHOF  A    1 P 00:000:00000 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
  CHOF  A    2 P 24:001:25809 00:000:00000 V -
 *
  CHPG  A    1 P 00:000:00000 00:000:00000 P - 
  CHPG  A    1 P 00:000:00000 00:000:00000 V - 
 *
- CHPI  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- CHPI  A    2 P 10:058:23656 13:211:73740 P - antenna change
+ CHPI  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CHPI  A    2 P 10:058:23651 13:211:73740 P - antenna change
  CHPI  A    3 P 13:211:73740 14:133:00000 P - unknown
  CHPI  A    4 P 14:133:00000 00:000:00000 P - 
  CHPI  A    1 P 00:000:00000 00:000:00000 V - 
@@ -1551,23 +1552,23 @@
  COEN  A    2 P 17:162:23400 00:000:00000 P - 
  COEN  A    1 P 00:000:00000 00:000:00000 V - 
 *
- CONT  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- CONT  A    2 P 10:058:23656 10:075:08518 P - EQ M6.7 - 52 km NNW of Tomé, Chile
+ CONT  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CONT  A    2 P 10:058:23651 10:075:08518 P - EQ M6.7 - 52 km NNW of Tomé, Chile
  CONT  A    3 P 10:075:08518 11:042:72331 P - EQ M6.9 - 21 km N of Tomé, Chile
  CONT  A    4 P 11:042:72331 00:000:00000 P - 
- CONT  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- CONT  A    2 P 10:058:23656 00:000:00000 V - 
+ CONT  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CONT  A    2 P 10:058:23651 00:000:00000 V - 
 *
  CONZ  A    1 P 00:000:00000 03:108:00000 P - unknown
  CONZ  A    2 P 03:108:00000 05:137:52200 P - antenna change
- CONZ  A    3 P 05:137:52200 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- CONZ  A    4 P 10:058:23656 10:064:42427 P - EQ M6.6 - 23 km WNW of Talcahuano, Chile
+ CONZ  A    3 P 05:137:52200 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CONZ  A    4 P 10:058:23651 10:064:42427 P - EQ M6.6 - 23 km WNW of Talcahuano, Chile
  CONZ  A    5 P 10:064:42427 10:075:08518 P - EQ M6.7 - 52 km NNW of Tomé, Chile
  CONZ  A    6 P 10:075:08518 11:042:72331 P - EQ M6.9 - 21 km N of Tomé, Chile
  CONZ  A    7 P 11:042:72331 11:200:73800 P - antenna change
  CONZ  A    8 P 11:200:73800 00:000:00000 P - 
- CONZ  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- CONZ  A    2 P 10:058:23656 00:000:00000 V - 
+ CONZ  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CONZ  A    2 P 10:058:23651 00:000:00000 V - 
 *
  COOB  A    1 P 00:000:00000 00:000:00000 P - 
  COOB  A    1 P 00:000:00000 00:000:00000 V - 
@@ -1580,22 +1581,22 @@
  COPO  A    1 P 00:000:00000 04:343:00000 P - non-linearity
  COPO  A    2 P 04:343:00000 06:120:69437 P - EQ M6.7 - 78 km WNW of Copiapó, Chile
  COPO  A    3 P 06:120:69437 08:334:00000 P - non-linearity
- COPO  A    4 P 08:334:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- COPO  A    5 P 10:058:23656 13:097:00000 P - unknown
+ COPO  A    4 P 08:334:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ COPO  A    5 P 10:058:23651 13:097:00000 P - unknown
  COPO  A    6 P 13:097:00000 13:325:00000 P - unknown
  COPO  A    7 P 13:325:00000 15:054:00000 P - unknown
  COPO  A    8 P 15:054:00000 00:000:00000 P - 
  COPO  A    1 P 00:000:00000 04:343:00000 V - non-linearity
  COPO  A    2 P 04:343:00000 08:334:00000 V - non-linearity
- COPO  A    3 P 08:334:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- COPO  A    4 P 10:058:23656 00:000:00000 V - 
+ COPO  A    3 P 08:334:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ COPO  A    4 P 10:058:23651 00:000:00000 V - 
 *
  CORC  A    1 P 00:000:00000 00:000:00000 P - 
  CORC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CORD  A    1 P 00:000:00000 05:062:00000 P - antenna change
- CORD  A    2 P 05:062:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- CORD  A    3 P 10:058:23656 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
+ CORD  A    2 P 05:062:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ CORD  A    3 P 10:058:23651 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  CORD  A    4 P 15:259:82473 00:000:00000 P - 
  CORD  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -1645,8 +1646,8 @@
 *
  COYQ  A    1 P 00:000:00000 05:018:00000 P - unknown
  COYQ  A    2 P 05:018:00000 07:111:64426 P - EQ M6.2 - 18 km N of Puerto Aysén, Chile
- COYQ  A    3 P 07:111:64426 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- COYQ  A    4 P 10:058:23656 16:360:51747 P - EQ M7.6 - 41 km SW of Quellón, Chile
+ COYQ  A    3 P 07:111:64426 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ COYQ  A    4 P 10:058:23651 16:360:51747 P - EQ M7.6 - 41 km SW of Quellón, Chile
  COYQ  A    5 P 16:360:51747 00:000:00000 P - 
  COYQ  A    1 P 00:000:00000 07:111:64426 V - EQ M6.2 - 18 km N of Puerto Aysén, Chile
  COYQ  A    2 P 07:111:64426 00:000:00000 V - 
@@ -2255,8 +2256,8 @@
  FALE  A    1 P 00:000:00000 09:272:64091 V - EQ M8.1 - 168 km SSW of Matavai, Samoa
  FALE  A    2 P 09:272:64091 00:000:00000 V - 
 *
- FALK  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- FALK  A    2 P 10:058:23656 13:321:32696 P - EQ M7.7 - Scotia Sea
+ FALK  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ FALK  A    2 P 10:058:23651 13:321:32696 P - EQ M7.7 - Scotia Sea
  FALK  A    3 P 13:321:32696 00:000:00000 P - 
  FALK  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -3168,8 +3169,8 @@
  ILHA  A    2 P 10:263:00000 00:000:00000 P - 
  ILHA  A    1 P 00:000:00000 00:000:00000 V - 
 *
- IMBT  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- IMBT  A    2 P 10:058:23656 13:276:00000 P - unknown
+ IMBT  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ IMBT  A    2 P 10:058:23651 13:276:00000 P - unknown
  IMBT  A    3 P 13:276:00000 00:000:00000 P - 
  IMBT  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -3232,7 +3233,8 @@
  IQUI  A    1 P 00:000:00000 00:000:00000 V - 
 *
  IRKJ  A    1 P 00:000:00000 11:070:20783 P - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
- IRKJ  A    2 P 11:070:20783 00:000:00000 P - 
+ IRKJ  A    2 P 11:070:20783 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake
+ IRKJ  A    3 P 25:210:84291 00:000:00000 P -
  IRKJ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  IRKM  A    1 P 00:000:00000 11:070:20783 P - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
@@ -3911,8 +3913,8 @@
  LHAZ  A    1 P 00:000:00000 00:000:00000 V - 
 *
  LHCL  A    1 P 00:000:00000 00:020:00000 P - unknown
- LHCL  A    2 P 00:020:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- LHCL  A    3 P 10:058:23656 12:117:00000 P - antenna change
+ LHCL  A    2 P 00:020:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ LHCL  A    3 P 10:058:23651 12:117:00000 P - antenna change
  LHCL  A    4 P 12:117:00000 00:000:00000 P - 
  LHCL  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -4006,15 +4008,15 @@
 *
  LPGS  A    1 P 00:000:00000 97:240:00000 P - unknown
  LPGS  A    2 P 97:240:00000 01:050:00000 P - unknown
- LPGS  A    3 P 01:050:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- LPGS  A    4 P 10:058:23656 12:278:43200 P - antenna change
+ LPGS  A    3 P 01:050:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ LPGS  A    4 P 10:058:23651 12:278:43200 P - antenna change
  LPGS  A    5 P 12:278:43200 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  LPGS  A    6 P 15:259:82473 16:343:50400 P - antenna change
  LPGS  A    7 P 16:343:50400 20:211:00000 P - unknown
  LPGS  A    8 P 20:211:00000 21:132:56700 P - antenna change
- LPGS  A    9 P 21:132:56700 00:000:00000 P -
- LPGS  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- LPGS  A    2 P 10:058:23656 00:000:00000 V - 
+ LPGS  A    9 P 21:132:56700 00:000:00000 P - 
+ LPGS  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ LPGS  A    2 P 10:058:23651 00:000:00000 V - 
 *
  LPIL  A    1 P 00:000:00000 06:136:00000 P - unknown
  LPIL  A    2 P 06:136:00000 07:084:02402 P - EQ M7.1 - 119 km S of Isangel, Vanuatu
@@ -4063,8 +4065,8 @@
  M0SE  A    5 P 16:304:24019 00:000:00000 P - 
  M0SE  A    1 P 00:000:00000 00:000:00000 V - 
 *
- MA02  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- MA02  A    2 P 10:058:23656 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
+ MA02  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ MA02  A    2 P 10:058:23651 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  MA02  A    3 P 15:259:82473 00:000:00000 P - 
  MA02  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -4416,16 +4418,16 @@
  MGBH  A    5 P 18:147:00000 00:000:00000 P - 
  MGBH  A    1 P 00:000:00000 00:000:00000 V - 
 *
- MGIN  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- MGIN  A    2 P 10:058:23656 00:000:00000 P - 
+ MGIN  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ MGIN  A    2 P 10:058:23651 00:000:00000 P - 
  MGIN  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MGMC  A    1 P 00:000:00000 22:001:00000 P - unknown
  MGMC  A    2 P 22:001:00000 00:000:00000 P - 
  MGMC  A    1 P 00:000:00000 00:000:00000 V - 
 *
- MGUB  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- MGUB  A    2 P 10:058:23656 19:323:70200 P - antenna change
+ MGUB  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ MGUB  A    2 P 10:058:23651 19:323:70200 P - antenna change
  MGUB  A    3 P 19:323:70200 00:000:00000 P - 
  MGUB  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -4595,8 +4597,8 @@
  MOWR  A    1 P 00:000:00000 00:000:00000 P - 
  MOWR  A    1 P 00:000:00000 00:000:00000 V - 
 *
- MPL2  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- MPL2  A    2 P 10:058:23656 14:274:00000 P - antenna change
+ MPL2  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ MPL2  A    2 P 10:058:23651 14:274:00000 P - antenna change
  MPL2  A    3 P 14:274:00000 20:026:00000 P - unknown
  MPL2  A    4 P 20:026:00000 22:222:00000 P - receiver change
  MPL2  A    5 P 22:222:00000 00:000:00000 P - 
@@ -4667,7 +4669,8 @@
  MSOL  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MSSA  A    1 P 00:000:00000 24:001:25809 P - EQ M7.5 - Noto Peninsula, Japan
- MSSA  A    2 P 24:001:25809 00:000:00000 P - 
+ MSSA  A    2 P 24:001:25809 25:275:00000 P - eccentricity modified in site log
+ MSSA  A    3 P 25:275:00000 00:000:00000 P - 
  MSSA  A    1 P 00:000:00000 24:001:25809 V - EQ M7.5 - Noto Peninsula, Japan
  MSSA  A    2 P 24:001:25809 00:000:00000 V -
 *
@@ -4855,15 +4858,15 @@
  NEIA  A    2 P 03:094:00000 05:192:00000 P - unknown
  NEIA  A    3 P 05:192:00000 09:254:50400 P - antenna change
  NEIA  A    4 P 09:254:50400 09:321:00000 P - antenna change
- NEIA  A    5 P 09:321:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- NEIA  A    6 P 10:058:23656 12:242:50400 P - antenna change
+ NEIA  A    5 P 09:321:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ NEIA  A    6 P 10:058:23651 12:242:50400 P - antenna change
  NEIA  A    7 P 12:242:50400 16:293:39600 P - antenna change
  NEIA  A    8 P 16:293:39600 21:324:60540 P - antenna change
  NEIA  A    9 P 21:324:60540 00:000:00000 P - 
  NEIA  A    1 P 00:000:00000 00:000:00000 V - 
 *
- NESA  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- NESA  A    2 P 10:058:23656 00:000:00000 P - 
+ NESA  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ NESA  A    2 P 10:058:23651 00:000:00000 P - 
  NESA  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NETT  A    1 P 00:000:00000 08:078:18000 P - antenna change
@@ -4901,8 +4904,8 @@
  NICO  A    7 P 23:037:04654 00:000:00000 P - 
  NICO  A    1 P 00:000:00000 00:000:00000 V - 
 *
- NIEB  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- NIEB  A    2 P 10:058:23656 00:000:00000 P - 
+ NIEB  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ NIEB  A    2 P 10:058:23651 00:000:00000 P - 
  NIEB  A    1 P 00:000:00000 00:000:00000 V - 
 *
  NIST  A    1 P 00:000:00000 13:326:00000 P - unknown
@@ -5756,7 +5759,8 @@
  PLO5  A    2 P 09:217:00000 10:094:81643 P - EQ M7.2 - 12km SW of Delta, B.C., MX
  PLO5  A    3 P 10:094:81643 17:172:00000 P - unknown
  PLO5  A    4 P 17:172:00000 18:026:00000 P - non-linearity
- PLO5  A    5 P 18:026:00000 00:000:00000 P - 
+ PLO5  A    5 P 18:026:00000 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
+ PLO5  A    6 P 19:187:11993 00:000:00000 P -
  PLO5  A    1 P 00:000:00000 10:094:81643 V - EQ M7.2 - 12km SW of Delta, B.C., MX
  PLO5  A    2 P 10:094:81643 18:026:00000 V - non-linearity
  PLO5  A    3 P 18:026:00000 00:000:00000 V - 
@@ -5766,7 +5770,8 @@
  PLO6  A    3 P 09:217:00000 10:094:81643 P - EQ M7.2 - 12km SW of Delta, B.C., MX
  PLO6  A    4 P 10:094:81643 17:172:00000 P - unknown
  PLO6  A    5 P 17:172:00000 18:026:00000 P - non-linearity
- PLO6  A    6 P 18:026:00000 00:000:00000 P - 
+ PLO6  A    6 P 18:026:00000 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
+ PLO6  A    7 P 19:187:11993 00:000:00000 P -
  PLO6  A    1 P 00:000:00000 10:094:81643 V - EQ M7.2 - 12km SW of Delta, B.C., MX
  PLO6  A    2 P 10:094:81643 18:026:00000 V - non-linearity
  PLO6  A    3 P 18:026:00000 00:000:00000 V - 
@@ -5809,8 +5814,8 @@
 *
  POAL  A    1 P 00:000:00000 07:115:00000 P - antenna change
  POAL  A    2 P 07:115:00000 07:254:00000 P - antenna change
- POAL  A    3 P 07:254:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- POAL  A    4 P 10:058:23656 13:134:54120 P - antenna change
+ POAL  A    3 P 07:254:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ POAL  A    4 P 10:058:23651 13:134:54120 P - antenna change
  POAL  A    5 P 13:134:54120 14:125:68160 P - antenna change
  POAL  A    6 P 14:125:68160 14:296:43620 P - antenna change
  POAL  A    7 P 14:296:43620 18:135:61200 P - antenna change
@@ -5872,8 +5877,8 @@
  PPPC  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PPTE  A    1 P 00:000:00000 09:250:00000 P - antenna change
- PPTE  A    2 P 09:250:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- PPTE  A    3 P 10:058:23656 17:126:00000 P - unknown
+ PPTE  A    2 P 09:250:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ PPTE  A    3 P 10:058:23651 17:126:00000 P - unknown
  PPTE  A    4 P 17:126:00000 00:000:00000 P - 
  PPTE  A    1 P 00:000:00000 00:000:00000 V - 
 *
@@ -6349,10 +6354,10 @@
  ROGM  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ROSA  A    1 P 00:000:00000 07:337:00000 P - antenna change
- ROSA  A    2 P 07:337:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- ROSA  A    3 P 10:058:23656 00:000:00000 P - 
- ROSA  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- ROSA  A    2 P 10:058:23656 00:000:00000 V - 
+ ROSA  A    2 P 07:337:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ ROSA  A    3 P 10:058:23651 00:000:00000 P - 
+ ROSA  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ ROSA  A    2 P 10:058:23651 00:000:00000 V - 
 *
  ROSS  A    1 P 00:000:00000 07:044:00000 P - unknown
  ROSS  A    2 P 07:044:00000 16:024:00000 P - unknown
@@ -6382,8 +6387,8 @@
  RSBY  A    2 P 22:221:03180 00:000:00000 P - 
  RSBY  A    1 P 00:000:00000 00:000:00000 V - 
 *
- RWSN  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- RWSN  A    2 P 10:058:23656 14:211:00000 P - antenna change
+ RWSN  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ RWSN  A    2 P 10:058:23651 14:211:00000 P - antenna change
  RWSN  A    3 P 14:211:00000 16:360:51747 P - EQ M7.6 - 41 km SW of Quellón, Chile
  RWSN  A    4 P 16:360:51747 00:000:00000 P - 
  RWSN  A    1 P 00:000:00000 00:000:00000 V - 
@@ -6460,15 +6465,15 @@
 *
  SANT  A    1 P 00:000:00000 96:199:00000 P - antenna change
  SANT  A    2 P 96:199:00000 98:010:00000 P - unknown
- SANT  A    3 P 98:010:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- SANT  A    4 P 10:058:23656 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
+ SANT  A    3 P 98:010:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ SANT  A    4 P 10:058:23651 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  SANT  A    5 P 15:259:82473 17:006:00000 P - antenna change
  SANT  A    6 P 17:006:00000 17:114:77911 P - EQ M6.9 - 40 km W of Valparaíso, Chile
  SANT  A    7 P 17:114:77911 18:009:00000 P - unknown
  SANT  A    8 P 18:009:00000 18:083:00000 P - unknown
  SANT  A    9 P 18:083:00000 00:000:00000 P - 
- SANT  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- SANT  A    2 P 10:058:23656 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
+ SANT  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ SANT  A    2 P 10:058:23651 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
  SANT  A    3 P 15:259:82473 00:000:00000 V - 
 *
  SARI  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6692,6 +6697,10 @@
  SHEE  A    1 P 00:000:00000 03:173:00000 V - non-linearity
  SHEE  A    2 P 03:173:00000 00:000:00000 V - 
 *
+ SHLG  A    1 P 00:000:00000 25:254:39600 P - antenna change
+ SHLG  A    2 P 25:254:39600 00:000:00000 P - 
+ SHLG  A    1 P 00:000:00000 00:000:00000 V - 
+*
  SHK5  A    1 P 00:000:00000 12:053:00000 P - non-linearity
  SHK5  A    2 P 12:053:00000 00:000:00000 P - 
  SHK5  A    1 P 00:000:00000 12:053:00000 V - non-linearity
@@ -6779,8 +6788,8 @@
 *
  SMAR  A    1 P 00:000:00000 07:137:00000 P - antenna change
  SMAR  A    2 P 07:137:00000 07:221:64800 P - antenna change
- SMAR  A    3 P 07:221:64800 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- SMAR  A    4 P 10:058:23656 13:135:52200 P - antenna change
+ SMAR  A    3 P 07:221:64800 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ SMAR  A    4 P 10:058:23651 13:135:52200 P - antenna change
  SMAR  A    5 P 13:135:52200 14:301:75000 P - antenna change
  SMAR  A    6 P 14:301:75000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  SMAR  A    7 P 15:259:82473 00:000:00000 P - 
@@ -7077,8 +7086,8 @@
  SUWN  A    2 P 11:070:20783 18:036:00000 V - antenna change
  SUWN  A    3 P 18:036:00000 00:000:00000 V - 
 *
- SVIC  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- SVIC  A    2 P 10:058:23656 14:246:00000 P - unknown
+ SVIC  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ SVIC  A    2 P 10:058:23651 14:246:00000 P - unknown
  SVIC  A    3 P 14:246:00000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  SVIC  A    4 P 15:259:82473 00:000:00000 P - 
  SVIC  A    1 P 00:000:00000 00:000:00000 V - 
@@ -7279,7 +7288,8 @@
  THU2  A    1 P 00:000:00000 06:098:00000 P - non-linearity
  THU2  A    2 P 06:098:00000 17:125:00000 P - unknown
  THU2  A    3 P 17:125:00000 19:200:00000 P - non-linearity
- THU2  A    4 P 19:200:00000 00:000:00000 P - 
+ THU2  A    4 P 19:200:00000 25:233:50400 P - antenna change
+ THU2  A    5 P 25:233:50400 00:000:00000 P -
  THU2  A    1 P 00:000:00000 06:098:00000 V - non-linearity
  THU2  A    2 P 06:098:00000 19:200:00000 V - non-linearity
  THU2  A    3 P 19:200:00000 00:000:00000 V - 
@@ -7720,7 +7730,8 @@
  UCLP  A    3 P 99:289:35204 00:297:00000 P - receiver change
  UCLP  A    4 P 00:297:00000 12:265:71760 P - antenna change
  UCLP  A    5 P 12:265:71760 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- UCLP  A    6 P 19:187:11993 00:000:00000 P - 
+ UCLP  A    6 P 19:187:11993 25:175:69660 P - antenna change
+ UCLP  A    7 P 25:175:69660 00:000:00000 P - 
  UCLP  A    1 P 00:000:00000 00:000:00000 V - 
 *
  UCLU  A    1 P 00:000:00000 00:153:82800 P - antenna change
@@ -7747,8 +7758,8 @@
  UCSF  A    3 P 14:236:37244 00:000:00000 P - 
  UCSF  A    1 P 00:000:00000 00:000:00000 V - 
 *
- UFPR  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- UFPR  A    2 P 10:058:23656 18:094:55800 P - antenna change
+ UFPR  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ UFPR  A    2 P 10:058:23651 18:094:55800 P - antenna change
  UFPR  A    3 P 18:094:55800 00:000:00000 P - 
  UFPR  A    1 P 00:000:00000 18:094:55800 V - antenna change
  UFPR  A    2 P 18:094:55800 00:000:00000 V -
@@ -7757,7 +7768,8 @@
  ULAB  A    2 P 11:070:20783 11:263:00000 P - antenna change
  ULAB  A    3 P 11:263:00000 13:008:45480 P - receiver change
  ULAB  A    4 P 13:008:45480 18:263:19320 P - antenna change
- ULAB  A    5 P 18:263:19320 00:000:00000 P - 
+ ULAB  A    5 P 18:263:19320 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake
+ ULAB  A    6 P 25:210:84291 00:000:00000 P -
  ULAB  A    1 P 00:000:00000 18:263:19320 V - antenna change
  ULAB  A    2 P 18:263:19320 00:000:00000 V - 
 *
@@ -7815,15 +7827,15 @@
  UNSA  A    3 P 01:192:00000 04:044:00000 P - unknown
  UNSA  A    4 P 04:044:00000 07:318:56450 P - EQ M7.7 - 36 km ESE of Tocopilla, Chile
  UNSA  A    5 P 07:318:56450 08:206:00000 P - antenna change
- UNSA  A    6 P 08:206:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- UNSA  A    7 P 10:058:23656 12:203:00000 P - non-linearity
+ UNSA  A    6 P 08:206:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ UNSA  A    7 P 10:058:23651 12:203:00000 P - non-linearity
  UNSA  A    8 P 12:203:00000 15:120:43200 P - antenna change
  UNSA  A    9 P 15:120:43200 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  UNSA  A   10 P 15:259:82473 20:048:00000 P - antenna change
  UNSA  A   11 P 20:048:00000 00:000:00000 P - 
  UNSA  A    1 P 00:000:00000 07:318:56450 V - EQ M7.7 - 36 km ESE of Tocopilla, Chile
- UNSA  A    2 P 07:318:56450 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- UNSA  A    3 P 10:058:23656 12:203:00000 V - non-linearity
+ UNSA  A    2 P 07:318:56450 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ UNSA  A    3 P 10:058:23651 12:203:00000 V - non-linearity
  UNSA  A    4 P 12:203:00000 15:259:82473 V - EQ M8.3 - 48 km W of Illapel, Chile
  UNSA  A    5 P 15:259:82473 00:000:00000 V - 
 *
@@ -7916,8 +7928,8 @@
  UYMO  A    2 P 15:259:82473 00:000:00000 P - 
  UYMO  A    1 P 00:000:00000 00:000:00000 V - 
 *
- UYTA  A    1 P 00:000:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- UYTA  A    2 P 10:058:23656 13:045:00000 P - receiver change
+ UYTA  A    1 P 00:000:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ UYTA  A    2 P 10:058:23651 13:045:00000 P - receiver change
  UYTA  A    3 P 13:045:00000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  UYTA  A    4 P 15:259:82473 16:058:00000 P - unknown
  UYTA  A    5 P 16:058:00000 00:000:00000 P - 
@@ -7952,12 +7964,12 @@
 *
  VALP  A    1 P 00:000:00000 01:099:32457 P - EQ M6.7 - 144 km WNW of Valparaíso, Chile
  VALP  A    2 P 01:099:32457 08:355:00000 P - unknown
- VALP  A    3 P 08:355:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- VALP  A    4 P 10:058:23656 12:108:13816 P - EQ M6.7 - 22 km NW of Hacienda La Calera, Chile
+ VALP  A    3 P 08:355:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ VALP  A    4 P 10:058:23651 12:108:13816 P - EQ M6.7 - 22 km NW of Hacienda La Calera, Chile
  VALP  A    5 P 12:108:13816 14:235:81143 P - EQ M6.4 - 23 km WNW of Hacienda La Calera, Chile
  VALP  A    6 P 14:235:81143 00:000:00000 P - 
- VALP  A    1 P 00:000:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- VALP  A    2 P 10:058:23656 00:000:00000 V - 
+ VALP  A    1 P 00:000:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ VALP  A    2 P 10:058:23651 00:000:00000 V - 
 *
  VAN1  A    1 P 00:000:00000 00:000:00000 P - 
  VAN1  A    1 P 00:000:00000 00:000:00000 V - 
@@ -7983,13 +7995,13 @@
  VARS  A    1 P 00:000:00000 00:000:00000 V - 
 *
  VBCA  A    1 P 00:000:00000 04:099:00000 P - non-linearity
- VBCA  A    2 P 04:099:00000 10:058:23656 P - EQ M5.6 - Pacific-Antarctic Ridge
- VBCA  A    3 P 10:058:23656 14:353:00000 P - antenna change
+ VBCA  A    2 P 04:099:00000 10:058:23651 P - EQ M8.8 - 2010 Maule, Chile Earthquake
+ VBCA  A    3 P 10:058:23651 14:353:00000 P - antenna change
  VBCA  A    4 P 14:353:00000 15:259:82473 P - EQ M8.3 - 48 km W of Illapel, Chile
  VBCA  A    5 P 15:259:82473 00:000:00000 P - 
  VBCA  A    1 P 00:000:00000 04:099:00000 V - non-linearity
- VBCA  A    2 P 04:099:00000 10:058:23656 V - EQ M5.6 - Pacific-Antarctic Ridge
- VBCA  A    3 P 10:058:23656 00:000:00000 V - 
+ VBCA  A    2 P 04:099:00000 10:058:23651 V - EQ M8.8 - 2010 Maule, Chile Earthquake
+ VBCA  A    3 P 10:058:23651 00:000:00000 V - 
 *
  VEAR  A    1 P 00:000:00000 00:000:00000 P - 
  VEAR  A    1 P 00:000:00000 00:000:00000 V - 

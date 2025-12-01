@@ -457,7 +457,7 @@ options(shiny.reactlog = F)
 Sys.setenv(TZ = "UTC")
 
 # version ####
-version <- "SARI noviembre 2025"
+version <- "SARI diciembre 2025"
 
 # UI ####
 ui <- fluidPage(theme = shinytheme("spacelab"),
