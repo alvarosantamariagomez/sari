@@ -13021,6 +13021,9 @@ server <- function(input,output,session) {
                 # assuming the time units set by the user are good
                 if (input$tunits == 1) {
                   extracted$x1 <- tableAll[,1]
+                  if (!all(is.numeric(extracted$x1)) || !all(!is.na(extracted$x1))) {
+                    return(NULL)
+                  }
                   extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
                   if (nrow(extracted) == 0) {
                     return(NULL)
@@ -13038,6 +13041,9 @@ server <- function(input,output,session) {
                   }
                 } else if (input$tunits == 2) {
                   extracted$x2 <- tableAll[,1]
+                  if (!all(is.numeric(extracted$x2)) || !all(!is.na(extracted$x2))) {
+                    return(NULL)
+                  }
                   extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
                   if (nrow(extracted) == 0) {
                     return(NULL)
@@ -13055,6 +13061,9 @@ server <- function(input,output,session) {
                   }
                 } else if (input$tunits == 3) {
                   extracted$x3 <- tableAll[,1]
+                  if (!all(is.numeric(extracted$x3)) || !all(!is.na(extracted$x3))) {
+                    return(NULL)
+                  }
                   extracted <- suppressWarnings(extracted[apply(extracted, 1, function(r) !any(is.na(as.numeric(r)))) ,])
                   if (nrow(extracted) == 0) {
                     return(NULL)
@@ -16234,7 +16243,7 @@ server <- function(input,output,session) {
   }
   #Based on https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
   decimalplaces <- function(x,extra) {
-    if (all(is.numeric(x))) {
+    if (all(is.numeric(x)) && all(!is.na(x))) {
       info$scientific <- F
       frac <- abs(x - as.integer(x))
       if (all(frac == 0)) {
