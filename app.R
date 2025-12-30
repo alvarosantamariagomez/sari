@@ -9694,18 +9694,20 @@ server <- function(input,output,session) {
         }
       }
       # computing the shift period between the primary and secondary series
-      delta <- computeTimeShift(table1$x1,table2$x1)
-      if (isTruthy(delta) && is.numeric(delta) && delta <= info$samplingRaw[1] && abs(delta) > 0) {
-        table2$x1 <- table2$x1 + delta
-        showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
-        if (abs(delta) == info$sampling/2) {
-          showNotification("The time shift of the secondary series is equal to half the sampling of the primary series and the direction of the sifht is ambiguous.", action = NULL, duration = 15, closeButton = T, id = "ambiguous_shift", type = "error", session = getDefaultReactiveDomain())
-        }
-        if (input$optionSecondary == 4) {
-          table2$x2 <- mjd2week(table2$x1)
-          table2$x3 <- mjd2year(table2$x1)
-        }
-      }  
+      if (input$optionSecondary < 4) {
+        delta <- computeTimeShift(table1$x1,table2$x1)
+        if (isTruthy(delta) && is.numeric(delta) && delta <= info$samplingRaw[1] && abs(delta) > 0) {
+          table2$x1 <- table2$x1 + delta
+          showNotification(paste0("The time axis of the secondary series has been shifted by a constant ",delta," days"), action = NULL, duration = 10, closeButton = T, id = "time_shift", type = "warning", session = getDefaultReactiveDomain())
+          if (abs(delta) == info$sampling/2) {
+            showNotification("The time shift of the secondary series is equal to half the sampling of the primary series and the direction of the sifht is ambiguous.", action = NULL, duration = 15, closeButton = T, id = "ambiguous_shift", type = "error", session = getDefaultReactiveDomain())
+          }
+          if (input$optionSecondary == 4) {
+            table2$x2 <- mjd2week(table2$x1)
+            table2$x3 <- mjd2year(table2$x1)
+          }
+        } 
+      }
       # merging the primary and secondary series
       table2$status1 <- table2$status2 <- table2$status3 <- NULL
       if (input$optionSecondary == 2) {
