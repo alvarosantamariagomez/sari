@@ -9924,6 +9924,9 @@ server <- function(input,output,session) {
         info$maxx <- suppressWarnings(max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]][[paste0("status", input$tab)]])]))
       }
       ranges$x1 <- c(info$minx, info$maxx)
+      if (input$optionSecondary < 4 && info$last_optionSecondary == 4) {
+        ranges$x0 <- ranges$x1
+      }
     }
     # Updating station IDs
     updateTextInput(session, inputId = "ids", value = ids_info)
@@ -14754,7 +14757,7 @@ server <- function(input,output,session) {
           xtop <- x
         }
         if (isTruthy(rangex)) {
-          ticks <- base::pretty(xtop[x > rangex[1] & xtop < rangex[2]])
+          ticks <- base::pretty(xtop[xtop > rangex[1] & xtop < rangex[2]])
         } else {
           ticks <- base::pretty(xtop)
         }
@@ -14767,7 +14770,7 @@ server <- function(input,output,session) {
           xtop <- x
         }
         if (isTruthy(rangex)) {
-          ticks <- base::pretty(xtop[x > rangex[1] & xtop < rangex[2]])
+          ticks <- base::pretty(xtop[xtop > rangex[1] & xtop < rangex[2]])
         } else {
           ticks <- base::pretty(xtop)
         }
