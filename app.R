@@ -14746,18 +14746,28 @@ server <- function(input,output,session) {
         if (all(x < 35000)) {
           offset <- 33282
         }
-        if (isTruthy(rangex)) {
-          ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
+        if (isTruthy(input$fullSeries) && length(db2[[info$db2]]$x1) > 0) {
+          xtop <- c(x, db2[[info$db2]]$x1)
         } else {
-          ticks <- base::pretty(x)
+          xtop <- x
+        }
+        if (isTruthy(rangex)) {
+          ticks <- base::pretty(xtop[x > rangex[1] & xtop < rangex[2]])
+        } else {
+          ticks <- base::pretty(xtop)
         }
         labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1858-11-17") + ticks + offset))
         axis(3, at = ticks, labels = labels_dyear)
       } else if (input$tunits == 2) {
-        if (isTruthy(rangex)) {
-          ticks <- base::pretty(x[x > rangex[1] & x < rangex[2]])
+        if (isTruthy(input$fullSeries) && length(db2[[info$db2]]$x2) > 0) {
+          xtop <- c(x, db2[[info$db2]]$x2)
         } else {
-          ticks <- base::pretty(x)
+          xtop <- x
+        }
+        if (isTruthy(rangex)) {
+          ticks <- base::pretty(xtop[x > rangex[1] & xtop < rangex[2]])
+        } else {
+          ticks <- base::pretty(xtop)
         }
         labels_dyear <- sprintf("%.2f", decimal_date(as.Date("1980-01-06") + ticks*7))
         axis(3, at = ticks, labels = labels_dyear)
