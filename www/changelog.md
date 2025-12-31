@@ -1,6 +1,20 @@
 # **SARI changelog**
 
 
+# enero 2026 [2026.01]
+
+### Fixed
+- fixing the time axis range when unmerging the primary and secondary series
+- fixing the merge of the primary and secondary series into one single series
+- checking the values of the epoch column from plain enu series
+
+### Changed
+- extending the time axis at the top with the fullSeries option
+- avoiding changing the time units to days when reading ISO calendar dates
+
+### Added
+
+
 # diciembre 2025 [2025.12]
 
 ### Fixed
