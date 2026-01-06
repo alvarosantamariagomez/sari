@@ -8063,7 +8063,15 @@ server <- function(input,output,session) {
                 length(downloaded) < 2) {
               down <- 1
             }
+          } else if (is.data.frame(downloaded)) {
+            if (nrow(downloaded) < 2) {
+              down <- 1
+            }
+          } else {
+            down <- 1
           }
+        } else {
+          down <- 1
         }
         if (isTruthy(down) && down == 0) {
           shinyjs::delay(1500, {
