@@ -8063,8 +8063,8 @@ server <- function(input,output,session) {
                 length(downloaded) < 2) {
               down <- 1
             }
-          } else if (is.data.frame(downloaded)) {
-            if (nrow(downloaded) < 2) {
+          } else if (is.list(downloaded)) {
+            if (length(downloaded) < 2) {
               down <- 1
             }
           } else {
@@ -8155,7 +8155,15 @@ server <- function(input,output,session) {
                   length(downloaded) < 2) {
                 down <- 1
               }
+            } else if (is.list(downloaded)) {
+              if (length(downloaded) < 2) {
+                down <- 1
+              }
+            } else {
+              down <- 1
             }
+          } else {
+            down <- 1
           }
           if (isTruthy(down) && down == 0) {
             secondary_files <- secondary_files + 1
@@ -8163,7 +8171,7 @@ server <- function(input,output,session) {
           } else {
             file$secondary$datapath <- file$secondary$datapath[-length(file$secondary$datapath)]
             removeNotification(paste0("parsing_url2_",f))
-            showNotification(HTML(paste0("File ",file$secondary$name[f]," not found in ",input$server2,".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+            showNotification(HTML(paste0("File ",file$secondary$name[f]," not found in ",input$server2,".")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
           }
         }
         if (secondary_files > 0) {
