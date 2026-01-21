@@ -7311,14 +7311,17 @@ server <- function(input,output,session) {
             disable("product2")
           }
           if (length(file$secondary) > 0) {
-            enable("format2")
             if (input$format == 4) {
               updateRadioButtons(session, inputId = "format2", label = NULL, choices = list("NEU/ENU" = 1, "PBO" = 2, "NGL" = 3, "1D" = 4), selected = 4, inline = T)
               disable("server2")
               shinyjs::delay(100, disable("format2"))
               disable("ne")
             } else {
-              enable("format2")
+              if (input$optionSecondary == 0) { 
+                enable("format2")
+              } else {
+                disable("format2")
+              }
               enable("server2")
               enable("ne")
             }
