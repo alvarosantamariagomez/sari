@@ -13323,6 +13323,10 @@ server <- function(input,output,session) {
         }
       }
     }
+    info$samplingRaw <- abs(info$samplingRaw)
+    if (isTruthy(info$samplingRaw2)) {
+      info$samplingRaw2 <- abs(info$samplingRaw2)
+    }
     if (!isTruthy(input$tunits)) {
       if (isTruthy(info$tunits.known1)) {
         updateRadioButtons(session, inputId = "tunits", selected = 3)
@@ -17593,14 +17597,26 @@ server <- function(input,output,session) {
     info$sampling_regular <- median(diff(x), na.rm = T)
     info$tol <- ifelse(info$sampling_regular - info$sampling < info$sampling * 0.25, info$sampling * 0.25, info$sampling_regular - info$sampling)
     info$length <- x[length(x)] - x[1]
-    times <- round(diff(x)/info$sampling)
-    if (isTruthy(times) && length(times) > 1 && all(!is.na(times)) && all(times > 0) && all(!is.infinite(times))) {
-      trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
-    } else if (any(times == 0) && any(times > 0)) {
-      showNotification(HTML(paste("The sampling of the series is not regular.<br>Unable to assess data gaps in the series.")), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
-      trans$gaps <- rep(T, length(x))
+    if (input$tunits == 1) {
+      x1 <- x
+    } else if (input$tunits == 2) {
+      x1 <- week2mjd(x)
+    } else if (input$tunits == 3) {
+      x1 <- year2mjd(x)
+    }
+    times <- round(diff(x1)/info$samplingRaw[1], digits = 1)
+    if (isTruthy(times) && is.logical(length(times) > 1 && all(!is.na(times)) && all(times > .Machine$double.eps) && all(!is.infinite(times)) && all(times == floor(times)))) {
+      if (length(times) > 1 && all(!is.na(times)) && all(times > .Machine$double.eps) && all(!is.infinite(times)) && all(times == floor(times))) {
+        trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
+      } else if ((any(times == 0) && any(times > 0)) || any(times != floor(times))) {
+        shinyjs::delay(300, showNotification(HTML(paste("The sampling of the series is not regular.<br>Unable to assess data gaps in the series.")), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
+        trans$gaps <- rep(T, length(x))
+      }  else {
+        shinyjs::delay(300, showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
+        trans$gaps <- rep(T, length(x))
+      }
     } else {
-      showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain())
+      shinyjs::delay(300, showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
       trans$gaps <- rep(T, length(x))
     }
     info$decimalsx <- decimalplaces(x,0)
