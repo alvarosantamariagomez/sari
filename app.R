@@ -9288,6 +9288,7 @@ server <- function(input,output,session) {
   # Observe averaging ####
   observeEvent(c(inputs$step), {
     req(db1$original)
+    if (messages > 0) cat(file = stderr(), mySession, "Averaging primary series", "\n")
     removeNotification("bad_window")
     # checking the input period
     if (nchar(input$step) > 0 && isTruthy(inputs$step)) {
@@ -9322,7 +9323,6 @@ server <- function(input,output,session) {
     }
     # we go for a new series sampling
     if (isTruthy(inputs$step) && isTruthy(info$step)) {
-      if (messages > 0) cat(file = stderr(), mySession, "Averaging primary series", "\n")
       if (input$fitType == 2) {
         info$run <- NULL
         trans$res <- NULL
@@ -9422,6 +9422,7 @@ server <- function(input,output,session) {
 
   observeEvent(c(inputs$step2, info$redo_step2), {
     req(db2$original)
+    if (messages > 0) cat(file = stderr(), mySession, "Averaging secondary series", "\n")
     removeNotification("bad_window")
     if (nchar(input$step2) > 0 && isTruthy(inputs$step2)) {
       info$step2 <- inputs$step2
@@ -9438,7 +9439,6 @@ server <- function(input,output,session) {
       }
     }
     if (isTruthy(inputs$step2) && abs(inputs$step2 / min(diff(db2[[info$db2]][[paste0("x",input$tunits)]],1)) - 1) < 1/4) req(info$stop)
-    if (messages > 0) cat(file = stderr(), mySession, "Averaging secondary series", "\n")
     if (input$optionSecondary > 1) {
       if (input$fitType == 2) {
         info$run <- NULL
