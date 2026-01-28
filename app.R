@@ -4600,6 +4600,7 @@ server <- function(input,output,session) {
       withBusyIndicatorServer("runKF", {
         withProgress(message = 'Running Kalman Filter.',
                      detail = 'This may take a while ...', value = 0, {
+                       if (messages > 0) cat(file = stderr(), mySession, "KF fit", "\n")
                        x <- trans$x
                        y <- trans$y
                        # removing the waveform before the fit
@@ -4710,9 +4711,9 @@ server <- function(input,output,session) {
                          if (min_optirange > 0 && max_optirange > 0 && max_optirange > min_optirange) {
                            if (messages > 0) cat(file = stderr(), mySession, "Optimizing measurement noise", "\n")
                            info$KFiter <- 0
-                           mod <- optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10)))
+                           mod <- try(optim(log(sigmaR^2), llikss, lower = log(as.numeric(min_optirange)^2), upper = log(as.numeric(max_optirange)^2), method = "Brent", hessian = T, data = y, control = list(reltol = exp(as.numeric(min_optirange)/10))), silent = F)
                            removeNotification("KF_iter")
-                           if (mod$convergence == 0) {
+                           if (!inherits(mod,"try-error") && !is.null(mod) && mod$convergence == 0) {
                              sigmaR <- sqrt(exp(mod$par))
                              # seParms <- sqrt(diag(solve(mod$hessian)))
                              max_decimals <- signifdecimal(sigmaR, F) + 2
@@ -4724,6 +4725,8 @@ server <- function(input,output,session) {
                              #   updateTextInput(session, "max_optirange", value = sprintf("%.*f", max_decimals, rangoR[2]))
                              # }
                              updateCheckboxInput(inputId = "errorm", value = F)
+                           } else {
+                             showNotification(HTML("The optimization of the measurement noise did not converge.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
                            }
                          } else {
                            showNotification(HTML("The input measurement error bounds are not valid.<br>Skipping optimization."), action = NULL, duration = 10, closeButton = T, id = "bad_measurement_error", type = "error", session = getDefaultReactiveDomain())
