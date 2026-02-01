@@ -1,6 +1,17 @@
 # **SARI changelog**
 
 
+# febrero 2026 [2026.02]
+
+### Fixed
+- adding an error trap for the noise optimization in the KF fit
+- adding a check when a dummy json file is downloaded from EPOS
+
+### Changed
+- improving the detection of data gaps in the series
+- disabling the option to change the format of the secondary series when the series is already plotted
+
+
 # enero 2026 [2026.01]
 
 ### Fixed
