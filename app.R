@@ -2539,7 +2539,8 @@ server <- function(input,output,session) {
                          clickX = NULL, clickY = NULL, closestX = NULL, closestY = NULL,
                          LStol = 1e-5, parameters = NULL,
                          redo_step2 = 0,
-                         dorisol = NULL, eurefsol = NULL)
+                         dorisol = NULL, eurefsol = NULL,
+                         gaps = NULL)
 
   # 4. database:
   #   1 = original
@@ -17613,7 +17614,10 @@ server <- function(input,output,session) {
       if (length(times) > 1 && all(!is.na(times)) && all(times > .Machine$double.eps) && all(!is.infinite(times)) && all(times == floor(times))) {
         trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
       } else if ((any(times == 0) && any(times > 0)) || any(times != floor(times))) {
-        shinyjs::delay(300, showNotification(HTML(paste("The sampling of the series is not regular.<br>Unable to assess data gaps in the series.")), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
+        if (!isTruthy(info$gaps)) {
+          info$gaps <- T
+          shinyjs::delay(300, showNotification(HTML(paste("The sampling of the series is not regular.<br>Unable to assess data gaps in the series.")), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
+        }
         trans$gaps <- rep(T, length(x))
       }  else {
         shinyjs::delay(300, showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
