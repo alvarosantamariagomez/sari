@@ -11143,45 +11143,60 @@ server <- function(input,output,session) {
     req(db1[[info$db1]], input$cut)
     removeNotification("bad_cut")
     if (isTruthy(inputs$cutStart) || isTruthy(inputs$cutEnd)) {
-      if (messages > 0) cat(file = stderr(), mySession, "Cutting series:", inputs$cutStart, "-", inputs$cutEnd, "\n")
+      if (isTruthy(inputs$cutStart) && isTruthy(inputs$cutEnd)) {
+        if (messages > 0) cat(file = stderr(), mySession, "Cutting series:", inputs$cutStart, "-", inputs$cutEnd, "\n")
+      } else if (isTruthy(inputs$cutStart)) {
+        if (messages > 0) cat(file = stderr(), mySession, "Cutting series: before", inputs$cutStart, "\n")
+      } else if (isTruthy(inputs$cutEnd)) {
+        if (messages > 0) cat(file = stderr(), mySession, "Cutting series: after", inputs$cutEnd, "\n")
+      }
       if (input$tab < 4) {
-        x <- trans$x
         x0 <- trans$x0
       } else {
         statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
-        x <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(statusAll)]
         x0 <- db1[[info$db1]][[paste0("x", input$tunits)]][!is.na(db1[[info$db1]]$y1)]
       }
+      # setting the truncate limits
       start <- ifelse(isTruthy(inputs$cutStart), inputs$cutStart, x0[1])
       end <- ifelse(isTruthy(inputs$cutEnd), inputs$cutEnd, x0[length(x0)])
       start <- ifelse(start < x0[1], x0[1], start)
       end <- ifelse(end > x0[length(x0)], x0[length(x0)], end)
       if (end <= start) {
-        shinyjs::delay(500, showNotification(HTML("The End epoch or the end of the series is equal or smaller than the Start epoch or the start of the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
+        shinyjs::delay(500, showNotification(HTML("The input truncate values would remove all the points in the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
         req(info$stop)
       }
-      if (isTruthy(input$permanent)) {
-        if (isTruthy(inputs$cutStart) && isTruthy(inputs$cutEnd)) {
-          # NA
-        } else if (isTruthy(inputs$cutStart)) {
-          end <- x0[length(x0)]
-        } else if (isTruthy(inputs$cutEnd)) {
-          start <- x0[1]
-        }
-        if (isTruthy(input$remove3D)) {
-          db1[[info$db1]]$status1[x0 < start | x0 > end] <- NA
-          db1[[info$db1]]$status2[x0 < start | x0 > end] <- NA
-          db1[[info$db1]]$status3[x0 < start | x0 > end] <- NA
-        } else {
-          if (input$tab == 1) {
-            db1[[info$db1]]$status1[x0 < start | x0 > end] <- NA
-          } else if (input$tab == 2) {
-            db1[[info$db1]]$status2[x0 < start | x0 > end] <- NA
-          } else if (input$tab == 3) {
-            db1[[info$db1]]$status3[x0 < start | x0 > end] <- NA
+      # truncating the series
+      if (isTruthy(input$remove3D)) {
+        if (any(db1[[info$db1]]$status1[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status1)]) &&
+            any(db1[[info$db1]]$status2[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status2)]) &&
+            any(db1[[info$db1]]$status3[(x0 > start & x0 < end) & !is.na(db1[[info$db1]]$status3)])) {
+          if (isTruthy(input$permanent)) {
+            db1[[info$db1]]$status1[x0 <= start | x0 >= end] <- NA
+            db1[[info$db1]]$status2[x0 <= start | x0 >= end] <- NA
+            db1[[info$db1]]$status3[x0 <= start | x0 >= end] <- NA
+          } else {
+            db1[[info$db1]]$status1[(x0 <= start | x0 >= end) & !is.na(db1[[info$db1]]$status1)] <- F
+            db1[[info$db1]]$status2[(x0 <= start | x0 >= end) & !is.na(db1[[info$db1]]$status2)] <- F
+            db1[[info$db1]]$status3[(x0 <= start | x0 >= end) & !is.na(db1[[info$db1]]$status3)] <- F
           }
+        } else {
+          shinyjs::delay(500, showNotification(HTML("The input truncate values would remove all the points in the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
+          req(info$stop)
         }
-        # setting new axis limits
+      } else {
+        if (any(db1[[info$db1]][[paste0("status",input$tab)]][(x0 > start & x0 < end) & !is.na(db1[[info$db1]][[paste0("status",input$tab)]])])) {
+          if (isTruthy(input$permanent)) {
+            db1[[info$db1]][[paste0("status",input$tab)]][x0 <= start | x0 >= end] <- NA
+          } else {
+            db1[[info$db1]][[paste0("status",input$tab)]][(x0 <= start | x0 >= end) & !is.na(db1[[info$db1]][[paste0("status",input$tab)]])] <- F
+          }
+        } else {
+          shinyjs::delay(500, showNotification(HTML("The input truncate values would remove all the points in the series.<br>Check the truncation values."), action = NULL, duration = 10, closeButton = T, id = "bad_cut", type = "error", session = getDefaultReactiveDomain()))
+          req(info$stop)
+        }
+      }
+      # setting new axis limits
+      if (isTruthy(input$permanent)) {
         if (input$tab < 4) {
           valid <- !is.na(db1[[info$db1]][[paste0("status", input$tab)]])
         } else {
@@ -11199,20 +11214,6 @@ server <- function(input,output,session) {
           ranges$x1 <- c(info$minx, info$maxx)
         }
         updateCheckboxInput(session, inputId = "permanent", value = F)
-      } else {
-        if (isTruthy(input$remove3D)) {
-          db1[[info$db1]]$status1[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status1)] <- F
-          db1[[info$db1]]$status2[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status2)] <- F
-          db1[[info$db1]]$status3[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status3)] <- F
-        } else {
-          if (input$tab == 1) {
-            db1[[info$db1]]$status1[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status1)] <- F
-          } else if (input$tab == 2) {
-            db1[[info$db1]]$status2[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status2)] <- F
-          } else if (input$tab == 3) {
-            db1[[info$db1]]$status3[(x0 < start | x0 > end) & !is.na(db1[[info$db1]]$status3)] <- F
-          }
-        }
       }
       updateTextInput(session, inputId = "cutStart", value = "")
       updateTextInput(session, inputId = "cutEnd", value = "")
