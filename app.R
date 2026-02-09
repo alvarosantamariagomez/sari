@@ -14691,7 +14691,7 @@ server <- function(input,output,session) {
       } else {
         col <- 1
       }
-      table <- try(read.table(z$datapath, comment.char = "#", fill = T), silent = F)
+      table <- try(read.table(z$datapath, comment.char = "#", fill = T), silent = T)
       if (isTruthy(table) && !inherits(table,"try-error")) {
         if (col == 2) {
           if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$V2, ignore.case = F, perl = T))) { #NGL steps file
@@ -14733,6 +14733,8 @@ server <- function(input,output,session) {
         }
         ante <- sort(na.omit(ante), decreasing = F)
         rece <- sort(na.omit(rece), decreasing = F)
+      } else {
+        showNotification("The format of the input custom file is not valid.", action = NULL, duration = 10, closeButton = T, id = "bad_custom", type = "error", session = getDefaultReactiveDomain())
       }
     }
     return(list(ante,rece))
