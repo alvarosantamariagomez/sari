@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version febrero 2026'
+title: 'SARI documentation - version marzo 2026'
 author: 'Alvaro Santamaría'
 ---
 
@@ -67,7 +67,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *febrero 2026*  --  "Oh... between a human being and a person? My money's on the computer."
+Current SARI version: *marzo 2026*  --  "The difference between us and a computer is that the computer is blindingly stupid, but it is capable of being stupid many, many million times a second."
 
 -----------------
 

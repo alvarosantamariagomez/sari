@@ -1,6 +1,16 @@
 # **SARI changelog**
 
 
+# marzo 2026 [2026.03]
+
+### Fixed
+- improving the checks of the input epochs of the truncate option
+
+### Changed
+- adding a warning on the screen when the format of the uploaded custom file is not valid
+- showing the message on the irregular sampling of the series only once
+
+
 # febrero 2026 [2026.02]
 
 ### Fixed
