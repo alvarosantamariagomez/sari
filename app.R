@@ -10911,6 +10911,9 @@ server <- function(input,output,session) {
         excluding_plotres$selected_ <- sapply(1:length(excluding_plotres$x), function(x) if (isTRUE(excluding_plotres$selected_[x])) T else F)
       }
       if ((isTruthy(excluding_plot$selected_) && sum(excluding_plot$selected_) > 0) || (isTruthy(excluding_plotres$selected_) && sum(excluding_plotres$selected_) > 0)) {
+        if (!isTruthy(info$points)) {
+          seriesInfo(x)
+        }
         if ((sum(excluding_plot$selected_) == info$points) || (sum(excluding_plotres$selected_) == info$points)) {
           showNotification(HTML("All the points were selected to be removed from the series.<br>Check the selected area."), action = NULL, duration = 10, closeButton = T, id = "bad_toggle", type = "warning", session = getDefaultReactiveDomain())
         } else {
@@ -11244,6 +11247,15 @@ server <- function(input,output,session) {
         req(info$stop)
       }
       all <- 0
+      if (input$tab < 4) {
+        valid <- !is.na(db1[[info$db1]][[paste0("status", input$tab)]])
+      } else {
+        valid <- !is.na(colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0)
+      }
+      if (!isTruthy(info$points)) {
+        x <- db1[[info$db1]][[paste0("x",input$tunits)]][valid]
+        sessionInfo(x)
+      }
       if (isTruthy(input$permanent)) {
         if (input$tab > 3) {
           for (comp in seq(3)) {
