@@ -15260,6 +15260,9 @@ server <- function(input,output,session) {
   trim    <- function(x) { gsub("^\\s+|\\s+$", "", x) }
   #
   collect <- function(file_out) {
+    if (!isTruthy(info$decimalsx) || !isTruthy(info$decimalsy)) {
+      seriesInfo(db1[[info$db1]][[paste0("x",input$tunits)]])
+    }
     if (messages > 0) cat(file = stderr(), mySession, "Downloading results", "\n")
     id <- showNotification("Preparing file to download ...", action = NULL, duration = NULL, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
     now <- paste0(" run on ",Sys.time()," ",Sys.timezone())
