@@ -4328,6 +4328,7 @@ server <- function(input,output,session) {
     output$est.unc <- renderUI({ NULL })
     trans$noise <- NULL
     trans$mle <- F
+    updateCheckboxInput(session, inputId = "mle", value = F)
     if (length(input$model) > 0) {
       if (input$fitType == 1) {
         if (messages > 0) cat(file = stderr(), mySession, "LS fit", "\n")
@@ -4595,6 +4596,7 @@ server <- function(input,output,session) {
     output$est.unc <- renderUI({ NULL })
     trans$noise <- NULL
     trans$mle <- F
+    updateCheckboxInput(session, inputId = "mle", value = F)
     if (input$fitType == 2) {
       trans$verif <- NULL
       # run KF button click
@@ -6627,7 +6629,7 @@ server <- function(input,output,session) {
                             trans$results$coefficients[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
                             trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
                             trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
-                            line1 <- sprintf("<br/>Colored/white rate error ratio %d = %.2f", breaks,unc_pl/unc_white)
+                            line1 <- sprintf("<br/>Colored / white rate error ratio %d = %.2f", breaks,unc_pl/unc_white)
                           } else {
                             line1 <- NULL
                           }
@@ -10309,6 +10311,7 @@ server <- function(input,output,session) {
     output$est.unc <- renderUI({ NULL })
     trans$noise <- NULL
     trans$mle <- F
+    updateCheckboxInput(session, inputId = "mle", value = F)
   }, priority = 5)
 
   # Observe hide tabs ####
