@@ -5425,9 +5425,9 @@ server <- function(input,output,session) {
         f <- f[1:length(f) - 1] # drop the shortest period just in case the series are not evenly sampled
       }
       trans$fs <- f
-      trans$amp <- matrix(NA, nrow = length(f), ncol = 5)
-      trans$psd <- matrix(NA, nrow = length(f), ncol = 5)
-      trans$col <- c(1,2,3,4,5)
+      trans$amp <- matrix(NA, nrow = length(f), ncol = 6)
+      trans$psd <- matrix(NA, nrow = length(f), ncol = 6)
+      trans$col <- c(1,2,8,4,5,3)
       if (any(c(input$spectrumOriginal, input$spectrumModel, input$spectrumResiduals, input$spectrumFilter, input$spectrumFilterRes))) {
         periodogram("all")
       }
@@ -5447,8 +5447,8 @@ server <- function(input,output,session) {
     req(db1[[info$db1]])
     info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[1])) {
-      trans$psd[,1] <- NA
-      trans$amp[,1] <- NA
+      trans$psd[,1] <- trans$psd[,6] <- NA
+      trans$amp[,1] <- trans$amp[,6] <- NA
       trans$spectra_old[1] <- F
       trans$title[2] <- NA
     } else {
@@ -5572,6 +5572,7 @@ server <- function(input,output,session) {
     removeNotification("no_noise_psd")
     if (length(trans$fs) > 0) {
       if (messages > 0) cat(file = stderr(), mySession, "Plotting periodogram", "\n")
+      color <- trans$col
       marks <- c(1 %o% 10^(-20:20))
       if (input$tunits == 1) {
         period <- "days"
@@ -5599,10 +5600,19 @@ server <- function(input,output,session) {
       title <- substring(paste(trans$title[!is.na(trans$title)],collapse = ""), 1, nchar(paste(trans$title[!is.na(trans$title)],collapse = "")) - 2)
       par(mar = c(5.1,4.1,6.1,2.1))
       if (is.null(ranges$x3)) {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[trans$col], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(range(1/trans$fs)), ylim = ranges$y3)
+        xlim <- rev(range(1/trans$fs))
       } else {
-        matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[trans$col], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = rev(ranges$x3), ylim = ranges$y3)
+        xlim <- rev(ranges$x3)
       }
+      if (length(spectrum_y[,6]) > 0) {
+        temp <- spectrum_y[,6]
+        spectrum_y[,6] <- spectrum_y[,1]
+        spectrum_y[,1] <- temp
+        temp <- color[6]
+        color[6] <- color[1]
+        color[1] <- temp
+      }
+      matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[color], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = xlim, ylim = ranges$y3)
       title(title, line = 5)
       axis(2, at = marks, labels = marks)
       if (input$tunits == 1) {
@@ -5692,8 +5702,8 @@ server <- function(input,output,session) {
             slope$coef[2] <- -1*slope$coef[2]
             trans$slope <- slope$coef[2]
             regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
-            lines(1/trans$fs, regression, col = SARIcolors[c], lwd = 3)
-            text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[c])
+            lines(1/trans$fs, regression, col = SARIcolors[color[c]], lwd = 3)
+            text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[color[c]])
           }
           lombx <- c(inputs$long_period,inputs$short_period)
           longest <- ifelse(length(p) > 200, as.integer(length(p)/100), 10)
@@ -5705,7 +5715,7 @@ server <- function(input,output,session) {
       }
       grid(nx = NULL, ny = NULL, col = SARIcolors[8], lty = "dashed", lwd = 1, equilogs = T)
       if (isTruthy(info$closestY)) {
-        points(info$closestX, info$closestY, type = "p", col = SARIcolors[c], bg = "white", pch = 21, lwd = 3)
+        points(info$closestX, info$closestY, type = "p", col = SARIcolors[color[c]], bg = "white", pch = 21, lwd = 3)
       }
       #
       if (isTruthy(debug)) {
@@ -15093,6 +15103,14 @@ server <- function(input,output,session) {
                      trans$amp[,1] <- lombscargle$A
                      trans$psd[,1] <- lombscargle$PSD*var(trans$y)
                      trans$var <- var(trans$y)
+                     if ((input$optionSecondary == 1) && (length(trans$y2) > 0)) {
+                       lombscargle2 <- spec.lomb(y = trans$y2, x = trans$x2 - trans$x2[1], f = trans$fs, w = trans$sy2, mode = "normal")
+                       trans$amp[,6] <- lombscargle2$A
+                       trans$psd[,6] <- lombscargle2$PSD*var(trans$y2)
+                     } else {
+                       trans$amp[,6] <- NA
+                       trans$psd[,6] <- NA
+                     }
                    }
                    if (input$spectrumModel && length(trans$mod) > 0 && length(trans$res) > 0 && any("all" %in% serie || "model" %in% serie)) {
                      trans$title[3] <- "model (red), "
