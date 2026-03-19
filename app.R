@@ -12320,7 +12320,6 @@ server <- function(input,output,session) {
     removeNotification("unknown_components")
     removeNotification("time_shift")
     removeNotification("ambiguous_shift")
-    removeNotification("parsing_url1")
     lat <- lon <- lat2 <- lon2 <- NULL
     removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
     ## primary series ####
@@ -12565,10 +12564,9 @@ server <- function(input,output,session) {
       maxRows <- 1e0
       minRows <- 1e10
       for (i in seq_len(num)) {
-        removeNotification(paste0("parsing_url2_",i))
-        removeNotification("parsing_url2")
         # checking downloaded file
         if (!isTruthy(file.exists(files$datapath[i]))) {
+          removeNotification(paste0("parsing_url2_",i))
           showNotification(paste("Problem downloading the", files$name[i], "series from the remote server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
         } else {
           if (!isTruthy(info$format2)) {
@@ -12692,6 +12690,7 @@ server <- function(input,output,session) {
               table_stack <- table2
             }
           } else {
+            removeNotification(paste0("parsing_url2_",i))
             showNotification(HTML(paste0("Wrong series format in ",files$name[i],".<br>Check the input file or the requested format.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "error", session = getDefaultReactiveDomain())
           }
         }
@@ -12777,6 +12776,14 @@ server <- function(input,output,session) {
       showNotification(HTML("Problem extracting the series ID from the file name.<br>No series ID will be used"), action = NULL, duration = 10, closeButton = T, id = "ids_info", type = "warning", session = getDefaultReactiveDomain())
     }
     shinyjs::delay(100, updateTextInput(session, inputId = "ids", value = ids_info))
+    if (series == 1) {
+      removeNotification("parsing_url1")
+    } else if (series == 2) {
+      for (i in seq_len(num)) {
+        removeNotification(paste0("parsing_url2_",i))
+        removeNotification("parsing_url2")
+      }
+    }
   }
   #
   extract_table <- function(file,sep,format,epoch,variable,errorBar,swap,server,series) {
