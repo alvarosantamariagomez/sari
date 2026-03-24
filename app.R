@@ -2034,7 +2034,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   Two linear trend estimators using the <span class='UIoption'>MIDAS</span> and the <span class='UIoption'>minimum entropy</span> methods.<br><br>
                                                                                                   The <span class='UIoption'>histogram</span> of the original, model, residual or smoothed series, and a stationarity assessment.<br><br>
                                                                                                   The non-parametric <span class='UIoption'>periodic waveform</span> of any non-sinusoidal periodic variation.<br><br>
-                                                                                                  The amplitude or power <span class='UIoption'>periodogram</span> of the original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><br>
+                                                                                                  The amplitude or power <span class='UIoption'>periodogram</span> of the both the primary (original data, the fitted model, the model residuals, the smoothed values, or the smoother residuals) and secondary series.<br><br>
                                                                                                   The pseudo discrete <span class='UIoption'>wavelet</span> transform of the original series, the fitted model, the model residuals, the smoothed values, or the smoother residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
                                                                                                   The Vondr&#225;k <span class='UIoption'>band-pass smoother</span> of the original or residual series.<br><br>
                                                                                                   The MLE <span class='UIoption'>noise analysis</span> to estimate the temporal correlation of the model/filter residuals.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
@@ -5611,12 +5611,16 @@ server <- function(input,output,session) {
         xlim <- rev(ranges$x3)
       }
       if (length(spectrum_y[,6]) > 0) {
-        temp <- spectrum_y[,6]
-        spectrum_y[,6] <- spectrum_y[,1]
-        spectrum_y[,1] <- temp
-        temp <- color[6]
-        color[6] <- color[1]
-        color[1] <- temp
+        if ((input$optionSecondary == 1) && (length(trans$y2) > 0)) {
+          temp <- spectrum_y[,6]
+          spectrum_y[,6] <- spectrum_y[,1]
+          spectrum_y[,1] <- temp
+          temp <- color[6]
+          color[6] <- color[1]
+          color[1] <- temp
+        } else {
+          spectrum_y[,6] <- NA
+        }
       }
       matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[color], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = xlim, ylim = ranges$y3)
       title(title, line = 5)
@@ -15137,7 +15141,7 @@ server <- function(input,output,session) {
                      trans$var <- var(ideal)
                    }
                    if (input$spectrumResiduals && length(trans$res) > 0 && any("all" %in% serie || "residuals" %in% serie)) {
-                     trans$title[4] <- "model residuals (green), "
+                     trans$title[4] <- "model residuals (gray), "
                      if (length(trans$reserror) > 0) {
                        sy <- trans$reserror
                      } else {
