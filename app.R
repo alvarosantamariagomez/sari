@@ -3778,7 +3778,11 @@ server <- function(input,output,session) {
       } else if (input$symbol == 2) {
         symbol <- 'o'
       }
-      rangesy1 <- ranges$y1
+      if (isTruthy(ranges$y1)) {
+        rangesy1 <- ranges$y1  
+      } else {
+        rangesy1 <- range(trans$y[trans$x > ranges$x1[1] & trans$x < ranges$x1[2]])
+      }
       # check secondary series and plot it first
       if (length(isolate(file$secondary)) > 0 && input$optionSecondary == 1 && any(!is.na(trans$y2))) {
         # setting the right Y axis
