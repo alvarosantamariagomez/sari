@@ -3405,7 +3405,9 @@ server <- function(input,output,session) {
       }
     }
     # getting data sampling
-    seriesInfo(trans$x)
+    # if (!isTruthy(info$points) || info$points != length(trans$x)) {
+      seriesInfo(trans$x)
+    # }
     trans$ordinate <- median(trans$y)
     info$noise <- (sd(head(trans$y, 30)) + sd(tail(trans$y, 30)))/2
     # dealing with the kalman filter series
