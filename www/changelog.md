@@ -1,6 +1,22 @@
 # **SARI changelog**
 
 
+# abril 2026 [2026.04]
+
+### Fixed
+- checking the info.points value with remote series when downloading the results
+- fixing the range of the y-axis of the primary series when setting the same scale to the secondary series
+
+### Changed
+- removing the MLE fit results when correcting the primary series with the secondary series
+- changing the colors of the periodogram plot to include the secondary series
+- updating the URLs of the NGL server
+
+### Added
+- adding the periodogram of the secondary series to the periodogram plot of the primary original series
+- adding the power spectrum of the secondary series to the downloaded spectrum file
+
+
 # marzo 2026 [2026.03]
 
 ### Fixed
