@@ -15875,6 +15875,14 @@ server <- function(input,output,session) {
       if (input$spectrumOriginal) {
         names(OutPut$df)[column] <- "original"
         column <- column + 1
+        if (ncol(trans$spectra) == sum(input$spectrumOriginal, input$spectrumModel, input$spectrumResiduals, input$spectrumFilter, input$spectrumFilterRes) + 2) {
+          if ((input$optionSecondary == 1) && (length(trans$y2) > 0)) {
+            names(OutPut$df)[column] <- "secondary"
+            column <- column + 1
+          } else {
+            OutPut$df <- OutPut$df[,-3]
+          }
+        }
       }
       if (input$spectrumModel && isolate(length(trans$mod) > 0) && isolate(length(trans$res) > 0)) {
         names(OutPut$df)[column] <- "model"
