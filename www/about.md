@@ -178,13 +178,6 @@ At this moment, the following servers and products are available:
    <td style="text-align:left;">IGS20</td>
   </tr>
   <tr>
-   <td style="text-align:left;"><a href="https://epncb.eu/_organisation/about.php" target="_blank">EUREF</a></td>
-   <td style="text-align:center;"> </td>
-   <td style="text-align:left;">9 characters (TLSE00FRA)</td>
-   <td style="text-align:left;"> </td>
-   <td style="text-align:left;">IGB14</td>
-  </tr>
-  <tr>
    <td style="text-align:left;"><a href="http://geodesy.unr.edu/" target="_blank">NGL</a></td>
    <td style="text-align:center;"><sup>2</sup></td>
    <td style="text-align:left;">4 characters (TLSE)</td>

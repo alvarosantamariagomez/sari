@@ -638,7 +638,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                       ),
                                                                       fluidRow(
                                                                         column(4,
-                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                               # selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                               selectInput(inputId = "server1", label = "Input series server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
                                                                                selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
@@ -1127,7 +1128,8 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                             fluidRow(
                                                                               column(4,
                                                                                      div(style = "margin-bottom: 2em",
-                                                                                         selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                         # selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EUREF", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
+                                                                                         selectInput(inputId = "server2", label = "Secondary server", choices = list("", "RENAG", "FORMATERRE", "SONEL", "IGS", "EPOS", "NGL", "JPL", "EARTHSCOPE", "SIRGAS", "DORIS", "EOSTLS", "PSMSL"), selected = "", multiple = F, selectize = T) |> autoCompleteOff()
                                                                                      )
                                                                               ),
                                                                               column(4,
@@ -7998,8 +8000,8 @@ server <- function(input,output,session) {
       updateSelectizeInput(session, inputId = "product1", choices = list("SPOTGINS", "UGA", "IGS20", "ENS"), selected = "")
     } else if (input$server1 == "IGS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("IGS20"), selected = "IGS20")
-    } else if (input$server1 == "EUREF") {
-      updateSelectizeInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
+    # } else if (input$server1 == "EUREF") {
+    #   updateSelectizeInput(session, inputId = "product1", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server1 == "EPOS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server1 == "NGL") {
@@ -8033,8 +8035,8 @@ server <- function(input,output,session) {
       updateSelectizeInput(session, inputId = "product2", choices = list("SPOTGINS", "UGA", "IGS20", "ENS"), selected = "")
     } else if (input$server2 == "IGS") {
       updateSelectizeInput(session, inputId = "product2", choices = list("IGS20"), selected = "IGS20")
-    } else if (input$server2 == "EUREF") {
-      updateSelectizeInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
+    # } else if (input$server2 == "EUREF") {
+    #   updateSelectizeInput(session, inputId = "product2", choices = list("IGB14"), selected = "IGB14")
     } else if (input$server2 == "EPOS") {
       updateSelectizeInput(session, inputId = "product2", choices = list("INGV", "ROB-EUREF", "SGO-EPND", "UGA-CNRS"), selected = "")
     } else if (input$server2 == "NGL") {
@@ -16781,62 +16783,63 @@ server <- function(input,output,session) {
         return(NULL)
       }
     ## EUREF ####
-    } else if (server == "EUREF") {
-      format <- 2
-      if (isTruthy(info$eurefsol)) {
-        solution <- info$eurefsol
-      } else {
-        dir_contents <- try(getURL("https://epncb.eu/ftp/product/cumulative/", crlf = T), silent = T)
-        if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-          solution <- info$eurefsol <- sub("/", "", tail(grep("^C[0-9]{4}", readHTMLTable(dir_contents, trim = T)[[1]]$Name, perl = T, value = T), n = 1))
-        } else {
-          solution <- info$eurefsol <- "C2235"
-          showNotification(paste0("Unable to access the list of available EUREF solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-        }
-      }
-      if (product == "IGB14") {
-        url <- paste0("https://epncb.eu/ftp/product/cumulative/",solution,"/pbo/")
-        pattern <- ".pos"
-        if (isTruthy(station)) {
-          name <- paste0(toupper(station),pattern)
-          filepath <- paste0(url,name)
-          url_log <- "https://gnss-metadata.eu/data/station/log/"
-          dir_contents <- try(readLines(url_log), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            found <- grep(paste0(tolower(station),""), readHTMLTable(dir_contents, header = F)$list$V1, perl = F, value = T, fixed = T)
-            if (isTruthy(found)) {
-              logfile <- paste0(url_log,found)
-            }
-          }
-        } else {
-          dir_contents <- try(readHTMLTable(getURL(url, crlf = TRUE), skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- sub(pattern, "", grep(pattern, dir_contents, ignore.case = F, value = T))
-            if (series == 1) {
-              output$showStation1 <- renderUI({
-                showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
-            } else if (series == 2) {
-              output$showStation2 <- renderUI({
-                showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
-              if (input$sunits == 2) {
-                updateTextInput(session, inputId = "scaleFactor", value = "1000")
-              } else {
-                updateTextInput(session, inputId = "scaleFactor", value = "1")
-              }
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
-          return(NULL)
-        }
-      } else {
-        showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-        return(NULL)
-      }
+    # } else if (server == "EUREF") {
+    #   format <- 2
+    #   if (isTruthy(info$eurefsol)) {
+    #     solution <- info$eurefsol
+    #   } else {
+    #     dir_contents <- try(getURL("https://epncb.oma.be/ftp/product/cumulative/", crlf = T, header = T), silent = T)
+    #     if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error") && grepl("200 OK", dir_contents, ignore.case = F, perl = F, fixed = T)) {
+    #       dir_contents <- try(getURL("https://epncb.oma.be/ftp/product/cumulative/", crlf = T), silent = T)
+    #       solution <- info$eurefsol <- sub("/", "", tail(grep("^C[0-9]{4}", readHTMLTable(dir_contents, trim = T)[[1]]$Name, perl = T, value = T), n = 1))
+    #     } else {
+    #       solution <- info$eurefsol <- "C2235"
+    #       showNotification(paste0("Unable to access the list of available EUREF solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+    #     }
+    #   }
+    #   if (product == "IGB14") {
+    #     url <- paste0("https://epncb.oma.be/ftp/product/cumulative/",solution,"/pbo/")
+    #     pattern <- ".pos"
+    #     if (isTruthy(station)) {
+    #       name <- paste0(toupper(station),pattern)
+    #       filepath <- paste0(url,name)
+    #       url_log <- "https://gnss-metadata.eu/data/station/log/"
+    #       dir_contents <- try(readLines(url_log), silent = T)
+    #       if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+    #         found <- grep(paste0(tolower(station),""), readHTMLTable(dir_contents, header = F)$list$V1, perl = F, value = T, fixed = T)
+    #         if (isTruthy(found)) {
+    #           logfile <- paste0(url_log,found)
+    #         }
+    #       }
+    #     } else {
+    #       dir_contents <- try(readHTMLTable(getURL(url, crlf = TRUE), skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+    #       if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+    #         stations_available <- sub(pattern, "", grep(pattern, dir_contents, ignore.case = F, value = T))
+    #         if (series == 1) {
+    #           output$showStation1 <- renderUI({
+    #             showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
+    #             suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+    #           })
+    #         } else if (series == 2) {
+    #           output$showStation2 <- renderUI({
+    #             showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
+    #             suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
+    #           })
+    #           if (input$sunits == 2) {
+    #             updateTextInput(session, inputId = "scaleFactor", value = "1000")
+    #           } else {
+    #             updateTextInput(session, inputId = "scaleFactor", value = "1")
+    #           }
+    #         }
+    #       } else {
+    #         showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+    #       }
+    #       return(NULL)
+    #     }
+    #   } else {
+    #     showNotification(paste0("Unknown product ",product,". No file was downloaded."), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
+    #     return(NULL)
+    #   }
     ## FORMATERRE ####
     } else if (server == "FORMATERRE") {
       if (product == "SPOTGINS" || product == "SPOTGINS_POS") {
