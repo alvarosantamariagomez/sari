@@ -17925,15 +17925,17 @@ server <- function(input,output,session) {
         }
       }
       # check for epochs outside data limits
-      toremove <- 999999
-      for (i in seq_len(length(list))) {
-        if (list[i] > x[length(x)] || list[i] < x[1]) {
-          uselessList_id <- which.min(abs(suppressWarnings(as.numeric(list_all) - list[i])))
-          toremove <- c(toremove, i)
-          showNotification(HTML(paste0("There are no observations before and after ",type," #", uselessList_id,".<br>Skipped.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+      if (length(list) > 0 && !any(is.na(list))) {
+        toremove <- 999999
+        for (i in seq_len(length(list))) {
+          if (isTruthy(list[i]) && (list[i] > x[length(x)] || list[i] < x[1])) {
+            uselessList_id <- which.min(abs(suppressWarnings(as.numeric(list_all) - list[i])))
+            toremove <- c(toremove, i)
+            showNotification(HTML(paste0("There are no observations before and after ",type," #", uselessList_id,".<br>Skipped.")), action = NULL, duration = 10, closeButton = T, id = NULL, type = "warning", session = getDefaultReactiveDomain())
+          }
         }
+        list <- list[-toremove]
       }
-      list <- list[-toremove]
     }
     list
   }
