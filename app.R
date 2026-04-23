@@ -9181,7 +9181,7 @@ server <- function(input,output,session) {
       # new file from swap option
       req(info$stop)
     }
-    if (isTruthy(file$primary)) {
+    if (isTruthy(file$primary) && isTruthy(file$primary$datapath) && isTruthy(file$primary$name)) {
       header <- readLines(file$primary$datapath, n = 1, warn = F)
       if (grepl(".tenv3$", file$primary$name, perl = T) && grepl("site YYMMMDD ", header, fixed = T)) {
         updateRadioButtons(inputId = "sunits", selected = 1)
