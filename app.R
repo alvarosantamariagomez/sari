@@ -8906,15 +8906,18 @@ server <- function(input,output,session) {
       }
     }
     # Setting plot limits
-    if (isTruthy(input$remove3D)) {
+    if (isTruthy(input$fullSeries)) {
+      # show all points from primary & secondary series
+      info$minx <- min(x1[!is.na(db1[[info$db1]]$status1)], x2, na.rm = T)
+      info$maxx <- max(x1[!is.na(db1[[info$db1]]$status1)], x2, na.rm = T)
+    } else {
       info$minx <- min(x1[!is.na(db1[[info$db1]]$status1)], na.rm = T)
-      info$maxx <- max(x1[!is.na(db1[[info$db1]]$status1)], na.rm = T)
-      ranges$x0 <- c(info$minx, info$maxx)
-      if (isTruthy(input$fullSeries)) {
-        # show all points from primary & secondary series
-        info$minx <- min(x1[!is.na(db1[[info$db1]]$status1)], x2, na.rm = T)
-        info$maxx <- max(x1[!is.na(db1[[info$db1]]$status1)], x2, na.rm = T)
-      }
+      info$maxx <- max(x1[!is.na(db1[[info$db1]]$status1)], na.rm = T)  
+    }
+    ranges$x0 <- c(info$minx, info$maxx)
+    if (all(isTruthy(ranges$x1))) {
+      ranges$x1 <- sapply(ranges$x1, fun)
+    } else {
       ranges$x1 <- c(info$minx, info$maxx)
     }
     if (input$fitType == 2 && length(trans$mod) > 0 && length(trans$res) > 0) {
