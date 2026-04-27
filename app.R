@@ -14824,9 +14824,9 @@ server <- function(input,output,session) {
     if (isTruthy(input$tunits)) {
       if (input$tunits == 1) {
         offset <- 0
-        if (all(x < 35000)) {
-          offset <- 33282
-        }
+        # if (all(x < 35000)) { # set offset for CNES Julian days
+        #   offset <- 33282
+        # }
         if (isTruthy(input$fullSeries) && length(db2[[info$db2]]$x1) > 0) {
           xtop <- c(x, db2[[info$db2]]$x1)
         } else {
@@ -17410,9 +17410,9 @@ server <- function(input,output,session) {
   #
   mjd2week <- function(x) {
     offset <- 0
-    if (all(x < 35000)) {
-      offset <- 33282
-    }
+    # if (all(x < 35000)) { # set offset for CNES Julian days
+    #   offset <- 33282
+    # }
     decimals <- decimalplaces(x, 0) + 3
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, (x + offset - 44244)/7)))
@@ -17426,9 +17426,9 @@ server <- function(input,output,session) {
   #
   mjd2year <- function(x) {
     offset <- 0
-    if (all(x < 35000)) {
-      offset <- 33282
-    }
+    # if (all(x < 35000)) { # set offset for CNES Julian days
+    #   offset <- 33282
+    # }
     decimals <- decimalplaces(diff(x), 0) + 4
     decimals <- ifelse(decimals > 0, decimals, 0)
     return(as.numeric(sprintf("%.*f", decimals, decimal_date(as.Date(x + offset, origin = as.Date("1858-11-17"))))))
