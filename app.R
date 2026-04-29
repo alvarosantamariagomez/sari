@@ -10994,6 +10994,15 @@ server <- function(input,output,session) {
                 if (isTruthy(input$permanent)) {
                   db1[[info$db1]]$status1[excluding_plot$selected_] <- NA
                   updateCheckboxInput(session, inputId = "permanent", value = F)
+                  if (info$format == 4) {
+                    # setting new axis limits
+                    info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                    info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                    ranges$x0 <- c(info$minx, info$maxx)
+                    if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+                      ranges$x1 <- c(info$minx, info$maxx)
+                    }
+                  }
                 } else {
                   db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plot$selected_)
                 }
@@ -11002,6 +11011,15 @@ server <- function(input,output,session) {
                 if (isTruthy(input$permanent)) {
                   db1[[info$db1]]$status1[excluding_plotres$selected_] <- NA
                   updateCheckboxInput(session, inputId = "permanent", value = F)
+                  if (info$format == 4) {
+                    # setting new axis limits
+                    info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                    info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                    ranges$x0 <- c(info$minx, info$maxx)
+                    if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+                      ranges$x1 <- c(info$minx, info$maxx)
+                    }
+                  }
                 } else {
                   db1[[info$db1]]$status1 <- xor(db1[[info$db1]]$status1, excluding_plotres$selected_)
                 }
@@ -11148,6 +11166,15 @@ server <- function(input,output,session) {
             if (isTruthy(input$permanent)) {
               db1[[info$db1]]$status1[excluding] <- NA
               updateCheckboxInput(session, inputId = "permanent", value = F)
+              if (info$format == 4) {
+                # setting new axis limits
+                info$minx <- min(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                info$maxx <- max(db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(db1[[info$db1]]$status1)])
+                ranges$x0 <- c(info$minx, info$maxx)
+                if (ranges$x1[1] < info$minx || ranges$x1[2] > info$maxx) {
+                  ranges$x1 <- c(info$minx, info$maxx)
+                }
+              }
             }
           } else if (input$tab == 2) {
             db1[[info$db1]]$status2 <- xor(db1[[info$db1]]$status2, excluding)
