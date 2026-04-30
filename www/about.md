@@ -5,7 +5,7 @@ header-includes:
    - \usepackage{color}
    - \usepackage{courier}
    - \linespread{1.25}
-title: 'SARI documentation - version abril 2026'
+title: 'SARI documentation - version mayo 2026'
 author: 'Alvaro Santamaría'
 ---
 
@@ -67,7 +67,7 @@ The history of changes and corrections is available in the [changelog file](http
 
 <br>
 
-Current SARI version: *abril 2026*  --  "Got to love computers. They do all the thinking for you so you don’t have to."
+Current SARI version: *mayo 2026*  --  "Do machines ever play?"
 
 -----------------
 

@@ -1,6 +1,20 @@
 # **SARI changelog**
 
 
+# mayo 2026 [2026.05]
+
+### Fixed
+- adding more checks when assessing the primary series file format
+- checking the validity of the list of offset epochs
+- improving the checking of the NGL series error bars
+
+### Changed
+- updating the time axis of the 1D series when deleting points at the begining or end of the series
+- changing the series time units without resetting the zoom in area
+- removing the time offset for the CNES Julian days
+- updating the connection to the IGS-RF FTP server
+
+
 # abril 2026 [2026.04]
 
 ### Fixed
