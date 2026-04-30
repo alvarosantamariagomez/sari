@@ -16684,7 +16684,7 @@ server <- function(input,output,session) {
     } else if (server == "IGS") {
       format <- 1
       if (product == "IGS20") {
-        url <- "ftp://igs-rf.ign.fr/pub/crd/"
+        url <- "ftp://anonymous:@igs-rf.ign.fr/pub/crd/"
         pattern <- "_igs.plh"
         if (isTruthy(station)) {
           name <- paste0(toupper(station),pattern)
@@ -16696,7 +16696,7 @@ server <- function(input,output,session) {
             shinyjs::delay(100, updateCheckboxInput(inputId = "traceSoln", value = T))
           }
         } else {
-          dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+          dir_contents <- try(getURL(url, ftp.use.epsv = F, ftplistonly = T, crlf = T), silent = T)
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
             if (series == 1) {
