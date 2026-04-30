@@ -13415,7 +13415,7 @@ server <- function(input,output,session) {
     }
     if (!is.null(extracted) && all(sapply(extracted, is.numeric))) {
       # checking the error bars
-      if (any(extracted[,grepl("sy", names(extracted))] <= 0)) {
+      if (all(isTruthy(head(extracted[,grepl("sy", names(extracted))]))) && any(extracted[,grepl("sy", names(extracted))] <= 0)) {
         extracted[,grepl("sy", names(extracted))] <- rep(1, length(extracted$y1))
         info$errorbars <- F
         showNotification(HTML("Negative or null error bars extracted from the input series.<br>The use of the error bars has been deactivated."), action = NULL, duration = 10, closeButton = T, id = "bad_sigmas", type = "error", session = getDefaultReactiveDomain())
