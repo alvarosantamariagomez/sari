@@ -42,7 +42,8 @@
  AB07  A    3 P 11:268:00000 20:204:22365 V - EQ M7.8 - 99 km SSE of Perryville, Alaska
  AB07  A    4 P 20:204:22365 21:210:22549 V - EQ M8.2 - 99 km SE of Perryville, Alaska
  AB07  A    5 P 21:210:22549 23:197:24501 V - EQ M7.2 - 106 km S of Sand Point, Alaska
- AB07  A    6 P 23:197:24501 00:000:00000 V - EQ M7.2 - 106 km S of Sand Point, Alaska
+ AB07  A    6 P 23:197:24501 25:197:74261 V - EQ M7.3 - 2025 Sand Point, Alaska Earthquake 
+ AB07  A    7 P 25:197:74261 00:000:00000 V -
 *
  AB09  A    1 P 00:000:00000 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
  AB09  A    2 P 21:210:22549 00:000:00000 P - 
@@ -97,7 +98,8 @@
  ABPO  A    2 P 08:339:00000 18:135:27000 P - antenna change
  ABPO  A    3 P 18:135:27000 24:074:00000 P - unknown
  ABPO  A    4 P 24:074:00000 25:015:00000 P - unknown
- ABPO  A    5 P 25:015:00000 00:000:00000 P -
+ ABPO  A    5 P 25:015:00000 26:069:36900 P - receiver change
+ ABPO  A    6 P 26:069:36900 00:000:00000 P -
  ABPO  A    1 P 00:000:00000 08:339:00000 V - unknown
  ABPO  A    2 P 08:339:00000 00:000:00000 V - 
 *
@@ -224,7 +226,8 @@
  ADIS  A    3 P 22:103:46800 24:362:00000 P - dike intrusion, Fentale volcano
  ADIS  A    4 P 24:362:00000 25:007:00000 P - dike intrusion, Fentale volcano
  ADIS  A    5 P 25:007:00000 25:081:00000 P - end of dike intrusion (?)
- ADIS  A    6 P 25:081:00000 00:000:00000 P -
+ ADIS  A    6 P 25:081:00000 26:090:00000 P - unknown 
+ ADIS  A    7 P 26:090:00000 00:000:00000 P - 
  ADIS  A    1 P 00:000:00000 22:103:46800 V - antenna change
  ADIS  A    2 P 22:103:46800 24:362:00000 V - dike intrusion, Fentale volcano
  ADIS  A    3 P 24:362:00000 25:007:00000 V - dike intrusion, Fentale volcano
@@ -1466,7 +1469,8 @@
  CLRK  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CMBL  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
- CMBL  A    2 P 16:318:39776 00:000:00000 P - 
+ CMBL  A    2 P 16:318:39776 26:110:00000 P - unknown
+ CMBL  A    3 P 26:110:00000 00:000:00000 P -
  CMBL  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  CMBL  A    2 P 16:318:39776 00:000:00000 V - 
 *
@@ -1502,7 +1506,9 @@
  CN11  A    1 P 00:000:00000 12:261:32400 P - antenna change
  CN11  A    2 P 12:261:32400 18:010:10293 P - EQ M7.5 - 203 km NNE of Barra Patuca, Honduras
  CN11  A    3 P 18:010:10293 20:028:69025 P - EQ M7.7 - 123 km NNW of Lucea, Jamaica
- CN11  A    4 P 20:028:69025 00:000:00000 P -
+ CN11  A    4 P 20:028:69025 25:301:00000 P - unknown
+ CN11  A    5 P 25:301:00000 25:353:00000 P - unknown
+ CN11  A    6 P 25:353:00000 00:000:00000 P -
  CN11  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CN12  A    1 P 00:000:00000 12:262:36000 P - antenna change
@@ -1717,7 +1723,9 @@
  CRFP  A    1 P 00:000:00000 99:289:35204 V - EQ M7.1 - Hector Mine, CA Earthquake
  CRFP  A    2 P 99:289:35204 02:105:00000 V - non-linearity
  CRFP  A    3 P 02:105:00000 05:277:00000 V - non-linearity
- CRFP  A    4 P 05:277:00000 00:000:00000 V - 
+ CRFP  A    4 P 05:277:00000 19:187:11993 V - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
+ CRFP  A    5 P 19:187:11993 23:001:00000 V - unknown
+ CRFP  A    6 P 23:001:00000 00:000:00000 V - 
 *
  CRHS  A    1 P 00:000:00000 06:272:00000 P - unknown
  CRHS  A    2 P 06:272:00000 10:238:57600 P - antenna change
@@ -1918,7 +1926,8 @@
  DHLG  A    4 P 04:303:00000 10:094:81643 P - EQ M7.2 - 12km SW of Delta, B.C., MX
  DHLG  A    5 P 10:094:81643 10:283:80820 P - antenna change
  DHLG  A    6 P 10:283:80820 12:173:81780 P - antenna change
- DHLG  A    7 P 12:173:81780 00:000:00000 P - 
+ DHLG  A    7 P 12:173:81780 26:093:80460 P - antenna change 
+ DHLG  A    8 P 26:093:80460 00:000:00000 P - 
  DHLG  A    1 P 00:000:00000 99:289:35204 V - EQ M7.1 - Hector Mine, CA Earthquake
  DHLG  A    2 P 99:289:35204 04:303:00000 V - non-linearity
  DHLG  A    3 P 04:303:00000 00:000:00000 V - 
@@ -2436,7 +2445,8 @@
  GAMB  A    1 P 00:000:00000 00:000:00000 V - 
 *
  GAMG  A    1 P 00:000:00000 20:223:00000 P - unknown
- GAMG  A    2 P 20:223:00000 00:000:00000 P - 
+ GAMG  A    2 P 20:223:00000 25:324:00000 P - unknown
+ GAMG  A    3 P 25:324:00000 00:000:00000 P - 
  GAMG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  GANP  A    1 P 00:000:00000 04:076:00000 P - unknown
@@ -2583,7 +2593,8 @@
 *
  GODS  A    1 P 00:000:00000 20:247:00000 P - antenna change
  GODS  A    2 P 20:247:00000 00:000:00000 P - 
- GODS  A    1 P 00:000:00000 00:000:00000 V - 
+ GODS  A    1 P 00:000:00000 20:247:00000 V - antenna change
+ GODS  A    2 P 20:247:00000 00:000:00000 V - 
 *
  GODZ  A    1 P 00:000:00000 12:220:47940 P - antenna change
  GODZ  A    2 P 12:220:47940 12:348:66480 P - antenna change
@@ -3118,7 +3129,8 @@
  HYDE  A    2 P 04:361:03530 07:330:00000 P - antenna change
  HYDE  A    3 P 07:330:00000 12:102:31117 P - EQ M8.6 - off the west coast of northern Sumatra
  HYDE  A    4 P 12:102:31117 15:233:00000 P - unknown
- HYDE  A    5 P 15:233:00000 00:000:00000 P - 
+ HYDE  A    5 P 15:233:00000 26:083:00000 P - unknown
+ HYDE  A    6 P 26:083:00000 00:000:00000 P - 
  HYDE  A    1 P 00:000:00000 00:000:00000 V - 
 *
  HYDN  A    1 P 00:000:00000 16:053:00000 P - antenna change
@@ -3166,8 +3178,9 @@
  IISC  B    1 P 00:000:00000 04:361:03530 V - EQ M9.1 - 2004 Sumatra - Andaman Islands Earthquake
  IISC  B    2 P 04:361:03530 00:000:00000 V - 
 *
- IITK  A    1 P 00:000:00000 25:016:00000 P - antenna height change
- IITK  A    2 P 25:016:00000 00:000:00000 P -
+ IITK  A    1 P 00:000:00000 25:010:40380 P - antenna height change
+ IITK  A    2 P 25:010:40380 26:081:00000 P - antenna height corrected in site log
+ IITK  A    3 P 26:081:00000 00:000:00000 P -
  IITK  A    1 P 00:000:00000 00:000:00000 V -
 *
  IJMU  A    1 P 00:000:00000 14:113:50400 P - antenna change
@@ -3334,8 +3347,9 @@
  JCTW  A    1 P 00:000:00000 00:000:00000 P - 
  JCTW  A    1 P 00:000:00000 00:000:00000 V - 
 *
- JDPR  A    1 P 00:000:00000 24:337:41400 P - antenna change
- JDPR  A    2 P 24:337:41400 00:000:00000 P -
+ JDPR  A    1 P 00:000:00000 22:340:46800 P - antenna change
+ JDPR  A    2 P 22:340:46800 24:337:41400 P - antenna change
+ JDPR  A    3 P 24:337:41400 00:000:00000 P -
  JDPR  A    1 P 00:000:00000 00:000:00000 V -
 *
  JERV  A    1 P 00:000:00000 17:198:00000 P - antenna change
@@ -3466,7 +3480,8 @@
  KELY  B    2 P 96:096:21480 01:257:62280 P - antenna change
  KELY  B    3 P 01:257:62280 10:282:00000 P - non-linearity
  KELY  B    4 P 10:282:00000 12:202:00000 P - non-linearity
- KELY  B    5 P 12:202:00000 00:000:00000 P - 
+ KELY  B    5 P 12:202:00000 20:219:43200 P - antenna change
+ KELY  B    6 P 20:219:43200 00:000:00000 P - 
  KELY  B    1 P 00:000:00000 01:257:62280 V - antenna change
  KELY  B    2 P 01:257:62280 10:282:00000 V - non-linearity
  KELY  B    3 P 10:282:00000 12:202:00000 V - non-linearity
@@ -5566,7 +5581,8 @@
  PALM  A    3 P 07:180:00000 13:321:32696 P - EQ M7.7 - Scotia Sea
  PALM  A    4 P 13:321:32696 20:206:00000 P - non-linearity
  PALM  A    5 P 20:206:00000 24:106:00000 P - new signal splitter installed
- PALM  A    6 P 24:106:00000 00:000:00000 P -
+ PALM  A    6 P 24:106:00000 25:052:77940 P - antenna cable replaced
+ PALM  A    7 P 25:052:77940 00:000:00000 P -
  PALM  A    1 P 00:000:00000 07:180:00000 V - non-linearity
  PALM  A    2 P 07:180:00000 13:321:32696 V - EQ M7.7 - Scotia Sea
  PALM  A    3 P 13:321:32696 20:206:00000 V - non-linearity
@@ -5754,7 +5770,8 @@
  PIN1  A    5 P 04:227:00000 04:254:12600 P - antenna change
  PIN1  A    6 P 04:254:12600 10:094:81643 P - EQ M7.2 - 12km SW of Delta, B.C., MX
  PIN1  A    7 P 10:094:81643 19:187:11993 P - EQ M7.1 - 2019 Ridgecrest Earthquake Sequence
- PIN1  A    8 P 19:187:11993 00:000:00000 P - 
+ PIN1  A    8 P 19:187:11993 26:041:00000 P - antenna change
+ PIN1  A    9 P 26:041:00000 00:000:00000 P - 
  PIN1  A    1 P 00:000:00000 99:289:35204 V - EQ M7.1 - Hector Mine, CA Earthquake
  PIN1  A    2 P 99:289:35204 04:254:12600 V - antenna change
  PIN1  A    3 P 04:254:12600 10:094:81643 V - EQ M7.2 - 12km SW of Delta, B.C., MX
@@ -6091,7 +6108,8 @@
 *
  QUAR  A    1 P 00:000:00000 04:358:53944 P - EQ M8.1 - north of Macquarie Island
  QUAR  A    2 P 04:358:53944 15:266:03000 P - antenna change
- QUAR  A    3 P 15:266:03000 00:000:00000 P - 
+ QUAR  A    3 P 15:266:03000 25:070:13620 P - receiver change
+ QUAR  A    4 P 25:070:13620 00:000:00000 P -
  QUAR  A    1 P 00:000:00000 00:000:00000 V - 
 *
  QUI1  A    1 P 00:000:00000 07:320:11580 P - EQ M6.8 - 30 km E of Macas, Ecuador
@@ -7019,7 +7037,8 @@
  STK2  A    5 P 11:341:14400 12:045:04320 P - antenna change
  STK2  A    6 P 12:045:04320 15:286:00000 P - unknown
  STK2  A    7 P 15:286:00000 25:210:84291 P - EQ M8.8 - 2025 Kamchatka Peninsula, Russia Earthquake 
- STK2  A    8 P 25:210:84291 00:000:00000 P - 
+ STK2  A    8 P 25:210:84291 25:342:51309 P - EQ M7.6 - 2025 Aomori Prefecture, Japan Earthquake
+ STK2  A    9 P 25:342:51309 00:000:00000 P -
  STK2  A    1 P 00:000:00000 03:268:71406 V - EQ M8.2 - 134 km SSW of Kushiro, Japan
  STK2  A    2 P 03:268:71406 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  STK2  A    3 P 11:070:20783 00:000:00000 V - 
@@ -7692,8 +7711,9 @@
  TWTF  A    4 P 13:241:00000 18:037:57043 V - EQ M6.4 - 18 km NNE of Hualien City, Taiwan
  TWTF  A    5 P 18:037:57043 00:000:00000 V - 
 *
- TXES  A    1 P 00:000:00000 23:173:50400 P - receiver change
- TXES  A    2 P 23:173:50400 00:000:00000 P -
+ TXES  A    1 P 00:000:00000 12:087:00000 P - antenna change
+ TXES  A    2 P 12:087:00000 23:173:50400 P - receiver change
+ TXES  A    3 P 23:173:50400 00:000:00000 P -
  TXES  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TXFS  A    1 P 00:000:00000 13:317:72900 P - antenna change
@@ -8064,8 +8084,9 @@
  VIGO  A    1 P 00:000:00000 07:082:00000 P - receiver change
  VIGO  A    2 P 07:082:00000 21:118:50400 P - antenna change
  VIGO  A    3 P 21:118:50400 22:331:00000 P - switch to IGS20/igs20.atx?
- VIGO  A    4 P 22:331:00000 00:000:00000 P - 
- VIGO  A    1 P 00:000:00000 00:000:00000 V - 
+ VIGO  A    4 P 22:331:00000 00:000:00000 P -
+ VIGO  A    1 P 00:000:00000 21:118:50400 V - antenna change
+ VIGO  A    2 P 21:118:50400 00:000:00000 V -
 *
  VIKC  A    1 P 00:000:00000 17:055:00000 P - unknown
  VIKC  A    2 P 17:055:00000 00:000:00000 P - 
