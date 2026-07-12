@@ -12559,7 +12559,7 @@ server <- function(input,output,session) {
             showNotification(HTML(paste0("It was not possible to extract the number of decimal places from the series component ",comp,".<br>Using 4 decimal places by default.")), action = NULL, duration = 10, closeButton = T, id = "no_decimals", type = "warning", session = getDefaultReactiveDomain())
           }
         }
-        info$decimalsyList[4] <- decimalplaces(c(table$y1,table$y2,table$y3),0)
+        info$decimalsyList[4] <- max(info$decimalsyList)
         info$scientificList[4] <- info$scientific
       }
       # all good
