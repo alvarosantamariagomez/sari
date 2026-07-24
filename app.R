@@ -12902,9 +12902,9 @@ server <- function(input,output,session) {
         if (spotgins2 || spotgins3) {
           maxCol <- max(count.fields(file, sep = sep, comment.char = "#"))
           if (spotgins2) {
-            tableAll <- read.table(file = file, comment.char = "#", sep = sep, skip = skip, fill = T, colClasses = c(rep("numeric",9),rep("NULL",maxCol - 9)))
+            tableAll <- try(read.table(file = file, comment.char = "#", sep = sep, skip = skip, fill = T, colClasses = c(rep("numeric",9),rep("NULL",maxCol - 9))), silent = T)
           } else if (spotgins3) {
-            tableAll <- read.table(file = file, comment.char = "#", sep = sep, skip = skip, fill = T, colClasses = c(rep("numeric",10),"character","numeric",rep("NULL",maxCol - 12)))
+            tableAll <- try(read.table(file = file, comment.char = "#", sep = sep, skip = skip, fill = T, colClasses = c(rep("numeric",10),"character","numeric",rep("NULL",maxCol - 12))), silent = T)
           }
         } else {
           tableAll <- try(read.table(text = trimws(readLines(file, warn = F)), comment.char = "#", sep = sep, skip = skip, fill = F), silent = T)
@@ -12934,7 +12934,7 @@ server <- function(input,output,session) {
         tableAll[,7] <- as.numeric(sprintf(fmt = "%.6f", tableAll[,7]))
       }
       # extracting data in columns
-      if (isTruthy(tableAll)) {
+      if (isTruthy(tableAll) && !inherits(tableAll, "try-error")) {
         columns <- dim(tableAll)[2]
         if (columns > 3) {
           extension <- tolower(strsplit(basename(file), ".", fixed = T)[[1]][-1])
