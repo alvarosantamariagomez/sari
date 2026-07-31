@@ -84,7 +84,8 @@
 *
  AB51  A    1 P 00:000:00000 12:302:11049 P - EQ M7.8 - 206 km SW of Prince Rupert, Canada
  AB51  A    2 P 12:302:11049 13:005:32299 P - EQ M7.5 - 110 km SW of Edna Bay, Alaska
- AB51  A    3 P 13:005:32299 00:000:00000 P - 
+ AB51  A    3 P 13:005:32299 25:233:57660 P - antenna change
+ AB51  A    4 P 25:233:57660 00:000:00000 P - 
  AB51  A    1 P 00:000:00000 13:005:32299 V - EQ M7.5 - 110 km SW of Edna Bay, Alaska
  AB51  A    2 P 13:005:32299 00:000:00000 V - 
 *
@@ -1508,7 +1509,8 @@
  CN11  A    3 P 18:010:10293 20:028:69025 P - EQ M7.7 - 123 km NNW of Lucea, Jamaica
  CN11  A    4 P 20:028:69025 25:301:00000 P - unknown
  CN11  A    5 P 25:301:00000 25:353:00000 P - unknown
- CN11  A    6 P 25:353:00000 00:000:00000 P -
+ CN11  A    6 P 25:353:00000 26:128:00000 P - unknown
+ CN11  A    7 P 26:128:00000 00:000:00000 P -
  CN11  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CN12  A    1 P 00:000:00000 12:262:36000 P - antenna change
@@ -2097,7 +2099,8 @@
  DYNG  A    1 P 00:000:00000 13:123:25080 P - antenna change
  DYNG  A    2 P 13:123:25080 15:268:36000 P - antenna change
  DYNG  A    3 P 15:268:36000 23:037:04654 P - EQ M7.8 - Pazarcik earthquake
- DYNG  A    4 P 23:037:04654 00:000:00000 P - 
+ DYNG  A    4 P 23:037:04654 26:141:00000 P - antenna change
+ DYNG  A    5 P 26:141:00000 00:000:00000 P - 
  DYNG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  EBRE  A    1 P 00:000:00000 97:105:36780 P - antenna change
@@ -4435,7 +4438,9 @@
 *
  MFKG  A    1 P 00:000:00000 17:083:00000 P - unknown
  MFKG  A    2 P 17:083:00000 22:001:00000 P - unknown
- MFKG  A    3 P 22:001:00000 00:000:00000 P - 
+ MFKG  A    3 P 22:001:00000 26:119:00000 P - antenna change
+ MFKG  A    4 P 26:119:00000 26:145:00000 P - antenna change
+ MFKG  A    5 P 26:145:00000 00:000:00000 P - 
  MFKG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MGBH  A    1 P 00:000:00000 14:101:00000 P - unknown
@@ -4519,7 +4524,9 @@
  MIZU  A   14 P 21:079:32983 21:121:05247 P - EQ M6.9 - 36 km SE of Ishinomaki, Japan
  MIZU  A   15 P 21:121:05247 22:075:52590 P - EQ M7.3 - 57 km ENE of Namie, Japan
  MIZU  A   16 P 22:075:52590 25:313:29019 P - EQ M6.8 - 122 km E of Yamada, Japan
- MIZU  A   17 P 25:313:29019 00:000:00000 P -
+ MIZU  A   17 P 25:313:29019 26:110:28378 P - EQ M7.4 - 102 km ENE of Miyako, Japan 
+ MIZU  A   18 P 26:110:28378 26:135:40921 P - EQ M6.7 - 41 km ESE of Ōfunato, Japan 
+ MIZU  A   19 P 26:135:40921 00:000:00000 P -
  MIZU  A    1 P 00:000:00000 08:165:85425 V - EQ M6.9 - 24 km WSW of Mizusawa, Japan
  MIZU  A    2 P 08:165:85425 11:070:20783 V - EQ M9.1 - 2011 Great Tohoku Earthquake, Japan
  MIZU  A    3 P 11:070:20783 15:132:76379 V - EQ M6.8 - 32 km SE of ?funato, Japan
@@ -5723,7 +5730,8 @@
  PGEN  A    4 P 18:363:13150 19:349:22311 P - EQ M6.8 - 7 km S of Magsaysay, Philippines
  PGEN  A    5 P 19:349:22311 21:223:63973 P - EQ M7.1 - 60 km ENE of Pondaguitan, Philippines
  PGEN  A    6 P 21:223:63973 25:283:06239 P - EQ M7.4 - 12 km E of Santiago, Philippines 
- PGEN  A    7 P 25:283:06239 00:000:00000 P -
+ PGEN  A    7 P 25:283:06239 26:158:85062 P - EQ M7.8 - 25 km SW of Kablalan, Philippines 
+ PGEN  A    8 P 26:158:85062 00:000:00000 P -
  PGEN  A    1 P 00:000:00000 00:000:00000 V - 
 *
  PHLW  A    1 P 00:000:00000 00:000:00000 P - 
@@ -6287,7 +6295,8 @@
  RGDG  A    1 P 00:000:00000 18:191:55800 P - antenna change
  RGDG  A    2 P 18:191:55800 25:283:73760 P - EQ M7.6 - Drake Passage 
  RGDG  A    3 P 25:283:73760 00:000:00000 P - 
- RGDG  A    1 P 00:000:00000 00:000:00000 V - 
+ RGDG  A    1 P 00:000:00000 25:283:73760 V - EQ M7.6 - Drake Passage 
+ RGDG  A    2 P 25:283:73760 00:000:00000 V - 
 *
  RGTG  A    1 P 00:000:00000 13:278:00000 P - unknown
  RGTG  A    2 P 13:278:00000 18:018:07500 P - receiver change
@@ -7824,7 +7833,7 @@
  ULAG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ULDI  A    1 P 00:000:00000 19:275:00000 P - unknown
- ULDI  A    2 P 19:275:00000 00:000:00000 P - 
+ ULDI  A    2 P 19:275:00000 00:000:00000 P -
  ULDI  A    1 P 00:000:00000 00:000:00000 V - 
 *
  ULLO  A    1 P 00:000:00000 00:000:00000 P - 

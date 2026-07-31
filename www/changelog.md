@@ -1,6 +1,16 @@
 # **SARI changelog**
 
 
+# agosto 2026 [2026.08]
+
+### Fixed
+- checking the correct format of the Spotgins series
+- minimizing the risk of a wrong decimalsy value for the residual series
+
+### Changed
+- avoiding removing the periodogram after changing the coordinate tab
+
+
 # mayo 2026 [2026.05]
 
 ### Fixed

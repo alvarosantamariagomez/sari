@@ -1,6 +1,6 @@
 # Events file v2.0
 #
-# DATE            : 2026-06-22 at 17:01:08 (UTC)
+# DATE            : 2026-07-03 at 15:44:18 (UTC)
 # SITE            : 9-character site ID
 # DDDDD.DDDD      : Decimal modified Julian day
 # YYYYMMDDHRMN    : Year, month, day, hour, minute
@@ -850,44 +850,6 @@ NOUM00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
 NOUM00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
 NOUM00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
 NOUM00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
-NRMD00NCL 53000.6674 200312271601 EQ     Southeast Of Loyalty Isl Mw 7.3
-NRMD00NCL 53905.8750 200606192100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 54184.0278 200703250040 EQ     Vanuatu Islands Mw 7.1
-NRMD00NCL 54467.0000 200801020000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
-NRMD00NCL 55106.0000 200910020000 CHANGE Antenna change
-NRMD00NCL 55106.1806 200910020420 CHANGE Receiver change
-NRMD00NCL 55216.0000 201001200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55250.0000 201002230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55368.0000 201006210000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55428.0000 201008200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55536.0000 201012060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
-NRMD00NCL 55574.6778 201101131616 EQ     Loyalty Islands Mw 6.9
-NRMD00NCL 55687.0000 201105060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55784.0000 201108110000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 55816.0000 201109120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 56013.0000 201203270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 56044.0000 201204270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 56343.0625 201302200130 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 56706.1875 201402180430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 56754.9722 201404072320 CHANGE Receiver change
-NRMD00NCL 57001.8924 201412102125 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57037.2431 201501150550 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57153.1528 201505110340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57239.1007 201508050225 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57308.1528 201510130340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57559.9861 201606202340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57755.9444 201701022240 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57835.8819 201703232110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 57996.8854 201708312115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
-NRMD00NCL 58448.2465 201811260555 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
-NRMD00NCL 58966.2257 202004270525 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 59057.9062 202007272145 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-NRMD00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 NTUS00SGP 50972.0000 199806080000 CHANGE Antenna change
 NTUS00SGP 51479.2500 199910280600 CHANGE Receiver change
 NTUS00SGP 51962.2222 200102220520 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -3269,33 +3231,6 @@ GOL200USA 55290.9444 201004042240 EQ     Calif.-Baja Calif. Borde Mw 7.2
 GOL200USA 55817.0000 201109130000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GOL200USA 58668.7313 201907041733 EQ     Central California Mw 6.4
 GOL200USA 58670.1382 201907060319 EQ     Central California Mw 7.0
-GORO00NCL 53000.6674 200312271601 EQ     Southeast Of Loyalty Isl Mw 7.3
-GORO00NCL 54184.0278 200703250040 EQ     Vanuatu Islands Mw 7.1
-GORO00NCL 54279.0000 200706280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 54462.0000 200712280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
-GORO00NCL 55370.0000 201006230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
-GORO00NCL 55574.6778 201101131616 EQ     Loyalty Islands Mw 6.9
-GORO00NCL 55785.0000 201108120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 56700.0556 201402120120 CHANGE Receiver & Antenna change
-GORO00NCL 56706.1875 201402180430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57001.8542 201412102030 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57037.2708 201501150630 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57153.1597 201505110350 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57209.8750 201507062100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57307.1875 201510120430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57560.0139 201606210020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57996.9861 201708312340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 57996.9896 201708312345 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
-GORO00NCL 58452.3993 201811300935 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
-GORO00NCL 58961.2257 202004220525 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 59057.9062 202007272145 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-GORO00NCL 60285.5389 202312071256 EQ     Vanuatu Islands Mw 7.0
-GORO00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GRAF00ESP 58662.5000 201906281200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 GRAF00ESP 60327.4583 202401181100 CHANGE Receiver & Antenna change
 GRAF00ESP 60425.4590 202404251101 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -4711,11 +4646,6 @@ PDEL00PRT 59505.5618 202110181329 CHANGE Other site log entry (firmware upgrade,
 PDEL00PRT 59892.6528 202211091540 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PDEL00PRT 60359.5035 202402191205 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PDEL00PRT 60779.7340 202504141737 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PDMA00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
-PDMA00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
-PDMA00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-PDMA00NCL 59898.1771 202211150415 CHANGE Receiver change
-PDMA00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PDME00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
 PDME00NCL 55370.0000 201006230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 PDME00NCL 55458.0000 201009190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -5670,33 +5600,6 @@ TSKT00CAN 56716.5938 201402281415 CHANGE Other site log entry (firmware upgrade,
 TSKT00CAN 57044.0000 201501220000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TSKT00CAN 57630.6424 201608301525 CHANGE Antenna change
 TSKT00CAN 60073.0000 202305090000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 53000.6674 200312271601 EQ     Southeast Of Loyalty Isl Mw 7.3
-TTTA00NCL 54184.0278 200703250040 EQ     Vanuatu Islands Mw 7.1
-TTTA00NCL 54462.0000 200712280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
-TTTA00NCL 55370.0000 201006230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
-TTTA00NCL 55574.6778 201101131616 EQ     Loyalty Islands Mw 6.9
-TTTA00NCL 55785.0000 201108120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 56643.1667 201312170400 CHANGE Receiver & Antenna change
-TTTA00NCL 56765.1875 201404180430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57001.8924 201412102125 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57037.2431 201501150550 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57153.1181 201505110250 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57239.1181 201508050250 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57294.8507 201509292025 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57559.9931 201606202350 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57755.9931 201701022350 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57835.8819 201703232110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 57996.8854 201708312115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
-TTTA00NCL 58448.7188 201811261715 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
-TTTA00NCL 58961.2257 202004220525 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 59057.9062 202007272145 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 60255.5000 202311071200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-TTTA00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TTUW00TTO 54433.7917 200711291900 EQ     Windward Islands Mw 7.4
 TTUW00TTO 56796.0000 201405190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 TTUW00TTO 57129.6271 201504171503 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -6161,10 +6064,6 @@ HKKT00HKG 59544.1472 202111260332 CHANGE Other site log entry (firmware upgrade,
 HKKT00HKG 59752.1014 202206220226 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HKKT00HKG 60079.0049 202305150007 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 HKKT00HKG 60262.3403 202311140810 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-POUA00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
-POUA00NCL 59058.4653 202007281110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-POUA00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
-POUA00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 0ARK00SWE 57208.0000 201507050000 CHANGE Receiver change
 0ARK00SWE 58053.0000 201710270000 CHANGE Receiver change
 0BIS00SWE 56056.0000 201205090000 CHANGE Antenna change
@@ -9206,6 +9105,7 @@ UCLP00USA 57797.8910 201702132123 CHANGE Other site log entry (firmware upgrade,
 UCLP00USA 57822.8229 201703101945 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 UCLP00USA 58569.8771 201903272103 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 UCLP00USA 58670.1382 201907060319 EQ     Central California Mw 7.0
+UCLP00USA 60850.8062 202506241921 CHANGE Receiver & Antenna change
 UMBC00USA 56119.0000 201207110000 CHANGE Receiver & Antenna change
 UMBC00USA 56160.0000 201208210000 CHANGE Antenna change
 UMBC00USA 59681.0000 202204120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
@@ -37557,6 +37457,121 @@ VALN00CHL 57871.6458 201704281530 EQ     Near Coast Of Central Ch Mw 5.9
 VALN00CHL 58914.0000 202003060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VALN00CHL 58988.0000 202005190000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
 VALN00CHL 59457.0000 202108310000 CHANGE Antenna change
+RGTG10PYF 60801.0000 202505060000 CHANGE Antenna & Radome change
+RGTG10PYF 60801.9007 202505062137 CHANGE Receiver change
+POUA00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
+POUA00NCL 59058.4653 202007281110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+POUA00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+POUA00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+POUA00NCL 61179.9792 202605192330 CHANGE Receiver change
+POUA00NCL 61180.0000 202605200000 CHANGE Antenna change
+GORO00NCL 53000.6674 200312271601 EQ     Southeast Of Loyalty Isl Mw 7.3
+GORO00NCL 54184.0278 200703250040 EQ     Vanuatu Islands Mw 7.1
+GORO00NCL 54279.0000 200706280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 54462.0000 200712280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
+GORO00NCL 55370.0000 201006230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
+GORO00NCL 55574.6778 201101131616 EQ     Loyalty Islands Mw 6.9
+GORO00NCL 55785.0000 201108120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 56700.0556 201402120120 CHANGE Receiver & Antenna change
+GORO00NCL 56706.1875 201402180430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57001.8542 201412102030 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57037.2708 201501150630 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57153.1597 201505110350 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57209.8750 201507062100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57307.1875 201510120430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57560.0139 201606210020 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57996.9861 201708312340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 57996.9896 201708312345 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
+GORO00NCL 58452.3993 201811300935 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
+GORO00NCL 58961.2257 202004220525 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 59057.9062 202007272145 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 60285.5389 202312071256 EQ     Vanuatu Islands Mw 7.0
+GORO00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+GORO00NCL 61144.9896 202604142345 CHANGE Receiver change
+GORO00NCL 61145.1354 202604150315 CHANGE Antenna change
+PDMA00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
+PDMA00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
+PDMA00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PDMA00NCL 59898.1771 202211150415 CHANGE Receiver change
+PDMA00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+PDMA00NCL 61187.1042 202605270230 CHANGE Receiver change
+TTTA00NCL 53000.6674 200312271601 EQ     Southeast Of Loyalty Isl Mw 7.3
+TTTA00NCL 54184.0278 200703250040 EQ     Vanuatu Islands Mw 7.1
+TTTA00NCL 54462.0000 200712280000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
+TTTA00NCL 55370.0000 201006230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
+TTTA00NCL 55574.6778 201101131616 EQ     Loyalty Islands Mw 6.9
+TTTA00NCL 55785.0000 201108120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 56643.1667 201312170400 CHANGE Receiver & Antenna change
+TTTA00NCL 56765.1875 201404180430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57001.8924 201412102125 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57037.2431 201501150550 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57153.1181 201505110250 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57239.1181 201508050250 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57294.8507 201509292025 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57559.9931 201606202350 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57755.9931 201701022350 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57835.8819 201703232110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 57996.8854 201708312115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
+TTTA00NCL 58448.7188 201811261715 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
+TTTA00NCL 58961.2257 202004220525 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 59057.9062 202007272145 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 60255.5000 202311071200 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 61081.9792 202602102330 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+TTTA00NCL 61083.0729 202602120145 CHANGE Receiver & Antenna change
+NRMD00NCL 53000.6674 200312271601 EQ     Southeast Of Loyalty Isl Mw 7.3
+NRMD00NCL 53905.8750 200606192100 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 54184.0278 200703250040 EQ     Vanuatu Islands Mw 7.1
+NRMD00NCL 54467.0000 200801020000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 54565.5319 200804091246 EQ     Loyalty Islands Mw 7.3
+NRMD00NCL 55106.0000 200910020000 CHANGE Antenna change
+NRMD00NCL 55106.1806 200910020420 CHANGE Receiver change
+NRMD00NCL 55216.0000 201001200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55250.0000 201002230000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55368.0000 201006210000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55428.0000 201008200000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55536.0000 201012060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55555.5528 201012251316 EQ     Vanuatu Islands Region Mw 7.3
+NRMD00NCL 55574.6778 201101131616 EQ     Loyalty Islands Mw 6.9
+NRMD00NCL 55687.0000 201105060000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55784.0000 201108110000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 55816.0000 201109120000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 56013.0000 201203270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 56044.0000 201204270000 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 56343.0625 201302200130 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 56706.1875 201402180430 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 56754.9722 201404072320 CHANGE Receiver change
+NRMD00NCL 57001.8924 201412102125 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57037.2431 201501150550 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57153.1528 201505110340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57239.1007 201508050225 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57308.1528 201510130340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57559.9861 201606202340 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57755.9444 201701022240 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57835.8819 201703232110 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 57996.8854 201708312115 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 58076.9465 201711192243 EQ     Loyalty Islands Mw 7.0
+NRMD00NCL 58448.2465 201811260555 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 58457.1792 201812050418 EQ     Southeast Of Loyalty Isl Mw 7.5
+NRMD00NCL 58966.2257 202004270525 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 59057.9062 202007272145 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 59317.9375 202104132230 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 60529.1667 202408070400 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+NRMD00NCL 61201.8958 202606102130 CHANGE Receiver change
+NRMD00NCL 61202.0000 202606110000 CHANGE Antenna change
+LZ0100ESP 60632.5417 202411181300 CHANGE Other site log entry (firmware upgrade, cable change, ...)
+LZ0100ESP 60691.5000 202501161200 CHANGE Antenna & Radome change
+LZ0100ESP 61126.5000 202603271200 CHANGE Antenna & Radome change
 NISY00GRC 57954.9382 201707202231 EQ     Dodecanese Islands, Gree Mw 6.6
 NISY00GRC 59152.4937 202010301151 EQ     Dodecanese Islands, Gree Mw 7.0
 NISY00GRC 59317.8528 202104132028 EQ     Dodecanese Islands, Gree Mw 5.3
