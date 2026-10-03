@@ -1526,7 +1526,8 @@
  CN35  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CN40  A    1 P 00:000:00000 15:012:36060 P - antenna change
- CN40  A    2 P 15:012:36060 00:000:00000 P - 
+ CN40  A    2 P 15:012:36060 26:175:79504 P - EQ M7.5 - 20 km W of Catia La Mar, Venezuela
+ CN40  A    3 P 26:175:79504 00:000:00000 P -
  CN40  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CNBN  A    1 P 00:000:00000 00:000:00000 P - 
@@ -1679,7 +1680,8 @@
  CPVG  A    6 P 24:048:00000 24:230:00000 P - unknown
  CPVG  A    7 P 24:230:00000 24:339:00000 P - unknown
  CPVG  A    8 P 24:339:00000 25:111:00000 P - unknown
- CPVG  A    9 P 25:111:00000 00:000:00000 P -
+ CPVG  A    9 P 25:111:00000 25:223:00000 P - unknown
+ CPVG  A   10 P 25:223:00000 00:000:00000 P -
  CPVG  A    1 P 00:000:00000 00:000:00000 V - 
 *
  CPXF  A    1 P 00:000:00000 00:000:00000 P - 
@@ -4624,7 +4626,8 @@
  MORP  A    6 P 11:048:00000 22:331:00000 P - switch to IGS20/igs20.atx?
  MORP  A    7 P 22:331:00000 23:176:00000 P - unknown
  MORP  A    8 P 23:176:00000 25:200:00000 P - antenna accidentally dislodged from forced centring position
- MORP  A    9 P 25:200:00000 00:000:00000 P -
+ MORP  A    9 P 25:200:00000 25:258:52200 P - antenna restored to correct location
+ MORP  A   10 P 25:258:52200 00:000:00000 P -
  MORP  A    1 P 00:000:00000 00:000:00000 V - 
 *
  MOS0  A    1 P 00:000:00000 00:000:00000 P - 
@@ -4667,21 +4670,24 @@
  MRL1  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  MRL1  A    2 P 16:318:39776 20:001:00000 P - non-linearity
  MRL1  A    3 P 20:001:00000 23:092:00000 P - non-linearity
- MRL1  A    4 P 23:092:00000 25:065:00000 P - unknown
+ MRL1  A    4 P 23:092:00000 25:065:00000 P - non-linearity
  MRL1  A    5 P 25:065:00000 00:000:00000 P -
  MRL1  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  MRL1  A    2 P 16:318:39776 20:001:00000 V - non-linearity
  MRL1  A    3 P 20:001:00000 23:092:00000 V - non-linearity
- MRL1  A    4 V 23:092:00000 00:000:00000 V -
+ MRL1  A    4 V 23:092:00000 25:065:00000 V - non-linearity
+ MRL1  A    5 P 25:065:00000 00:000:00000 V -
 *
  MRL2  A    1 P 00:000:00000 16:318:39776 P - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  MRL2  A    2 P 16:318:39776 20:001:00000 P - non-linearity
  MRL2  A    3 P 20:001:00000 23:092:00000 P - non-linearity
- MRL2  A    4 P 23:092:00000 00:000:00000 P - 
+ MRL2  A    4 P 23:092:00000 25:065:00000 P - non-linearity
+ MRL2  A    5 P 25:065:00000 00:000:00000 P -
  MRL2  A    1 P 00:000:00000 16:318:39776 V - EQ M7.8 - 53 km NNE of Amberley, New Zealand
  MRL2  A    2 P 16:318:39776 20:001:00000 V - non-linearity
  MRL2  A    3 P 20:001:00000 23:092:00000 V - non-linearity
- MRL2  A    4 P 23:092:00000 00:000:00000 V -
+ MRL2  A    4 P 23:092:00000 25:065:00000 V - non-linearity
+ MRL2  A    5 P 25:065:00000 00:000:00000 V -
 *
  MRO1  A    1 P 00:000:00000 14:048:00000 P - unknown
  MRO1  A    2 P 14:048:00000 25:055:00000 P - unknown
@@ -4966,7 +4972,8 @@
  NIUM  A    4 P 14:072:05400 18:231:01181 P - EQ M8.2 - 267 km E of Levuka, Fiji
  NIUM  A    5 P 18:231:01181 22:315:38925 P - EQ M7.3 - 205 km ESE of Neiafu, Tonga
  NIUM  A    6 P 22:315:38925 24:058:16740 P - antenna change
- NIUM  A    7 P 24:058:16740 00:000:00000 P -
+ NIUM  A    7 P 24:058:16740 26:168:00000 P - unknown
+ NIUM  A    8 P 26:168:00000 00:000:00000 P -
  NIUM  A    1 P 00:000:00000 18:231:01181 V - EQ M8.2 - 267 km E of Levuka, Fiji
  NIUM  A    2 P 18:231:01181 00:000:00000 V - 
 *
@@ -5084,7 +5091,8 @@
  NRMD  A    6 P 15:028:00000 17:323:81809 P - EQ M7.0 - 85 km ENE of Tadine, New Caledonia
  NRMD  A    7 P 17:323:81809 18:339:15488 P - EQ M7.5 - 166 km ESE of Tadine, New Caledonia
  NRMD  A    8 P 18:339:15488 23:341:46591 P - EQ M7.1 - 118 km S of Isangel, Vanuatu
- NRMD  A    9 P 23:341:46591 00:000:00000 P - 
+ NRMD  A    9 P 23:341:46591 26:162:00000 P - antenna change
+ NRMD  A   10 P 26:162:00000 00:000:00000 P - 
  NRMD  A    1 P 00:000:00000 15:028:00000 V - non-linearity
  NRMD  A    2 P 15:028:00000 00:000:00000 V - 
 *
@@ -5092,7 +5100,8 @@
  NRMG  A    2 P 15:028:00000 17:323:81809 P - EQ M7.0 - 85 km ENE of Tadine, New Caledonia
  NRMG  A    3 P 17:323:81809 18:339:15488 P - EQ M7.5 - 166 km ESE of Tadine, New Caledonia
  NRMG  A    4 P 18:339:15488 23:341:46591 P - EQ M7.1 - 118 km S of Isangel, Vanuatu
- NRMG  A    5 P 23:341:46591 00:000:00000 P - 
+ NRMG  A    5 P 23:341:46591 26:162:00000 P - antenna change
+ NRMG  A    6 P 26:162:00000 00:000:00000 P -
  NRMG  A    1 P 00:000:00000 15:028:00000 V - non-linearity
  NRMG  A    2 P 15:028:00000 00:000:00000 V - 
 *
@@ -5238,7 +5247,8 @@
  OHI2  A    7 P 16:127:00000 17:058:42000 P - antenna change
  OHI2  A    8 P 17:058:42000 21:153:55800 P - receiver change
  OHI2  A    9 P 21:153:55800 22:179:00000 P - unknown
- OHI2  A   10 P 22:179:00000 00:000:00000 P - 
+ OHI2  A   10 P 22:179:00000 25:283:73760 P - EQ M7.6 - Drake Passage
+ OHI2  A   11 P 25:283:73760 00:000:00000 P -
  OHI2  A    1 P 00:000:00000 09:030:63900 V - antenna change
  OHI2  A    2 P 09:030:63900 00:000:00000 V - 
 *
@@ -5616,8 +5626,10 @@
  PARC  A    1 P 00:000:00000 01:345:74520 P - antenna change
  PARC  A    2 P 01:345:74520 09:305:00000 P - antenna change
  PARC  A    3 P 09:305:00000 11:237:00000 P - unknown
- PARC  A    4 P 11:237:00000 00:000:00000 P - 
- PARC  A    1 P 00:000:00000 00:000:00000 V - 
+ PARC  A    4 P 11:237:00000 25:102:00000 P - non-linearity
+ PARC  A    5 P 25:102:00000 00:000:00000 P - 
+ PARC  A    1 P 00:000:00000 25:102:00000 V - non-linearity
+ PARC  A    2 P 25:102:00000 00:000:00000 V - 
 *
  PARK  A    1 P 00:000:00000 10:279:00000 P - non-linearity
  PARK  A    2 P 10:279:00000 16:263:00000 P - non-linearity
@@ -7259,7 +7271,8 @@
  TDOU  A    3 P 17:125:00000 19:344:00000 P - unknown
  TDOU  A    4 P 19:344:00000 21:321:00000 P - receiver change
  TDOU  A    5 P 21:321:00000 23:113:36000 P - antenna change
- TDOU  A    6 P 23:113:36000 00:000:00000 P - 
+ TDOU  A    6 P 23:113:36000 25:356:00000 P - unknown
+ TDOU  A    7 P 25:356:00000 00:000:00000 P - 
  TDOU  A    1 P 00:000:00000 14:361:00000 V - non-linearity
  TDOU  A    2 P 14:361:00000 00:000:00000 V - 
 *
@@ -7558,7 +7571,8 @@
  TRAK  A    5 P 19:187:11993 00:000:00000 V - 
 *
  TRDS  A    1 P 00:000:00000 07:127:58020 P - antenna change
- TRDS  A    2 P 07:127:58020 00:000:00000 P - 
+ TRDS  A    2 P 07:127:58020 25:221:00000 P - unknown
+ TRDS  A    3 P 25:221:00000 00:000:00000 P - 
  TRDS  A    1 P 00:000:00000 00:000:00000 V - 
 *
  TRIE  A    1 P 00:000:00000 00:000:00000 P - 

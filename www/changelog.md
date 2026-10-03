@@ -1,6 +1,13 @@
 # **SARI changelog**
 
 
+# octubre 2026 [2026.10]
+
+### Fixed
+- fixing bug with all epoch values ending by 0 before the decimal point
+- adding more checks on all the variables printed in the results file
+
+
 # agosto 2026 [2026.08]
 
 ### Fixed
