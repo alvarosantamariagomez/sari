@@ -6731,7 +6731,8 @@ server <- function(input,output,session) {
         extension <- as.integer(length(trans$x)/10)
       }
       segment <- input$segmentLength/100
-      if (segment*length(trans$x) < 3) {
+      segment_points <- segment*length(trans$x)
+      if (segment_points < 3) {
         showNotification(HTML("The segment size is too small for the series sampling.<br>Consider using a larger segment size."), action = NULL, duration = 10, closeButton = T, id = "bad_search", type = "error", session = getDefaultReactiveDomain())
         req(info$stop)
       }
@@ -15443,10 +15444,10 @@ server <- function(input,output,session) {
         cat(paste('# Process noise:', trans$kalman_info$nouns, '=', as.list(formatting(sqrt(trans$kalman_info$processNoise),1))), file = file_out, sep = "\n", fill = F, append = T)
         cat(paste('# Measurement noise:', formatting(inputs$ObsError,1), unit), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (length(trans$offsetEpochs) > 0) {
+      if (isTruthy(trans$offsetEpochs) && length(trans$offsetEpochs) > 0) {
         cat(paste0('# Discontinuities at: ',paste(trans$offsetEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (length(trans$breakEpochs) > 0) {
+      if (isTruthy(trans$breakEpochs) && length(trans$breakEpochs) > 0) {
         cat(paste0('# Breakpoints at: ',paste(trans$breakEpochs, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(trans$midas_vel) && isTruthy(input$midas)) {
@@ -15464,7 +15465,7 @@ server <- function(input,output,session) {
         formatted <- formatting(c(trans$entropy_vel,trans$entropy_sig),1)
         cat(paste('# Minimum entropy rate:', formatted[1], '+/-', formatted[2], units), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (input$waveform && inputs$waveformPeriod > 0) {
+      if (isTruthy(input$waveform) && isTruthy(inputs$waveform) && inputs$waveformPeriod > 0) {
         cat(paste('# Waveform:', as.numeric(inputs$waveformPeriod), periods), file = file_out, sep = "\n", fill = F, append = T)
       }
       if (isTruthy(input$filter)) {
@@ -15504,13 +15505,13 @@ server <- function(input,output,session) {
         }
       }
     } else if (input$tab == 5) {
-      if (length(trans$offsetEpochs1) > 0) {
+      if (isTruthy(trans$offsetEpochs1) && length(trans$offsetEpochs1) > 0) {
         cat(paste0('# Discontinuities ', info$components[1], ' at: ',paste(trans$offsetEpochs1, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (length(trans$offsetEpochs2) > 0) {
+      if (isTruthy(trans$offsetEpochs2) && length(trans$offsetEpochs2) > 0) {
         cat(paste0('# Discontinuities ', info$components[2], ' at: ',paste(trans$offsetEpochs2, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
-      if (length(trans$offsetEpochs3) > 0) {
+      if (isTruthy(trans$offsetEpochs3) && length(trans$offsetEpochs3) > 0) {
         cat(paste0('# Discontinuities ', info$components[3], ' at: ',paste(trans$offsetEpochs3, collapse = ", ")), file = file_out, sep = "\n", fill = F, append = T)
       }
     }
@@ -15528,7 +15529,8 @@ server <- function(input,output,session) {
                         sy2 = db1[[info$db1]]$reserror2[db1[[info$db1]]$status2 %in% T],
                         sy3 = db1[[info$db1]]$reserror3[db1[[info$db1]]$status3 %in% T])
       }
-      if (all(apply(u,2,function(col) length(unique(col))) > 0) || (all(apply(u,2,function(col) length(unique(col))) == 1) && all(u > 1.5e-9))) {
+      good_sigmas <- all(apply(u,2,function(col) length(unique(col))) > 0) || (all(apply(u,2,function(col) length(unique(col))) == 1) && all(u > 1.5e-9))
+      if (isTruthy(good_sigmas)) {
         useSigmas <- T
       }
     }
@@ -15623,8 +15625,8 @@ server <- function(input,output,session) {
     }
     # Adding and formatting the fit/filter/noise columns for each component
     if (input$tab < 4) {
-      if ((input$fitType == 1 || input$fitType == 2) && length(trans$res) > 0) {
-        if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
+      if ((input$fitType == 1 || input$fitType == 2) && isTruthy(trans$res) && length(trans$res) > 0) {
+        if (isTruthy(trans$pattern) && length(trans$pattern) > 0 && isTruthy(input$waveform) && isTruthy(inputs$waveformPeriod) && inputs$waveformPeriod > 0) {
           model <- trans$mod - trans$pattern
           residuals <- trans$res + trans$pattern
         } else {
@@ -15641,23 +15643,23 @@ server <- function(input,output,session) {
       }
       if (useSigmas && input$fitType == 1 && length(input$model) > 0) {
         if (isTruthy(info$scientific)) {
-          if (length(trans$moderror) > 0) {
+          if (isTruthy(trans$moderror) && length(trans$moderror) > 0) {
             OutPut$df$Sigma.Model <- formatting(trans$moderror,0)
           }
-          if (length(trans$reserror) > 0) {
+          if (isTruthy(trans$reserror) && length(trans$reserror) > 0) {
             OutPut$df$Sigma.Residuals <- formatting(trans$reserror,0)
           }
         } else {
-          if (length(trans$moderror) > 0) {
+          if (isTruthy(trans$moderror) && length(trans$moderror) > 0) {
             OutPut$df$Sigma.Model <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$moderror)), scientific = F)
           }
-          if (length(trans$reserror) > 0) {
+          if (isTruthy(trans$reserror) && length(trans$reserror) > 0) {
             OutPut$df$Sigma.Residuals <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$reserror)), scientific = F)
           }
         }
       }
-      if (input$filter == T && (inputs$low != "" || inputs$high != "") && length(trans$filter) > 0) {
-        if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0 && length(trans$filterRes) > 0 && input$series2filter == 1) {
+      if (input$filter == T && (isTruthy(inputs$low) || isTruthy(inputs$high)) && isTruthy(trans$filter) && length(trans$filter) > 0) {
+        if (isTruthy(trans$pattern) && length(trans$pattern) > 0 && input$waveform && isTruthy(inputs$waveformPeriod) && inputs$waveformPeriod > 0 && isTruthy(trans$filterRes) && length(trans$filterRes) > 0 && input$series2filter == 1) {
           smooth <- trans$filter - trans$pattern
           smooth.residuals <- trans$filterRes + trans$pattern
         } else {
@@ -15673,60 +15675,60 @@ server <- function(input,output,session) {
         }
       }
       if (input$wiener && input$mle) {
-        if (input$white && length(trans$white) > 0) {
+        if (input$white && isTruthy(trans$white) && length(trans$white) > 0) {
           if (isTruthy(info$scientific)) {
             OutPut$df$White <- formatting(trans$white,0)
-            if (useSigmas && length(trans$white_sig) > 0) {
+            if (useSigmas && isTruthy(trans$white_site) && length(trans$white_sig) > 0) {
               OutPut$df$Sigma.White <- formatting(trans$white_sig,0)
             }
           } else {
             OutPut$df$White <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$white)), scientific = F)
-            if (useSigmas && length(trans$white_sig) > 0) {
+            if (useSigmas && isTruthy(trans$white_sig) && length(trans$white_sig) > 0) {
               OutPut$df$Sigma.White <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$white_sig)), scientific = F)
             }
           }
         }
-        if (input$flicker && length(trans$flicker) > 0) {
+        if (input$flicker && isTruthy(trans$flicker) && length(trans$flicker) > 0) {
           if (isTruthy(info$scientific)) {
             OutPut$df$Flicker <- formatting(trans$flicker,0)
-            if (useSigmas && length(trans$flicker_sig) > 0) {
+            if (useSigmas && isTruthy(trans$flicker_sig) && length(trans$flicker_sig) > 0) {
               OutPut$df$Sigma.Flicker <- formatting(trans$flicker_sig,0)
             }
           } else {
             OutPut$df$Flicker <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$flicker)), scientific = F)
-            if (useSigmas && length(trans$flicker_sig) > 0) {
+            if (useSigmas && isTruthy(trans$flicker_sig) && length(trans$flicker_sig) > 0) {
               OutPut$df$Sigma.Flicker <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$flicker_sig)), scientific = F)
             }
           }
         }
-        if (input$randomw && length(trans$randomw) > 0) {
+        if (input$randomw && isTruthy(trans$randomw) && length(trans$randomw) > 0) {
           if (isTruthy(info$scientific)) {
             OutPut$df$RandomWalk <- formatting(trans$randomw,0)
-            if (useSigmas && length(trans$randomw_sig) > 0) {
+            if (useSigmas && isTruthy(trans$randomw_sig) && length(trans$randomw_sig) > 0) {
               OutPut$df$Sigma.RandomWalk <- formatting(trans$randomw_sig,0)
             }
           } else {
             OutPut$df$RandomWalk <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$randomw)), scientific = F)
-            if (useSigmas && length(trans$randomw_sig) > 0) {
+            if (useSigmas && isTruthy(trans$randomw_sig) && length(trans$randomw_sig) > 0) {
               OutPut$df$Sigma.RandomWalk <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$randomw_sig)), scientific = F)
             }
           }
         }
-        if (input$powerl && length(trans$powerl) > 0) {
+        if (input$powerl && isTruthy(trans$powerl) && length(trans$powerl) > 0) {
           if (isTruthy(info$scientific)) {
             OutPut$df$PowerLaw <- formatting(trans$powerl,0)
-            if (useSigmas && length(trans$powerl_sig) > 0) {
+            if (useSigmas && isTruthy(trans$powerl_sig) && length(trans$powerl_sig) > 0) {
               OutPut$df$Sigma.PowerLaw <- formatting(trans$powerl_sig,0)
             }
           } else {
             OutPut$df$PowerLaw <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$powerl)), scientific = F)
-            if (useSigmas && length(trans$powerl_sig) > 0) {
+            if (useSigmas && isTruthy(trans$powerl_sig) && length(trans$powerl_sig) > 0) {
               OutPut$df$Sigma.PowerLaw <- format(as.numeric(sprintf("%.*f", info$decimalsy, trans$powerl_sig)), scientific = F)
             }
           }
         }
       }
-      if (input$fitType == 2 && length(trans$res) > 0) {
+      if (input$fitType == 2 && isTruthy(trans$res) && length(trans$res) > 0) {
         colnames(trans$kalman_unc) <- paste0("sigma.",colnames(trans$kalman_unc))
         if (isTruthy(info$scientific)) {
           OutPut$df <- cbind(OutPut$df,formatting(trans$kalman,0))
@@ -15739,7 +15741,7 @@ server <- function(input,output,session) {
         #   OutPut$df <- cbind(OutPut$df, format(trans$kalman_unc, digits = 1, scientific = F))
         # }
       }
-      if (length(trans$pattern) > 0 && input$waveform && inputs$waveformPeriod > 0) {
+      if (isTruthy(trans$pattern) && length(trans$pattern) > 0 && input$waveform && isTruthy(inputs$waveformPeriod) && inputs$waveformPeriod > 0) {
         if (isTruthy(info$scientific)) {
           OutPut$df$Waveform <- formatting(trans$pattern,0)
         } else {
@@ -15752,7 +15754,7 @@ server <- function(input,output,session) {
       if (input$tab < 4) {
         excluded <- !(db1[[info$db1]][[paste0("status",input$tab)]] %in% T)
         names(excluded) <- NULL
-        if (isTruthy(useSigmas)) {
+        if (useSigmas) {
           output_excluded$df <- data.frame(x = trans$x0[excluded], y = trans$y0[excluded], sy = trans$sy0[excluded])
           names(output_excluded$df) <- c("# Epoch", "Data", "Sigma")
           if (isTruthy(info$scientific)) {
@@ -15771,7 +15773,7 @@ server <- function(input,output,session) {
           output_excluded$df[,"# Epoch"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,"# Epoch"])), scientific = F)
           output_excluded$df[,"Data"] <- format(as.numeric(sprintf("%.*f", info$decimalsy, output_excluded$df[,"Data"])), scientific = F)
         }
-        if (isTruthy(useSigmas)) {
+        if (useSigmas) {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data", "Sigma"), all = T)
         } else {
           OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "Data"), all = T)
@@ -15824,7 +15826,7 @@ server <- function(input,output,session) {
                                      y = format(as.numeric(sprintf("%.*f", info$decimalsy, db1[[info$db1]]$y3[excluded])), scientific = F))
           }
         }
-        if (isTruthy(useSigmas)) {
+        if (useSigmas) {
           if (isTruthy(info$scientific)) {
             component1$sy <- formatting(db1[[info$db1]]$sy1[excluded],0)
             component2$sy <- formatting(db1[[info$db1]]$sy2[excluded],0)
@@ -15836,7 +15838,7 @@ server <- function(input,output,session) {
           }
         }
         component_list <- list(component1, component2, component3)
-        if (isTruthy(useSigmas)) {
+        if (useSigmas) {
           output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y","sy.x","sy.y","sy")]
         } else {
           output_excluded$df <- Reduce(function(x, y) merge(x, y, by = "x", all = F, sort = T), component_list)[,c("x","y.x","y.y","y")]
@@ -15849,7 +15851,7 @@ server <- function(input,output,session) {
             OutPut$df <- merge(OutPut$df, output_excluded$df, by = c("# Epoch"), all = T)[,c("# Epoch", "EastRes", "NorthRes", "UpRes")]
           }
         } else {
-          if (isTruthy(input$sigmas)) {
+          if (useSigmas) {
             names(output_excluded$df) <- c("# Epoch", sub(" component","",info$components[1]), sub(" component","",info$components[2]), sub(" component","",info$components[3]), sub(" component","Sigma",info$components[1]), sub(" component","Sigma",info$components[2]), sub(" component","Sigma",info$components[3]))
             OutPut$df <- merge(OutPut$df,output_excluded$df,by = c("# Epoch", "East", "North", "Up", "EastSigma", "NorthSigma", "UpSigma"), all = T)
           } else {
