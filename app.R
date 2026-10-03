@@ -17641,7 +17641,7 @@ server <- function(input,output,session) {
     } else if (is.matrix(x) || is.vector(x)) {
       formatted <- format(x, digits = info$digits + extra_dec, nsmall = info$nsmall + extra_dec, scientific = scientific, trim = F, width = width)
       if (!scientific) {
-        while (all(grepl("0$", formatted))) {
+        while (all(grepl("\\.[0-9]*0$", formatted))) {
           formatted <- sub("0$", "", formatted)
         }
         formatted <- sub("\\.$", "", formatted)
