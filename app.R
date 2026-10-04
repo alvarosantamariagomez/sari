@@ -2845,20 +2845,18 @@ server <- function(input,output,session) {
       statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
       x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
       rangex <- range(x)
+      seriesInfo(x)
       removed <- max(sum(!db1[[info$db1]]$status1 %in% T), sum(!db1[[info$db1]]$status2 %in% T), sum(!db1[[info$db1]]$status3 %in% T), na.rm = T)
     } else {
       rangex <- range(trans$x)
       removed <- info$removed
     }
-    isolate({
-      seriesInfo(x)
-      line1 <- sprintf("Number of points = %d",info$points)
-      line2 <- sprintf("Number of points removed = %d",removed)
-      line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$length), units)
-      line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
-      line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
-      line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$length/info$sampling))
-    })
+    line1 <- sprintf("Number of points = %d",info$points)
+    line2 <- sprintf("Number of points removed = %d",removed)
+    line3 <- paste(sprintf("Series length = %.*f", info$decimalsx, info$length), units)
+    line4 <- sprintf("Series range = %.*f - %.*f",info$decimalsx, rangex[1], info$decimalsx, rangex[2])
+    line5 <- paste(sprintf("Series sampling = %.*f",info$decimalsx, info$sampling), units)
+    line6 <- sprintf("Series completeness = %.1f %%",100*(info$points - 1)/(info$length/info$sampling))
     HTML(paste("", line1, line2, line3, line4, line5, line6, sep = "<br/>"))
   })
 
@@ -4234,14 +4232,10 @@ server <- function(input,output,session) {
       n_all <- length(trans$gaps)
       C <- matrix(0,n,n)
       scaling <- 10^signifdecimal(sd(trans$res), T)
-      if (isTruthy(inputs$verif_fl) || isTruthy(inputs$verif_rw) || isTruthy(inputs$verif_pl)) {
-        estimatedTime <- as.integer(ceiling((1.3547*exp(0.0007*n) + 7*length(trans$offsetEpochs))/60))
-      } else {
-        estimatedTime <- as.integer(ceiling((1.3988*exp(0.0006*n) + 7*length(trans$offsetEpochs))/60))
-      }
+      estimatedTime <- as.integer(ceiling((5.727984E-09*n^2.5)/60))
       withBusyIndicatorServer("runVerif", {
         withProgress(message = 'Verifying offset values.',
-                     detail = paste("This should take about", estimatedTime, "min"), value = 0, {
+                     detail = paste("This should take less than", estimatedTime, "min"), value = 0, {
                        start.time <- Sys.time()
                        # setting the expected covariance matrix
                        if (isTruthy(inputs$verif_white) && inputs$verif_white > 0) {
@@ -4271,8 +4265,9 @@ server <- function(input,output,session) {
                          L <- t(chol(C))
                          q <- function(v) sum(forwardsolve(L, v)^2)
                          q0 <- q(y0)
+                         setProgress(0.5)
                          for (i in seq_len(length(trans$offsetEpochs))) {
-                           setProgress(0.2 + ((i - 1)*0.8/length(trans$offsetEpochs)))
+                           setProgress(0.5 + ((i - 1)*0.5/length(trans$offsetEpochs)))
                            # adding the estimated offsets to the residual series
                            if (input$fitType == 1) {
                              offsets <- grep(pattern = "O", rownames(trans$LScoefs), ignore.case = F, perl = F, fixed = T)
@@ -4287,13 +4282,11 @@ server <- function(input,output,session) {
                            line <- c(line, paste("Offset",i,"significance:", sprintf("%.0f",pchisq(Tq, df = 1)*100),"%", sep = " "))
                          }
                          setProgress(1)
-                         Sys.sleep(1)
                          if (isTruthy(Tq)) {
                            trans$verif <- T
                          }
                        }
                      })
-        end.time <- Sys.time()
       })
     } else {
       trans$verif <- F
