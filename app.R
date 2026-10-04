@@ -1500,7 +1500,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                                   The <span class='UIoption'>segmented model</span> option allows fitting the selected model components to different segments of the series separated by break epochs.<br><br>
                                                                                                   The <span class='UIoption'>click & collect</span> option automatically adds the points clicked on the series plots to the list of offset epochs.<br><br>
                                                                                                   The <span class='UIoption'>search discontinuities</span> button provides an automatic guesstimate of the location of probable discontinuities in the series.<br><span class='warning'>WARNING</span>: long computation time.<br><br>
-                                                                                                  The <span class='UIoption'>check offsets</span> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
+                                                                                                  The <span class='UIoption'>verify offsets</span> option checks the significance of the offset magnitudes with respect to colored noise.<br><br>
                                                                                                   See more details in the <span class='help'>help</span> tab."))
                                                                       ),
                                                                       conditionalPanel(
