@@ -4176,8 +4176,6 @@ server <- function(input,output,session) {
                    detail = paste("This should take about", time, "s"), value = 0, {
                      setProgress(0.3) # just for progress bar lovers
                      H <- sapply(aps, function(v) compute_entropy(v))
-                     setProgress(0.7)
-                     Sys.sleep(0.5)
                      setProgress(1)
                    })
       # getting the velocity estimate from the minimum entropy
@@ -5285,10 +5283,7 @@ server <- function(input,output,session) {
                              polygon(c(waveform$x, rev(waveform$x)), c(ba, rev(bb)), col = rgb(0,0,0,0.2), border = NA)
                            }
                          }, width = reactive(info$width))
-                         setProgress(0.7) # just for progress bar lovers
-                         Sys.sleep(1)
                          setProgress(1)
-                         Sys.sleep(1)
                        })
         } else {
           showNotification(HTML("The period of the waveform is not valid.<br>Check the input value."), action = NULL, duration = 10, closeButton = T, id = "bad_waveform_period", type = "error", session = getDefaultReactiveDomain())
@@ -5850,9 +5845,6 @@ server <- function(input,output,session) {
           withProgress(message = 'Computing wavelet transform.',
                        detail = 'This may take a while ...', value = 0.1, {
                          trans$wavelet <- mvcwt(t*trans$x, y, scale.exp = 0.5, nscales = num_scale, min.scale = min_scale, max.scale = max_scale, loc = regularize(t*trans$x, nsteps = locs), wave.fun = "Morlet")
-                         setProgress(0.7) # just for progress bar lovers
-                         Sys.sleep(1)
-                         setProgress(1)
                          Sys.sleep(1)
                        })
         })
@@ -6371,7 +6363,6 @@ server <- function(input,output,session) {
                            req(info$stop)
                          }
                        }
-                       Sys.sleep(1)
                        setProgress(1)
                      })
 
@@ -6710,6 +6701,7 @@ server <- function(input,output,session) {
     removeNotification("no_search")
     if (length(trans$res) > 0) {
       if (messages > 0) cat(file = stderr(), mySession, "Searching offsets", "\n")
+      # cat(file = stderr(), mySession, "Search start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
       output$offsetFound <- renderUI({
         NULL
       })
@@ -6729,7 +6721,8 @@ server <- function(input,output,session) {
         showNotification(HTML("The segment size is too small for the series sampling.<br>Consider using a larger segment size."), action = NULL, duration = 10, closeButton = T, id = "bad_search", type = "error", session = getDefaultReactiveDomain())
         req(info$stop)
       }
-      lag <- 1
+      lag <- 1 # lag applied to the series to look for linear changes in the lag plot
+      max <- 5 # maximum number of offsets to focus on per search run
       withBusyIndicatorServer("search", {
         center_ini <- mean(trans$res[1:piece])
         disp_ini <- sd(trans$res[1:piece])/2
@@ -6740,11 +6733,8 @@ server <- function(input,output,session) {
         colnames(extended_series) <- c("y", "ylag1")
         withProgress(message = 'Searching discontinuities.',
                      detail = 'This may take a while ...', value = 0.1, {
-                       breaks <- breakpoints(y ~ ylag1, data = extended_series, h = segment)
-                       setProgress(0.7) # just for progress bar lovers
-                       Sys.sleep(1)
+                       breaks <- suppressWarnings(breakpoints(y ~ ylag1, data = extended_series, h = segment, breaks = max))
                        setProgress(1)
-                       Sys.sleep(1)
                      })
         output$offsetFound <- renderUI({
           if (isTruthy(breaks$breakpoints)) {
@@ -6755,6 +6745,7 @@ server <- function(input,output,session) {
           HTML(line)
         })
       })
+      # cat(file = stderr(), mySession, "  Search end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
     } else {
       showNotification("Finding discontinuities is only possible from detrended series or, more generally, residual series.", action = NULL, duration = 10, closeButton = T, id = "no_search", type = "error", session = getDefaultReactiveDomain())
     }
