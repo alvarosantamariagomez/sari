@@ -1,4 +1,4 @@
-### Copyright (C) 2017-2025  Alvaro Santamaria-Gomez, 12 May 2017
+### Copyright (C) 2017-2026  Alvaro Santamaria-Gomez, 12 May 2017
 ### alvaro.santamaria@get.omp.eu
 ###
 ### This program is free software: you can redistribute it and/or modify
@@ -234,7 +234,7 @@ Shiny.addCustomMessageHandler('trendRef', function(txt) {
 
 # Hide loading page splash, from https://stackoverflow.com/questions/35599470/shiny-dashboard-display-a-dedicated-loading-page-until-initial-loading-of
 load_data <- function(seconds) {
-  Sys.sleep(seconds)
+  # Sys.sleep(seconds)
   shinyjs::hide("loading_page")
   shinyjs::show("main_content")
 }
@@ -443,7 +443,7 @@ tab3Contents <- function(series) {
 # Source C++ functions on a Windows machine
 if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[['sysname']] == "Windows") {
   cat(file = stderr(), "Compiling C++ functions for Windows\n")
-  sourceCpp('functions.cpp', verbose = F)
+  sourceCpp('functions.cpp', verbose = F, cacheDir = ".cpp_cache")
 }
 
 # Shiny/R general options ####
