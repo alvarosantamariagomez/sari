@@ -6235,7 +6235,8 @@ server <- function(input,output,session) {
                            fitmle$value <- 0.5*(n*log(2*pi*variance) + determinant(C)$modulus[[1]] + n)
                          }
                          fitmle$par <- log(variance)
-                         fitmle$hessian <- (-n/(2*variance^2) + VtPV/variance^3) * variance
+                         # fitmle$hessian <- (-n/(2*variance^2) + VtPV/variance^3) * variance
+                         fitmle$hessian <- n/2
                          convergence <- 0
                        }
                        #* more than one noise variance ####
@@ -6319,16 +6320,30 @@ server <- function(input,output,session) {
                              stopCluster(cl)
                            } else { # standard 1 proc run
                              # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
-                             # method <- "L-BFGS-B"
-                             # fitmle <- optim(par = apriori,
-                             #                 fn = loglik_global,
-                             #                 gr = grad_global,
-                             #                 lower = lower,
-                             #                 upper = upper,
-                             #                 method = "L-BFGS-B",
-                             #                 hessian = hessian,
-                             #                 control = list(fnscale = 1, pgtol = 1e1, factr = 1e13)
-                             # )
+                             method <- "L-BFGS-B"
+                             # computing the relative tolerance on the increase of the log-lik (factr)
+                             loglik_stop <- 2 # approximate log-lik change per degree of freedom amongst noise models
+                             if (component > 1) {
+                               sample <- info$points
+                             } else {
+                               if (info$white) {
+                                 sample <- 1.4 * info$points
+                               } else {
+                                 sample <- 0.5 * info$points
+                               }
+                             }
+                             factr <- loglik_stop / (.Machine$double.eps * sample)
+                             if (messages > 2) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "%\n")
+                             # the Hessian is computed after the fit with optimHess
+                             fitmle <- optim(par = apriori,
+                                             fn = loglik_global,
+                                             gr = grad_global,
+                                             lower = lower,
+                                             upper = upper,
+                                             method = "L-BFGS-B",
+                                             hessian = F,
+                                             control = list(fnscale = 1, pgtol = 1e0, factr = factr)
+                             )
 
                              # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
                              # Nelder and Mead (1965) method: provides better likelihoods, but can be slow as duck if the a priori values are not good!
@@ -6341,16 +6356,16 @@ server <- function(input,output,session) {
 
                              # } else {
                              # Quasi-Newton method as in optim, but seems to run faster
-                             method <- "NLM"
-                             fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
-                                           fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
-                                           stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F)
-                             setProgress(0.75)
-                             if (fitmle$code < 4) { # transforming nlm results into optim format
-                               fitmle$convergence <- 0
-                               fitmle$value <- fitmle$minimum
-                               fitmle$par <- fitmle$estimate
-                             }
+                             # method <- "NLM"
+                             # fitmle <- nlm(loglik_global, apriori, hessian = hessian, typsize = typsize,
+                             #               fscale = 1, print.level = 0, ndigit = 1, gradtol = 1e-2,
+                             #               stepmax = 1e0, steptol = 1e-2, iterlim = 100, check.analyticals = F)
+                             # setProgress(0.75)
+                             # if (fitmle$code < 4) { # transforming nlm results into optim format
+                             #   fitmle$convergence <- 0
+                             #   fitmle$value <- fitmle$minimum
+                             #   fitmle$par <- fitmle$estimate
+                             # }
                              # }
 
                              if (fitmle$convergence == 0) {
@@ -6369,6 +6384,7 @@ server <- function(input,output,session) {
         ##* convergence ####
         if (!is.na(convergence)) {
           if (convergence == 0) {
+            if (messages > 2) cat(file = stderr(), mySession, fitmle$message, "\n")
             if (input$wiener) {
               kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
             }
@@ -6376,6 +6392,8 @@ server <- function(input,output,session) {
             sd_noises <- NA
             line3 <- NULL
             if (input$noise_unc) {
+              gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
+              fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
               sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
             }
             i <- 0
@@ -6395,7 +6413,8 @@ server <- function(input,output,session) {
               sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
               trans$noise[1] <- sigmaWH
               if (input$noise_unc) {
-                seParmsWH <- sd_noises[i]/scaling
+                # seParmsWH <- sd_noises[i]/scaling
+                seParmsWH <- sd_noises[i] * sigmaWH / 2
                 trans$noise[2] <- seParmsWH
                 if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
                   updateTextInput(session, inputId = "verif_white", value = sigmaWH)
@@ -6430,7 +6449,8 @@ server <- function(input,output,session) {
               sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
               trans$noise[3] <- sigmaFL
               if (input$noise_unc) {
-                seParmsFL <- sd_noises[i]/scaling
+                # seParmsFL <- sd_noises[i]/scaling
+                seParmsFL <- sd_noises[i] * sigmaFL / 2
                 trans$noise[4] <- seParmsFL
                 if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
                   updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
@@ -6466,7 +6486,8 @@ server <- function(input,output,session) {
               sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
               trans$noise[5] <- sigmaRW
               if (input$noise_unc) {
-                seParmsRW <- sd_noises[i]/scaling
+                # seParmsRW <- sd_noises[i]/scaling
+                seParmsRW <- sd_noises[i] * sigmaRW / 2
                 trans$noise[6] <- seParmsRW
                 if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
                   updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
@@ -6502,7 +6523,8 @@ server <- function(input,output,session) {
               sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
               trans$noise[7] <- sigmaPL
               if (input$noise_unc) {
-                seParmsPL <- sd_noises[i]/scaling
+                # seParmsPL <- sd_noises[i]/scaling
+                seParmsPL <- sd_noises[i] * sigmaPL / 2
                 trans$noise[8] <- seParmsPL
                 if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
                   updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
