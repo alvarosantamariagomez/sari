@@ -17707,6 +17707,7 @@ server <- function(input,output,session) {
         trans$gaps <- rep(T, length(x))
       }  else {
         shinyjs::delay(300, showNotification(HTML("Unable to assess data gaps in the series.<br>Something may be wrong with the expected series format."), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
+        cat(file = stderr(), mySession, "DEBUG #points:", length(x1), "#NA:", sum(is.na(x1)), "#Inf:", sum(is.infinite(x1)), "#duplicate:", sum(diff(x1) == 0, na.rm = T), "sampling:", info$samplingRaw[1], "\n")
         trans$gaps <- rep(T, length(x))
       }
     } else {
