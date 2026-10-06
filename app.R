@@ -6322,9 +6322,9 @@ server <- function(input,output,session) {
                              # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
                              method <- "L-BFGS-B"
                              # computing the relative tolerance on the increase of the log-lik (factr)
-                             loglik_stop <- 2 # approximate log-lik change per degree of freedom amongst noise models
+                             loglik_stop <- 1 # less than the approximate log-lik change per degree of freedom among noise models
                              if (component > 1) {
-                               sample <- info$points
+                               sample <- 0.8 * info$points
                              } else {
                                if (info$white) {
                                  sample <- 1.4 * info$points
@@ -6333,7 +6333,7 @@ server <- function(input,output,session) {
                                }
                              }
                              factr <- loglik_stop / (.Machine$double.eps * sample)
-                             if (messages > 2) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "%\n")
+                             if (messages > 2) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "% ( factr =", format(factr, scientific = T, digits = 2), ")\n")
                              # the Hessian is computed after the fit with optimHess
                              fitmle <- optim(par = apriori,
                                              fn = loglik_global,
@@ -17372,13 +17372,15 @@ server <- function(input,output,session) {
       }
       U <- toeplitz(u[gaps])
       U[upper.tri(U)] <- 0
+      U <- U * sampling^(-k/4)
       if (exists("tcrossprod_cpp", mode = "function")) {
         UZt <- tcrossprod_cpp(U,Z)
       } else {
         UZt <- tcrossprod(U,Z)
       }
-      derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*ZZt + UZt + t(UZt)) # from Gobron 2020
-      derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
+      # derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*ZZt + UZt + t(UZt)) # from Gobron 2020
+      # derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
+      derivZ <- -0.5*log(sampling)*ZZt + UZt + t(UZt)
       return(list(ZZt, derivZ))
     } else {
       return(list(ZZt))
