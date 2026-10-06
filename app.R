@@ -17699,7 +17699,7 @@ server <- function(input,output,session) {
     if (isTruthy(times) && is.logical(length(times) > 1 && all(!is.na(times)) && all(times > .Machine$double.eps) && all(!is.infinite(times)) && all(times == floor(times)))) {
       if (length(times) > 1 && all(!is.na(times)) && all(times > .Machine$double.eps) && all(!is.infinite(times)) && all(times == floor(times))) {
         trans$gaps <- c(T, unlist(lapply(1:length(times), function(i) ifelse(times[i] == 1, T, list(unlist(list(rep(F, times[i] - 1),T)))))))
-      } else if ((any(times == 0) && any(times > 0)) || any(times != floor(times))) {
+      } else if ((any(times == 0, na.rm = T) && any(times > 0, na.rm = T)) || any(times != floor(times), na.rm = T)) {
         if (!isTruthy(info$gaps)) {
           info$gaps <- T
           shinyjs::delay(300, showNotification(HTML(paste("The sampling of the series is not regular.<br>Unable to assess data gaps in the series.")), action = NULL, duration = 10, closeButton = T, id = "bad_gaps", type = "error", session = getDefaultReactiveDomain()))
