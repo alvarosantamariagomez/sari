@@ -13542,14 +13542,17 @@ server <- function(input,output,session) {
     } else if (format == 2) {
       ref_pos <- grep("^XYZ Reference position",readLines(filein, n = 20, ok = T, warn = F, skipNul = T), ignore.case = F, perl = T, value = T)
       if (length(ref_pos) > 0) {
-        shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T))
-        x <- unlist(strsplit(ref_pos, split = " +"))[5]
-        y <- unlist(strsplit(ref_pos, split = " +"))[6]
-        z <- unlist(strsplit(ref_pos, split = " +"))[7]
-        stationGeo <- do.call(xyz2llh,as.list(as.numeric(c(x,y,z))))
-        lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
-        lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
-        coordinates <- c(x,y,z,lat,lon)
+        xyz <- suppressWarnings(as.numeric(unlist(strsplit(trimws(sub("^XYZ Reference position[ :=]*", "", ref_pos[1])), "[ \t]+"))[1:3]))
+        if (anyNA(xyz)) {
+          showNotification(paste0("Cannot parse XYZ reference position: ", ref_pos[1]), duration = 10, closeButton = T, id = "bad_ref_position", type = "error", session = getDefaultReactiveDomain())
+          coordinates <- NULL
+        } else {
+          shinyjs::delay(100, updateRadioButtons(session, inputId = "station_coordinates", choices = list("Cartesian" = 1, "Geographic" = 2), selected = 1, inline = T))
+          stationGeo <- do.call(xyz2llh, as.list(xyz))
+          lat <- sprintf("%.6f", stationGeo[1] * 180/pi)
+          lon <- sprintf("%.6f", stationGeo[2] * 180/pi)
+          coordinates <- c(xyz, lat, lon)
+        }
       }
     } else if (format == 3) {
       skip <- which(grepl("site YYMMMDD", readLines(filein, warn = F)))
