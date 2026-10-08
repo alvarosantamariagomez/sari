@@ -16439,9 +16439,8 @@ server <- function(input,output,session) {
       incr <- abs(as.numeric(sprintf("%.*f", decimals1, diff(sort(frac)))))
       incr <- incr[incr != 0]
       if (isTruthy(incr)) {
-        # min_incr <- format(min(incr), nsmall = 1, scientific = F)
-        min_incr <- format(min(incr), nsmall = 2, digits = 1, scientific = F)
-        decimals2 <- nchar(min_incr) - 2
+        min_incr <- sub("0+$", "", sprintf("%.*f", decimals1, min(incr)))
+        decimals2 <- nchar(sub("^[0-9]*\\.", "", min_incr))
         decimals <- min(decimals1,decimals2)
         if (!isTruthy(is.numeric(decimals)) || decimals < 1) {
           return(extra)
