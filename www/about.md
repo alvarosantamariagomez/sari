@@ -327,6 +327,7 @@ The user can upload any combination of the following possibilities:
 12. The units of the *secondary series* can be scaled using the `scale factor` option. Also the y-axis values of the *secondary series* are partially controlled by the `same scale` and `same axis` options with respect to the left y-axis of the *primary series*. The `same scale` option will force the right y-axis to have the same range as the left y-axis, but not necessarily the same values. The `same axis` option will force the right y-axis to be the same as the left y-axis.  
 13. The `full series` option will expand the plot area to show both the *primary* and *secondary series*. By default, the plot are only includes the *primary series*.  
 14. If the coordinate components of either the *primary* or the *secondary* series are unknown, the `N@E` option can be used to swap the North and East components of the *secondary series* to match the components of the *primary series*.  
+15. If both the *primary* and *secondary* series are 1D series, activating the `synchronize` option will make that the next change of the selected columns will be applied to both, independently if the change is applied to the *primary* or *secondary* series.  
 
 <h5 id="notes-on-the-plate-motion-model"></h5>
 

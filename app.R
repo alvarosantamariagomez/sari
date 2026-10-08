@@ -1187,7 +1187,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                        div(style = "margin-right: -1em", uiOutput("fileSeries2"))
                                                                                 ),
                                                                                 column(4,
-                                                                                       div(style = "padding: 0px 0px; margin-top:1em",
+                                                                                       div(style = "padding: 0px 0px; margin-top:-2em",
                                                                                            checkboxInput(inputId = "fullSeries",
                                                                                                          div("Full series",
                                                                                                              helpPopup("This option shows the total length of the secondary series.<br>
@@ -1204,6 +1204,10 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                            checkboxInput(inputId = "ne",
                                                                                                          div(HTML("N @ E"),
                                                                                                              helpPopup("This option swaps the columns of the North and East components of the secondary series to match those of the primary series.", anchor = "notes-on-the-secondary-series")),
+                                                                                                         value = F) |> autoCompleteOff(),
+                                                                                           checkboxInput(inputId = "synchroCol",
+                                                                                                         div(HTML("Synchronize"),
+                                                                                                             helpPopup("This option synchronizes the columns of the secondary series to match those of the primary series, if both are 1D seres.", anchor = "notes-on-the-secondary-series")),
                                                                                                          value = F) |> autoCompleteOff()
                                                                                        )
                                                                                 )
@@ -3086,16 +3090,25 @@ server <- function(input,output,session) {
   epoch_d <- reactive(input$epoch) %>% debounce(1000, priority = 1000)
   observeEvent(epoch_d(), {
     inputs$epoch <-  suppressWarnings(as.numeric(trimws(epoch_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (isTruthy(inputs$epoch) && isTruthy(input$synchroCol)) {
+      inputs$epoch2 <- inputs$epoch
+    }
   }, priority = 1000)
 
   variable_d <- reactive(input$variable) %>% debounce(1000, priority = 1000)
   observeEvent(variable_d(), {
     inputs$variable <-  suppressWarnings(as.numeric(trimws(variable_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (isTruthy(inputs$variable) && isTruthy(input$synchroCol)) {
+      inputs$variable2 <- inputs$variable
+    }
   }, priority = 1000)
 
   errorBar_d <- reactive(input$errorBar) %>% debounce(1000, priority = 1000)
   observeEvent(errorBar_d(), {
     inputs$errorBar <-  suppressWarnings(as.numeric(trimws(errorBar_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (isTruthy(inputs$errorBar) && isTruthy(input$synchroCol)) {
+      inputs$errorBar2 <- inputs$errorBar
+    }
   }, priority = 1000)
 
   ids_d <- reactive(input$ids) %>% debounce(1000, priority = 1000)
@@ -3106,16 +3119,25 @@ server <- function(input,output,session) {
   epoch2_d <- reactive(input$epoch2) %>% debounce(1000, priority = 1000)
   observeEvent(epoch2_d(), {
     inputs$epoch2 <-  suppressWarnings(as.numeric(trimws(epoch2_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (isTruthy(inputs$epoch2) && isTruthy(input$synchroCol)) {
+      inputs$epoch <- inputs$epoch2
+    }
   }, priority = 1000)
 
   variable2_d <- reactive(input$variable2) %>% debounce(1000, priority = 1000)
   observeEvent(variable2_d(), {
     inputs$variable2 <-  suppressWarnings(as.numeric(trimws(variable2_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (isTruthy(inputs$variable2) && isTruthy(input$synchroCol)) {
+      inputs$variable <- inputs$variable2
+    }
   }, priority = 1000)
 
   errorBar2_d <- reactive(input$errorBar2) %>% debounce(1000, priority = 1000)
   observeEvent(errorBar2_d(), {
     inputs$errorBar2 <-  suppressWarnings(as.numeric(trimws(errorBar2_d(), which = "both", whitespace = "[ \t\r\n]")))
+    if (isTruthy(inputs$errorBar2) && isTruthy(input$synchroCol)) {
+      inputs$errorBar <- inputs$errorBar2
+    }
   }, priority = 1000)
 
   station_x_d <- reactive(input$station_x) %>% debounce(1000, priority = 1000)
@@ -7377,6 +7399,9 @@ server <- function(input,output,session) {
             } else {
               disable("ne")
             }
+            if (input$format == 4 && input$format2 == 4) {
+              enable("synchroCol")
+            }
             if (input$optionSecondary == 0 && info$last_optionSecondary > 0) {
               # setting new axis limits
               if (input$tab == 4 || input$tab == 5) {
@@ -7393,6 +7418,7 @@ server <- function(input,output,session) {
               }
               ranges$x1 <- c(info$minx, info$maxx)
               ranges$y1 <- NULL
+              disable("synchroCol")
             }
             if (input$optionSecondary == 1) {
               if (isTruthy(input$fullSeries) ||
@@ -7445,6 +7471,7 @@ server <- function(input,output,session) {
             disable("variable2")
             disable("errorBar2")
             disable("swap")
+            disable("synchroCol")
           }
           if (isTruthy(db1[[info$db1]]$res1) && isTruthy(db1[[info$db1]]$res2) && isTruthy(db1[[info$db1]]$res3) &&
               sum(abs(db1[[info$db1]]$res1), na.rm = T) > 0 && sum(abs(db1[[info$db1]]$res2), na.rm = T) > 0 && sum(abs(db1[[info$db1]]$res3), na.rm = T) > 0) {
@@ -9319,12 +9346,26 @@ server <- function(input,output,session) {
     if (isTruthy(input$powerl)) {
       updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
     }
+    if (isTruthy(input$synchroCol)) {
+      updateTextInput(session, inputId = "epoch2", label = "", value = inputs$epoch)
+      updateTextInput(session, inputId = "variable2", label = "", value = inputs$variable)
+      if (isTruthy(input$sigmas)) {
+        updateTextInput(session, inputId = "errorBar2", label = "", value = inputs$errorBar)
+      }
+    }
   }, priority = 6)
   observeEvent(c(inputs$epoch2, inputs$variable2, inputs$errorBar2), {
     req(db2[[info$db2]])
     if (messages > 4) cat(file = stderr(), mySession, "From: observe format 1D secondary\n")
     db2$original <- db2$resampled <- NULL
     digest(2)
+    if (isTruthy(input$synchroCol)) {
+      updateTextInput(session, inputId = "epoch", label = "", value = inputs$epoch2)
+      updateTextInput(session, inputId = "variable", label = "", value = inputs$variable2)
+      if (isTruthy(input$sigmas)) {
+        updateTextInput(session, inputId = "errorBar", label = "", value = inputs$errorBar2)
+      }
+    }
   }, priority = 6)
 
   # Observe averaging ####
