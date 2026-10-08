@@ -6378,336 +6378,336 @@ server <- function(input,output,session) {
                            req(info$stop)
                          }
                        }
+                       
+                       ##* convergence ####
+                       if (!is.na(convergence)) {
+                         if (convergence == 0) {
+                           if (messages > 2) cat(file = stderr(), mySession, fitmle$message, "\n")
+                           if (input$wiener) {
+                             kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
+                           }
+                           trans$mle <- T
+                           sd_noises <- NA
+                           line3 <- NULL
+                           if (input$noise_unc) {
+                             gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
+                             fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
+                             sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
+                           }
+                           i <- 0
+                           sigmaFL <- NULL
+                           sigmaPL <- NULL
+                           sigmaRW <- NULL
+                           sigmaK <- NULL
+                           if (input$sunits == 1) {
+                             unit <- "m"
+                           } else if (input$sunits == 2) {
+                             unit <- "mm"
+                           } else {
+                             unit <- ""
+                           }
+                           if (isTruthy(info$white)) {
+                             i <- i + 1
+                             sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
+                             trans$noise[1] <- sigmaWH
+                             if (input$noise_unc) {
+                               # seParmsWH <- sd_noises[i]/scaling
+                               seParmsWH <- sd_noises[i] * sigmaWH / 2
+                               trans$noise[2] <- seParmsWH
+                               if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
+                                 updateTextInput(session, inputId = "verif_white", value = sigmaWH)
+                               } else {
+                                 updateTextInput(session, inputId = "verif_white", value = "0")
+                               }
+                             } else {
+                               updateTextInput(session, inputId = "verif_white", value = sigmaWH)
+                             }
+                             if (input$wiener) {
+                               qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
+                               trans$white <- unlist(as.list(res %*% qQ))
+                               if (input$sigmas && length(resError) > 0) {
+                                 trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                               }
+                             }
+                             output$est.white <- renderUI({
+                               line1 <- "White noise:"
+                               line2 <- formatting(sigmaWH,1)
+                               if (input$noise_unc) {
+                                 line3 <- paste("+/-", formatting(seParmsWH,1))
+                               }
+                               HTML(paste(line1,'<br/>',line2,unit,'<br/>',line3))
+                             })
+                           } else {
+                             updateTextInput(session, inputId = "verif_white", value = "0")
+                             trans$noise[1] <- NA
+                             trans$noise[2] <- NA
+                           }
+                           if (isTruthy(info$flicker)) {
+                             i <- i + 1
+                             sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
+                             trans$noise[3] <- sigmaFL
+                             if (input$noise_unc) {
+                               # seParmsFL <- sd_noises[i]/scaling
+                               seParmsFL <- sd_noises[i] * sigmaFL / 2
+                               trans$noise[4] <- seParmsFL
+                               if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
+                                 updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+                               } else {
+                                 updateTextInput(session, inputId = "verif_fl", value = "0")
+                               }
+                             } else {
+                               updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
+                             }
+                             if (input$wiener) {
+                               qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
+                               trans$flicker <- unlist(as.list(res %*% qQ))
+                               if (input$sigmas && length(resError) > 0) {
+                                 trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                               }
+                             }
+                             output$est.flicker <- renderUI({
+                               line1 <- "Flicker noise:"
+                               line2 <- formatting(sigmaFL,1)
+                               if (input$noise_unc) {
+                                 line3 <- paste("+/-", formatting(seParmsFL,1))
+                               }
+                               HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
+                             })
+                             updateRadioButtons(session, inputId = "typeColor", selected = 1)
+                           } else {
+                             updateTextInput(session, inputId = "verif_fl", value = "0")
+                             trans$noise[3] <- NA
+                             trans$noise[4] <- NA
+                           }
+                           if (isTruthy(info$randomw)) {
+                             i <- i + 1
+                             sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
+                             trans$noise[5] <- sigmaRW
+                             if (input$noise_unc) {
+                               # seParmsRW <- sd_noises[i]/scaling
+                               seParmsRW <- sd_noises[i] * sigmaRW / 2
+                               trans$noise[6] <- seParmsRW
+                               if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
+                                 updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
+                               } else {
+                                 updateTextInput(session, inputId = "verif_rw", value = "0")
+                               }
+                             } else {
+                               updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
+                             }
+                             if (input$wiener) {
+                               qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
+                               trans$randomw <- unlist(as.list(res %*% qQ))
+                               if (input$sigmas && length(resError) > 0) {
+                                 trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                               }
+                             }
+                             output$est.randomw <- renderUI({
+                               line1 <- "Random walk:"
+                               line2 <- formatting(sigmaRW,1)
+                               if (input$noise_unc) {
+                                 line3 <- paste("+/-", formatting(seParmsRW,1))
+                               }
+                               HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
+                             })
+                             updateRadioButtons(session, inputId = "typeColor", selected = 1)
+                           } else {
+                             updateTextInput(session, inputId = "verif_rw", value = "0")
+                             trans$noise[5] <- NA
+                             trans$noise[6] <- NA
+                           }
+                           if (isTruthy(info$powerl)) {
+                             i <- i + 1
+                             sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
+                             trans$noise[7] <- sigmaPL
+                             if (input$noise_unc) {
+                               # seParmsPL <- sd_noises[i]/scaling
+                               seParmsPL <- sd_noises[i] * sigmaPL / 2
+                               trans$noise[8] <- seParmsPL
+                               if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
+                                 updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
+                               } else {
+                                 updateTextInput(session, inputId = "verif_pl", value = "0")
+                               }
+                             } else {
+                               updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
+                             }
+                             if (input$wiener) {
+                               qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
+                               trans$powerl <- unlist(as.list(res %*% qQ))
+                               if (input$sigmas && length(resError) > 0) {
+                                 trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                               }
+                             }
+                             output$est.powerl <- renderUI({
+                               line1 <- "Power-law:"
+                               line2 <- formatting(sigmaPL,1)
+                               if (input$noise_unc) {
+                                 line3 <- paste("+/-", formatting(seParmsPL,1))
+                               }
+                               HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
+                             })
+                             updateRadioButtons(session, inputId = "typeColor", selected = 2)
+                             i <- i + 1
+                             sigmaK <- fitmle$par[i] + 3
+                             trans$noise[9] <- sigmaK
+                             if (input$noise_unc) {
+                               seParmsK <- sd_noises[i]
+                               trans$noise[10] <- seParmsK
+                               if (isTruthy(sigmaK) && isTruthy(seParmsK) && abs(sigmaK) > seParmsK * 3) {
+                                 updateTextInput(session, inputId = "verif_k", value = sigmaK)
+                               } else {
+                                 updateTextInput(session, inputId = "verif_k", value = "0")
+                               }
+                             } else {
+                               updateTextInput(session, inputId = "verif_k", value = sigmaK)
+                             }
+                             output$est.index <- renderUI({
+                               line1 <- "Spectral index:"
+                               line2 <- format(sigmaK, nsmall = 3, trim = F, scientific = F)
+                               if (input$noise_unc) {
+                                 if (isTruthy(seParmsK) && seParmsK <= 0.0005) {
+                                   seParmsK <- 0.001
+                                 }
+                                 line3 <- paste("+/-", format(seParmsK, nsmall = 3, trim = F, scientific = F))
+                               }
+                               HTML(paste(line1,'<br/>',line2, '<br/>',line3))
+                             })
+                           } else {
+                             updateTextInput(session, inputId = "verif_pl", value = "0")
+                             updateTextInput(session, inputId = "verif_k", value = "0")
+                             trans$noise[7] <- NA
+                             trans$noise[8] <- NA
+                             trans$noise[9] <- NA
+                             trans$noise[10] <- NA
+                           }
+                           end.time <- Sys.time()
+                           if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
+                           time.taken <- end.time - start.time
+                           if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
+                           if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
+                             if (length(fitmle$value) > 0) {
+                               trans$noise[11] <- fitmle$value
+                             } else {
+                               trans$noise[11] <- NA
+                             }
+                             output$est.mle <- renderUI({
+                               if (isTruthy(trans$mle)) {
+                                 line1 <- sprintf("<br/>log-Likelihood = %.4f",fitmle$value/-1)
+                                 HTML(line1)
+                               } else {
+                                 NULL
+                               }
+                             })
+                           }
+                           output$est.unc <- renderUI({
+                             if ("Linear" %in% input$model && input$fitType == 1) {
+                               req(trans$unc)
+                               isolate({
+                                 estimateFormalUncertainty <- function() {
+                                   unc_pl <- 0
+                                   if (isTruthy(sigmaFL)) {
+                                     unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling,points) # general power-law trend uncertainty
+                                     # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
+                                     # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                                   }
+                                   if (isTruthy(sigmaRW)) {
+                                     unc <- pl_trend_unc(sigmaRW,-2,info$sampling,points) # general power-law trend uncertainty
+                                     # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
+                                     unc_pl <- sqrt(unc_pl^2 + unc^2)
+                                   }
+                                   if (isTruthy(sigmaPL)) {
+                                     # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
+                                     unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
+                                     unc_pl <- sqrt(unc_pl^2 + unc^2)
+                                   }
+                                   unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
+                                   return(list(unc_pl,unc_white))
+                                 }
+                                 rate_ids <- which(grepl("Rate",rownames(trans$LScoefs)))
+                                 if (input$breaking && length(trans$breakEpochs) > 0 && input$trendType > 0) {
+                                   if (length(rate_ids) == (length(trans$breakEpochs) + 1)) {
+                                     line <- ""
+                                     for (breaks in seq_len(length(trans$breakEpochs) + 1)) {
+                                       if (breaks == 1) {
+                                         points <- sum(trans$x <= trans$breakEpochs[breaks])
+                                       } else if (breaks == length(trans$breakEpochs) + 1) {
+                                         points <- sum(trans$x > trans$breakEpochs[breaks - 1])
+                                       } else {
+                                         points <- sum(trans$x > trans$breakEpochs[breaks - 1] & trans$x <= trans$breakEpochs[breaks])
+                                       }
+                                       if (isTruthy(trans$mle)) {
+                                         unc <- estimateFormalUncertainty()
+                                         unc_pl <- unc[[1]]
+                                         unc_white <- unc[[2]]
+                                         if (isTruthy(unc_pl) && unc_pl > 0) {
+                                           trans$LScoefs[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
+                                           # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                                           trans$results$coefficients[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
+                                           trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
+                                           trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
+                                           line1 <- sprintf("<br/>Colored / white rate error ratio %d = %.2f", breaks,unc_pl/unc_white)
+                                         } else {
+                                           line1 <- NULL
+                                         }
+                                       } else {
+                                         if (isTruthy(trans$LScoefs[rate_ids[breaks],2])) {
+                                           trans$LScoefs[rate_ids[breaks],2] <- trans$unc[breaks]
+                                           # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
+                                         }
+                                         if (isTruthy(trans$results$coefficients[rate_ids[breaks],2])) {
+                                           trans$results$coefficients[rate_ids[breaks],2] <- trans$unc[breaks]
+                                           trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
+                                           trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
+                                         }
+                                         line1 <- NULL
+                                       }
+                                       line <- paste(line, line1, sep = "<br/>")
+                                     }
+                                     updateOverview() # updating the overview plot
+                                     HTML(line)
+                                   }
+                                 } else {
+                                   points <- info$points
+                                   if (isTruthy(trans$mle)) {
+                                     unc <- estimateFormalUncertainty()
+                                     unc_pl <- unc[[1]]
+                                     unc_white <- unc[[2]]
+                                     if (isTruthy(unc_pl) && unc_pl > 0) {
+                                       trans$LScoefs[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                                       trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
+                                       trans$results$coefficients[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
+                                       trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
+                                       trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
+                                       line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
+                                     } else {
+                                       line1 <- NULL
+                                     }
+                                   } else {
+                                     if (isTruthy(trans$LScoefs[rate_ids,2])) {
+                                       trans$LScoefs[rate_ids,2] <- trans$unc
+                                       trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
+                                     }
+                                     if (isTruthy(trans$results$coefficients[rate_ids,2])) {
+                                       trans$results$coefficients[rate_ids,2] <- trans$unc
+                                       trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
+                                       trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
+                                     }
+                                     line1 <- NULL
+                                   }
+                                   updateOverview() # updating the overview plot
+                                   HTML(line1)
+                                 }
+                               })
+                             }
+                           })
+                         } else {
+                           trans$mle <- F
+                           showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
+                         }
+                       }
                        setProgress(1)
                      })
-
-        ##* convergence ####
-        if (!is.na(convergence)) {
-          if (convergence == 0) {
-            if (messages > 2) cat(file = stderr(), mySession, fitmle$message, "\n")
-            if (input$wiener) {
-              kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
-            }
-            trans$mle <- T
-            sd_noises <- NA
-            line3 <- NULL
-            if (input$noise_unc) {
-              gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
-              fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
-              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
-            }
-            i <- 0
-            sigmaFL <- NULL
-            sigmaPL <- NULL
-            sigmaRW <- NULL
-            sigmaK <- NULL
-            if (input$sunits == 1) {
-              unit <- "m"
-            } else if (input$sunits == 2) {
-              unit <- "mm"
-            } else {
-              unit <- ""
-            }
-            if (isTruthy(info$white)) {
-              i <- i + 1
-              sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
-              trans$noise[1] <- sigmaWH
-              if (input$noise_unc) {
-                # seParmsWH <- sd_noises[i]/scaling
-                seParmsWH <- sd_noises[i] * sigmaWH / 2
-                trans$noise[2] <- seParmsWH
-                if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
-                  updateTextInput(session, inputId = "verif_white", value = sigmaWH)
-                } else {
-                  updateTextInput(session, inputId = "verif_white", value = "0")
-                }
-              } else {
-                updateTextInput(session, inputId = "verif_white", value = sigmaWH)
-              }
-              if (input$wiener) {
-                qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
-                trans$white <- unlist(as.list(res %*% qQ))
-                if (input$sigmas && length(resError) > 0) {
-                  trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-                }
-              }
-              output$est.white <- renderUI({
-                line1 <- "White noise:"
-                line2 <- formatting(sigmaWH,1)
-                if (input$noise_unc) {
-                  line3 <- paste("+/-", formatting(seParmsWH,1))
-                }
-                HTML(paste(line1,'<br/>',line2,unit,'<br/>',line3))
-              })
-            } else {
-              updateTextInput(session, inputId = "verif_white", value = "0")
-              trans$noise[1] <- NA
-              trans$noise[2] <- NA
-            }
-            if (isTruthy(info$flicker)) {
-              i <- i + 1
-              sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
-              trans$noise[3] <- sigmaFL
-              if (input$noise_unc) {
-                # seParmsFL <- sd_noises[i]/scaling
-                seParmsFL <- sd_noises[i] * sigmaFL / 2
-                trans$noise[4] <- seParmsFL
-                if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
-                  updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
-                } else {
-                  updateTextInput(session, inputId = "verif_fl", value = "0")
-                }
-              } else {
-                updateTextInput(session, inputId = "verif_fl", value = sigmaFL)
-              }
-              if (input$wiener) {
-                qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
-                trans$flicker <- unlist(as.list(res %*% qQ))
-                if (input$sigmas && length(resError) > 0) {
-                  trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-                }
-              }
-              output$est.flicker <- renderUI({
-                line1 <- "Flicker noise:"
-                line2 <- formatting(sigmaFL,1)
-                if (input$noise_unc) {
-                  line3 <- paste("+/-", formatting(seParmsFL,1))
-                }
-                HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
-              })
-              updateRadioButtons(session, inputId = "typeColor", selected = 1)
-            } else {
-              updateTextInput(session, inputId = "verif_fl", value = "0")
-              trans$noise[3] <- NA
-              trans$noise[4] <- NA
-            }
-            if (isTruthy(info$randomw)) {
-              i <- i + 1
-              sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
-              trans$noise[5] <- sigmaRW
-              if (input$noise_unc) {
-                # seParmsRW <- sd_noises[i]/scaling
-                seParmsRW <- sd_noises[i] * sigmaRW / 2
-                trans$noise[6] <- seParmsRW
-                if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
-                  updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
-                } else {
-                  updateTextInput(session, inputId = "verif_rw", value = "0")
-                }
-              } else {
-                updateTextInput(session, inputId = "verif_rw", value = sigmaRW)
-              }
-              if (input$wiener) {
-                qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
-                trans$randomw <- unlist(as.list(res %*% qQ))
-                if (input$sigmas && length(resError) > 0) {
-                  trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-                }
-              }
-              output$est.randomw <- renderUI({
-                line1 <- "Random walk:"
-                line2 <- formatting(sigmaRW,1)
-                if (input$noise_unc) {
-                  line3 <- paste("+/-", formatting(seParmsRW,1))
-                }
-                HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
-              })
-              updateRadioButtons(session, inputId = "typeColor", selected = 1)
-            } else {
-              updateTextInput(session, inputId = "verif_rw", value = "0")
-              trans$noise[5] <- NA
-              trans$noise[6] <- NA
-            }
-            if (isTruthy(info$powerl)) {
-              i <- i + 1
-              sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
-              trans$noise[7] <- sigmaPL
-              if (input$noise_unc) {
-                # seParmsPL <- sd_noises[i]/scaling
-                seParmsPL <- sd_noises[i] * sigmaPL / 2
-                trans$noise[8] <- seParmsPL
-                if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
-                  updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
-                } else {
-                  updateTextInput(session, inputId = "verif_pl", value = "0")
-                }
-              } else {
-                updateTextInput(session, inputId = "verif_pl", value = sigmaPL)
-              }
-              if (input$wiener) {
-                qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
-                trans$powerl <- unlist(as.list(res %*% qQ))
-                if (input$sigmas && length(resError) > 0) {
-                  trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
-                }
-              }
-              output$est.powerl <- renderUI({
-                line1 <- "Power-law:"
-                line2 <- formatting(sigmaPL,1)
-                if (input$noise_unc) {
-                  line3 <- paste("+/-", formatting(seParmsPL,1))
-                }
-                HTML(paste(line1,'<br/>',line2, unit, '<br/>',line3))
-              })
-              updateRadioButtons(session, inputId = "typeColor", selected = 2)
-              i <- i + 1
-              sigmaK <- fitmle$par[i] + 3
-              trans$noise[9] <- sigmaK
-              if (input$noise_unc) {
-                seParmsK <- sd_noises[i]
-                trans$noise[10] <- seParmsK
-                if (isTruthy(sigmaK) && isTruthy(seParmsK) && abs(sigmaK) > seParmsK * 3) {
-                  updateTextInput(session, inputId = "verif_k", value = sigmaK)
-                } else {
-                  updateTextInput(session, inputId = "verif_k", value = "0")
-                }
-              } else {
-                updateTextInput(session, inputId = "verif_k", value = sigmaK)
-              }
-              output$est.index <- renderUI({
-                line1 <- "Spectral index:"
-                line2 <- format(sigmaK, nsmall = 3, trim = F, scientific = F)
-                if (input$noise_unc) {
-                  if (isTruthy(seParmsK) && seParmsK <= 0.0005) {
-                    seParmsK <- 0.001
-                  }
-                  line3 <- paste("+/-", format(seParmsK, nsmall = 3, trim = F, scientific = F))
-                }
-                HTML(paste(line1,'<br/>',line2, '<br/>',line3))
-              })
-            } else {
-              updateTextInput(session, inputId = "verif_pl", value = "0")
-              updateTextInput(session, inputId = "verif_k", value = "0")
-              trans$noise[7] <- NA
-              trans$noise[8] <- NA
-              trans$noise[9] <- NA
-              trans$noise[10] <- NA
-            }
-            end.time <- Sys.time()
-            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
-            time.taken <- end.time - start.time
-            if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
-            if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
-              if (length(fitmle$value) > 0) {
-                trans$noise[11] <- fitmle$value
-              } else {
-                trans$noise[11] <- NA
-              }
-              output$est.mle <- renderUI({
-                if (isTruthy(trans$mle)) {
-                  line1 <- sprintf("<br/>log-Likelihood = %.4f",fitmle$value/-1)
-                  HTML(line1)
-                } else {
-                  NULL
-                }
-              })
-            }
-            output$est.unc <- renderUI({
-              if ("Linear" %in% input$model && input$fitType == 1) {
-                req(trans$unc)
-                isolate({
-                  estimateFormalUncertainty <- function() {
-                    unc_pl <- 0
-                    if (isTruthy(sigmaFL)) {
-                      unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling,points) # general power-law trend uncertainty
-                      # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
-                      # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
-                    }
-                    if (isTruthy(sigmaRW)) {
-                      unc <- pl_trend_unc(sigmaRW,-2,info$sampling,points) # general power-law trend uncertainty
-                      # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
-                      unc_pl <- sqrt(unc_pl^2 + unc^2)
-                    }
-                    if (isTruthy(sigmaPL)) {
-                      # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
-                      unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
-                      unc_pl <- sqrt(unc_pl^2 + unc^2)
-                    }
-                    unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
-                    return(list(unc_pl,unc_white))
-                  }
-                  rate_ids <- which(grepl("Rate",rownames(trans$LScoefs)))
-                  if (input$breaking && length(trans$breakEpochs) > 0 && input$trendType > 0) {
-                    if (length(rate_ids) == (length(trans$breakEpochs) + 1)) {
-                      line <- ""
-                      for (breaks in seq_len(length(trans$breakEpochs) + 1)) {
-                        if (breaks == 1) {
-                          points <- sum(trans$x <= trans$breakEpochs[breaks])
-                        } else if (breaks == length(trans$breakEpochs) + 1) {
-                          points <- sum(trans$x > trans$breakEpochs[breaks - 1])
-                        } else {
-                          points <- sum(trans$x > trans$breakEpochs[breaks - 1] & trans$x <= trans$breakEpochs[breaks])
-                        }
-                        if (isTruthy(trans$mle)) {
-                          unc <- estimateFormalUncertainty()
-                          unc_pl <- unc[[1]]
-                          unc_white <- unc[[2]]
-                          if (isTruthy(unc_pl) && unc_pl > 0) {
-                            trans$LScoefs[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
-                            # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
-                            trans$results$coefficients[rate_ids[breaks],2] <- sqrt(unc_pl^2 + trans$unc[breaks]^2)
-                            trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
-                            trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
-                            line1 <- sprintf("<br/>Colored / white rate error ratio %d = %.2f", breaks,unc_pl/unc_white)
-                          } else {
-                            line1 <- NULL
-                          }
-                        } else {
-                          if (isTruthy(trans$LScoefs[rate_ids[breaks],2])) {
-                            trans$LScoefs[rate_ids[breaks],2] <- trans$unc[breaks]
-                            # trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[2,2]
-                          }
-                          if (isTruthy(trans$results$coefficients[rate_ids[breaks],2])) {
-                            trans$results$coefficients[rate_ids[breaks],2] <- trans$unc[breaks]
-                            trans$results$coefficients[rate_ids[breaks],3] <- abs(trans$results$coefficients[rate_ids[breaks],1]) / trans$results$coefficients[rate_ids[breaks],2]
-                            trans$results$coefficients[rate_ids[breaks],4] <- 2 * pt(abs(trans$results$coefficients[rate_ids[breaks],3]), trans$results$df , lower.tail = F)[2]
-                          }
-                          line1 <- NULL
-                        }
-                        line <- paste(line, line1, sep = "<br/>")
-                      }
-                      updateOverview() # updating the overview plot
-                      HTML(line)
-                    }
-                  } else {
-                    points <- info$points
-                    if (isTruthy(trans$mle)) {
-                      unc <- estimateFormalUncertainty()
-                      unc_pl <- unc[[1]]
-                      unc_white <- unc[[2]]
-                      if (isTruthy(unc_pl) && unc_pl > 0) {
-                        trans$LScoefs[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                        trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
-                        trans$results$coefficients[rate_ids,2] <- sqrt(unc_pl^2 + trans$unc^2)
-                        trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
-                        trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
-                        line1 <- sprintf("<br/>Colored/white rate error ratio = %.2f", unc_pl/unc_white)
-                      } else {
-                        line1 <- NULL
-                      }
-                    } else {
-                      if (isTruthy(trans$LScoefs[rate_ids,2])) {
-                        trans$LScoefs[rate_ids,2] <- trans$unc
-                        trans[[paste0("plotInfo", input$tab)]][[info$db1]][2] <- trans$LScoefs[rate_ids,2]
-                      }
-                      if (isTruthy(trans$results$coefficients[rate_ids,2])) {
-                        trans$results$coefficients[rate_ids,2] <- trans$unc
-                        trans$results$coefficients[rate_ids,3] <- abs(trans$results$coefficients[rate_ids,1]) / trans$results$coefficients[rate_ids,2]
-                        trans$results$coefficients[rate_ids,4] <- 2 * pt(abs(trans$results$coefficients[rate_ids,3]), trans$results$df , lower.tail = F)[2]
-                      }
-                      line1 <- NULL
-                    }
-                    updateOverview() # updating the overview plot
-                    HTML(line1)
-                  }
-                })
-              }
-            })
-          } else {
-            trans$mle <- F
-            showNotification(HTML("The MLE optimization did not converge.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_mle", type = "error", session = getDefaultReactiveDomain())
-          }
-        }
       })
     }
     #
