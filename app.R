@@ -6086,7 +6086,7 @@ server <- function(input,output,session) {
         start.time <- Sys.time()
         if (messages > 2) cat(file = stderr(), mySession, "MLE fit start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
         message <- ""
-        if (isTruthy(info$timeMLE)) {
+        if (isTruthy(info$timeMLE) && !isTruthy(info$local)) {
           if (info$timeMLE < 60) {
             message <- paste("This should take less than 1 min")
           } else {
@@ -6406,7 +6406,9 @@ server <- function(input,output,session) {
                          if (convergence == 0) {
                            if (messages > 2) cat(file = stderr(), mySession, fitmle$message, "\n")
                            if (input$wiener) {
-                             kk <- loglik_global(fitmle$estimate) # updating noise covariance matrix from best noise estimates
+                             # updating noise covariance matrix from best noise estimates
+                             # kk <- loglik_global(fitmle$estimate) # NLM method
+                             kk <- loglik_global(fitmle$par) # L-BFGS-B method
                            }
                            trans$mle <- T
                            sd_noises <- NA
@@ -12023,7 +12025,7 @@ server <- function(input,output,session) {
       }
     }
     # estimating MLE duration
-    if (isTruthy(input$mle)) {
+    if (isTruthy(input$mle) && !isTruthy(info$local)) {
       info$timeMLE <- 0
       if (isTruthy(info$points) && info$points > 0) {
         if (input$white) {
