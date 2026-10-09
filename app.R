@@ -39,6 +39,8 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
   library(spectral, verbose = F, quietly = T)
   library(strucchange, verbose = F, quietly = T)
   library(tseries, verbose = F, quietly = T)
+  library(ragg, verbose = F, quietly = T)
+  library(httr, verbose = F, quietly = T)
 })))
 
 # Function to check and load packages if installed
@@ -2575,7 +2577,7 @@ server <- function(input,output,session) {
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
                           midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
-                          noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, fs = NULL, amp = NULL, psd = NULL,
+                          noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, offsetEpochs = NULL, offsetEpochs1 = NULL, offsetEpochs2 = NULL, offsetEpochs3 = NULL, periods = NULL, breakEpochs = NULL,
                           x_orig = NULL, gaps = NULL,
@@ -2730,7 +2732,7 @@ server <- function(input,output,session) {
   outputOptions(output, "download", suspendWhenHidden = F)
 
   output$about_file <- renderUI({
-    if (input$isMobile && length(input$isMobile) > 0) {
+    if (length(input$isMobile) > 0 && input$isMobile) {
       file <- "www/about_mobile.md"
     } else {
       file <- "www/about.md"
@@ -4759,7 +4761,7 @@ server <- function(input,output,session) {
                        }
                        if (!isTruthy(sigmaR)) {
                          sigmaR <- info$noise/5
-                         max_decimals <- signifdecimal(rangoR, F) + 2
+                         max_decimals <- signifdecimal(sigmaR, F) + 2
                          updateTextInput(session, "ObsError", value = sprintf("%.*f", max_decimals, sigmaR))
                        }
                        # time-variable measurement noise values based on the series error bars
@@ -10717,7 +10719,7 @@ server <- function(input,output,session) {
           y2.range <- suppressWarnings(range(y22[x2 >= x.range[1] & x2 <= x.range[2]]))
         }
         if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
-          y2.range <- range(y12)
+          y2.range <- range(y22)
         }
         plot(x2, y22, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
@@ -10848,7 +10850,7 @@ server <- function(input,output,session) {
           y2.range <- suppressWarnings(range(y32[x2 >= x.range[1] & x2 <= x.range[2]]))
         }
         if (!isTruthy(y2.range) || !all(is.finite(y2.range))) {
-          y2.range <- range(y13)
+          y2.range <- range(y32)
         }
         plot(x2, y32, type = symbol, lwd = 2, cex = 1.1, pch = 23, col = SARIcolors[3], xlab = NA, yaxt = "n", xaxt = "n", ylab = NA, xlim = x.range, ylim = y2.range)
         if (isTruthy(input$sigmas)) {
