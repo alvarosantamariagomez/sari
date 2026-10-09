@@ -163,7 +163,7 @@ withBusyIndicatorCSS <- "
   }"
 
 # Mobile detector (from https://g3rv4.com/2017/08/shiny-detect-mobile-browsers)
-mobileDetect <- function(inputId, value = 0) {
+mobileDetect <- function(inputId) {
   tagList(
     singleton(tags$head(tags$script(src = "mobile.js"))),
     tags$input(id = inputId,
@@ -6076,7 +6076,6 @@ server <- function(input,output,session) {
         resError <- trans$sy
       }
       req(res)
-      vari <- var(res)
       n <- length(res)
       n_all <- length(trans$gaps)
       component <- 0
@@ -17378,17 +17377,6 @@ server <- function(input,output,session) {
       return(NULL)
     }
     return(list(station,filepath,name,format,logfile))
-  }
-  #
-  deg2m <- function(lat,lon,h,dlat,dlon) {
-    #lat, lon, dlat, dlon in radians; h in m
-    a <- 6378137
-    b <- 6356752.314140347
-    e2 <- (a^2 - b^2) / a^2
-    N <- a / sqrt( 1 - e2 * sin(lat)^2) + h
-    n <- N * dlat
-    e <- N * dlon * cos(lat)
-    return(n,e)
   }
   #
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
