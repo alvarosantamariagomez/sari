@@ -647,9 +647,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                selectizeInput(inputId = "product1", label = "Product", choices = list(""), selected = "", multiple = F, options = list(maxItems = 1)) |> autoCompleteOff()
                                                                         ),
                                                                         column(4,
-                                                                               withBusyIndicatorUI(
-                                                                                 uiOutput("showStation1")
-                                                                               )
+                                                                               selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", NULL), selected = "", selectize = T)
                                                                         )
                                                                       ),
                                                                       conditionalPanel(
@@ -2599,8 +2597,10 @@ server <- function(input,output,session) {
   debounceOverview <- throttle(reactive(input$plotAll), 5000, priority = 1000)
   
   # Resetting all parameters to default values each time the page loads (avoids problems when clicking back on the browser)
-  reset("side-panel")
-  reset("main-panel")
+  if (!nzchar(isolate(session$clientData$url_search))) {
+    reset("side-panel")
+    reset("main-panel")
+  }
 
   # Constants ####
   SARIcolors <- c("black", "#DF536B", "#61D04F", "#2297E6", "#28E2E5", "#CD0BBC", "#F5C710", "gray62") # colorblind palette copied from the palette R4 for R versions < 4
@@ -2695,9 +2695,6 @@ server <- function(input,output,session) {
         load_data(4) # load the app
       }
       # setting the IU options that are defined at the server side
-      output$showStation1 <- renderUI({
-        textInput(inputId = "station1", label = "Station", value = "")
-      })
       output$showStation2 <- renderUI({
         if (isTruthy(inputs$station2)) {
           textInput(inputId = "station2", label = "Station", value = "")
@@ -8040,9 +8037,7 @@ server <- function(input,output,session) {
     } else if (input$server1 == "DORIS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("ESA", "GOP", "GRG", "GSC", "IDS", "IGN"), selected = "")
     }
-    output$showStation1 <- renderUI({
-      textInput(inputId = "station1", label = "Station", value = "")
-    })
+    updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", NULL), selected = "")
   })
   observeEvent(input$server2, {
     req(db1[[info$db1]])
@@ -16634,10 +16629,7 @@ server <- function(input,output,session) {
           }
         }
         if (series == 1) {
-          output$showStation1 <- renderUI({
-            showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-            suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-          })
+          updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
         } else if (series == 2) {
           output$showStation2 <- renderUI({
             showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -16667,10 +16659,7 @@ server <- function(input,output,session) {
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
             if (series == 1) {
-              output$showStation1 <- renderUI({
-                showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
+              updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
             } else if (series == 2) {
               output$showStation2 <- renderUI({
                 showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -16716,9 +16705,7 @@ server <- function(input,output,session) {
           }
           stations_available <- read.table("www/JPL_database.txt")$V1
           if (series == 1) {
-            output$showStation1 <- renderUI({
-              suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-            })
+            updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
           } else if (series == 2) {
             output$showStation2 <- renderUI({
               suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -16755,10 +16742,7 @@ server <- function(input,output,session) {
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
             if (series == 1) {
-              output$showStation1 <- renderUI({
-                showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
+              updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
             } else if (series == 2) {
               output$showStation2 <- renderUI({
                 showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -16803,10 +16787,7 @@ server <- function(input,output,session) {
             if (code > 0) {
               stations_available <- dir_contents$stations[[code]]
               if (series == 1) {
-                output$showStation1 <- renderUI({
-                  showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })
+                updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
               } else if (series == 2) {
                 output$showStation2 <- renderUI({
                   showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -16849,9 +16830,7 @@ server <- function(input,output,session) {
             writeLines(stations_available, "www/UNAVCO_database.txt", sep = "\n")
           }
           if (series == 1) {
-            output$showStation1 <- renderUI({
-              suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-            })
+            updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
           } else if (series == 2) {
             output$showStation2 <- renderUI({
               suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -16888,10 +16867,7 @@ server <- function(input,output,session) {
           stations_available <- download_EUREF(NULL)
           if (isTruthy(stations_available) && !inherits(stations_available,"try-error") && length(stations_available) > 0) {
             if (series == 1) {
-              output$showStation1 <- renderUI({
-                showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
+              updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
             } else if (series == 2) {
               output$showStation2 <- renderUI({
                 showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -16985,10 +16961,7 @@ server <- function(input,output,session) {
             stations_available <- sort(as.character(dir_contents$STATION[grepl(solution, dir_contents$SOLUTION)]))
             if (length(stations_available) > 0) {
               if (series == 1) {
-                output$showStation1 <- renderUI({
-                  showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })
+                updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
               } else if (series == 2) {
                 output$showStation2 <- renderUI({
                   showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -17045,9 +17018,7 @@ server <- function(input,output,session) {
             }
           }
           if (series == 1) {
-            output$showStation1 <- renderUI({
-              suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-            })
+            updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
           } else if (series == 2) {
             output$showStation2 <- renderUI({
               suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -17141,9 +17112,7 @@ server <- function(input,output,session) {
           database <- read.table("www/EOSTLS_database.txt", fill = T, comment.char = "!", header = F)
           stations_available <- paste(paste(database$V1,database$V2,sep = "_"),database$V7,database$V6)
           if (series == 1) {
-            output$showStation1 <- renderUI({
-              suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-            })
+            updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
           } else if (series == 2) {
             output$showStation2 <- renderUI({
               suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -17197,10 +17166,7 @@ server <- function(input,output,session) {
           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
             stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
             if (series == 1) {
-              output$showStation1 <- renderUI({
-                showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
-                suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-              })
+              updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
             } else if (series == 2) {
               output$showStation2 <- renderUI({
                 showNotification("Loading the list of available stations.", action = NULL, duration = 1, closeButton = T, id = "loading_stations", type = "warning", session = getDefaultReactiveDomain())
@@ -17217,9 +17183,7 @@ server <- function(input,output,session) {
             if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
               stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
               if (series == 1) {
-                output$showStation1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })
+                updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
               } else if (series == 2) {
                 output$showStation2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -17280,9 +17244,7 @@ server <- function(input,output,session) {
             stations_available <- sort(dorisStations[dorisStations$technique == "DORIS",]$mnemonic)
             if (length(stations_available) > 0) {
               if (series == 1) {
-                output$showStation1 <- renderUI({
-                  suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-                })
+                updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
               } else if (series == 2) {
                 output$showStation2 <- renderUI({
                   suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
@@ -17333,9 +17295,7 @@ server <- function(input,output,session) {
           table <- read.table("www/PSMSL_database.txt", sep = ";", quote = "@")[,c(1,2)]
           stations_available <- do.call(paste, c(table[order(table$V1),], sep = ": "))
           if (series == 1) {
-            output$showStation1 <- renderUI({
-              suppressWarnings(selectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
-            })
+            updateSelectInput(inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
           } else if (series == 2) {
             output$showStation2 <- renderUI({
               suppressWarnings(selectInput(inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "", selectize = T))
