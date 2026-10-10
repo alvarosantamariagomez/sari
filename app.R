@@ -8196,7 +8196,11 @@ server <- function(input,output,session) {
           }
           showNotification(paste0("Downloading secondary series file ",file$secondary$name[f]," from ",toupper(input$server2),"."), action = NULL, duration = NULL, closeButton = T, id = paste0("parsing_url2_",f), type = "warning", session = getDefaultReactiveDomain())
           if (messages > 0) cat(file = stderr(), mySession, "Downloading secondary series from", toupper(input$server2), "&", toupper(input$product2), "\n")
-          down <- download(url$server2, url$file2[f], file$secondary$datapath[f])
+          if (url$server2 == "EUREF") {
+            down <- download_EUREF(file$secondary$datapath[f])
+          } else {
+            down <- download(url$server2, url$file2[f], file$secondary$datapath[f])
+          }
           if (file.exists(file$secondary$datapath[f])) {
             downloaded <- try(fromJSON(file$secondary$datapath[f]), silent = T)
             if (!isTruthy(downloaded) || inherits(downloaded,"try-error")) {
@@ -12962,7 +12966,7 @@ server <- function(input,output,session) {
       }
       # extracting series from EUREF format into ENU format
       if (server == "EUREF") {
-        tableAll <- tableAll[, c("V1", "V2", "V3", "V4")]/1000
+        tableAll <- tableAll[, c("V1", "V3", "V2", "V4")]/1000
         tableAll$V5 <- NA
       }
       # extracting data in columns
