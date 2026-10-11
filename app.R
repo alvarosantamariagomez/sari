@@ -14966,6 +14966,13 @@ server <- function(input,output,session) {
   plot3series <- function(component) {
     removeNotification("wrong_series")
     req(input$tab > 3)
+    if (messages > 5 && component == 1) cat(file = stderr(), mySession, "plot3series",
+                          "| tab", input$tab, "tunits", input$tunits, "sunits", input$sunits, "sigmas", input$sigmas,
+                          "symbol", input$symbol, "db1", info$db1,
+                          "n", sum(db1[[info$db1]][[paste0("status", component)]] %in% T),
+                          "x1", paste(ranges$x1, collapse = ","), "y1", paste(ranges$y1, collapse = ","),
+                          "label", info$tunits.label, "custom", length(info$custom), "traceCustom", input$traceCustom,
+                          "log", length(info$log), "traceLog", input$traceLog, "\n")
     if (messages > 0) cat(file = stderr(), mySession, "Plotting component", component, "\n")
     if (input$tab == 4) {
       if (input$format2 == 4) {
