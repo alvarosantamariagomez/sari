@@ -528,6 +528,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       .headerIcon { color: #ffffff;}
                       /*.shiny-text-output { text-wrap-mode: wrap;}*/
                       #euler, #gia, #fitType { scroll-margin-top: 150px; }
+                      html {scrollbar-gutter: stable;}
                       ")
                   ),
                   tags$style(type = "text/css", "#inline label{ display: table-cell; text-align: left; vertical-align: middle; padding: 0px 20px;} #inline .form-group { display: table-row; padding: 0px 20px;}"),
@@ -2846,7 +2847,7 @@ server <- function(input,output,session) {
       statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
       x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
       rangex <- range(x)
-      seriesInfo(x)
+      isolate(seriesInfo(x))
       removed <- max(sum(!db1[[info$db1]]$status1 %in% T), sum(!db1[[info$db1]]$status2 %in% T), sum(!db1[[info$db1]]$status3 %in% T), na.rm = T)
     } else {
       rangex <- range(trans$x)
@@ -7851,7 +7852,7 @@ server <- function(input,output,session) {
     } else if (input$tab == 5) {
       info$width <- session$clientData$output_plot51_width
     }
-    # if (messages > 5) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
+    if (messages > 4) cat(file = stderr(), mySession, "Screen size change:", info$pixelratio, info$width, "\n")
   }, priority = 2000)
 
   # Gates for URL ####
@@ -14817,6 +14818,8 @@ server <- function(input,output,session) {
   ReadCustom <- function(x,y,z) {
     req(x,z)
     removeNotification("bad_custom")
+    # t0 <- Sys.time()
+    # on.exit(cat(file = stderr(), mySession, "ReadCustom took", round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 2), "s\n"))
     ante = c()
     rece = c()
     cols <- try(range(count.fields(z$datapath, comment.char = "#")), silent = F)
@@ -14832,6 +14835,7 @@ server <- function(input,output,session) {
       }
       table <- try(read.table(z$datapath, comment.char = "#", fill = T), silent = T)
       if (isTruthy(table) && !inherits(table,"try-error")) {
+        table <- table[table$V1 %in% c(x, y), , drop = F]
         if (col == 2) {
           if (all(grepl("^\\d{2}\\w{3}\\d{2}$", table$V2, ignore.case = F, perl = T))) { #NGL steps file
             table$dyear <- decimal_date(as.Date(ymd(table$V2)))
