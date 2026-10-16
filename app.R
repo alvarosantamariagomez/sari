@@ -2843,15 +2843,17 @@ server <- function(input,output,session) {
     } else if (input$tunits == 3) {
       units <- "years"
     }
-    if (input$tab > 3) {
+    if (input$tab == 4 || input$tab == 5) {
       statusAll <- colSums(t(cbind(db1[[info$db1]]$status1, db1[[info$db1]]$status2, db1[[info$db1]]$status3))) > 0
       x <- db1[[info$db1]][[paste0("x",input$tunits)]][!is.na(statusAll)]
       rangex <- range(x)
       isolate(seriesInfo(x))
       removed <- max(sum(!db1[[info$db1]]$status1 %in% T), sum(!db1[[info$db1]]$status2 %in% T), sum(!db1[[info$db1]]$status3 %in% T), na.rm = T)
-    } else {
+    } else if (input$tab > 0 && input$tab < 4) {
       rangex <- range(trans$x)
       removed <- info$removed
+    } else {
+      req(info$stop)
     }
     line1 <- sprintf("Number of points = %d",info$points)
     line2 <- sprintf("Number of points removed = %d",removed)
@@ -17663,6 +17665,7 @@ server <- function(input,output,session) {
   }
   #
   seriesInfo <- function(x) {
+    stopifnot(as.numeric(input$tab) >= 1, as.numeric(input$tab) <= 5)
     if (messages > 0) cat(file = stderr(), mySession, "Series info", "\n")
     removeNotification("bad_gaps")
     info$decimalsy <- info$decimalsyList[as.numeric(input$tab)]
