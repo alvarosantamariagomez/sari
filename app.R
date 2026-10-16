@@ -12402,6 +12402,8 @@ server <- function(input,output,session) {
     removeNotification("unknown_components")
     removeNotification("time_shift")
     removeNotification("ambiguous_shift")
+    removeNotification("bad_separator")
+    removeNotification("bad_separator2")
     lat <- lon <- lat2 <- lon2 <- NULL
     removes <- "^SPOTGINS_|^UGA_|^IGS_|^ENS_"
     ## primary series ####
@@ -12420,12 +12422,19 @@ server <- function(input,output,session) {
       }
       printInfo("PLOT  ")
       # Setting column separation
-      if (input$separator == "1") {
+      if (input$format == 4) {
+        if (input$separator == "1") {
+          sep <- ""
+        } else if (input$separator == "2") {
+          sep <- ","
+        } else if (input$separator == "3") {
+          sep <- ";"
+        } else {
+          showNotification(paste("Invalid column separator for the primary series: '", input$separator, "'"), action = NULL, duration = 10, closeButton = T, id = "bad_separator", type = "error", session = getDefaultReactiveDomain())
+          req(info$stop)
+        }
+      } else {
         sep <- ""
-      } else if (input$separator == "2") {
-        sep <- ","
-      } else if (input$separator == "3") {
-        sep <- ";"
       }
       # Getting primary series
       table <- NULL
@@ -12616,12 +12625,18 @@ server <- function(input,output,session) {
     ## secondary series ####
     } else if (series == 2) {
       # Setting column separation
-      if (input$separator2 == "1") {
+      if (input$format2 == 4) {
+        if (input$separator2 == "1") {
+          sep2 <- ""
+        } else if (input$separator2 == "2") {
+          sep2 <- ","
+        } else if (input$separator2 == "3") {
+          sep2 <- ";"
+        } else {
+          showNotification(paste("Invalid column separator for the secondary series: '", input$separator2, "'"), action = NULL, duration = 10, closeButton = T, id = "bad_separator2", type = "error", session = getDefaultReactiveDomain())
+        }
+      } else {
         sep2 <- ""
-      } else if (input$separator2 == "2") {
-        sep2 <- ","
-      } else if (input$separator2 == "3") {
-        sep2 <- ";"
       }
       # Getting secondary series
       table2 <- NULL
