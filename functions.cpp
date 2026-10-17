@@ -1,3 +1,4 @@
+#define ARMA_64BIT_WORD 1
 #include <RcppArmadillo.h>
 #include <RcppEigen.h>
 #include <cmath>
@@ -33,4 +34,16 @@ SEXP crossprod(const Eigen::Map<Eigen::MatrixXd> A, Eigen::Map<Eigen::MatrixXd> 
 /// [[Rcpp::export]]
 arma::mat minv_cpp(const arma::mat& x) {
   return arma::inv(x);
+}
+
+// [[Rcpp::export]]
+arma::mat conv_cpp(const arma::vec& a, const arma::vec& b) {
+  int n = a.n_elem;
+  arma::mat M(n, n);
+  for (int j = 0; j < n; j++) M(0, j) = a(0) * b(j);
+  for (int i = 1; i < n; i++) {
+    M(i, 0) = a(i) * b(0);
+    for (int j = 1; j < n; j++) M(i, j) = M(i-1, j-1) + a(i) * b(j);
+  }
+  return M;
 }

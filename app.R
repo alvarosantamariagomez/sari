@@ -5728,7 +5728,7 @@ server <- function(input,output,session) {
           lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
           output$crossover <- renderUI({
             if (!is.null(trans$noise) && length(crossover) > 0 && var > 0) {
-              line <- sprintf("<br/>Crossover period %s = %.2f %s\n", type_crossover, crossover, period)
+              line <- sprintf("<br/>Crossover period %s = %.3f %s\n", type_crossover, crossover, period)
               HTML(line)
             } else {
               NULL
@@ -6108,6 +6108,12 @@ server <- function(input,output,session) {
         }
         withProgress(message = 'Fitting the noise model.',
                      detail = message, value = 0, {
+                       if (!info$local && as.numeric(n) > 16000) {
+                         showNotification("The series is too long for a dense covariance matrix.", type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
+                         if (messages > 4) cat(file = stderr(), mySession, "The series is too long for a dense covariance matrix.\n")
+                         req(info$stop)
+                       }
+                       eigPath <- input$white && xor(input$flicker, input$randomw) && !input$powerl
                        # build known covariance matrices
                        if (input$white) {
                          component <- component + 1
@@ -6119,14 +6125,14 @@ server <- function(input,output,session) {
                        if (input$flicker) {
                          component <- component + 1
                          info$flicker <- T
-                         Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
+                         if (!eigPath) Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
                        } else {
                          info$flicker <- F
                        }
                        if (input$randomw) {
                          component <- component + 1
                          info$randomw <- T
-                         Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
+                         if (!eigPath) Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
                        } else {
                          info$randomw <- F
                        }
@@ -6152,6 +6158,18 @@ server <- function(input,output,session) {
                        } else {
                          hessian <- F
                        }
+                       # computing the relative tolerance on the increase of the log-lik (factr)
+                       loglik_stop <- 1 # less than the approximate log-lik change per degree of freedom among noise models
+                       if (component > 1) {
+                         sample <- 0.8 * info$points
+                       } else {
+                         if (info$white) {
+                           sample <- 1.4 * info$points
+                         } else {
+                           sample <- 0.5 * info$points
+                         }
+                       }
+                       factr <- loglik_stop / (.Machine$double.eps * sample)
 
                        loglik_global <- function(x) {
                          h <- 0
@@ -6264,17 +6282,94 @@ server <- function(input,output,session) {
                              C <- Crw
                            }
                            setProgress(0.25)
-                           VtPV <- crossprod(resS, solve(C, resS))
+                           L <- chol(C)
+                           VtPV <- sum(backsolve(L, resS, transpose = T)^2)
+                           logdet <- 2*sum(log(diag(L)))
                            setProgress(0.75)
                            variance <- VtPV/n
-                           fitmle$value <- 0.5*(n*log(2*pi*variance) + determinant(C)$modulus[[1]] + n)
+                           fitmle$value <- 0.5*(n*log(2*pi*variance) + logdet + n)
                          }
                          fitmle$par <- log(variance)
-                         # fitmle$hessian <- (-n/(2*variance^2) + VtPV/variance^3) * variance
                          fitmle$hessian <- n/2
+                         fitmle$hessian_exact <- n/2
                          convergence <- 0
                        }
-                       #* more than one noise variance ####
+                       #* more than one noise variance with fixed index ####
+                       else if (eigPath) {
+                         k <- ifelse(info$flicker, -1, -2)
+                         
+                         # Testing if WH is necessary
+                         Cmat <- getCov(k, n_all, trans$gaps, info$sampling)
+                         L <- try(chol(Cmat), silent = TRUE)
+                         if (inherits(L, "try-error")) {
+                           showNotification("The covariance matrix is not positive definite.", type = "error", id = "no_mle", session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "The covariance matrix is not positive definite.\n")
+                           req(info$stop)
+                         }
+                         z      <- backsolve(L, resS, transpose = T)     # L^-T r
+                         Cinvr  <- backsolve(L, z)                       # C^-1 r
+                         f0     <- sum(z^2) / n                          # FL-only variance
+                         Li     <- backsolve(L, diag(n))                 # L^-1 (upper triangular)
+                         trCinv <- sum(Li^2)                             # tr(C^-1) = ||L^-1||_F^2
+                         s      <- trCinv - sum(Cinvr^2) / f0
+                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(C^-1) =", s / trCinv, "\n")
+                         if (s >= 0) {
+                           showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Uncheck White and fit the coloured noise alone."), type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "The white noise is not identifiable in this series.\n")
+                           updateCheckboxInput(session, inputId = "white", value = F)
+                           shinyjs::delay(1000, shinyjs::click("runmle"))
+                           req(info$stop)
+                         }
+                         setProgress(0.25)
+                         
+                         # Computing the eigen values of the noise covariance matrix
+                         ev <- getEigen(k, n_all, trans$gaps, info$sampling)
+                         if (is.null(ev)) {
+                           showNotification("The covariance matrix is not positive semi-definite.", type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "The noise covariance matrix is not positive semi-definite.\n")
+                           req(info$stop)
+                         }
+                         lam  <- ev$values
+                         setProgress(0.75)
+                         beta <- as.vector(crossprod(ev$vectors, resS))^2
+                         
+                         # optimizing function
+                         nllEig <- function(th) {
+                           t1 <- exp(th[1])
+                           t2 <- exp(th[2]) * lam
+                           r  <- 1/(t1 + t2)
+                           g  <- 0.5 * c(sum(t1*(r - beta*r^2)), sum(t2*(r - beta*r^2)))
+                           w  <- -r^2 + 2*beta*r^3
+                           H  <- 0.5 * matrix(c(sum(t1*t1*w), sum(t1*t2*w), sum(t1*t2*w), sum(t2*t2*w)), 2) + diag(g)
+                           ll <- 0.5*(n*log(2*pi) + sum(log(1/r)) + sum(beta*r))
+                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(th))/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
+                           list(value = ll, grad = g, hess = H)
+                         }
+                         
+                         # running optimization
+                         par0 <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
+                         lo <- par0 - log(1e4)
+                         up <- par0 + log(1e2)
+                         fitmle <- optim(par0, function(th) nllEig(th)$value, function(th) nllEig(th)$grad, method = "L-BFGS-B", lower = lo, upper = up, control = list(factr = factr, pgtol = 1e-4, maxit = 100))
+                         fin <- nllEig(fitmle$par)
+                         fitmle$value <- fin$value
+                         fitmle$hessian_exact <- fin$hess
+                         convergence <- fitmle$convergence
+                         
+                         # check for values at the bounds and the Hessian matrix
+                         atBound <- fitmle$par <= lo + 1e-6 | fitmle$par >= up - 1e-6
+                         hessOK  <- !inherits(try(chol(fin$hess), silent = TRUE), "try-error")
+                         if (messages > 4) cat(file = stderr(), mySession, "Eigen MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lo", lo, "| up", up, "| grad", fin$grad, "| hess PD", hessOK, "\n")
+                         if (convergence != 0 || any(atBound) || !hessOK) {
+                           reason <- c(if (convergence != 0) paste("Optimizer code", convergence, fitmle$message),
+                                       if (any(atBound)) paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", ")),
+                                       if (!hessOK) "Hessian not positive definite")
+                           showNotification(HTML(paste0("The MLE did not converge to an interior optimum.<br>", paste(reason, collapse = "; "))), type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "The MLE did not converge to an interior optimum.", paste(reason, collapse = "; "), "\n")
+                           req(info$stop)
+                         }
+                       }
+                       #* more than one noise variance including the spectral index ####
                        else if (component > 1) {
                          # computing a priori noise variances. RW is minimized to avoid having to much contribution in the final result (gradient of RW is usually very flat)
                          if (info$white) {
@@ -6356,18 +6451,6 @@ server <- function(input,output,session) {
                            } else { # standard 1 proc run
                              # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
                              method <- "L-BFGS-B"
-                             # computing the relative tolerance on the increase of the log-lik (factr)
-                             loglik_stop <- 1 # less than the approximate log-lik change per degree of freedom among noise models
-                             if (component > 1) {
-                               sample <- 0.8 * info$points
-                             } else {
-                               if (info$white) {
-                                 sample <- 1.4 * info$points
-                               } else {
-                                 sample <- 0.5 * info$points
-                               }
-                             }
-                             factr <- loglik_stop / (.Machine$double.eps * sample)
                              if (messages > 2) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "% ( factr =", format(factr, scientific = T, digits = 2), ")\n")
                              # the Hessian is computed after the fit with optimHess
                              fitmle <- optim(par = apriori,
@@ -6377,7 +6460,7 @@ server <- function(input,output,session) {
                                              upper = upper,
                                              method = "L-BFGS-B",
                                              hessian = F,
-                                             control = list(fnscale = 1, pgtol = 1e0, factr = factr)
+                                             control = list(fnscale = 1, pgtol = 1e-4, factr = factr)
                              )
 
                              # if (isTruthy(info$powerl)) { # does not converge for < -2 slopes, using the NLM method for now
@@ -6408,8 +6491,10 @@ server <- function(input,output,session) {
                              }
                            }
                          }, silent = T)
-                         if (inherits(tryOptim,"try-error") || tryOptim == "") {
-                           showNotification(HTML("Something went wrong with the MLE optimization.<br>The tested model parameters are probably out of bounds."), action = NULL, duration = 10, closeButton = T, id = "no_optim", type = "error", session = getDefaultReactiveDomain())
+                         if (inherits(tryOptim,"try-error") || fitmle$convergence != 0) {
+                           msg <- if (inherits(tryOptim,"try-error")) as.character(tryOptim) else fitmle$message
+                           showNotification(HTML(paste0("The MLE optimization did not converge.<br>", msg)), action = NULL, duration = 10, closeButton = T, id = "no_optim", type = "error", session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "MLE optimization failed:", msg, "\n")
                            req(info$stop)
                          }
                        }
@@ -6419,16 +6504,27 @@ server <- function(input,output,session) {
                          if (convergence == 0) {
                            if (messages > 2) cat(file = stderr(), mySession, fitmle$message, "\n")
                            if (input$wiener) {
-                             # updating noise covariance matrix from best noise estimates
-                             # kk <- loglik_global(fitmle$estimate) # NLM method
-                             kk <- loglik_global(fitmle$par) # L-BFGS-B method
+                             if (eigPath) {
+                               d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
+                               Qinv <- ev$vectors %*% (t(ev$vectors) / d)
+                               C    <- ev$vectors %*% (ev$values * t(ev$vectors))
+                               if (input$flicker) Cfl <- C else Crw <- C
+                             } else {
+                               # updating noise covariance matrix from best noise estimates
+                               # kk <- loglik_global(fitmle$estimate) # NLM method
+                               kk <- loglik_global(fitmle$par) # L-BFGS-B method
+                             }
                            }
                            trans$mle <- T
                            sd_noises <- NA
                            line3 <- NULL
                            if (input$noise_unc) {
-                             gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
-                             fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
+                             if (!is.null(fitmle$hessian_exact)) {
+                               fitmle$hessian <- fitmle$hessian_exact
+                             } else {
+                               gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
+                               fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
+                             }
                              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
                            }
                            i <- 0
@@ -6448,7 +6544,6 @@ server <- function(input,output,session) {
                              sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[1] <- sigmaWH
                              if (input$noise_unc) {
-                               # seParmsWH <- sd_noises[i]/scaling
                                seParmsWH <- sd_noises[i] * sigmaWH / 2
                                trans$noise[2] <- seParmsWH
                                if (isTruthy(sigmaWH) && isTruthy(seParmsWH) && sigmaWH > seParmsWH * 3) {
@@ -6484,7 +6579,6 @@ server <- function(input,output,session) {
                              sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[3] <- sigmaFL
                              if (input$noise_unc) {
-                               # seParmsFL <- sd_noises[i]/scaling
                                seParmsFL <- sd_noises[i] * sigmaFL / 2
                                trans$noise[4] <- seParmsFL
                                if (isTruthy(sigmaFL) && isTruthy(seParmsFL) && sigmaFL > seParmsFL * 3) {
@@ -6521,7 +6615,6 @@ server <- function(input,output,session) {
                              sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[5] <- sigmaRW
                              if (input$noise_unc) {
-                               # seParmsRW <- sd_noises[i]/scaling
                                seParmsRW <- sd_noises[i] * sigmaRW / 2
                                trans$noise[6] <- seParmsRW
                                if (isTruthy(sigmaRW) && isTruthy(seParmsRW) && sigmaRW > seParmsRW * 3) {
@@ -6558,7 +6651,6 @@ server <- function(input,output,session) {
                              sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[7] <- sigmaPL
                              if (input$noise_unc) {
-                               # seParmsPL <- sd_noises[i]/scaling
                                seParmsPL <- sd_noises[i] * sigmaPL / 2
                                trans$noise[8] <- seParmsPL
                                if (isTruthy(sigmaPL) && isTruthy(seParmsPL) && sigmaPL > seParmsPL * 3) {
@@ -17323,18 +17415,17 @@ server <- function(input,output,session) {
   }
   #
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
-    a <- Delta <- numeric(n)
-    a[1] <- 0
-    Delta[1] <- 1
-    for (i in 2:n) {
-      a[i] <- (-k/2 + i - 1 - 1)/(i - 1)
-      Delta[i] <- Delta[i - 1] * a[i]
+    a <- c(0, (-k/2 + 0:(n - 2))/(1:(n - 1)))
+    Delta <- cumprod(c(1, a[-1]))
+    if (!exists("conv_cpp", mode = "function")) {
+      Z <- toeplitz(Delta[gaps])
+      Z[upper.tri(Z)] <- 0
+      # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
+      Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     }
-    Z <- toeplitz(Delta[gaps])
-    Z[upper.tri(Z)] <- 0
-    # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
-    Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
-    if (exists("tcrossprod_cpp", mode = "function")) {
+    if (exists("conv_cpp", mode = "function")) {
+      ZZt <- conv_cpp(Delta[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
+    } else if (exists("tcrossprod_cpp", mode = "function")) {
       ZZt <- tcrossprod_cpp(Z,Z)
     } else {
       ZZt <- tcrossprod(Z)
@@ -17344,12 +17435,15 @@ server <- function(input,output,session) {
       u[1] <- 0
       for (i in 2:n) {
         u[i] <- -1/(2*(i - 1))*Delta[i - 1] + a[i]*u[i - 1]
-        # u[i] <- -1/(2*i)*Delta[i - 1] + a[i]*u[i - 1]
       }
-      U <- toeplitz(u[gaps])
-      U[upper.tri(U)] <- 0
-      U <- U * sampling^(-k/4)
-      if (exists("tcrossprod_cpp", mode = "function")) {
+      if (!exists("conv_cpp", mode = "function")) {
+        U <- toeplitz(u[gaps])
+        U[upper.tri(U)] <- 0
+        U <- U * sampling^(-k/4)
+      }
+      if (exists("conv_cpp", mode = "function")) {
+        UZt <- conv_cpp(u[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
+      } else if (exists("tcrossprod_cpp", mode = "function")) {
         UZt <- tcrossprod_cpp(U,Z)
       } else {
         UZt <- tcrossprod(U,Z)
@@ -17734,15 +17828,6 @@ server <- function(input,output,session) {
         stop("x is not a matrix")
       }
     }
-    if (!isSymmetric(x)) {
-    # if (max(abs(x - t(x))) > .Machine$double.eps) {
-      if (silent) {
-        return(NULL)
-      } else {
-        stop("x appears to be not symmetric")
-      }
-    }
-    x <- (x + t(x))/2
     u <- try(chol(x, pivot = FALSE), silent = silent)
     if (inherits(u, "try-error")) {
       if (silent) {
@@ -18038,6 +18123,30 @@ server <- function(input,output,session) {
         showNotification("Timed out waiting for the format selector to update. The remote series was downloaded but not loaded.", action = NULL, duration = 15, closeButton = T, id = "pending_timeout", type = "error", session = getDefaultReactiveDomain())
       }
     })
+  }
+  #
+  covCache <- new.env()
+  getCov <- function(k, n_all, gaps, sampling) {
+    key <- paste(k, n_all, sampling, sum(gaps), sum(which(gaps)^2), sep = "_")
+    if (is.null(covCache$key) || covCache$key != key) {
+      covCache$C <- cov_powerlaw(k, n_all, F, gaps, sampling)[[1]]
+      covCache$key <- key
+    }
+    covCache$C
+  }
+  #
+  eigCache <- new.env()
+  getEigen <- function(k, n_all, gaps, sampling) {
+    key <- paste(k, n_all, sampling, sum(gaps), sum(which(gaps)^2), sep = "_")
+    if (is.null(eigCache[[key]])) {
+      C <- cov_powerlaw(k, n_all, F, gaps, sampling)[[1]]
+      ev <- eigen(C, symmetric = TRUE)
+      if (min(ev$values) < -1e-8 * max(ev$values)) return(NULL)
+      ev$values <- pmax(ev$values, .Machine$double.eps * max(ev$values))
+      rm(list = ls(eigCache), envir = eigCache)
+      eigCache[[key]] <- ev
+    }
+    eigCache[[key]]
   }
 }
 
