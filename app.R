@@ -495,6 +495,14 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       }
                     });"
                 ),
+                
+                # catching navigator.webdriver (UA-spoofing automation)
+                tags$script(
+                  "$(document).on('shiny:connected', function() {
+                      var bot = navigator.webdriver === true || /HeadlessChrome/i.test(navigator.userAgent);
+                      Shiny.setInputValue('isHeadless', bot);
+                   });"
+                ),
 
                 # HTTP meta and style header tags
                 tags$style(css),
@@ -2473,6 +2481,15 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
 
 server <- function(input,output,session) {
   
+  # reject bots/headless clients before doing anything
+  ua <- session$request$HTTP_USER_AGENT
+  bot_pattern <- "HeadlessChrome|PhantomJS|Selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS|Lighthouse|python-requests|python-urllib|Go-http-client|node-fetch|axios|scrapy|curl|wget|crawl|spider|slurp"
+  if (is.null(ua) || !nzchar(ua) || grepl(bot_pattern, ua, ignore.case = TRUE)) {
+    cat(file = stderr(), "Rejected bot/headless connection, UA:", ua, "\n")
+    session$close()
+    return(invisible(NULL))
+  }
+  
   # GitHub & local version
   sid <- NULL
   makeActiveBinding("mySession", function(v) {
@@ -2628,9 +2645,6 @@ server <- function(input,output,session) {
     # }
     req(info$intro)
     # next is run only at the start of each session
-    if (grepl("HeadlessChrome|phantomjs|selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS", session$clientData$url_search, ignore.case = T)) {
-      cat(file = stderr(), mySession, "Headless connection", "\n")
-    }
     info$local = Sys.getenv('SHINY_PORT') == "" || session$clientData$url_hostname == "127.0.0.1" # detect local connection
     if (length(input$isMobile) > 0 && input$isMobile) {
       cat(file = stderr(), mySession, "Mobile connection", "\n")
@@ -3485,7 +3499,7 @@ server <- function(input,output,session) {
 
   # Load SARI file ####
   observeEvent(input$loadSARI, {
-    req(db1[[info$db1]], isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1[[info$db1]], isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     removeNotification("sari_version")
     removeNotification("format_not_compatible")
     removeNotification("no_model")
@@ -7844,6 +7858,14 @@ server <- function(input,output,session) {
     }
   }, priority = 100)
 
+  # Observe headless ####
+  observeEvent(input$isHeadless, {
+    if (isTruthy(input$isHeadless)) {
+      cat(file = stderr(), mySession, "Headless browser detected, closing session\n")
+      session$close()
+    }
+  }, priority = 3000)
+  
   # Observe screen ####
   observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width, session$clientData$output_plot41_width, session$clientData$output_plot51_width), {
     info$pixelratio <- session$clientData$pixelratio
@@ -8040,7 +8062,7 @@ server <- function(input,output,session) {
     updateSelectInput(session, inputId = "station1", label = "Station", choices = NULL)
   })
   observeEvent(input$server2, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     info$last_optionSecondary <- 0
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     if (input$server2 == "RENAG") {
@@ -8864,7 +8886,7 @@ server <- function(input,output,session) {
 
   # Observe time units ####
   observeEvent(input$tunits, {
-    req(db1[[info$db1]], input$tunits != info$tunits.last, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1[[info$db1]], input$tunits != info$tunits.last, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     if (input$tunits == 1) {
       x1 <- db1[[info$db1]]$x1
       x2 <- db2[[info$db2]]$x1
@@ -9695,7 +9717,7 @@ server <- function(input,output,session) {
   }, priority = 8)
 
   observeEvent(input$format2, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     if (input$optionSecondary > 0) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary format\n")
       db2$original <- db2$resampled <- NULL
@@ -9704,7 +9726,7 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   observeEvent(input$separator2, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     if (input$optionSecondary > 0) {
       if (messages > 4) cat(file = stderr(), mySession, "From: observe secondary separator\n")
       db2$original <- db2$resampled <- NULL
@@ -10041,7 +10063,7 @@ server <- function(input,output,session) {
     })
   }, priority = 6)
   observeEvent(c(input$series2, input$separator2, input$format2, input$optionSecondary), {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
       info$last_optionSecondary <- 0
       updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
@@ -11752,7 +11774,7 @@ server <- function(input,output,session) {
     }
   }, priority = 1)
   observeEvent(c(input$printLog),{
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
       if (length(info$log[[1]]) > 0) {
         sprintf("Antenna changes from log file at\n%s",paste(unlist(info$log[[1]]), collapse = ", "))
@@ -11957,7 +11979,7 @@ server <- function(input,output,session) {
 
   # Observe scrolling ####
   observeEvent(input$overflow, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D12))
+    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
     if (isTruthy(input$overflow)) {
       runjs("document.getElementById('side-panel').style.overflowY='auto';")
       runjs("document.getElementById('side-panel').style.position='fixed';")
