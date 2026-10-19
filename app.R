@@ -5766,7 +5766,7 @@ server <- function(input,output,session) {
     values <- NULL
     if (isTruthy(info$clickY)) {
       values <- c(info$clickX, info$clickY)
-      if (inputs$ofac == 1) {
+      if (isTruthy(inputs$ofac) && inputs$ofac == 1) {
         if (input$spectrumType == 0) {
           amp <- as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)])[,ncol(as.matrix(trans$amp[,colSums(is.na(trans$amp)) < nrow(trans$amp)]))]
           values <- c(values, sqrt(0.5*sum(amp[trans$fs > 1/info$clickX]^2)))
