@@ -6159,16 +6159,8 @@ server <- function(input,output,session) {
                          hessian <- F
                        }
                        # computing the relative tolerance on the increase of the log-lik (factr)
-                       loglik_stop <- 1 # less than the approximate log-lik change per degree of freedom among noise models
-                       if (component > 1) {
-                         sample <- 0.8 * info$points
-                       } else {
-                         if (info$white) {
-                           sample <- 1.4 * info$points
-                         } else {
-                           sample <- 0.5 * info$points
-                         }
-                       }
+                       loglik_stop <- 1 # min log-lik change to stop the optimization
+                       sample <- info$points * 1.3 # empirical conversion from number of points to optimal log-ML
                        factr <- loglik_stop / (.Machine$double.eps * sample)
 
                        loglik_global <- function(x) {
