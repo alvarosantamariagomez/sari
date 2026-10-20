@@ -6491,6 +6491,7 @@ server <- function(input,output,session) {
                              }
                            }
                          }, silent = T)
+                         setProgress(0.75)
                          if (inherits(tryOptim,"try-error") || fitmle$convergence != 0) {
                            msg <- if (inherits(tryOptim,"try-error")) as.character(tryOptim) else fitmle$message
                            showNotification(HTML(paste0("The MLE optimization did not converge.<br>", msg)), action = NULL, duration = 10, closeButton = T, id = "no_optim", type = "error", session = getDefaultReactiveDomain())
@@ -12135,73 +12136,49 @@ server <- function(input,output,session) {
           if (input$flicker) {
             if (input$randomw) { # WH + FN + RW
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000000212*info$points^2.7310170576)
+                info$timeMLE <- ceiling(9.4723e-09*info$points^2.7719)
               } else {
-                info$timeMLE <- ceiling(0.0000000163*info$points^2.6969406699)
+                info$timeMLE <- ceiling(8.0839e-09*info$points^2.7367)
               }
             } else {  # WH + FN
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000000190*info$points^2.7218809680)
+                info$timeMLE <- ceiling(6.8125e-09*info$points^2.7275)
               } else {
-                info$timeMLE <- ceiling(0.0000000194*info$points^2.6777146385)
+                info$timeMLE <- ceiling(1.6110e-09*info$points^2.8908)
               }
             }
           } else if (input$randomw) { # WH + RW
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000000193*info$points^2.7102027977)
+              info$timeMLE <- ceiling(7.3313e-09*info$points^2.7168)
             } else {
-              info$timeMLE <- ceiling(0.0000000153*info$points^2.6965310604)
+              info$timeMLE <- ceiling(2.3364e-09*info$points^2.8490)
             }
           } else if (input$powerl) { # WH + PL
-            if (!isTruthy(trans$slope)) {
-              showNotification("It is highly recommended to estimate the power spectrum of the residual series before fitting a PL noise model.", action = NULL, duration = 10, closeButton = T, id = "warning_no_slope", type = "warning", session = getDefaultReactiveDomain())
-            }
-            if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
-              if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000000283*info$points^2.8574872668)
-              } else {
-                info$timeMLE <- ceiling(0.0000000182*info$points^2.8093811786)
-              }
+            if (isTruthy(input$noise_unc)) {
+              info$timeMLE <- ceiling(6.0296e-09*info$points^2.9898)
             } else {
-              if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(0.0000000029*info$points^3.1797797014)
-              } else {
-                info$timeMLE <- ceiling(0.0000000006*info$points^3.3238998899)
-              }
+              info$timeMLE <- ceiling(2.3364e-09*info$points^2.8490)
             }
-            # info$timeMLE <- info$timeMLE * 3 # if using the Nelder & Mead method
           } else { # WH
-            info$timeMLE <- 2
+            info$timeMLE <- 1
           }
         } else if (input$flicker) {
           if (input$randomw) { # FN + RW
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000000041*info$points^2.9122849861)
+              info$timeMLE <- ceiling(6.0610e-09*info$points^2.7850)
             } else {
-              info$timeMLE <- ceiling(0.0000000022*info$points^2.9418404761)
+              info$timeMLE <- ceiling(2.8158e-09*info$points^2.8196)
             }
           } else { # FN
-            info$timeMLE <- ceiling(0.0000000335*info$points^2.3767196923)
+            info$timeMLE <- ceiling(9.1975e-10*info$points^2.7468)
           }
         } else if (input$randomw) { # RW
-          info$timeMLE <- ceiling(0.0000000502*info$points^2.3299799835)
+          info$timeMLE <- ceiling(6.6381e-10*info$points^2.7823)
         } else if (input$powerl) { # PL
-          if (!isTruthy(trans$slope)) {
-            showNotification("It is highly recommended to estimate the power spectrum of the residual series before fitting a PL noise model.", action = NULL, duration = 10, closeButton = T, id = "warning_no_slope", type = "warning", session = getDefaultReactiveDomain())
-          }
-          if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
-            if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000000137*info$points^2.8892566790)
-            } else {
-              info$timeMLE <- ceiling(0.0000000084*info$points^2.8777970916)
-            }
+          if (isTruthy(input$noise_unc)) {
+            info$timeMLE <- ceiling(1.0745e-10*info$points^3.4258)
           } else {
-            if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(0.0000000209*info$points^2.8807048341)
-            } else {
-              info$timeMLE <- ceiling(0.0000000145*info$points^2.8835059302)
-            }
-            # info$timeMLE <- info$timeMLE * 3 # thanks to the Nelder & Mead method
+            info$timeMLE <- ceiling(7.6385e-12*info$points^3.6882)
           }
         }
         if (info$timeMLE < 0) {
