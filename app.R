@@ -44,33 +44,33 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # Function to check and load packages if installed
-check_load <- function(packages) {
-  for (package in packages) {
-    if (isTruthy(requireNamespace(package, quietly = T))) {
-      suppressPackageStartupMessages(suppressMessages(suppressWarnings(do.call('library', list(package = package, verbose = F, quietly = T)))))
-    }
-  }
-}
+#@#check_load <- function(packages) {
+#@#  for (package in packages) {
+#@#    if (isTruthy(requireNamespace(package, quietly = T))) {
+#@#      suppressPackageStartupMessages(suppressMessages(suppressWarnings(do.call('library', list(package = package, verbose = F, quietly = T)))))
+#@#    }
+#@#  }
+#@#}
 
 # Shinyapps & local version
-# suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-#   library(mvcwt, verbose = F, quietly = T)
-#   library(leaflet, verbose = F, quietly = T)
-#   library(geojsonio, verbose = F, quietly = T)
-#   library(Rcpp, verbose = F, quietly = T)
-#   library(RcppArmadillo, verbose = F, quietly = T)
-#   library(RcppEigen, verbose = F, quietly = T)
-# })))
+ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+   library(mvcwt, verbose = F, quietly = T)
+   library(leaflet, verbose = F, quietly = T)
+   library(geojsonio, verbose = F, quietly = T)
+   library(Rcpp, verbose = F, quietly = T)
+   library(RcppArmadillo, verbose = F, quietly = T)
+   library(RcppEigen, verbose = F, quietly = T)
+ })))
 # GitHub version
-optionalPackages <- c(
-  "mvcwt",
-  "leaflet",
-  "geojsonio",
-  "Rcpp",
-  "RcppArmadillo",
-  "RcppEigen"
-)
-check_load(optionalPackages)
+#@#optionalPackages <- c(
+#@#  "mvcwt",
+#@#  "leaflet",
+#@#  "geojsonio",
+#@#  "Rcpp",
+#@#  "RcppArmadillo",
+#@#  "RcppEigen"
+#@#)
+#@#check_load(optionalPackages)
 
 # GUI addons ####
 
@@ -452,7 +452,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 1000, max.print = 50000)
 options(shiny.trace = F)
 devmode(F)
-options(shiny.autoreload = F, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
@@ -2628,7 +2628,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -6163,103 +6163,6 @@ server <- function(input,output,session) {
                        sample <- info$points * 1.3 # empirical conversion from number of points to optimal log-ML
                        factr <- loglik_stop / (.Machine$double.eps * sample)
 
-                       loglik_global <- function(x) {
-                         h <- 0
-                         k <- 0
-                         CPL <<- NULL
-                         Qinv <<- NULL
-                         QinvR <<- NULL
-                         if (white) {
-                           h <- 1
-                           wh <- exp(x[h])
-                           Q <- wh * Cwh
-                         } else {
-                           Q <- matrix(0, ncol = n, nrow = n)
-                         }
-                         if (flicker) {
-                           h <- h + 1
-                           k <- -1
-                           fl <- exp(x[h])
-                           Q <- Q + fl * Cfl
-                         }
-                         if (randomw) {
-                           h <- h + 1
-                           k <- -2
-                           rw <- exp(x[h])
-                           Q <- Q + rw * Crw
-                         }
-                         if (powerl) {
-                           h <- h + 1
-                           pl <- exp(x[h])
-                           h <- h + 1
-                           k <- x[h] + 3
-                           x <- head(x, -1)
-                           CPL <<- cov_powerlaw(k,n_all,T,gaps,sampling)
-                           Cpl <- CPL[[1]]
-                           k_deriv <- CPL[[2]]
-                           Q <- Q + pl * Cpl
-                         }
-                         ll_out <- loglikelihood(resS,Q,0)
-                         ll <- ll_out[[1]]
-                         Qinv <<- ll_out[[2]]
-                         QinvR <<- ll_out[[3]]
-                         if (method == "NLM") {
-                           attr(ll, "gradient") <- grad_global(x)
-                         }
-                         if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
-                         ll/-1
-                       }
-                       grad_global <- function(x) {
-                         grad <- NULL
-                         h <- 0
-                         trQinv <- crossprod(resS, Qinv)
-                         if (white) {
-                           h <- h + 1
-                           wh <- exp(x[h])
-                           if (exists("grad_cpp", mode = "function")) {
-                             grad <- grad_cpp(Qinv,QinvR,trQinv,diag(length(resS)),wh)
-                           } else {
-                             grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
-                           }
-                         }
-                         if (flicker) {
-                           h <- h + 1
-                           fl <- exp(x[h])
-                           if (exists("grad_cpp", mode = "function")) {
-                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cfl,fl))
-                           } else {
-                             grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
-                           }
-                         }
-                         if (randomw) {
-                           h <- h + 1
-                           rw <- exp(x[h])
-                           if (exists("grad_cpp", mode = "function")) {
-                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Crw,rw))
-                           } else {
-                             grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
-                           }
-                         }
-                         if (powerl) {
-                           h <- h + 1
-                           pl <- exp(x[h])
-                           h <- h + 1
-                           k <- x[h] + 3
-                           x <- head(x, -1)
-                           Cpl <- CPL[[1]]
-                           k_deriv <- pl * CPL[[2]]
-                           if (exists("grad_cpp", mode = "function")) {
-                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cpl,pl))
-                             grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,k_deriv,1))
-                           } else {
-                             grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
-                             grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
-                           }
-                         }
-                         if (messages > 2) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
-                         grad/-1
-                       }
-
                        ##* one noise variance with fixed spectral index, easy peasy ####
                        if (component == 1) {
                          if (isTruthy(info$white)) {
@@ -6334,7 +6237,7 @@ server <- function(input,output,session) {
                            w  <- -r^2 + 2*beta*r^3
                            H  <- 0.5 * matrix(c(sum(t1*t1*w), sum(t1*t2*w), sum(t1*t2*w), sum(t2*t2*w)), 2) + diag(g)
                            ll <- 0.5*(n*log(2*pi) + sum(log(1/r)) + sum(beta*r))
-                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(th))/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
+                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(th))/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll/-1), "\n")
                            list(value = ll, grad = g, hess = H)
                          }
                          
@@ -6367,7 +6270,7 @@ server <- function(input,output,session) {
                          if (info$white) {
                            wh <- var(res)/sqrt(component)
                            apriori <- wh
-                           typsize <- 3 # scale applied to the step size defined in the optimization run (which should be 1)
+                           typsize <- 3 # scale applied to the step size defined in the optimization run
                            if (isTruthy(info$flicker)) {
                              fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
                              apriori <- c(apriori, fl)
@@ -6400,8 +6303,8 @@ server <- function(input,output,session) {
                          }
                          setProgress(0.25)
                          apriori <- log(apriori*scaling^2)
-                         upper <- apriori + log(3)
-                         lower <- apriori - log(10)
+                         lower <- apriori - log(1e4)
+                         upper <- apriori + log(1e2)
                          if (isTruthy(info$powerl)) {
                            if (isTruthy(trans$slope) && trans$slope < 0 && trans$slope > -4) {
                              slope <- trans$slope - 3
@@ -6420,6 +6323,104 @@ server <- function(input,output,session) {
                          powerl <- info$powerl
                          gaps <- trans$gaps
                          sampling <- info$sampling
+                         
+                         loglik_global <- function(x) {
+                           h <- 0
+                           k <- 0
+                           CPL <<- NULL
+                           Qinv <<- NULL
+                           QinvR <<- NULL
+                           if (white) {
+                             h <- 1
+                             wh <- exp(x[h])
+                             Q <- wh * Cwh
+                           } else {
+                             Q <- matrix(0, ncol = n, nrow = n)
+                           }
+                           if (flicker) {
+                             h <- h + 1
+                             k <- -1
+                             fl <- exp(x[h])
+                             Q <- Q + fl * Cfl
+                           }
+                           if (randomw) {
+                             h <- h + 1
+                             k <- -2
+                             rw <- exp(x[h])
+                             Q <- Q + rw * Crw
+                           }
+                           if (powerl) {
+                             h <- h + 1
+                             pl <- exp(x[h])
+                             h <- h + 1
+                             k <- x[h] + 3
+                             x <- head(x, -1)
+                             CPL <<- cov_powerlaw(k,n_all,T,gaps,sampling)
+                             Cpl <- CPL[[1]]
+                             k_deriv <- CPL[[2]]
+                             Q <- Q + pl * Cpl
+                           }
+                           ll_out <- loglikelihood(resS,Q,0)
+                           ll <- ll_out[[1]]
+                           Qinv <<- ll_out[[2]]
+                           QinvR <<- ll_out[[3]]
+                           if (method == "NLM") {
+                             attr(ll, "gradient") <- grad_global(x)
+                           }
+                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
+                           ll/-1
+                         }
+                         grad_global <- function(x) {
+                           grad <- NULL
+                           h <- 0
+                           trQinv <- crossprod(resS, Qinv)
+                           if (white) {
+                             h <- h + 1
+                             wh <- exp(x[h])
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- grad_cpp(Qinv,QinvR,trQinv,diag(length(resS)),wh)
+                             } else {
+                               grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
+                             }
+                           }
+                           if (flicker) {
+                             h <- h + 1
+                             fl <- exp(x[h])
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cfl,fl))
+                             } else {
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
+                             }
+                           }
+                           if (randomw) {
+                             h <- h + 1
+                             rw <- exp(x[h])
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Crw,rw))
+                             } else {
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
+                             }
+                           }
+                           if (powerl) {
+                             h <- h + 1
+                             pl <- exp(x[h])
+                             h <- h + 1
+                             k <- x[h] + 3
+                             x <- head(x, -1)
+                             Cpl <- CPL[[1]]
+                             k_deriv <- pl * CPL[[2]]
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cpl,pl))
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,k_deriv,1))
+                             } else {
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
+                             }
+                           }
+                           if (messages > 2) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
+                           grad/-1
+                         }
+                         
                          tryOptim <- try({
                            # setting cluster if run is local and long
                            # if (info$local && info$timeMLE > 60) {
