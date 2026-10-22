@@ -5749,12 +5749,13 @@ server <- function(input,output,session) {
       }
       axis(3, at = axTicks(1), labels = newPeriods)
       mtext(lab, side = 3, line = 3)
-      c <- max(which(trans$spectra_old))
       
       # plotting the noise model periodogram
       if (length(noise_y) > 0) {
         p <- 1/trans$noiseF
         lines(p, noise_y, col = SARIcolors[6], lty = 2, lwd = 3)
+        noise_interp <- approx(p, noise_y, xout = 1/trans$fs, method = "linear")$y
+        isolate({ trans$spectra <- cbind(trans$spectra, noise_interp) })
         if (input$tunits == 1) { #days
           f_scale <- 24*60*60
         } else if (input$tunits == 2) { #weeks
@@ -5808,6 +5809,7 @@ server <- function(input,output,session) {
           }
         })
       } else if (input$spectrumType == 1) {
+        c <- max(which(trans$spectra_old))
         psd <- trans$psd[,c]
         slope <- try(lm(log10(psd) ~ log10(1/trans$fs)), silent = T)
         if (isTruthy(slope) && !inherits(slope,"try-error")) {
@@ -5824,91 +5826,6 @@ server <- function(input,output,session) {
         lines(lombx,lomby_flicker, col = SARIcolors[6], lty = 2, lwd = 3)
         text(inputs$long_period/10,min(psd),"Slope = -1",col = SARIcolors[6])
       }
-      # if (input$spectrumType == 1) {
-      #   if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
-      #     if (input$tunits == 1) { #days
-      #       f_scale <- 24*60*60
-      #     } else if (input$tunits == 2) { #weeks
-      #       f_scale <- 7*24*60*60
-      #     } else if (input$tunits == 3) { #years
-      #       f_scale <- daysInYear*24*60*60
-      #     }
-      #     f_hz <- trans$fs/f_scale
-      #     if (isTruthy(info$white)) {
-      #       wn <- noise_var(trans$noise[1],0)
-      #     } else {
-      #       wn <- 0
-      #     }
-      #     pwn <- wn * f_hz^0
-      #     psd <- pwn
-      #     crossover <- NULL
-      #     type_crossover <- NULL
-      #     if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
-      #       fl <- noise_var(trans$noise[3],-1)
-      #       pfl <- fl * f_hz^-1
-      #       psd <- psd + pfl
-      #       if (wn > 0) {
-      #         crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
-      #         type_crossover <- "Flicker / White"
-      #       }
-      #       if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
-      #         rw <- noise_var(trans$noise[5],-2)
-      #         prw <- rw * f_hz^-2
-      #         psd <- psd + prw
-      #         crossover <- c(crossover, suppressWarnings(min(1/trans$fs[prw > pfl])))
-      #         type_crossover <- c(type_crossover, "Random walk / Flicker")
-      #       }
-      #     } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
-      #       rw <- noise_var(trans$noise[5],-2)
-      #       prw <- rw * f_hz^-2
-      #       psd <- psd + prw
-      #       if (wn > 0) {
-      #         crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
-      #         type_crossover <- "Random walk / White"
-      #       }
-      #     } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
-      #       pl <- noise_var(trans$noise[7],trans$noise[9])
-      #       ppl <- pl * f_hz^trans$noise[9]
-      #       psd <- psd + ppl
-      #       if (wn > 0) {
-      #         crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
-      #         type_crossover <- "Power-law / White"
-      #       }
-      #     }
-      #     var <- NULL
-      #     if (isTruthy(input$spectrumResiduals) && isTruthy(trans$res)) {
-      #       var <- var(trans$res)
-      #     } else if (isTruthy(input$spectrumFilterRes) && isTruthy(trans$filterRes)) {
-      #       var <- var(trans$filterRes)
-      #     }
-      #     psd <- psd*var/sum(psd)
-      #     lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
-      #     output$crossover <- renderUI({
-      #       if (!is.null(trans$noise) && length(crossover) > 0 && var > 0) {
-      #         line <- sprintf("<br/>Crossover period %s = %.3f %s\n", type_crossover, crossover, period)
-      #         HTML(line)
-      #       } else {
-      #         NULL
-      #       }
-      #     })
-      #   } else {
-      #     p <- trans$psd[,c]
-      #     slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
-      #     if (isTruthy(slope) && !inherits(slope,"try-error")) {
-      #       slope$coef[2] <- -1*slope$coef[2]
-      #       trans$slope <- slope$coef[2]
-      #       regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
-      #       lines(1/trans$fs, regression, col = SARIcolors[color[c]], lwd = 3)
-      #       text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[color[c]])
-      #     }
-      #     lombx <- c(inputs$long_period,inputs$short_period)
-      #     longest <- ifelse(length(p) > 200, as.integer(length(p)/100), 10)
-      #     start <- median(head(p, n = longest))
-      #     lomby_flicker <- c(start,start/(inputs$long_period/inputs$short_period))
-      #     lines(lombx,lomby_flicker, col = SARIcolors[6], lty = 2, lwd = 3)
-      #     text(inputs$long_period/10,min(p),"Slope = -1",col = SARIcolors[6])
-      #   }
-      # }
       # adding a grid to the plot
       grid(nx = NULL, ny = NULL, col = SARIcolors[8], lty = "dashed", lwd = 1, equilogs = T)
       
@@ -10517,49 +10434,6 @@ server <- function(input,output,session) {
       updateTextInput(session, inputId = "ids", value = ids_info)
     }
   }, priority = 5)
-
-  # Observe remove fit ####
-  # observeEvent(c(input$separator, input$format, inputs$epoch), {
-  #   req(trans$res)
-  #   if (messages > 0) cat(file = stderr(), mySession, "Deleting fit", "\n")
-  #   trans$res <- NULL
-  #   trans$reserror <- NULL
-  #   trans$results <- NULL
-  #   trans$mod <- NULL
-  #   trans$kalman <- NULL
-  #   trans$equation <- NULL
-  #   trans$midas_vel <- NULL
-  #   trans$midas_all <- NULL
-  #   trans$filter <- NULL
-  #   trans$filterRes <- NULL
-  #   trans$mle <- F
-  #   trans$verif <- NULL
-  #   trans$pattern <- NULL
-  #   trans$spectra <- NULL
-  #   updateTextInput(session, "ObsError", value = "")
-  #   updateTextInput(session, "waveformPeriod", value = "")
-  #   if (isTruthy(input$correct_waveform)) {
-  #     updateCheckboxInput(session, inputId = "correct_waveform", value = F)
-  #   }
-  #   if (isTruthy(input$model)) {
-  #     updateCheckboxGroupInput(session, inputId = "model", label = "", choices = list("Linear","Polynomial","Sinusoidal","Offset","Exponential","Logarithmic"), selected = NULL, inline = T)
-  #   }
-  #   updateRadioButtons(session, inputId = "fitType", label = NULL, list("None" = 0, "LS" = 1, "KF" = 2), selected = 0, inline = T, choiceNames = NULL, choiceValues = NULL)
-  #   updateTextInput(session, "E0", value = "")
-  #   updateTextInput(session, "L0", value = "")
-  #   if (isTruthy(input$white)) {
-  #     updateCheckboxInput(session, inputId = "white", label = NULL, value = F)
-  #   }
-  #   if (isTruthy(input$flicker)) {
-  #     updateCheckboxInput(session, inputId = "flicker", label = NULL, value = F)
-  #   }
-  #   if (isTruthy(input$randomw)) {
-  #     updateCheckboxInput(session, inputId = "randomw", label = NULL, value = F)
-  #   }
-  #   if (isTruthy(input$powerl)) {
-  #     updateCheckboxInput(session, inputId = "powerl", label = NULL, value = F)
-  #   }
-  # }, priority = 5)
 
   # Observe fit type ####
   observeEvent(input$fitType, {
@@ -16287,6 +16161,12 @@ server <- function(input,output,session) {
       if (input$spectrumFilterRes && length(trans$filterRes) > 0) {
         names(OutPut$df)[column] <- "filterResiduals"
         column <- column + 1
+      }
+      if (input$mle && trans$mle && input$spectrumType == 1 &&
+          length(trans$noiseF) > 0 && length(trans$noiseP) == length(trans$noiseF) &&
+          column == ncol(trans$spectra) &&
+          ((input$spectrumResiduals && length(trans$res) > 0) || (input$spectrumFilterRes && length(trans$filterRes)))) {
+        names(OutPut$df)[column] <- "noiseModel"
       }
       colnames(OutPut$df) <- sapply(1:length(colnames(OutPut$df)), function(x) paste(colnames(OutPut$df)[x],"[",x,"]", sep = ""))
       suppressWarnings(write.table(format(OutPut$df, digits = 6, nsmall = 6, trim = F, scientific = F),file_out,append = T,quote = F,sep = "  ",eol = "\n",na = "NA",dec = ".",row.names = F,col.names = T))
