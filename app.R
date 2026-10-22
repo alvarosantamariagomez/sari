@@ -44,33 +44,33 @@ suppressPackageStartupMessages(suppressMessages(suppressWarnings({
 })))
 
 # Function to check and load packages if installed
-#@#check_load <- function(packages) {
-#@#  for (package in packages) {
-#@#    if (isTruthy(requireNamespace(package, quietly = T))) {
-#@#      suppressPackageStartupMessages(suppressMessages(suppressWarnings(do.call('library', list(package = package, verbose = F, quietly = T)))))
-#@#    }
-#@#  }
-#@#}
+check_load <- function(packages) {
+  for (package in packages) {
+    if (isTruthy(requireNamespace(package, quietly = T))) {
+      suppressPackageStartupMessages(suppressMessages(suppressWarnings(do.call('library', list(package = package, verbose = F, quietly = T)))))
+    }
+  }
+}
 
 # Shinyapps & local version
- suppressPackageStartupMessages(suppressMessages(suppressWarnings({
-   library(mvcwt, verbose = F, quietly = T)
-   library(leaflet, verbose = F, quietly = T)
-   library(geojsonio, verbose = F, quietly = T)
-   library(Rcpp, verbose = F, quietly = T)
-   library(RcppArmadillo, verbose = F, quietly = T)
-   library(RcppEigen, verbose = F, quietly = T)
- })))
+# suppressPackageStartupMessages(suppressMessages(suppressWarnings({
+#   library(mvcwt, verbose = F, quietly = T)
+#   library(leaflet, verbose = F, quietly = T)
+#   library(geojsonio, verbose = F, quietly = T)
+#   library(Rcpp, verbose = F, quietly = T)
+#   library(RcppArmadillo, verbose = F, quietly = T)
+#   library(RcppEigen, verbose = F, quietly = T)
+# })))
 # GitHub version
-#@#optionalPackages <- c(
-#@#  "mvcwt",
-#@#  "leaflet",
-#@#  "geojsonio",
-#@#  "Rcpp",
-#@#  "RcppArmadillo",
-#@#  "RcppEigen"
-#@#)
-#@#check_load(optionalPackages)
+optionalPackages <- c(
+  "mvcwt",
+  "leaflet",
+  "geojsonio",
+  "Rcpp",
+  "RcppArmadillo",
+  "RcppEigen"
+)
+check_load(optionalPackages)
 
 # GUI addons ####
 
@@ -452,7 +452,7 @@ if (all(c("Rcpp", "RcppArmadillo", "RcppEigen") %in% .packages()) && Sys.info()[
 options(shiny.fullstacktrace = T, shiny.maxRequestSize = 60*1024^2, width = 1000, max.print = 50000)
 options(shiny.trace = F)
 devmode(F)
-options(shiny.autoreload = T, shiny.autoreload.pattern = "app.R")
+options(shiny.autoreload = F, shiny.autoreload.pattern = "app.R")
 options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
@@ -2596,7 +2596,7 @@ server <- function(input,output,session) {
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
                           midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
-                          noise = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, amp = NULL, psd = NULL,
+                          noise = NULL, noiseQ = NULL, noiseP = NULL, noiseF = NULL, noiseCache = NULL, fs = NULL, names = NULL, KFnames = NULL, LScoefs = NULL, amp = NULL, psd = NULL,
                           col = NULL, spectra = NULL, spectra_old = NULL, title = NULL, var = NULL, wavelet = NULL,
                           model_old = NULL, offsetEpochs = NULL, offsetEpochs1 = NULL, offsetEpochs2 = NULL, offsetEpochs3 = NULL, periods = NULL, breakEpochs = NULL,
                           x_orig = NULL, gaps = NULL,
@@ -2628,7 +2628,7 @@ server <- function(input,output,session) {
   daysInYear <- 365.2425 # Gregorian year
   degMa2radyr <- pi/180000000 # geologic to geodetic units conversion
   debug <- F # saving the environment
-  messages <- 6 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
+  messages <- 2 # print step by step messages on the console depending on the verbosity level (0, 1, 2, 3, 4, 5, 6)
   info$components <- c("", "", "", "", "") # labels of the tab components at start up
   output$tabName1 <- renderText({ "Visualization panel" })
   output$tabName2 <- renderText({ info$components[2] })
@@ -5599,6 +5599,74 @@ server <- function(input,output,session) {
       periodogram(c("filter","filterRes"))
     }
   })
+  
+  # Noise model spectrum ####
+  # Same definition as spec.lomb(mode = "normal"): E[A^2] = c'Qc/C^2 + s'Qs/S^2, with c, s the cos/sin vectors at the data epochs and Q the variance-covariance matrix of the MLE noise model
+  observeEvent(c(trans$mle, trans$noise, trans$fs, input$spectrum, input$spectrumResiduals, input$spectrumFilterRes), {
+    removeNotification("bad_noise_psd")
+    trans$noiseP <- trans$noiseF <- NULL
+    if (!isTruthy(trans$mle) || length(trans$noise) != 11) {
+      trans$noiseQ <- NULL
+    }
+    req(db1[[info$db1]], input$spectrum, trans$mle, trans$noiseQ, trans$fs)
+    if (length(trans$res) > 0) {
+      req(input$spectrumResiduals)
+    } else if (length(trans$filterRes) > 0) {
+      req(input$spectrumFilterRes)
+    } else {
+      req(info$stop)
+    }
+    if (nrow(trans$noiseQ) != info$points || ncol(trans$noiseQ) != info$points) {
+      showNotification(HTML("The noise covariance matrix does not match the residual series.<br>Unable to compute the noise model periodogram."), action = NULL, duration = 10, closeButton = T, id = "bad_noise_psd", type = "error", session = getDefaultReactiveDomain())
+      req(info$stop)
+    }
+    nf <- length(trans$fs)
+    if (!is.null(trans$noiseCache) && identical(trans$noiseCache$f, trans$fs)) {
+      fm <- trans$noiseCache$fm
+      A2 <- trans$noiseCache$A2
+    } else {
+      if (messages > 0) cat(file = stderr(), mySession, "Computing noise model periodogram", "\n")
+      # frequency sub-sampling: step >= 1/(2T) (spectral window resolution) & step >= relative step of ptsDecade points per decade
+      ptsDecade <- 50
+      rel <- 10^(1/ptsDecade) - 1
+      linStep <- max(1, floor(ifelse(isTruthy(inputs$ofac), inputs$ofac, 1)/2))
+      idx <- 1
+      while (idx[length(idx)] < nf) {
+        i <- idx[length(idx)]
+        j <- findInterval(trans$fs[i]*(1 + rel), trans$fs) + 1
+        idx <- c(idx, min(nf, max(i + linStep, j)))
+      }
+      fm <- trans$fs[idx]
+      nm <- length(fm)
+      A2 <- numeric(nm)
+      x <- trans$x - trans$x[1]
+      chunk <- max(1, floor(1e6/info$points))
+      withProgress(message = 'Computing noise model periodogram.',
+                   detail = 'This may take a while ...', value = 0, {
+                     for (start in seq(1, nm, by = chunk)) {
+                       k <- start:min(start + chunk - 1, nm)
+                       arg0 <- 2*pi*outer(x, fm[k])
+                       tau <- atan2(colSums(sin(2*arg0)), colSums(cos(2*arg0)))/2
+                       arg <- arg0 - rep(tau, each = info$points)
+                       cs <- cos(arg)
+                       ss <- sin(arg)
+                       C <- colSums(cs^2)
+                       S <- colSums(ss^2)
+                       C[C < .Machine$double.eps] <- 1
+                       S[S < .Machine$double.eps] <- 1
+                       cs <- (cs - rep(colMeans(cs), each = info$points))/rep(C, each = info$points)
+                       ss <- (ss - rep(colMeans(ss), each = info$points))/rep(S, each = info$points)
+                       E <- cbind(cs, ss)
+                       r <- colSums(E * (trans$noiseQ %*% E))
+                       A2[k] <- r[seq_along(k)] + r[length(k) + seq_along(k)]
+                       setProgress(max(k)/nm)
+                     }
+                   })
+      trans$noiseCache <- list(f = trans$fs, fm = fm, A2 = A2)
+    }
+    trans$noiseF <- fm
+    trans$noiseP <- info$points/(2*(info$points - 1))*A2 # same units as trans$psd (= spec.lomb PSD * var)
+  })
 
   # Plot spectrum ####
   output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
@@ -5651,7 +5719,22 @@ server <- function(input,output,session) {
           spectrum_y[,6] <- NA
         }
       }
-      matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[color], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = xlim, ylim = ranges$y3)
+      
+      # adding the noise model to the periodogram limits
+      noise_y <- NULL
+      if (input$mle && trans$mle && input$spectrumType == 1 &&
+          length(trans$noiseF) > 0 && length(trans$noiseP) == length(trans$noiseF) &&
+          ((length(trans$res) > 0 && isTruthy(input$spectrumResiduals)) ||
+           (length(trans$res) == 0 && length(trans$filterRes) > 0 && isTruthy(input$spectrumFilterRes)))) {
+        noise_y <- trans$noiseP
+      }
+      ylim <- ranges$y3
+      if (is.null(ylim) && length(noise_y) > 0) {
+        ylim <- range(c(spectrum_y, noise_y), na.rm = T, finite = T)
+      }
+      
+      # plotting the periodogram
+      matplot(x = 1/trans$fs, y = spectrum_y, type = "l", lty = 1, lwd = 2, log = "xy", col = SARIcolors[color], xlab = paste0("Period (",period,")"), ylab = ylab, yaxt = 'n', xlim = xlim, ylim = ylim)
       title(title, line = 5)
       axis(2, at = marks, labels = marks)
       if (input$tunits == 1) {
@@ -5667,92 +5750,169 @@ server <- function(input,output,session) {
       axis(3, at = axTicks(1), labels = newPeriods)
       mtext(lab, side = 3, line = 3)
       c <- max(which(trans$spectra_old))
-      if (input$spectrumType == 1) {
-        if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
-          if (input$tunits == 1) { #days
-            f_scale <- 24*60*60
-          } else if (input$tunits == 2) { #weeks
-            f_scale <- 7*24*60*60
-          } else if (input$tunits == 3) { #years
-            f_scale <- daysInYear*24*60*60
+      
+      # plotting the noise model periodogram
+      if (length(noise_y) > 0) {
+        p <- 1/trans$noiseF
+        lines(p, noise_y, col = SARIcolors[6], lty = 2, lwd = 3)
+        if (input$tunits == 1) { #days
+          f_scale <- 24*60*60
+        } else if (input$tunits == 2) { #weeks
+          f_scale <- 7*24*60*60
+        } else if (input$tunits == 3) { #years
+          f_scale <- daysInYear*24*60*60
+        }
+        f_hz <- trans$noiseF/f_scale
+        if (isTruthy(info$white)) {
+          wn <- noise_var(trans$noise[1],0)
+        } else {
+          wn <- 0
+        }
+        pwn <- wn * f_hz^0
+        crossover <- NULL
+        type_crossover <- NULL
+        if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
+          fl <- noise_var(trans$noise[3],-1)
+          pfl <- fl * f_hz^-1
+          if (wn > 0) {
+            crossover <- suppressWarnings(min(p[pfl > pwn]))
+            type_crossover <- "Flicker / White"
           }
-          f_hz <- trans$fs/f_scale
-          if (isTruthy(info$white)) {
-            wn <- noise_var(trans$noise[1],0)
-          } else {
-            wn <- 0
-          }
-          pwn <- wn * f_hz^0
-          psd <- pwn
-          crossover <- NULL
-          type_crossover <- NULL
-          if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
-            fl <- noise_var(trans$noise[3],-1)
-            pfl <- fl * f_hz^-1
-            psd <- psd + pfl
-            if (wn > 0) {
-              crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
-              type_crossover <- "Flicker / White"
-            }
-            if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
-              rw <- noise_var(trans$noise[5],-2)
-              prw <- rw * f_hz^-2
-              psd <- psd + prw
-              crossover <- c(crossover, suppressWarnings(min(1/trans$fs[prw > pfl])))
-              type_crossover <- c(type_crossover, "Random walk / Flicker")
-            }
-          } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
+          if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
             rw <- noise_var(trans$noise[5],-2)
             prw <- rw * f_hz^-2
-            psd <- psd + prw
-            if (wn > 0) {
-              crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
-              type_crossover <- "Random walk / White"
-            }
-          } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
-            pl <- noise_var(trans$noise[7],trans$noise[9])
-            ppl <- pl * f_hz^trans$noise[9]
-            psd <- psd + ppl
-            if (wn > 0) {
-              crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
-              type_crossover <- "Power-law / White"
-            }
+            crossover <- c(crossover, suppressWarnings(min(p[prw > pfl])))
+            type_crossover <- c(type_crossover, "Random walk / Flicker")
           }
-          var <- NULL
-          if (isTruthy(input$spectrumResiduals) && isTruthy(trans$res)) {
-            var <- var(trans$res)
-          } else if (isTruthy(input$spectrumFilterRes) && isTruthy(trans$filterRes)) {
-            var <- var(trans$filterRes)
+        } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
+          rw <- noise_var(trans$noise[5],-2)
+          prw <- rw * f_hz^-2
+          if (wn > 0) {
+            crossover <- suppressWarnings(min(p[prw > pwn]))
+            type_crossover <- "Random walk / White"
           }
-          psd <- psd*var/sum(psd)
-          lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
-          output$crossover <- renderUI({
-            if (!is.null(trans$noise) && length(crossover) > 0 && var > 0) {
-              line <- sprintf("<br/>Crossover period %s = %.3f %s\n", type_crossover, crossover, period)
-              HTML(line)
-            } else {
-              NULL
-            }
-          })
-        } else {
-          p <- trans$psd[,c]
-          slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
-          if (isTruthy(slope) && !inherits(slope,"try-error")) {
-            slope$coef[2] <- -1*slope$coef[2]
-            trans$slope <- slope$coef[2]
-            regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
-            lines(1/trans$fs, regression, col = SARIcolors[color[c]], lwd = 3)
-            text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[color[c]])
+        } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
+          pl <- noise_var(trans$noise[7],trans$noise[9])
+          ppl <- pl * f_hz^trans$noise[9]
+          if (wn > 0) {
+            crossover <- suppressWarnings(min(p[ppl > pwn]))
+            type_crossover <- "Power-law / White"
           }
-          lombx <- c(inputs$long_period,inputs$short_period)
-          longest <- ifelse(length(p) > 200, as.integer(length(p)/100), 10)
-          start <- median(head(p, n = longest))
-          lomby_flicker <- c(start,start/(inputs$long_period/inputs$short_period))
-          lines(lombx,lomby_flicker, col = SARIcolors[6], lty = 2, lwd = 3)
-          text(inputs$long_period/10,min(p),"Slope = -1",col = SARIcolors[6])
         }
+        output$crossover <- renderUI({
+          if (!is.null(trans$noise) && length(crossover) > 0) {
+            line <- sprintf("<br/>Crossover period %s = %.2f %s\n", type_crossover, crossover, period)
+            HTML(line)
+          } else {
+            NULL
+          }
+        })
+      } else if (input$spectrumType == 1) {
+        psd <- trans$psd[,c]
+        slope <- try(lm(log10(psd) ~ log10(1/trans$fs)), silent = T)
+        if (isTruthy(slope) && !inherits(slope,"try-error")) {
+          slope$coef[2] <- -1*slope$coef[2]
+          trans$slope <- slope$coef[2]
+          regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
+          lines(1/trans$fs, regression, col = SARIcolors[color[c]], lwd = 3)
+          text(inputs$long_period/2,min(psd),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[color[c]])
+        }
+        lombx <- c(inputs$long_period,inputs$short_period)
+        longest <- ifelse(length(psd) > 200, as.integer(length(psd)/100), 10)
+        start <- median(head(psd, n = longest))
+        lomby_flicker <- c(start,start/(inputs$long_period/inputs$short_period))
+        lines(lombx,lomby_flicker, col = SARIcolors[6], lty = 2, lwd = 3)
+        text(inputs$long_period/10,min(psd),"Slope = -1",col = SARIcolors[6])
       }
+      # if (input$spectrumType == 1) {
+      #   if (input$mle && length(trans$noise) > 0 && isTruthy(trans$noise) && (isTruthy(input$spectrumResiduals) || isTruthy(input$spectrumFilterRes))) {
+      #     if (input$tunits == 1) { #days
+      #       f_scale <- 24*60*60
+      #     } else if (input$tunits == 2) { #weeks
+      #       f_scale <- 7*24*60*60
+      #     } else if (input$tunits == 3) { #years
+      #       f_scale <- daysInYear*24*60*60
+      #     }
+      #     f_hz <- trans$fs/f_scale
+      #     if (isTruthy(info$white)) {
+      #       wn <- noise_var(trans$noise[1],0)
+      #     } else {
+      #       wn <- 0
+      #     }
+      #     pwn <- wn * f_hz^0
+      #     psd <- pwn
+      #     crossover <- NULL
+      #     type_crossover <- NULL
+      #     if (isTruthy(info$flicker) && isTruthy(trans$noise[3])) {
+      #       fl <- noise_var(trans$noise[3],-1)
+      #       pfl <- fl * f_hz^-1
+      #       psd <- psd + pfl
+      #       if (wn > 0) {
+      #         crossover <- suppressWarnings(min(1/trans$fs[pfl > pwn]))
+      #         type_crossover <- "Flicker / White"
+      #       }
+      #       if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
+      #         rw <- noise_var(trans$noise[5],-2)
+      #         prw <- rw * f_hz^-2
+      #         psd <- psd + prw
+      #         crossover <- c(crossover, suppressWarnings(min(1/trans$fs[prw > pfl])))
+      #         type_crossover <- c(type_crossover, "Random walk / Flicker")
+      #       }
+      #     } else if (isTruthy(info$randomw) && isTruthy(trans$noise[5])) {
+      #       rw <- noise_var(trans$noise[5],-2)
+      #       prw <- rw * f_hz^-2
+      #       psd <- psd + prw
+      #       if (wn > 0) {
+      #         crossover <- suppressWarnings(min(1/trans$fs[prw > pwn]))
+      #         type_crossover <- "Random walk / White"
+      #       }
+      #     } else if (isTruthy(info$powerl) && isTruthy(trans$noise[7])) {
+      #       pl <- noise_var(trans$noise[7],trans$noise[9])
+      #       ppl <- pl * f_hz^trans$noise[9]
+      #       psd <- psd + ppl
+      #       if (wn > 0) {
+      #         crossover <- suppressWarnings(min(1/trans$fs[ppl > pwn]))
+      #         type_crossover <- "Power-law / White"
+      #       }
+      #     }
+      #     var <- NULL
+      #     if (isTruthy(input$spectrumResiduals) && isTruthy(trans$res)) {
+      #       var <- var(trans$res)
+      #     } else if (isTruthy(input$spectrumFilterRes) && isTruthy(trans$filterRes)) {
+      #       var <- var(trans$filterRes)
+      #     }
+      #     psd <- psd*var/sum(psd)
+      #     lines(1/trans$fs,psd, col = SARIcolors[6], lty = 2, lwd = 3)
+      #     output$crossover <- renderUI({
+      #       if (!is.null(trans$noise) && length(crossover) > 0 && var > 0) {
+      #         line <- sprintf("<br/>Crossover period %s = %.3f %s\n", type_crossover, crossover, period)
+      #         HTML(line)
+      #       } else {
+      #         NULL
+      #       }
+      #     })
+      #   } else {
+      #     p <- trans$psd[,c]
+      #     slope <- try(lm(log10(p) ~ log10(1/trans$fs)), silent = T)
+      #     if (isTruthy(slope) && !inherits(slope,"try-error")) {
+      #       slope$coef[2] <- -1*slope$coef[2]
+      #       trans$slope <- slope$coef[2]
+      #       regression <- 10^(predict(slope, newdata = list(x = 1/trans$fs)))
+      #       lines(1/trans$fs, regression, col = SARIcolors[color[c]], lwd = 3)
+      #       text(inputs$long_period/2,min(p),paste0("Slope = ",sprintf("%4.2f",slope$coef[2])," +- ",sprintf("%3.2f",summary(slope)$coefficients[2,2])), col = SARIcolors[color[c]])
+      #     }
+      #     lombx <- c(inputs$long_period,inputs$short_period)
+      #     longest <- ifelse(length(p) > 200, as.integer(length(p)/100), 10)
+      #     start <- median(head(p, n = longest))
+      #     lomby_flicker <- c(start,start/(inputs$long_period/inputs$short_period))
+      #     lines(lombx,lomby_flicker, col = SARIcolors[6], lty = 2, lwd = 3)
+      #     text(inputs$long_period/10,min(p),"Slope = -1",col = SARIcolors[6])
+      #   }
+      # }
+      # adding a grid to the plot
       grid(nx = NULL, ny = NULL, col = SARIcolors[8], lty = "dashed", lwd = 1, equilogs = T)
+      
+      # mark the closest clicked point
       if (isTruthy(info$closestY)) {
         points(info$closestX, info$closestY, type = "p", col = SARIcolors[color[c]], bg = "white", pch = 21, lwd = 3)
       }
@@ -6162,6 +6322,7 @@ server <- function(input,output,session) {
                        loglik_stop <- 1 # min log-lik change to stop the optimization
                        sample <- info$points * 1.3 # empirical conversion from number of points to optimal log-ML
                        factr <- loglik_stop / (.Machine$double.eps * sample)
+                       if (messages > 2) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "% ( factr =", format(factr, scientific = T, digits = 2), ")\n")
 
                        ##* one noise variance with fixed spectral index, easy peasy ####
                        if (component == 1) {
@@ -6207,7 +6368,7 @@ server <- function(input,output,session) {
                          Li     <- backsolve(L, diag(n))                 # L^-1 (upper triangular)
                          trCinv <- sum(Li^2)                             # tr(C^-1) = ||L^-1||_F^2
                          s      <- trCinv - sum(Cinvr^2) / f0
-                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(C^-1) =", s / trCinv, "\n")
+                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(inv(C)) =", s / trCinv, "\n")
                          if (s >= 0) {
                            showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Uncheck White and fit the coloured noise alone."), type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
                            if (messages > 4) cat(file = stderr(), mySession, "The white noise is not identifiable in this series.\n")
@@ -6242,19 +6403,19 @@ server <- function(input,output,session) {
                          }
                          
                          # running optimization
-                         par0 <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
-                         lo <- par0 - log(1e4)
-                         up <- par0 + log(1e2)
-                         fitmle <- optim(par0, function(th) nllEig(th)$value, function(th) nllEig(th)$grad, method = "L-BFGS-B", lower = lo, upper = up, control = list(factr = factr, pgtol = 1e-4, maxit = 100))
+                         apriori <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
+                         lower <- apriori - log(1e4)
+                         upper <- apriori + log(1e2)
+                         fitmle <- optim(apriori, function(th) nllEig(th)$value, function(th) nllEig(th)$grad, method = "L-BFGS-B", lower = lower, upper = upper, control = list(factr = factr, pgtol = 1e-4, maxit = 100))
                          fin <- nllEig(fitmle$par)
                          fitmle$value <- fin$value
                          fitmle$hessian_exact <- fin$hess
                          convergence <- fitmle$convergence
                          
                          # check for values at the bounds and the Hessian matrix
-                         atBound <- fitmle$par <= lo + 1e-6 | fitmle$par >= up - 1e-6
-                         hessOK  <- !inherits(try(chol(fin$hess), silent = TRUE), "try-error")
-                         if (messages > 4) cat(file = stderr(), mySession, "Eigen MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lo", lo, "| up", up, "| grad", fin$grad, "| hess PD", hessOK, "\n")
+                         atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
+                         hessOK  <- !inherits(try(chol(fin$hess), silent = T), "try-error")
+                         if (messages > 4) cat(file = stderr(), mySession, "Eigen MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lower", lower, "| upper", upper, "| grad", fin$grad, "| hess PD", hessOK, "\n")
                          if (convergence != 0 || any(atBound) || !hessOK) {
                            reason <- c(if (convergence != 0) paste("Optimizer code", convergence, fitmle$message),
                                        if (any(atBound)) paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", ")),
@@ -6444,7 +6605,6 @@ server <- function(input,output,session) {
                            } else { # standard 1 proc run
                              # BFGS quasi-Newton method with box (actually upper only) constraints, Byrd et. al. (1995)
                              method <- "L-BFGS-B"
-                             if (messages > 2) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "% ( factr =", format(factr, scientific = T, digits = 2), ")\n")
                              # the Hessian is computed after the fit with optimHess
                              fitmle <- optim(par = apriori,
                                              fn = loglik_global,
@@ -6497,19 +6657,23 @@ server <- function(input,output,session) {
                        if (!is.na(convergence)) {
                          if (convergence == 0) {
                            if (messages > 2) cat(file = stderr(), mySession, fitmle$message, "\n")
-                           if (input$wiener) {
-                             if (eigPath) {
-                               d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
-                               Qinv <- ev$vectors %*% (t(ev$vectors) / d)
-                               C    <- ev$vectors %*% (ev$values * t(ev$vectors))
-                               if (input$flicker) Cfl <- C else Crw <- C
-                             } else {
-                               # updating noise covariance matrix from best noise estimates
-                               # kk <- loglik_global(fitmle$estimate) # NLM method
-                               kk <- loglik_global(fitmle$par) # L-BFGS-B method
-                             }
-                           }
                            trans$mle <- T
+                           
+                           # storing the variance-covariance matrix of the noise model for the periodogram
+                           Qfit <- matrix(0, n, n)
+                           if (eigPath) {
+                             d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
+                             Qinv <- ev$vectors %*% (t(ev$vectors) / d)
+                             C    <- ev$vectors %*% (ev$values * t(ev$vectors))
+                             if (input$flicker) {
+                               Cfl <- C
+                             } else {
+                               Crw <- C
+                             }
+                             if (messages > 4) cat(file = stderr(), mySession, "Reconstructing the covariance matrix of the estimated noise model\n")
+                           }
+                           
+                           # computing the standard errors of the fitted noise parameters
                            sd_noises <- NA
                            line3 <- NULL
                            if (input$noise_unc) {
@@ -6521,6 +6685,8 @@ server <- function(input,output,session) {
                              }
                              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
                            }
+                           
+                           # showing the results of the noise model fit on screen
                            i <- 0
                            sigmaFL <- NULL
                            sigmaPL <- NULL
@@ -6537,6 +6703,7 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[1] <- sigmaWH
+                             Qfit <- Qfit + sigmaWH^2 * Cwh
                              if (input$noise_unc) {
                                seParmsWH <- sd_noises[i] * sigmaWH / 2
                                trans$noise[2] <- seParmsWH
@@ -6572,6 +6739,7 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[3] <- sigmaFL
+                             Qfit <- Qfit + sigmaFL^2 * Cfl
                              if (input$noise_unc) {
                                seParmsFL <- sd_noises[i] * sigmaFL / 2
                                trans$noise[4] <- seParmsFL
@@ -6608,6 +6776,7 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[5] <- sigmaRW
+                             Qfit <- Qfit + sigmaRW^2 * Crw
                              if (input$noise_unc) {
                                seParmsRW <- sd_noises[i] * sigmaRW / 2
                                trans$noise[6] <- seParmsRW
@@ -6644,6 +6813,7 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[7] <- sigmaPL
+                             Qfit <- Qfit + sigmaPL^2 * CPL[[1]]
                              if (input$noise_unc) {
                                seParmsPL <- sd_noises[i] * sigmaPL / 2
                                trans$noise[8] <- seParmsPL
@@ -6704,6 +6874,9 @@ server <- function(input,output,session) {
                              trans$noise[9] <- NA
                              trans$noise[10] <- NA
                            }
+                           trans$noiseQ <- Qfit
+                           trans$noiseCache <- NULL
+                           rm(Qfit)
                            end.time <- Sys.time()
                            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
                            time.taken <- end.time - start.time
@@ -6723,6 +6896,8 @@ server <- function(input,output,session) {
                                }
                              })
                            }
+                           
+                           # updating the standard error of the LS trend
                            output$est.unc <- renderUI({
                              if ("Linear" %in% input$model && input$fitType == 1) {
                                req(trans$unc)
