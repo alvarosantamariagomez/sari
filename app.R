@@ -6273,7 +6273,7 @@ server <- function(input,output,session) {
                          
                          # Testing if WH is necessary
                          Cmat <- getCov(k, n_all, trans$gaps, info$sampling)
-                         L <- try(chol(Cmat), silent = TRUE)
+                         L <- try(chol(Cmat), silent = T)
                          if (inherits(L, "try-error")) {
                            showNotification("The covariance matrix is not positive definite.", type = "error", id = "no_mle", session = getDefaultReactiveDomain())
                            if (messages > 4) cat(file = stderr(), mySession, "The covariance matrix is not positive definite.\n")
@@ -6323,23 +6323,31 @@ server <- function(input,output,session) {
                          apriori <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
                          lower <- apriori - log(1e4)
                          upper <- apriori + log(1e2)
-                         fitmle <- optim(apriori, function(th) nllEig(th)$value, function(th) nllEig(th)$grad, method = "L-BFGS-B", lower = lower, upper = upper, control = list(factr = factr, pgtol = 1e-4, maxit = 100))
-                         fin <- nllEig(fitmle$par)
-                         fitmle$value <- fin$value
-                         fitmle$hessian_exact <- fin$hess
-                         convergence <- fitmle$convergence
-                         
-                         # check for values at the bounds and the Hessian matrix
-                         atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
-                         hessOK  <- !inherits(try(chol(fin$hess), silent = T), "try-error")
-                         if (messages > 4) cat(file = stderr(), mySession, "Eigen MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lower", lower, "| upper", upper, "| grad", fin$grad, "| hess PD", hessOK, "\n")
-                         if (convergence != 0 || any(atBound) || !hessOK) {
-                           reason <- c(if (convergence != 0) paste("Optimizer code", convergence, fitmle$message),
-                                       if (any(atBound)) paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", ")),
-                                       if (!hessOK) "Hessian not positive definite")
-                           showNotification(HTML(paste0("The MLE did not converge to an interior optimum.<br>", paste(reason, collapse = "; "))), type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
-                           if (messages > 4) cat(file = stderr(), mySession, "The MLE did not converge to an interior optimum.", paste(reason, collapse = "; "), "\n")
+                         tryOptim <- try({
+                           fitmle <- optim(apriori, function(th) nllEig(th)$value, function(th) nllEig(th)$grad, method = "L-BFGS-B", lower = lower, upper = upper, control = list(factr = factr, pgtol = 1e-4, maxit = 100))
+                         }, silent = T)
+                         if (inherits(tryOptim,"try-error") || fitmle$convergence != 0) {
+                           msg <- if (inherits(tryOptim,"try-error")) as.character(tryOptim) else fitmle$message
+                           showNotification(HTML(paste0("The MLE optimization did not converge.<br>", msg)), action = NULL, duration = 10, closeButton = T, id = "no_optim", type = "error", session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "MLE optimization failed:", msg, "\n")
                            req(info$stop)
+                         } else {
+                           fin <- nllEig(fitmle$par)
+                           fitmle$value <- fin$value
+                           fitmle$hessian_exact <- fin$hess
+                           convergence <- fitmle$convergence
+                           
+                           # check for values at the bounds and the Hessian matrix
+                           atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
+                           hessOK  <- !inherits(try(chol(fin$hess), silent = T), "try-error")
+                           if (messages > 4) cat(file = stderr(), mySession, "Eigen MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lower", lower, "| upper", upper, "| grad", fin$grad, "| hess PD", hessOK, "\n")
+                           if (any(atBound) || !hessOK) {
+                             reason <- c(if (any(atBound)) paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", ")),
+                                         if (!hessOK) "Hessian not positive definite")
+                             showNotification(HTML(paste0("The MLE did not converge to an interior optimum.<br>", paste(reason, collapse = "; "))), type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
+                             if (messages > 4) cat(file = stderr(), mySession, "The MLE did not converge to an interior optimum.", paste(reason, collapse = "; "), "\n")
+                             req(info$stop)
+                           }
                          }
                        }
                        #* more than one noise variance including the spectral index ####
@@ -18165,7 +18173,7 @@ server <- function(input,output,session) {
     key <- paste(k, n_all, sampling, sum(gaps), sum(which(gaps)^2), sep = "_")
     if (is.null(eigCache[[key]])) {
       C <- cov_powerlaw(k, n_all, F, gaps, sampling)[[1]]
-      ev <- eigen(C, symmetric = TRUE)
+      ev <- eigen(C, symmetric = T)
       if (min(ev$values) < -1e-8 * max(ev$values)) return(NULL)
       ev$values <- pmax(ev$values, .Machine$double.eps * max(ev$values))
       rm(list = ls(eigCache), envir = eigCache)
