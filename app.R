@@ -6648,6 +6648,7 @@ server <- function(input,output,session) {
                              } else {
                                gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
                                fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
+                               ll_check <- loglik_global(fitmle$par) # recovers CPL, Qinv, QinvR at the MLE solution
                              }
                              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
                            }
