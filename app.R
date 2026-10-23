@@ -11997,6 +11997,7 @@ server <- function(input,output,session) {
     trans$ye <- NULL
     trans$sye <- NULL
     info$run <- NULL
+    info$gaps <- NULL
     trans$res <- NULL
     trans$reserror <- NULL
     trans$results <- NULL
