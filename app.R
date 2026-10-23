@@ -358,7 +358,7 @@ tabContents <- function(tabNum) {
                conditionalPanel(
                  condition = "input.spectrumOriginal == true || input.spectrumModel == true || input.spectrumResiduals == true || input.spectrumFilter == true || input.spectrumFilterRes == true",
                  withSpinner(
-                   plotOutput(paste0("res",tabNum,"_espectral"), click = "lomb_1click", dblclick = dblclickOpts("lomb_2click", delay = 1000), brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T, delay = 600)),
+                   plotOutput(paste0("res",tabNum,"_spectral"), click = "lomb_1click", dblclick = dblclickOpts("lomb_2click", delay = 1000), brush = brushOpts(id = "lomb_brush", resetOnNew = T, fill = "#2297E6", stroke = "gray62", opacity = '0.5', clip = T, delay = 600)),
                    type = getOption("spinner.type", default = 1),
                    color = getOption("spinner.color", default = "#0080ff"),
                    size = getOption("spinner.size", default = 2),
@@ -601,6 +601,34 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                   tags$script(HTML(update_step)),
                   tags$script(HTML(update_step2)),
                   tags$script(HTML(update_trendRef)),
+                  
+                  # catch mouse down/up on the periodogram plot
+                  tags$script(HTML("
+                              (function() {
+                                  let d = null;
+                                  let moved = true;
+                                  $(document).on('mousedown', '#res1_spectral, #res2_spectral, #res3_spectral', function(e) {
+                                      d = {x: e.pageX, y: e.pageY};
+                                      moved = true;
+                                      Shiny.setInputValue('lomb_mouseup', {
+                                              moved: moved, t: Date.now()
+                                          }, {
+                                              priority: 'event'
+                                          });
+                                  });
+                                  $(document).on('mouseup', function(e) {
+                                      if (d) {
+                                          moved = Math.hypot(e.pageX - d.x, e.pageY - d.y) > 3;
+                                          d = null;
+                                          Shiny.setInputValue('lomb_mouseup', {
+                                              moved: moved, t: Date.now()
+                                          }, {
+                                              priority: 'event'
+                                          });
+                                      }
+                                  });
+                              })();
+                  ")),
 
                   # confirm click on refresh button
                   # uiOutput("refresh")
@@ -2150,7 +2178,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                  div(style = "margin-top:0.6em;",
                                                                                      conditionalPanel(
                                                                                        condition = "input.spectrum == true",
-                                                                                       radioButtons(inputId = "spectrumType", label = NULL, choices = list("Amplitude" = 0, "Power" = 1), selected = 0, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
+                                                                                       radioButtons(inputId = "spectrumType", label = NULL, choices = list("Amplitude" = 0, "Power" = 1), selected = 1, inline = T, width = NULL, choiceNames = NULL,  choiceValues = NULL) |> autoCompleteOff()
                                                                                      )
                                                                                  )
                                                                           )
@@ -5449,11 +5477,11 @@ server <- function(input,output,session) {
     # Computing periodogram if all necessary values are good
     if (input$spectrum && short_period > 0 && long_period > 0 && 1/short_period > 1/long_period + 1/(max_period*ofac)) {
       if ((input$tab == 1) || (input$format == 4)) {
-        shinyjs::show(id = "res1_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
+        shinyjs::show(id = "res1_spectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
       } else if (input$tab == 2) {
-        shinyjs::show(id = "res2_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
+        shinyjs::show(id = "res2_spectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
       } else if (input$tab == 3) {
-        shinyjs::show(id = "res3_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
+        shinyjs::show(id = "res3_spectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
       }
       f <- seq(1/long_period,1/short_period,1/(max_period*ofac)) # cycles per time unit
       if (short_period == min_period) {
@@ -5470,11 +5498,11 @@ server <- function(input,output,session) {
       showNotification(HTML("Negative, null or invalid period bounds for the periodogram.<br>Check the input values."), action = NULL, duration = 10, closeButton = T, id = "bad_periods", type = "error", session = getDefaultReactiveDomain())
       trans$fs <- NULL
       if ((input$tab == 1) || (input$format == 4)) {
-        shinyjs::hide(id = "res1_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
+        shinyjs::hide(id = "res1_spectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
       } else if (input$tab == 2) {
-        shinyjs::hide(id = "res2_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
+        shinyjs::hide(id = "res2_spectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
       } else if (input$tab == 3) {
-        shinyjs::hide(id = "res3_espectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
+        shinyjs::hide(id = "res3_spectral", anim = T, animType = "fade", time = 0.5, selector = NULL)
       }
     }
   })
@@ -5674,7 +5702,7 @@ server <- function(input,output,session) {
   })
 
   # Plot spectrum ####
-  output$res1_espectral <- output$res2_espectral <- output$res3_espectral <- renderPlot({
+  output$res1_spectral <- output$res2_spectral <- output$res3_spectral <- renderPlot({
     trans$slope <- NULL
     req(db1[[info$db1]], input$spectrum, trans$fs, trans$psd)
     removeNotification("no_noise_psd")
@@ -12309,6 +12337,7 @@ server <- function(input,output,session) {
 
   # Observe clicks on the periodogram ####
   observeEvent(input$lomb_1click, {
+    req(!input$lomb_mouseup$moved)
     if (length(input$lomb_1click$x) > 0 && !isTruthy(input$lomb_2click) && !isTruthy(input$lomb_brush)) {
       isolate({
         if (messages > 0) cat(file = stderr(), mySession, "Clicking periodogram", "\n")
