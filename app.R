@@ -5639,7 +5639,12 @@ server <- function(input,output,session) {
       fm <- trans$fs[idx]
       nm <- length(fm)
       A2 <- numeric(nm)
-      x <- trans$x - trans$x[1]
+      n_all <- length(trans$gaps)
+      if (sum(trans$gaps) != info$points) {
+        showNotification(HTML("The data gaps do not match the residual series.<br>Unable to compute the noise model periodogram."), action = NULL, duration = 10, closeButton = T, id = "bad_noise_psd", type = "error", session = getDefaultReactiveDomain())
+        req(info$stop)
+      }
+      x <- (which(trans$gaps) - 1) * (info$length/(n_all - 1))
       chunk <- max(1, floor(1e6/info$points))
       withProgress(message = 'Computing noise model periodogram.',
                    detail = 'This may take a while ...', value = 0, {
@@ -5749,12 +5754,13 @@ server <- function(input,output,session) {
       }
       axis(3, at = axTicks(1), labels = newPeriods)
       mtext(lab, side = 3, line = 3)
+      c <- max(which(trans$spectra_old))
       
       # plotting the noise model periodogram
       if (length(noise_y) > 0) {
         p <- 1/trans$noiseF
         lines(p, noise_y, col = SARIcolors[6], lty = 2, lwd = 3)
-        noise_interp <- approx(p, noise_y, xout = 1/trans$fs, method = "linear")$y
+        noise_interp <- 10^approx(log10(p), log10(noise_y), xout = log10(1/trans$fs), method = "linear")$y
         isolate({ trans$spectra <- cbind(trans$spectra, noise_interp) })
         if (input$tunits == 1) { #days
           f_scale <- 24*60*60
@@ -5809,7 +5815,6 @@ server <- function(input,output,session) {
           }
         })
       } else if (input$spectrumType == 1) {
-        c <- max(which(trans$spectra_old))
         psd <- trans$psd[,c]
         slope <- try(lm(log10(psd) ~ log10(1/trans$fs)), silent = T)
         if (isTruthy(slope) && !inherits(slope,"try-error")) {
@@ -6340,7 +6345,7 @@ server <- function(input,output,session) {
                            # check for values at the bounds and the Hessian matrix
                            atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
                            hessOK  <- !inherits(try(chol(fin$hess), silent = T), "try-error")
-                           if (messages > 4) cat(file = stderr(), mySession, "Eigen MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lower", lower, "| upper", upper, "| grad", fin$grad, "| hess PD", hessOK, "\n")
+                           if (messages > 4) cat(file = stderr(), mySession, "MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lower", lower, "| upper", upper, "| grad", fin$grad, "| hess PD", hessOK, "\n")
                            if (any(atBound) || !hessOK) {
                              reason <- c(if (any(atBound)) paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", ")),
                                          if (!hessOK) "Hessian not positive definite")
@@ -6574,6 +6579,14 @@ server <- function(input,output,session) {
                            msg <- if (inherits(tryOptim,"try-error")) as.character(tryOptim) else fitmle$message
                            showNotification(HTML(paste0("The MLE optimization did not converge.<br>", msg)), action = NULL, duration = 10, closeButton = T, id = "no_optim", type = "error", session = getDefaultReactiveDomain())
                            if (messages > 4) cat(file = stderr(), mySession, "MLE optimization failed:", msg, "\n")
+                           req(info$stop)
+                         }
+                         # check for values at the bounds
+                         atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
+                         if (any(atBound)) {
+                           msg <- paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", "))
+                           showNotification(HTML(paste0("The MLE did not converge to an interior optimum.<br>", paste(msg, collapse = "; "))), type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "The MLE did not converge to an interior optimum.", paste(msg, collapse = "; "), "\n")
                            req(info$stop)
                          }
                        }
