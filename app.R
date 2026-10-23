@@ -6207,6 +6207,8 @@ server <- function(input,output,session) {
       withBusyIndicatorServer("runmle", {
         cat(file = stderr(), mySession, "MLE fit", "\n")
         start.time <- Sys.time()
+        trans$noiseQ <- NULL
+        trans$noiseCache <- NULL
         if (messages > 2) cat(file = stderr(), mySession, "MLE fit start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
         message <- ""
         if (isTruthy(info$timeMLE) && !isTruthy(info$local)) {
@@ -6842,7 +6844,6 @@ server <- function(input,output,session) {
                              trans$noise[10] <- NA
                            }
                            trans$noiseQ <- Qfit
-                           trans$noiseCache <- NULL
                            rm(Qfit)
                            end.time <- Sys.time()
                            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
