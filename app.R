@@ -6307,18 +6307,11 @@ server <- function(input,output,session) {
                          k <- ifelse(info$flicker, -1, -2)
                          
                          # Testing if WH is necessary
-                         Cmat <- getCov(k, n_all, trans$gaps, info$sampling)
-                         L <- try(chol(Cmat), silent = T)
-                         if (inherits(L, "try-error")) {
-                           showNotification("The covariance matrix is not positive definite.", type = "error", id = "no_mle", session = getDefaultReactiveDomain())
-                           if (messages > 4) cat(file = stderr(), mySession, "The covariance matrix is not positive definite.\n")
-                           req(info$stop)
-                         }
-                         z      <- backsolve(L, resS, transpose = T)     # L^-T r
-                         Cinvr  <- backsolve(L, z)                       # C^-1 r
-                         f0     <- sum(z^2) / n                          # FL-only variance
-                         Li     <- backsolve(L, diag(n))                 # L^-1 (upper triangular)
-                         trCinv <- sum(Li^2)                             # tr(C^-1) = ||L^-1||_F^2
+                         e      <- inv_coefs(k, n, info$sampling)
+                         z      <- lconv(e, resS)
+                         Cinvr  <- rev(lconv(e, rev(z)))
+                         f0     <- sum(z^2) / n
+                         trCinv <- sum((n - 0:(n - 1)) * e^2)
                          s      <- trCinv - sum(Cinvr^2) / f0
                          if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(inv(C)) =", s / trCinv, "\n")
                          if (s >= 0) {
@@ -6340,6 +6333,18 @@ server <- function(input,output,session) {
                          lam  <- ev$values
                          setProgress(0.75)
                          beta <- as.vector(crossprod(ev$vectors, resS))^2
+                         
+                         nllEig <- function(th) {
+                           t1 <- exp(th[1])
+                           t2 <- exp(th[2]) * lam
+                           r  <- 1/(t1 + t2)
+                           g  <- 0.5 * c(sum(t1*(r - beta*r^2)), sum(t2*(r - beta*r^2)))
+                           w  <- -r^2 + 2*beta*r^3
+                           H  <- 0.5 * matrix(c(sum(t1*t1*w), sum(t1*t2*w), sum(t1*t2*w), sum(t2*t2*w)), 2) + diag(g)
+                           ll <- 0.5*(n*log(2*pi) + sum(log(1/r)) + sum(beta*r))
+                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(th))/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll/-1), "\n")
+                           list(value = ll, grad = g, hess = H)
+                         }
                          
                          # running optimization
                          apriori <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
@@ -6431,6 +6436,104 @@ server <- function(input,output,session) {
                          powerl <- info$powerl
                          gaps <- trans$gaps
                          sampling <- info$sampling
+                         
+                         loglik_global <- function(x) {
+                           h <- 0
+                           k <- 0
+                           CPL <<- NULL
+                           Qinv <<- NULL
+                           QinvR <<- NULL
+                           if (white) {
+                             h <- 1
+                             wh <- exp(x[h])
+                             Q <- wh * Cwh
+                           } else {
+                             Q <- matrix(0, ncol = n, nrow = n)
+                           }
+                           if (flicker) {
+                             h <- h + 1
+                             k <- -1
+                             fl <- exp(x[h])
+                             Q <- Q + fl * Cfl
+                           }
+                           if (randomw) {
+                             h <- h + 1
+                             k <- -2
+                             rw <- exp(x[h])
+                             Q <- Q + rw * Crw
+                           }
+                           if (powerl) {
+                             h <- h + 1
+                             pl <- exp(x[h])
+                             h <- h + 1
+                             k <- x[h] + 3
+                             x <- head(x, -1)
+                             CPL <<- cov_powerlaw(k,n_all,T,gaps,sampling)
+                             Cpl <- CPL[[1]]
+                             k_deriv <- CPL[[2]]
+                             Q <- Q + pl * Cpl
+                           }
+                           ll_out <- loglikelihood(resS,Q,0)
+                           ll <- ll_out[[1]]
+                           Qinv <<- ll_out[[2]]
+                           QinvR <<- ll_out[[3]]
+                           if (method == "NLM") {
+                             attr(ll, "gradient") <- grad_global(x)
+                           }
+                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
+                           ll/-1
+                         }
+                         
+                         grad_global <- function(x) {
+                           grad <- NULL
+                           h <- 0
+                           trQinv <- crossprod(resS, Qinv)
+                           if (white) {
+                             h <- h + 1
+                             wh <- exp(x[h])
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- grad_cpp(Qinv,QinvR,trQinv,diag(length(resS)),wh)
+                             } else {
+                               grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
+                             }
+                           }
+                           if (flicker) {
+                             h <- h + 1
+                             fl <- exp(x[h])
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cfl,fl))
+                             } else {
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
+                             }
+                           }
+                           if (randomw) {
+                             h <- h + 1
+                             rw <- exp(x[h])
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Crw,rw))
+                             } else {
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
+                             }
+                           }
+                           if (powerl) {
+                             h <- h + 1
+                             pl <- exp(x[h])
+                             h <- h + 1
+                             k <- x[h] + 3
+                             x <- head(x, -1)
+                             Cpl <- CPL[[1]]
+                             k_deriv <- pl * CPL[[2]]
+                             if (exists("grad_cpp", mode = "function")) {
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cpl,pl))
+                               grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,k_deriv,1))
+                             } else {
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
+                               grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
+                             }
+                           }
+                           if (messages > 2) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
+                           grad/-1
+                         }
                          
                          tryOptim <- try({
                            # setting cluster if run is local and long
@@ -6760,6 +6863,26 @@ server <- function(input,output,session) {
                              if ("Linear" %in% input$model && input$fitType == 1) {
                                req(trans$unc)
                                isolate({
+                                 estimateFormalUncertainty <- function() {
+                                   unc_pl <- 0
+                                   if (isTruthy(sigmaFL)) {
+                                     unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling,points) # general power-law trend uncertainty
+                                     # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
+                                     # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
+                                   }
+                                   if (isTruthy(sigmaRW)) {
+                                     unc <- pl_trend_unc(sigmaRW,-2,info$sampling,points) # general power-law trend uncertainty
+                                     # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
+                                     unc_pl <- sqrt(unc_pl^2 + unc^2)
+                                   }
+                                   if (isTruthy(sigmaPL)) {
+                                     # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
+                                     unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
+                                     unc_pl <- sqrt(unc_pl^2 + unc^2)
+                                   }
+                                   unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
+                                   return(list(unc_pl,unc_white))
+                                 }
                                  rate_ids <- which(grepl("Rate",rownames(trans$LScoefs)))
                                  if (input$breaking && length(trans$breakEpochs) > 0 && input$trendType > 0) {
                                    if (length(rate_ids) == (length(trans$breakEpochs) + 1)) {
@@ -17366,17 +17489,15 @@ server <- function(input,output,session) {
     a <- c(0, (-k/2 + 0:(n - 2))/(1:(n - 1)))
     Delta <- cumprod(c(1, a[-1]))
     if (!exists("conv_cpp", mode = "function")) {
-      Z <- toeplitz(Delta[gaps])
-      Z[upper.tri(Z)] <- 0
-      # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
-      Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
+    Z <- toeplitz(Delta[gaps])
+    Z[upper.tri(Z)] <- 0
+    # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
+    Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     }
     if (exists("conv_cpp", mode = "function")) {
       ZZt <- conv_cpp(Delta[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
-    } else if (exists("tcrossprod_cpp", mode = "function")) {
-      ZZt <- tcrossprod_cpp(Z,Z)
     } else {
-      ZZt <- tcrossprod(Z)
+      ZZt <- cov_zzt(Delta[gaps] * sampling^(-k/4))
     }
     if (deriv) {
       u <- numeric(n)
@@ -17391,8 +17512,6 @@ server <- function(input,output,session) {
       }
       if (exists("conv_cpp", mode = "function")) {
         UZt <- conv_cpp(u[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
-      } else if (exists("tcrossprod_cpp", mode = "function")) {
-        UZt <- tcrossprod_cpp(U,Z)
       } else {
         UZt <- tcrossprod(U,Z)
       }
@@ -18073,14 +18192,29 @@ server <- function(input,output,session) {
     })
   }
   #
-  covCache <- new.env()
-  getCov <- function(k, n_all, gaps, sampling) {
-    key <- paste(k, n_all, sampling, sum(gaps), sum(which(gaps)^2), sep = "_")
-    if (is.null(covCache$key) || covCache$key != key) {
-      covCache$C <- cov_powerlaw(k, n_all, F, gaps, sampling)[[1]]
-      covCache$key <- key
+  inv_coefs <- function(k, n, sampling) {
+    a <- c(0, (k/2 + 0:(n - 2))/(1:(n - 1)))
+    cumprod(c(1, a[-1])) * sampling^(k/4)
+  }
+  #
+  lconv <- function(a, b) {
+    n <- length(a)
+    N <- 2 * n
+    Re(fft(fft(c(a, rep(0, n))) * fft(c(b, rep(0, n))), inverse = TRUE))[1:n] / N
+  }
+  #
+  cov_zzt <- function(d) {
+    n <- length(d)
+    C <- matrix(0, n, n)
+    for (l in 0:(n - 1)) {
+      m <- n - l
+      v <- cumsum(d[1:m] * d[(1 + l):n])
+      i <- (1:m) + l
+      j <- 1:m
+      C[i + (j - 1) * n] <- v
+      C[j + (i - 1) * n] <- v
     }
-    covCache$C
+    C
   }
   #
   eigCache <- new.env()
@@ -18097,139 +18231,9 @@ server <- function(input,output,session) {
     eigCache[[key]]
   }
   #
-  nllEig <- function(th) {
-    t1 <- exp(th[1])
-    t2 <- exp(th[2]) * lam
-    r  <- 1/(t1 + t2)
-    g  <- 0.5 * c(sum(t1*(r - beta*r^2)), sum(t2*(r - beta*r^2)))
-    w  <- -r^2 + 2*beta*r^3
-    H  <- 0.5 * matrix(c(sum(t1*t1*w), sum(t1*t2*w), sum(t1*t2*w), sum(t2*t2*w)), 2) + diag(g)
-    ll <- 0.5*(n*log(2*pi) + sum(log(1/r)) + sum(beta*r))
-    if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(th))/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll/-1), "\n")
-    list(value = ll, grad = g, hess = H)
-  }
-  #
-  loglik_global <- function(x) {
-    h <- 0
-    k <- 0
-    CPL <<- NULL
-    Qinv <<- NULL
-    QinvR <<- NULL
-    if (white) {
-      h <- 1
-      wh <- exp(x[h])
-      Q <- wh * Cwh
-    } else {
-      Q <- matrix(0, ncol = n, nrow = n)
-    }
-    if (flicker) {
-      h <- h + 1
-      k <- -1
-      fl <- exp(x[h])
-      Q <- Q + fl * Cfl
-    }
-    if (randomw) {
-      h <- h + 1
-      k <- -2
-      rw <- exp(x[h])
-      Q <- Q + rw * Crw
-    }
-    if (powerl) {
-      h <- h + 1
-      pl <- exp(x[h])
-      h <- h + 1
-      k <- x[h] + 3
-      x <- head(x, -1)
-      CPL <<- cov_powerlaw(k,n_all,T,gaps,sampling)
-      Cpl <- CPL[[1]]
-      k_deriv <- CPL[[2]]
-      Q <- Q + pl * Cpl
-    }
-    ll_out <- loglikelihood(resS,Q,0)
-    ll <- ll_out[[1]]
-    Qinv <<- ll_out[[2]]
-    QinvR <<- ll_out[[3]]
-    if (method == "NLM") {
-      attr(ll, "gradient") <- grad_global(x)
-    }
-    if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
-    ll/-1
-  }
-  #
-  grad_global <- function(x) {
-    grad <- NULL
-    h <- 0
-    trQinv <- crossprod(resS, Qinv)
-    if (white) {
-      h <- h + 1
-      wh <- exp(x[h])
-      if (exists("grad_cpp", mode = "function")) {
-        grad <- grad_cpp(Qinv,QinvR,trQinv,diag(length(resS)),wh)
-      } else {
-        grad <- -0.5*(tr(Qinv) - sum(dot(trQinv, QinvR)))[1]*wh
-      }
-    }
-    if (flicker) {
-      h <- h + 1
-      fl <- exp(x[h])
-      if (exists("grad_cpp", mode = "function")) {
-        grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cfl,fl))
-      } else {
-        grad <- c(grad, -0.5*(sum(dot(Qinv,Cfl)) - sum(dot(trQinv, Cfl %*% QinvR)))[1]*fl)
-      }
-    }
-    if (randomw) {
-      h <- h + 1
-      rw <- exp(x[h])
-      if (exists("grad_cpp", mode = "function")) {
-        grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Crw,rw))
-      } else {
-        grad <- c(grad, -0.5*(sum(dot(Qinv,Crw)) - sum(dot(trQinv, Crw %*% QinvR)))[1]*rw)
-      }
-    }
-    if (powerl) {
-      h <- h + 1
-      pl <- exp(x[h])
-      h <- h + 1
-      k <- x[h] + 3
-      x <- head(x, -1)
-      Cpl <- CPL[[1]]
-      k_deriv <- pl * CPL[[2]]
-      if (exists("grad_cpp", mode = "function")) {
-        grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,Cpl,pl))
-        grad <- c(grad, grad_cpp(Qinv,QinvR,trQinv,k_deriv,1))
-      } else {
-        grad <- c(grad, -0.5*(sum(dot(Qinv,Cpl)) - sum(dot(trQinv, Cpl %*% QinvR)))[1]*pl)
-        grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
-      }
-    }
-    if (messages > 2) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
-    grad/-1
-  }
-  #
   gr_fresh <- function(x) {
-    loglik_global(x); grad_global(x)
-  }
-  #
-  estimateFormalUncertainty <- function() {
-    unc_pl <- 0
-    if (isTruthy(sigmaFL)) {
-      unc_pl <- pl_trend_unc(sigmaFL,-1,info$sampling,points) # general power-law trend uncertainty
-      # unc_pl <- sqrt( 1.78 * sigmaFL^2 * info$sampling^0.22 / ((info$points - 1) * info$sampling)^2 ) # from Mao et al. (1999)
-      # unc_pl <- sqrt( 9 * sigmaFL^2*samplingScale^(-1/4) / (16 * (info$sampling)^2 * (info$points^2 - 1)) ) # from Zhang et al. (1997)
-    }
-    if (isTruthy(sigmaRW)) {
-      unc <- pl_trend_unc(sigmaRW,-2,info$sampling,points) # general power-law trend uncertainty
-      # unc <- sqrt( sigmaRW^2*samplingScale^(-2/4) / (info$points - 1) ) # from Zhang et al. (1997)
-      unc_pl <- sqrt(unc_pl^2 + unc^2)
-    }
-    if (isTruthy(sigmaPL)) {
-      # unc <- pl_trend_unc(sigmaPL*samplingScale^(sigmaK/4),sigmaK,info$sampling) # general power-law trend uncertainty
-      unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
-      unc_pl <- sqrt(unc_pl^2 + unc^2)
-    }
-    unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
-    return(list(unc_pl,unc_white))
+    loglik_global(x)
+    grad_global(x)
   }
 }
 
