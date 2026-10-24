@@ -6650,9 +6650,11 @@ server <- function(input,output,session) {
                              } else {
                                gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
                                fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
-                               ll_check <- loglik_global(fitmle$par) # recovers CPL, Qinv, QinvR at the MLE solution
                              }
                              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
+                           }
+                           if (is.null(fitmle$hessian_exact)) {
+                             loglik_global(fitmle$par)  # restore CPL, Qinv, QinvR at the optimum
                            }
                            
                            # showing the results of the noise model fit on screen
@@ -6844,7 +6846,6 @@ server <- function(input,output,session) {
                              trans$noise[10] <- NA
                            }
                            trans$noiseQ <- Qfit
-                           rm(Qfit)
                            end.time <- Sys.time()
                            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
                            time.taken <- end.time - start.time
