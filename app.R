@@ -12235,12 +12235,18 @@ server <- function(input,output,session) {
               } else {
                 info$timeMLE <- ceiling(1.6110e-09*info$points^2.8908)
               }
+              if (input$wiener) {
+                info$timeMLE <- info$timeMLE + 90
+              }
             }
           } else if (input$randomw) { # WH + RW
             if (isTruthy(input$noise_unc)) {
               info$timeMLE <- ceiling(7.3313e-09*info$points^2.7168)
             } else {
               info$timeMLE <- ceiling(2.3364e-09*info$points^2.8490)
+            }
+            if (input$wiener) {
+              info$timeMLE <- info$timeMLE + 90
             }
           } else if (input$powerl) { # WH + PL
             if (isTruthy(input$noise_unc)) {
