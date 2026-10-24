@@ -6623,8 +6623,10 @@ server <- function(input,output,session) {
                            # storing the variance-covariance matrix of the noise model for the periodogram
                            Qfit <- matrix(0, n, n)
                            if (eigPath) {
-                             d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
-                             Qinv <- ev$vectors %*% (t(ev$vectors) / d)
+                             if (input$wiener) {
+                               d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
+                               Qinv <- ev$vectors %*% (t(ev$vectors) / d)
+                             }
                              C    <- ev$vectors %*% (ev$values * t(ev$vectors))
                              if (input$flicker) {
                                Cfl <- C
