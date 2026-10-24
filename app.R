@@ -12191,7 +12191,7 @@ server <- function(input,output,session) {
   })
 
   # Observe noise model ####
-  observeEvent(c(input$white, input$flicker, input$randomw, input$powerl, input$noise_unc, info$points), {
+  observeEvent(c(input$white, input$flicker, input$randomw, input$powerl, input$noise_unc, input$wiener, info$points), {
     req(input$mle)
     removeNotification("no_mle")
     removeNotification("too_long")
@@ -12230,21 +12230,13 @@ server <- function(input,output,session) {
                 info$timeMLE <- ceiling(8.0839e-09*info$points^2.7367)
               }
             } else {  # WH + FN
-              if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(6.8125e-09*info$points^2.7275)
-              } else {
-                info$timeMLE <- ceiling(1.6110e-09*info$points^2.8908)
-              }
+              info$timeMLE <- ceiling(2.6e-08*info$points^2.56)
               if (input$wiener) {
                 info$timeMLE <- info$timeMLE + 90
               }
             }
           } else if (input$randomw) { # WH + RW
-            if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(7.3313e-09*info$points^2.7168)
-            } else {
-              info$timeMLE <- ceiling(2.3364e-09*info$points^2.8490)
-            }
+            info$timeMLE <- ceiling(2.6e-08*info$points^2.56)
             if (input$wiener) {
               info$timeMLE <- info$timeMLE + 90
             }
