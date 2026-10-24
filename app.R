@@ -6379,41 +6379,14 @@ server <- function(input,output,session) {
                        }
                        #* more than one noise variance including the spectral index ####
                        else if (component > 1) {
-                         # computing a priori noise variances. RW is minimized to avoid having to much contribution in the final result (gradient of RW is usually very flat)
-                         if (info$white) {
-                           wh <- var(res)/sqrt(component)
-                           apriori <- wh
-                           typsize <- 3 # scale applied to the step size defined in the optimization run
-                           if (isTruthy(info$flicker)) {
-                             fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
-                             apriori <- c(apriori, fl)
-                             typsize <- c(typsize, 3)
-                             if (isTruthy(info$randomw)) {
-                               rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
-                               apriori <- c(apriori, rw)
-                               typsize <- c(typsize, 20)
-                             }
-                           } else if (isTruthy(info$randomw)) {
-                             rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
-                             apriori <- c(apriori, rw)
-                             typsize <- c(typsize, 20)
-                           } else if (isTruthy(info$powerl)) {
-                             pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
-                             apriori <- c(apriori, pl)
-                             typsize <- c(typsize, 3)
-                           }
-                         } else if (info$flicker) {
-                           fl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
-                           apriori <- c(apriori, fl)
-                           typsize <- 3
-                           rw <- (crossprod(res, solve(Crw, res))/n)[1]/sqrt(component)/1e3
-                           apriori <- c(apriori, rw)
-                           typsize <- c(typsize, 20)
-                         } else if (isTruthy(info$powerl)) {
-                           pl <- (crossprod(res, solve(Cfl, res))/n)[1]/sqrt(component)
-                           apriori <- c(apriori, pl)
-                           typsize <- 3
-                         }
+                         # computing a priori noise variances
+                         Cs <- list()
+                         if (info$white)   Cs$wh <- Cwh
+                         if (info$flicker) Cs$fl <- Cfl
+                         if (info$randomw) Cs$rw <- Crw
+                         if (info$powerl)  Cs$pl <- Cfl
+                         apriori <- moment_apriori(res, Cs, which(trans$gaps), n_all)
+                         typsize <- rep(3, length(apriori))
                          setProgress(0.25)
                          apriori <- log(apriori*scaling^2)
                          lower <- apriori - log(1e4)
@@ -6643,6 +6616,7 @@ server <- function(input,output,session) {
                              if (!is.null(fitmle$hessian_exact)) {
                                fitmle$hessian <- fitmle$hessian_exact
                              } else {
+                               gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
                                fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
                              }
                              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
@@ -18231,9 +18205,29 @@ server <- function(input,output,session) {
     eigCache[[key]]
   }
   #
-  gr_fresh <- function(x) {
-    loglik_global(x)
-    grad_global(x)
+  moment_apriori <- function(res, Cs, pos, n_all) {
+    ms <- unique(round(2^seq(0, log2((n_all - 1)/2), by = 0.5)))
+    rows <- lapply(ms, function(m) {
+      i1 <- match(pos + m, pos)
+      i2 <- match(pos + 2*m, pos)
+      ok <- !is.na(i1) & !is.na(i2)
+      if (sum(ok) < 30) return(NULL)
+      i0 <- which(ok); i1 <- i1[ok]; i2 <- i2[ok]
+      d <- res[i2] - 2*res[i1] + res[i0]
+      e <- sapply(Cs, function(C) mean(C[cbind(i0,i0)] + 4*C[cbind(i1,i1)] + C[cbind(i2,i2)] - 4*C[cbind(i0,i1)] + 2*C[cbind(i0,i2)] - 4*C[cbind(i1,i2)]))
+      c(e, mean(d^2))
+    })
+    A <- do.call(rbind, rows)
+    if (is.null(A) || nrow(A) < length(Cs)) {
+      stop("Not enough scales to estimate the a priori noise variances")
+    }
+    b <- A[, ncol(A)]
+    A <- A[, -ncol(A), drop = F]
+    x <- pracma::lsqnonneg(A/b, rep(1, length(b)))$x
+    if (all(x <= 0)) {
+      stop("Method of moments returned no positive variance")
+    }
+    pmax(x, 1e-4*max(x))
   }
 }
 
