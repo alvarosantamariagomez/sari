@@ -6192,17 +6192,11 @@ server <- function(input,output,session) {
     removeNotification("timeWillTake")
     
     # collecting own garbage when leaving
-    if (!info$local) {
-      rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
-      cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
-    }
     on.exit({
       rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
       invisible(gc())
-      if (!info$local) {
-        rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
-        cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
-      }
+      print_max_used_memory()
+      reset_max_used_memory()
     }, add = T)
     
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
@@ -6977,10 +6971,6 @@ server <- function(input,output,session) {
                          }
                        }
                        setProgress(1)
-                       if (!info$local) {
-                         rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
-                         cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
-                       }
                      })
       })
     }
@@ -18262,6 +18252,21 @@ server <- function(input,output,session) {
       stop("Method of moments returned no positive variance")
     }
     pmax(x, 1e-4*max(x))
+  }
+  #
+  print_max_used_memory <- function() {
+    if (!info$local) {
+      rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
+      cat(file = stderr(), mySession, "MLE", rss(), "\n")
+    }
+  }
+  #
+  reset_max_used_memory <- function() {
+    ok <- try(writeLines("5", "/proc/self/clear_refs"), silent = T)
+    if (inherits(ok, "try-error")) {
+      cat(file = stderr(), mySession, "VmHWM reset failed:", as.character(ok), "\n")
+    }
+    invisible(!inherits(ok, "try-error"))
   }
 }
 
