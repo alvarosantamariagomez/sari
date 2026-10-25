@@ -6197,14 +6197,13 @@ server <- function(input,output,session) {
       cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
     }
     on.exit({
-      rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","Qfit","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
+      rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
       invisible(gc())
       if (!info$local) {
         rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
         cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
       }
     }, add = T)
-    gc(reset = T)
     
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
       trans$noise <- vector(length = 11)
@@ -6225,6 +6224,7 @@ server <- function(input,output,session) {
         start.time <- Sys.time()
         trans$noiseQ <- NULL
         trans$noiseCache <- NULL
+        gc(reset = T)
         if (messages > 2) cat(file = stderr(), mySession, "MLE fit start:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
         message <- ""
         if (isTruthy(info$timeMLE) && !isTruthy(info$local)) {
@@ -6428,7 +6428,6 @@ server <- function(input,output,session) {
                          loglik_global <- function(x) {
                            h <- 0
                            k <- 0
-                           Q <- matrix(0, ncol = n, nrow = n)
                            CPL <<- NULL
                            Qinv <<- NULL
                            QinvR <<- NULL
@@ -6440,13 +6439,17 @@ server <- function(input,output,session) {
                              h <- h + 1
                              k <- -1
                              fl <- exp(x[h])
-                             Q <- Q + fl * Cfl
+                             Q <- fl * Cfl
                            }
                            if (randomw) {
                              h <- h + 1
                              k <- -2
                              rw <- exp(x[h])
-                             Q <- Q + rw * Crw
+                             if (is.null(trans$noiseQ)) {
+                               Q <- rw * Crw
+                             } else {
+                               Q <- Q + rw * Crw
+                             }
                            }
                            if (powerl) {
                              h <- h + 1
@@ -6457,7 +6460,7 @@ server <- function(input,output,session) {
                              CPL <<- cov_powerlaw(k,n_all,T,gaps,sampling)
                              Cpl <- CPL[[1]]
                              k_deriv <- CPL[[2]]
-                             Q <- Q + pl * Cpl
+                             Q <- pl * Cpl
                            }
                            if (white) {
                              h <- 1
@@ -6471,6 +6474,8 @@ server <- function(input,output,session) {
                            if (method == "NLM") {
                              attr(ll, "gradient") <- grad_global(x)
                            }
+                           rm(Q, ll_out)
+                           invisible(gc())
                            if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
                            ll/-1
                          }
@@ -6612,17 +6617,15 @@ server <- function(input,output,session) {
                            trans$mle <- T
                            
                            # storing the variance-covariance matrix of the noise model for the periodogram
-                           Qfit <- matrix(0, n, n)
                            if (eigPath) {
                              if (input$wiener) {
                                d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
                                Qinv <- ev$vectors %*% (t(ev$vectors) / d)
                              }
-                             C    <- ev$vectors %*% (ev$values * t(ev$vectors))
                              if (input$flicker) {
-                               Cfl <- C
+                               Cfl <- ev$vectors %*% (ev$values * t(ev$vectors))
                              } else {
-                               Crw <- C
+                               Crw <- ev$vectors %*% (ev$values * t(ev$vectors))
                              }
                              if (messages > 4) cat(file = stderr(), mySession, "Reconstructing the covariance matrix of the estimated noise model\n")
                            }
@@ -6695,7 +6698,7 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[3] <- sigmaFL
-                             Qfit <- Qfit + sigmaFL^2 * Cfl
+                             trans$noiseQ <- sigmaFL^2 * Cfl
                              if (input$noise_unc) {
                                seParmsFL <- sd_noises[i] * sigmaFL / 2
                                trans$noise[4] <- seParmsFL
@@ -6732,7 +6735,11 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaRW <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[5] <- sigmaRW
-                             Qfit <- Qfit + sigmaRW^2 * Crw
+                             if (is.null(trans$noiseQ)) {
+                               trans$noiseQ <- sigmaRW^2 * Crw 
+                             } else {
+                               trans$noiseQ <- trans$noiseQ + sigmaRW^2 * Crw
+                             }
                              if (input$noise_unc) {
                                seParmsRW <- sd_noises[i] * sigmaRW / 2
                                trans$noise[6] <- seParmsRW
@@ -6769,7 +6776,11 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaPL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[7] <- sigmaPL
-                             Qfit <- Qfit + sigmaPL^2 * CPL[[1]]
+                             if (is.null(trans$noiseQ)) {
+                               trans$noiseQ <- sigmaPL^2 * CPL[[1]]
+                             } else {
+                               trans$noiseQ <- trans$noiseQ + sigmaPL^2 * CPL[[1]]
+                             }
                              if (input$noise_unc) {
                                seParmsPL <- sd_noises[i] * sigmaPL / 2
                                trans$noise[8] <- seParmsPL
@@ -6832,9 +6843,12 @@ server <- function(input,output,session) {
                            }
                            if (isTruthy(info$white)) {
                              # to avoid building Cwh
-                             diag(Qfit) <- diag(Qfit) + sigmaWH^2
+                             if (is.null(trans$noiseQ)) {
+                               trans$noiseQ <- diag(sigmaWH^2)
+                             } else {
+                               diag(trans$noiseQ) <- diag(trans$noiseQ) + sigmaWH^2
+                             }
                            }
-                           trans$noiseQ <- Qfit
                            end.time <- Sys.time()
                            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
                            time.taken <- end.time - start.time
@@ -17487,12 +17501,6 @@ server <- function(input,output,session) {
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
     a <- c(0, (-k/2 + 0:(n - 2))/(1:(n - 1)))
     Delta <- cumprod(c(1, a[-1]))
-    if (deriv && !exists("conv_cpp", mode = "function")) {
-      Z <- toeplitz(Delta[gaps])
-      Z[upper.tri(Z)] <- 0
-      # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
-      Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
-    }
     if (exists("conv_cpp", mode = "function")) {
       ZZt <- conv_cpp(Delta[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
     } else {
@@ -17504,15 +17512,10 @@ server <- function(input,output,session) {
       for (i in 2:n) {
         u[i] <- -1/(2*(i - 1))*Delta[i - 1] + a[i]*u[i - 1]
       }
-      if (!exists("conv_cpp", mode = "function")) {
-        U <- toeplitz(u[gaps])
-        U[upper.tri(U)] <- 0
-        U <- U * sampling^(-k/4)
-      }
       if (exists("conv_cpp", mode = "function")) {
         UZt <- conv_cpp(u[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
       } else {
-        UZt <- tcrossprod(U,Z)
+        UZt <- cov_uzt(u[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
       }
       # derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*ZZt + UZt + t(UZt)) # from Gobron 2020
       # derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
@@ -18212,6 +18215,16 @@ server <- function(input,output,session) {
       j <- 1:m
       C[i + (j - 1) * n] <- v
       C[j + (i - 1) * n] <- v
+    }
+    C
+  }
+  #
+  cov_uzt <- function(u, d) {
+    n <- length(d); C <- matrix(0, n, n)
+    for (l in 0:(n - 1)) {
+      m <- n - l; j <- 1:m
+      C[(j + l) + (j - 1) * n] <- cumsum(u[(1 + l):n] * d[1:m])
+      if (l > 0) C[j + (j + l - 1) * n] <- cumsum(u[1:m] * d[(1 + l):n])
     }
     C
   }
