@@ -6192,9 +6192,17 @@ server <- function(input,output,session) {
     removeNotification("timeWillTake")
     
     # collecting own garbage when leaving
+    if (!info$local) {
+      rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
+      cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
+    }
     on.exit({
       rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","Qfit","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
       invisible(gc())
+      if (!info$local) {
+        rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
+        cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
+      }
     }, add = T)
     gc(reset = T)
     
@@ -6955,6 +6963,10 @@ server <- function(input,output,session) {
                          }
                        }
                        setProgress(1)
+                       if (!info$local) {
+                         rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
+                         cat(file = stderr(), mySession, "MLE", rss(), "conv_cpp:", exists("conv_cpp", mode = "function"), "grad_cpp:", exists("grad_cpp", mode = "function"), "\n")
+                       }
                      })
       })
     }
