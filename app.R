@@ -6190,6 +6190,14 @@ server <- function(input,output,session) {
     removeNotification("no_optim")
     removeNotification("too_long")
     removeNotification("timeWillTake")
+    
+    # collecting own garbage when leaving
+    on.exit({
+      rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","Qfit","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
+      invisible(gc())
+    }, add = T)
+    gc(reset = T)
+    
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
       trans$noise <- vector(length = 11)
       if (length(trans$res) > 0) {
@@ -6230,7 +6238,6 @@ server <- function(input,output,session) {
                        if (input$white) {
                          component <- component + 1
                          info$white <- T
-                         Cwh <- diag(n)
                        } else {
                          info$white <- F
                        }
@@ -6381,7 +6388,7 @@ server <- function(input,output,session) {
                        else if (component > 1) {
                          # computing a priori noise variances
                          Cs <- list()
-                         if (info$white)   Cs$wh <- Cwh
+                         if (info$white)   Cs$wh <- 1
                          if (info$flicker) Cs$fl <- Cfl
                          if (info$randomw) Cs$rw <- Crw
                          if (info$powerl)  Cs$pl <- Cfl
@@ -6413,15 +6420,13 @@ server <- function(input,output,session) {
                          loglik_global <- function(x) {
                            h <- 0
                            k <- 0
+                           Q <- matrix(0, ncol = n, nrow = n)
                            CPL <<- NULL
                            Qinv <<- NULL
                            QinvR <<- NULL
                            if (white) {
                              h <- 1
-                             wh <- exp(x[h])
-                             Q <- wh * Cwh
-                           } else {
-                             Q <- matrix(0, ncol = n, nrow = n)
+                             # we add Wh later without building Cwh here
                            }
                            if (flicker) {
                              h <- h + 1
@@ -6445,6 +6450,11 @@ server <- function(input,output,session) {
                              Cpl <- CPL[[1]]
                              k_deriv <- CPL[[2]]
                              Q <- Q + pl * Cpl
+                           }
+                           if (white) {
+                             h <- 1
+                             wh <- exp(x[h])
+                             diag(Q) <- diag(Q) + wh
                            }
                            ll_out <- loglikelihood(resS,Q,0)
                            ll <- ll_out[[1]]
@@ -6642,7 +6652,6 @@ server <- function(input,output,session) {
                              i <- i + 1
                              sigmaWH <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[1] <- sigmaWH
-                             Qfit <- Qfit + sigmaWH^2 * Cwh
                              if (input$noise_unc) {
                                seParmsWH <- sd_noises[i] * sigmaWH / 2
                                trans$noise[2] <- seParmsWH
@@ -6655,7 +6664,7 @@ server <- function(input,output,session) {
                                updateTextInput(session, inputId = "verif_white", value = sigmaWH)
                              }
                              if (input$wiener) {
-                               qQ <- (exp(fitmle$par[i])*Cwh) %*% Qinv
+                               qQ <- exp(fitmle$par[i]) * Qinv
                                trans$white <- unlist(as.list(res %*% qQ))
                                if (input$sigmas && length(resError) > 0) {
                                  trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
@@ -6813,11 +6822,15 @@ server <- function(input,output,session) {
                              trans$noise[9] <- NA
                              trans$noise[10] <- NA
                            }
+                           if (isTruthy(info$white)) {
+                             # to avoid building Cwh
+                             diag(Qfit) <- diag(Qfit) + sigmaWH^2
+                           }
                            trans$noiseQ <- Qfit
                            end.time <- Sys.time()
                            if (messages > 2) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
                            time.taken <- end.time - start.time
-                           if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "\n")
+                           if (messages > 2) cat(file = stderr(), mySession, "Total time =", time.taken, units(time.taken), "& max. memory used =", gc()[2, 6], "Mb\n")
                            if (isTruthy(info$white) || isTruthy(info$flicker) || isTruthy(info$randomw) || isTruthy(info$powerl)) {
                              if (length(fitmle$value) > 0) {
                                trans$noise[11] <- fitmle$value
@@ -17462,11 +17475,11 @@ server <- function(input,output,session) {
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
     a <- c(0, (-k/2 + 0:(n - 2))/(1:(n - 1)))
     Delta <- cumprod(c(1, a[-1]))
-    if (!exists("conv_cpp", mode = "function")) {
-    Z <- toeplitz(Delta[gaps])
-    Z[upper.tri(Z)] <- 0
-    # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
-    Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
+    if (deriv && !exists("conv_cpp", mode = "function")) {
+      Z <- toeplitz(Delta[gaps])
+      Z[upper.tri(Z)] <- 0
+      # Z <- Z * sampling^(-k/2) # variance scaling from Gobron 2020
+      Z <- Z * sampling^(-k/4) # Variance scaling from Williams 2003
     }
     if (exists("conv_cpp", mode = "function")) {
       ZZt <- conv_cpp(Delta[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
@@ -18191,18 +18204,12 @@ server <- function(input,output,session) {
     C
   }
   #
-  eigCache <- new.env()
   getEigen <- function(k, n_all, gaps, sampling) {
-    key <- paste(k, n_all, sampling, sum(gaps), sum(which(gaps)^2), sep = "_")
-    if (is.null(eigCache[[key]])) {
       C <- cov_powerlaw(k, n_all, F, gaps, sampling)[[1]]
       ev <- eigen(C, symmetric = T)
       if (min(ev$values) < -1e-8 * max(ev$values)) return(NULL)
       ev$values <- pmax(ev$values, .Machine$double.eps * max(ev$values))
-      rm(list = ls(eigCache), envir = eigCache)
-      eigCache[[key]] <- ev
-    }
-    eigCache[[key]]
+      ev
   }
   #
   moment_apriori <- function(res, Cs, pos, n_all) {
@@ -18212,9 +18219,11 @@ server <- function(input,output,session) {
       i2 <- match(pos + 2*m, pos)
       ok <- !is.na(i1) & !is.na(i2)
       if (sum(ok) < 30) return(NULL)
-      i0 <- which(ok); i1 <- i1[ok]; i2 <- i2[ok]
+      i0 <- which(ok)
+      i1 <- i1[ok]
+      i2 <- i2[ok]
       d <- res[i2] - 2*res[i1] + res[i0]
-      e <- sapply(Cs, function(C) mean(C[cbind(i0,i0)] + 4*C[cbind(i1,i1)] + C[cbind(i2,i2)] - 4*C[cbind(i0,i1)] + 2*C[cbind(i0,i2)] - 4*C[cbind(i1,i2)]))
+      e <- sapply(Cs, function(C) { if (is.matrix(C)) { mean(C[cbind(i0,i0)] + 4*C[cbind(i1,i1)] + C[cbind(i2,i2)] - 4*C[cbind(i0,i1)] + 2*C[cbind(i0,i2)] - 4*C[cbind(i1,i2)]) } else { 6 } } )
       c(e, mean(d^2))
     })
     A <- do.call(rbind, rows)
