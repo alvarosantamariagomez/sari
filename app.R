@@ -6845,7 +6845,7 @@ server <- function(input,output,session) {
                            if (isTruthy(info$white)) {
                              # to avoid building Cwh
                              if (is.null(trans$noiseQ)) {
-                               trans$noiseQ <- diag(sigmaWH^2)
+                               trans$noiseQ <- diag(sigmaWH^2, n_all)
                              } else {
                                diag(trans$noiseQ) <- diag(trans$noiseQ) + sigmaWH^2
                              }
