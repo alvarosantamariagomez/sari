@@ -12188,7 +12188,7 @@ server <- function(input,output,session) {
     }
   })
 
-  # Observe type of noise color ####
+  # Observe noise color ####
   observeEvent(input$typeColor, {
     req(input$verif_offsets)
     if (input$typeColor == 1) {
@@ -12235,26 +12235,20 @@ server <- function(input,output,session) {
           if (input$flicker) {
             if (input$randomw) { # WH + FN + RW
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(9.4723e-09*info$points^2.7719)
+                info$timeMLE <- ceiling(2.0216e-05*info$points^2.4510)
               } else {
-                info$timeMLE <- ceiling(8.0839e-09*info$points^2.7367)
+                info$timeMLE <- ceiling(1.7565e-06*info$points^2.7280)
               }
             } else {  # WH + FN
-              info$timeMLE <- ceiling(2.6e-08*info$points^2.56)
-              if (input$wiener) {
-                info$timeMLE <- info$timeMLE + 90
-              }
+              info$timeMLE <- ceiling(7.8248e-10*info$points^2.9513)
             }
           } else if (input$randomw) { # WH + RW
-            info$timeMLE <- ceiling(2.6e-08*info$points^2.56)
-            if (input$wiener) {
-              info$timeMLE <- info$timeMLE + 90
-            }
+            info$timeMLE <- ceiling(7.8248e-10*info$points^2.9513)
           } else if (input$powerl) { # WH + PL
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(6.0296e-09*info$points^2.9898)
+              info$timeMLE <- ceiling(1.8073e-08*info$points^2.7160)
             } else {
-              info$timeMLE <- ceiling(2.3364e-09*info$points^2.8490)
+              info$timeMLE <- ceiling(3.5454e-08*info$points^2.5867)
             }
           } else { # WH
             info$timeMLE <- 1
@@ -12262,9 +12256,9 @@ server <- function(input,output,session) {
         } else if (input$flicker) {
           if (input$randomw) { # FN + RW
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(6.0610e-09*info$points^2.7850)
+              info$timeMLE <- ceiling(1.1732e-09*info$points^2.9643)
             } else {
-              info$timeMLE <- ceiling(2.8158e-09*info$points^2.8196)
+              info$timeMLE <- ceiling(3.5083e-10*info$points^3.0520)
             }
           } else { # FN
             info$timeMLE <- ceiling(9.1975e-10*info$points^2.7468)
@@ -12273,13 +12267,16 @@ server <- function(input,output,session) {
           info$timeMLE <- ceiling(6.6381e-10*info$points^2.7823)
         } else if (input$powerl) { # PL
           if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(1.0745e-10*info$points^3.4258)
+            info$timeMLE <- ceiling(1.3059e-06*info$points^2.2136)
           } else {
-            info$timeMLE <- ceiling(7.6385e-12*info$points^3.6882)
+            info$timeMLE <- ceiling(9.9427e-06*info$points^1.9466)
           }
         }
         if (info$timeMLE < 0) {
           info$timeMLE <- 10
+        }
+        if (input$wiener) {
+          info$timeMLE <- info$timeMLE + 90
         }
       }
       if (info$timeMLE > 0) {
