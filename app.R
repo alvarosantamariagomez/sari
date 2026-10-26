@@ -6237,9 +6237,11 @@ server <- function(input,output,session) {
                        }
                        eigPath <- input$white && xor(input$flicker, input$randomw) && !input$powerl
                        # build known covariance matrices
+                       componentNames <- c()
                        if (input$white) {
                          component <- component + 1
                          info$white <- T
+                         componentNames <- c(componentNames, 'WH')
                        } else {
                          info$white <- F
                        }
@@ -6247,6 +6249,7 @@ server <- function(input,output,session) {
                          component <- component + 1
                          info$flicker <- T
                          if (!eigPath) Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
+                         componentNames <- c(componentNames, 'FL')
                        } else {
                          info$flicker <- F
                        }
@@ -6254,6 +6257,7 @@ server <- function(input,output,session) {
                          component <- component + 1
                          info$randomw <- T
                          if (!eigPath) Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
+                         componentNames <- c(componentNames, 'RW')
                        } else {
                          info$randomw <- F
                        }
@@ -6261,6 +6265,7 @@ server <- function(input,output,session) {
                          component <- component + 2
                          info$powerl <- T
                          Cfl <- cov_powerlaw(-1,n_all,F,trans$gaps,info$sampling)[[1]]
+                         componentNames <- c(componentNames, 'PL')
                        } else {
                          info$powerl <- F
                        }
@@ -6359,6 +6364,7 @@ server <- function(input,output,session) {
                          apriori <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
                          lower <- apriori - log(1e4)
                          upper <- apriori + log(1e2)
+                         if (messages > 4) cat(file = stderr(), mySession, "MLE: a priori", apriori, "| lower", lower, "| upper", upper, "\n")
                          tryOptim <- try({
                            fitmle <- optim(apriori, function(th) nllEig(th)$value, function(th) nllEig(th)$grad, method = "L-BFGS-B", lower = lower, upper = upper, control = list(factr = factr, pgtol = 1e-4, maxit = 100))
                          }, silent = T)
@@ -6376,9 +6382,9 @@ server <- function(input,output,session) {
                            # check for values at the bounds and the Hessian matrix
                            atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
                            hessOK  <- !inherits(try(chol(fin$hess), silent = T), "try-error")
-                           if (messages > 4) cat(file = stderr(), mySession, "MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| lower", lower, "| upper", upper, "| grad", fin$grad, "| hess PD", hessOK, "\n")
+                           if (messages > 4) cat(file = stderr(), mySession, "MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| grad", fin$grad, "| hess PD", hessOK, "\n")
                            if (any(atBound) || !hessOK) {
-                             reason <- c(if (any(atBound)) paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", ")),
+                             reason <- c(if (any(atBound)) paste("Parameter(s) at bound:", paste(componentNames[atBound], collapse = ", ")),
                                          if (!hessOK) "Hessian not positive definite")
                              showNotification(HTML(paste0("The MLE did not converge to an interior optimum.<br>", paste(reason, collapse = "; "))), type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
                              if (messages > 4) cat(file = stderr(), mySession, "The MLE did not converge to an interior optimum.", paste(reason, collapse = "; "), "\n")
@@ -6411,6 +6417,7 @@ server <- function(input,output,session) {
                            upper <- c(upper, -3) # max expected spectral index (= k - 3)
                            lower <- c(lower, -7) # min expected spectral index (= k - 3)
                          }
+                         if (messages > 4) cat(file = stderr(), mySession, "MLE: a priori", apriori, "| lower", lower, "| upper", upper, "\n")
                          # creating non reactive variables for running on a cluster
                          white <- info$white
                          flicker <- info$flicker
@@ -6439,7 +6446,7 @@ server <- function(input,output,session) {
                              h <- h + 1
                              k <- -2
                              rw <- exp(x[h])
-                             if (is.null(trans$noiseQ)) {
+                             if (is.null(Q)) {
                                Q <- rw * Crw
                              } else {
                                Q <- Q + rw * Crw
@@ -6597,7 +6604,7 @@ server <- function(input,output,session) {
                          # check for values at the bounds
                          atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
                          if (any(atBound)) {
-                           msg <- paste("Parameter(s) at bound:", paste(c("WH", "FL/RW")[atBound], collapse = ", "))
+                           msg <- paste("Parameter(s) at bound:", paste(componentNames[atBound], collapse = ", "))
                            showNotification(HTML(paste0("The MLE did not converge to an interior optimum.<br>", paste(msg, collapse = "; "))), type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
                            if (messages > 4) cat(file = stderr(), mySession, "The MLE did not converge to an interior optimum.", paste(msg, collapse = "; "), "\n")
                            req(info$stop)
