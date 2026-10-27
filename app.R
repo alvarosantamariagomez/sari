@@ -2620,7 +2620,7 @@ server <- function(input,output,session) {
   # 6. computed values
   trans <- reactiveValues(x0 = NULL, y0 = NULL, sy0 = NULL, x = NULL, y = NULL, sy = NULL, xe = NULL, ye = NULL,
                           sye = NULL, y2 = NULL, sy2 = NULL,
-                          res = NULL, mod = NULL, results = NULL, filter = NULL,
+                          res = NULL, mod = NULL, results = NULL, filter = NULL, design = NULL,
                           filterRes = NULL, kalman = NULL, equation = NULL, ordinate = NULL, midas_vel = NULL,
                           midas_sig = NULL, midas_all = NULL, midas_vel2 = NULL, midas_sig2 = NULL,
                           mle = NULL, verif = NULL, pattern = NULL, unc = NULL, vondrak = NULL, wave = NULL,
@@ -4545,6 +4545,7 @@ server <- function(input,output,session) {
             trans$names <- names(coef(fit))
             trans$unc <- unname(synthesis$coefficients[grepl("Rate",rownames(synthesis$coefficients)),2])
             trans$equation <- gsub("([^[:alnum:]])x([^[:alnum:]])", "\\1Epoch\\2", sub("y ~","Model =",m$model_nls))
+            trans$design <- jacobian
             trans$results <- synthesis
             trans$LScoefs <- synthesis$coefficients
             trans$res <- res
@@ -6193,7 +6194,7 @@ server <- function(input,output,session) {
     
     # collecting own garbage when leaving
     on.exit({
-      rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
+      rm(list = intersect(c("Cfl","Crw","Cs","CPL","Z","Mi","g0","Qinv","QinvR","QX","C","L","ev","lam","beta","qQ","tryOptim","fitmle","gaps","res","resS","resError","loglik_global","grad_global","nllEig","nllEig_mle"), ls()))
       invisible(gc())
       if (!info$local) {
         print_max_used_memory()
@@ -6206,15 +6207,28 @@ server <- function(input,output,session) {
       if (length(trans$res) > 0) {
         res <- trans$res
         resError <- trans$reserror
+        rmle <- input$fitType == 1 & !isTruthy(trans$pattern) & !isTruthy(input$correct_waveform)
       } else if (length(trans$filterRes) > 0) {
         res <- unlist(as.list(trans$filterRes))
         resError <- trans$sy
+        rmle <- F
       }
       req(res)
+      sdRes <- sd(res)
       n <- length(res)
       n_all <- length(trans$gaps)
       component <- 0
       convergence <- 1
+      if (rmle) {
+        if (is.null(trans$design) || nrow(trans$design) != n) {
+          showNotification("The design matrix does not match the residual series.", type = "error", id = "no_mle", duration = 15, session = getDefaultReactiveDomain())
+          if (messages > 4) cat(file = stderr(), mySession, "The design matrix does not match the residual series\n")
+          req(info$stop)
+        } else {
+          nPar <- ncol(trans$design)
+          logdetXtX <- 2*sum(log(diag(chol(crossprod(trans$design)))))
+        }
+      }
       withBusyIndicatorServer("runmle", {
         cat(file = stderr(), mySession, "MLE fit", "\n")
         start.time <- Sys.time()
@@ -6284,7 +6298,7 @@ server <- function(input,output,session) {
                        fitmle <- NULL
                        apriori <- NULL
                        cl <- NULL
-                       scaling <- 1/sd(res)
+                       scaling <- 1/sdRes
                        resS <- res*scaling
                        if (isTruthy(input$noise_unc)) {
                          hessian <- T
@@ -6299,28 +6313,45 @@ server <- function(input,output,session) {
 
                        #* one noise variance with fixed spectral index, easy peasy ####
                        if (component == 1) {
-                         if (isTruthy(info$white)) {
-                           variance <- var(resS)
-                           VtPV <- variance*n
-                           fitmle$value <- 0.5*(n*log(2*pi*variance) + n)
+                         if  (rmle) {
+                           if (isTruthy(info$white)) {
+                             Zr <- resS
+                             ZX <- trans$design
+                             logdetC <- 0
+                           } else {
+                             C <- if (isTruthy(info$flicker)) Cfl else Crw
+                             setProgress(0.25)
+                             L  <- chol(C)
+                             Zr <- backsolve(L, resS, transpose = T)
+                             ZX <- backsolve(L, trans$design,   transpose = T)
+                             logdetC <- 2*sum(log(diag(L)))
+                             setProgress(0.75)
+                           }
+                           qrX <- qr(ZX)
+                           VtPV <- sum(qr.resid(qrX, Zr)^2)
+                           logdetXCX <- 2*sum(log(abs(diag(qr.R(qrX)))))
+                           nr <- n - nPar
+                           variance <- VtPV/nr
+                           fitmle$value <- 0.5*(nr*log(2*pi*variance) + logdetC + logdetXCX - logdetXtX + nr)
+                           fitmle$hessian <- fitmle$hessian_exact <- nr/2
                          } else {
-                           if (isTruthy(info$flicker)) {
-                             C <- Cfl
+                           if (isTruthy(info$white)) {
+                             variance <- var(resS)
+                             VtPV <- variance*n
+                             fitmle$value <- 0.5*(n*log(2*pi*variance) + n)
+                           } else {
+                             C <- if (isTruthy(info$flicker)) Cfl else Crw
+                             setProgress(0.25)
+                             L <- chol(C)
+                             VtPV <- sum(backsolve(L, resS, transpose = T)^2)
+                             logdet <- 2*sum(log(diag(L)))
+                             setProgress(0.75)
+                             variance <- VtPV/n
+                             fitmle$value <- 0.5*(n*log(2*pi*variance) + logdet + n)
+                             fitmle$hessian <- fitmle$hessian_exact <- n/2
                            }
-                           if (isTruthy(info$randomw)) {
-                             C <- Crw
-                           }
-                           setProgress(0.25)
-                           L <- chol(C)
-                           VtPV <- sum(backsolve(L, resS, transpose = T)^2)
-                           logdet <- 2*sum(log(diag(L)))
-                           setProgress(0.75)
-                           variance <- VtPV/n
-                           fitmle$value <- 0.5*(n*log(2*pi*variance) + logdet + n)
                          }
                          fitmle$par <- log(variance)
-                         fitmle$hessian <- n/2
-                         fitmle$hessian_exact <- n/2
                          convergence <- 0
                        }
                        #* more than one noise variance with fixed index ####
@@ -6336,17 +6367,32 @@ server <- function(input,output,session) {
                          }
                          lam  <- ev$values
                          setProgress(0.25)
-                         beta <- as.vector(crossprod(ev$vectors, resS))^2
+                         if (rmle) {
+                           Z    <- crossprod(ev$vectors, trans$design)
+                           b    <- as.vector(crossprod(ev$vectors, resS))
+                           beta <- b^2  
+                         } else {
+                           beta <- as.vector(crossprod(ev$vectors, resS))^2
+                         }
                          setProgress(0.5)
                          
                          # Testing if WH is necessary
-                         e <- inv_coefs(k, n, info$sampling)
-                         z <- lconv(e, resS)
-                         Cinvr <- rev(lconv(e, rev(z)))
-                         trCinv <- sum((n - 0:(n - 1)) * e^2)
-                         f0 <- sum(beta/lam)/n
-                         s  <- sum(1/lam) - sum(beta/lam^2)/f0
-                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(inv(C)) =", s / trCinv, "\n")
+                         if (rmle) {
+                           rv <- 1/lam
+                           Mi <- chol2inv(chol(crossprod(Z, rv*Z)))
+                           g0 <- crossprod(Z, rv*b)
+                           f0 <- (sum(rv*beta) - drop(crossprod(g0, Mi %*% g0)))/(n - nPar)
+                           w0 <- as.vector(rv*(b - Z %*% (Mi %*% g0)))
+                           s  <- (sum(rv) - sum(Mi * crossprod(Z*rv))) - sum(w0^2)/f0
+                         } else {
+                           e <- inv_coefs(k, n, info$sampling)
+                           z <- lconv(e, resS)
+                           Cinvr <- rev(lconv(e, rev(z)))
+                           trCinv <- sum((n - 0:(n - 1)) * e^2)
+                           f0 <- sum(beta/lam)/n
+                           s  <- sum(1/lam) - sum(beta/lam^2)/f0
+                         }
+                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s =", s, "\n")
                          if (s >= 0) {
                            showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Uncheck White and fit the coloured noise alone."), type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
                            if (messages > 4) cat(file = stderr(), mySession, "The white noise is not identifiable in this series.\n")
@@ -6368,8 +6414,39 @@ server <- function(input,output,session) {
                            list(value = ll, grad = g, hess = H)
                          }
                          
+                         nllEig_rmle <- function(th, hess = F) {
+                           tv <- exp(th)
+                           dl <- cbind(1, lam)
+                           rv <- 1/(tv[1] + tv[2]*lam)
+                           Lm <- chol(crossprod(Z, rv*Z))
+                           Mi <- chol2inv(Lm)
+                           g  <- crossprod(Z, rv*b)
+                           Mg <- Mi %*% g
+                           w  <- as.vector(rv*(b - Z %*% Mg))
+                           ll <- 0.5*((n - nPar)*log(2*pi) + sum(log(1/rv)) + sum(beta*rv) - drop(crossprod(g, Mg))) +
+                             sum(log(diag(Lm))) - 0.5*logdetXtX
+                           trP <- sapply(1:2, function(j) sum(dl[,j]*rv) - sum(Mi * crossprod(Z*(rv*sqrt(dl[,j])))))
+                           qd  <- sapply(1:2, function(j) sum(dl[,j]*w^2))
+                           gr  <- 0.5*tv*(trP - qd)
+                           if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(tv)/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll/-1), "\n")
+                           H <- NULL
+                           if (hess) {
+                             U   <- (rv*Z) %*% backsolve(Lm, diag(nPar))
+                             UL  <- lapply(1:2, function(j) crossprod(U*sqrt(dl[,j])))
+                             uw  <- cbind(crossprod(U, dl[,1]*w), crossprod(U, dl[,2]*w))
+                             rU2 <- rowSums(U^2)
+                             H <- matrix(0, 2, 2)
+                             for (j in 1:2) for (m in 1:2) {
+                               trjm <- sum(dl[,j]*dl[,m]*rv^2) - 2*sum(dl[,j]*dl[,m]*rv*rU2) + sum(UL[[j]]*UL[[m]])
+                               qjm  <- sum(dl[,j]*dl[,m]*rv*w^2) - sum(uw[,j]*uw[,m])
+                               H[j,m] <- tv[j]*tv[m]*(qjm - 0.5*trjm) + (j == m)*gr[j]
+                             }
+                           }
+                           list(value = ll, grad = gr, hess = H)
+                         }
+                         
                          # running optimization
-                         apriori <- log(c(1/sqrt(2), sum(beta/lam)/n/sqrt(2)))
+                         apriori <- log(c(1/sqrt(2), f0/sqrt(2)))
                          lower <- apriori - log(1e4)
                          upper <- apriori + log(1e2)
                          if (messages > 4) cat(file = stderr(), mySession, "MLE: a priori", apriori, "| lower", lower, "| upper", upper, "\n")
@@ -6382,7 +6459,11 @@ server <- function(input,output,session) {
                            if (messages > 4) cat(file = stderr(), mySession, "MLE optimization failed:", msg, "\n")
                            req(info$stop)
                          } else {
-                           fin <- nllEig(fitmle$par)
+                           if (rmle) {
+                             fin <- nllEig_rmle(fitmle$par, hess = T)
+                           } else {
+                             fin <- nllEig(fitmle$par)
+                           }
                            fitmle$value <- fin$value
                            fitmle$hessian_exact <- fin$hess
                            convergence <- fitmle$convergence
@@ -6485,6 +6566,16 @@ server <- function(input,output,session) {
                            }
                            rm(Q, ll_out)
                            invisible(gc())
+                           if (rmle) {
+                             # turning MLE into RMLE
+                             A  <- Qinv %*% trans$design
+                             Lm <- chol(crossprod(trans$design, A))
+                             Mi <- chol2inv(Lm)
+                             g  <- crossprod(trans$design, QinvR)
+                             ll  <- ll - sum(log(diag(Lm))) + 0.5*drop(crossprod(g, Mi %*% g)) + 0.5*nPar*log(2*pi) + 0.5*logdetXtX
+                             QinvR <<- QinvR - A %*% (Mi %*% g)
+                             Qinv  <<- Qinv - A %*% tcrossprod(Mi, A)
+                           }
                            if (messages > 2) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
                            ll/-1
                          }
@@ -6630,6 +6721,10 @@ server <- function(input,output,session) {
                              if (input$wiener) {
                                d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
                                Qinv <- ev$vectors %*% (t(ev$vectors) / d)
+                               if (rmle) {
+                                 QX <- Qinv %*% trans$design
+                                 Qinv <- Qinv - QX %*% tcrossprod(chol2inv(chol(crossprod(trans$design, QX))), QX)
+                               }
                              }
                              if (input$flicker) {
                                Cfl <- ev$vectors %*% (ev$values * t(ev$vectors))
@@ -6868,9 +6963,10 @@ server <- function(input,output,session) {
                              } else {
                                trans$noise[11] <- NA
                              }
+                             ll <- fitmle$value/-1
                              output$est.mle <- renderUI({
                                if (isTruthy(trans$mle)) {
-                                 line1 <- sprintf("<br/>log-Likelihood = %.4f",fitmle$value/-1)
+                                 line1 <- sprintf("<br/>log-Likelihood = %.4f",ll)
                                  HTML(line1)
                                } else {
                                  NULL
@@ -6900,7 +6996,7 @@ server <- function(input,output,session) {
                                      unc <- pl_trend_unc(sigmaPL,sigmaK,info$sampling,points) # general power-law trend uncertainty
                                      unc_pl <- sqrt(unc_pl^2 + unc^2)
                                    }
-                                   unc_white <- sqrt( 12 * sd(res)^2 / (points * ((points - 1) * info$sampling)^2) )
+                                   unc_white <- sqrt( 12 * sdRes^2 / (points * ((points - 1) * info$sampling)^2) )
                                    return(list(unc_pl,unc_white))
                                  }
                                  rate_ids <- which(grepl("Rate",rownames(trans$LScoefs)))
@@ -7877,13 +7973,11 @@ server <- function(input,output,session) {
               } else {
                 enable("powerl")
               }
-              if ((input$white && !input$flicker && !input$randomw && !input$powerl) ||
-                  (!input$white && input$flicker && !input$randomw && !input$powerl) ||
-                  (!input$white && !input$flicker && input$randomw && !input$powerl)) {
+              if (input$powerl || (input$flicker && input$randomw)) {
+                enable("noise_unc")
+              } else {
                 disable("noise_unc")
                 updateCheckboxInput(session, inputId = "noise_unc", value = T)
-              } else {
-                enable("noise_unc")
               }
             } else {
               disable("white")
