@@ -12337,9 +12337,9 @@ server <- function(input,output,session) {
           if (input$flicker) {
             if (input$randomw) { # WH + FN + RW
               if (isTruthy(input$noise_unc)) {
-                info$timeMLE <- ceiling(2.0216e-05*info$points^2.4510)
+                info$timeMLE <- ceiling(1.3059e-06*info$points^2.2136)
               } else {
-                info$timeMLE <- ceiling(1.7565e-06*info$points^2.7280)
+                info$timeMLE <- ceiling(1.6310e-14*info$points^4.1907)
               }
             } else {  # WH + FN
               info$timeMLE <- ceiling(7.8248e-10*info$points^2.9513)
@@ -12348,7 +12348,7 @@ server <- function(input,output,session) {
             info$timeMLE <- ceiling(7.8248e-10*info$points^2.9513)
           } else if (input$powerl) { # WH + PL
             if (isTruthy(input$noise_unc)) {
-              info$timeMLE <- ceiling(1.8073e-08*info$points^2.7160)
+              info$timeMLE <- ceiling(3.0122e-10*info$points^2.7160)
             } else {
               info$timeMLE <- ceiling(3.5454e-08*info$points^2.5867)
             }
@@ -12369,7 +12369,7 @@ server <- function(input,output,session) {
           info$timeMLE <- ceiling(6.6381e-10*info$points^2.7823)
         } else if (input$powerl) { # PL
           if (isTruthy(input$noise_unc)) {
-            info$timeMLE <- ceiling(1.3059e-06*info$points^2.2136)
+            info$timeMLE <- ceiling(9.7766e-11*info$points^2.8151)
           } else {
             info$timeMLE <- ceiling(9.9427e-06*info$points^1.9466)
           }
