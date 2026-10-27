@@ -6195,8 +6195,10 @@ server <- function(input,output,session) {
     on.exit({
       rm(list = intersect(c("Cfl","Crw","Cs","CPL","Qinv","QinvR","C","L","ev","lam","beta","qQ","tryOptim"), ls()))
       invisible(gc())
-      print_max_used_memory()
-      reset_max_used_memory()
+      if (!info$local) {
+        print_max_used_memory()
+        reset_max_used_memory()
+      }
     }, add = T)
     
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
@@ -6256,7 +6258,12 @@ server <- function(input,output,session) {
                        if (input$randomw) {
                          component <- component + 1
                          info$randomw <- T
-                         if (!eigPath) Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
+                         if (!eigPath) {
+                           # Crw <- cov_powerlaw(-2,n_all,F,trans$gaps,info$sampling)[[1]]
+                           p <- which(trans$gaps)
+                           ps <- p * info$sampling
+                           Crw <- outer(ps, ps, pmin)
+                         }
                          componentNames <- c(componentNames, 'RW')
                        } else {
                          info$randomw <- F
@@ -6320,23 +6327,6 @@ server <- function(input,output,session) {
                        else if (eigPath) {
                          k <- ifelse(info$flicker, -1, -2)
                          
-                         # Testing if WH is necessary
-                         e      <- inv_coefs(k, n, info$sampling)
-                         z      <- lconv(e, resS)
-                         Cinvr  <- rev(lconv(e, rev(z)))
-                         f0     <- sum(z^2) / n
-                         trCinv <- sum((n - 0:(n - 1)) * e^2)
-                         s      <- trCinv - sum(Cinvr^2) / f0
-                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(inv(C)) =", s / trCinv, "\n")
-                         if (s >= 0) {
-                           showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Uncheck White and fit the coloured noise alone."), type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
-                           if (messages > 4) cat(file = stderr(), mySession, "The white noise is not identifiable in this series.\n")
-                           updateCheckboxInput(session, inputId = "white", value = F)
-                           shinyjs::delay(1000, shinyjs::click("runmle"))
-                           req(info$stop)
-                         }
-                         setProgress(0.25)
-                         
                          # Computing the eigen values of the noise covariance matrix
                          ev <- getEigen(k, n_all, trans$gaps, info$sampling)
                          if (is.null(ev)) {
@@ -6345,8 +6335,26 @@ server <- function(input,output,session) {
                            req(info$stop)
                          }
                          lam  <- ev$values
-                         setProgress(0.75)
+                         setProgress(0.25)
                          beta <- as.vector(crossprod(ev$vectors, resS))^2
+                         setProgress(0.5)
+                         
+                         # Testing if WH is necessary
+                         e <- inv_coefs(k, n, info$sampling)
+                         z <- lconv(e, resS)
+                         Cinvr <- rev(lconv(e, rev(z)))
+                         trCinv <- sum((n - 0:(n - 1)) * e^2)
+                         f0 <- sum(beta/lam)/n
+                         s  <- sum(1/lam) - sum(beta/lam^2)/f0
+                         if (messages > 4) cat(file = stderr(), mySession, "WH pre-check: s/tr(inv(C)) =", s / trCinv, "\n")
+                         if (s >= 0) {
+                           showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Uncheck White and fit the coloured noise alone."), type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
+                           if (messages > 4) cat(file = stderr(), mySession, "The white noise is not identifiable in this series.\n")
+                           updateCheckboxInput(session, inputId = "white", value = F)
+                           shinyjs::delay(1000, shinyjs::click("runmle"))
+                           req(info$stop)
+                         }
+                         setProgress(0.75)
                          
                          nllEig <- function(th) {
                            t1 <- exp(th[1])
@@ -17495,28 +17503,24 @@ server <- function(input,output,session) {
   cov_powerlaw <- function(k,n,deriv,gaps,sampling) {
     a <- c(0, (-k/2 + 0:(n - 2))/(1:(n - 1)))
     Delta <- cumprod(c(1, a[-1]))
-    if (exists("conv_cpp", mode = "function")) {
-      ZZt <- conv_cpp(Delta[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
-    } else {
-      ZZt <- cov_zzt(Delta[gaps] * sampling^(-k/4))
-    }
+    scaling <- sampling^(-k/4)
+    u <- numeric(0)
     if (deriv) {
       u <- numeric(n)
-      u[1] <- 0
       for (i in 2:n) {
         u[i] <- -1/(2*(i - 1))*Delta[i - 1] + a[i]*u[i - 1]
       }
-      if (exists("conv_cpp", mode = "function")) {
-        UZt <- conv_cpp(u[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
-      } else {
-        UZt <- cov_uzt(u[gaps] * sampling^(-k/4), Delta[gaps] * sampling^(-k/4))
-      }
-      # derivZ <- sampling^(-k/2)*(-0.5*log(sampling)*ZZt + UZt + t(UZt)) # from Gobron 2020
-      # derivZ <- derivZ * sampling^(-k/4) # Variance scaling from Williams 2003
-      derivZ <- -0.5*log(sampling)*ZZt + UZt + t(UZt)
-      return(list(ZZt, derivZ))
+    }
+    if (exists("cov_gaps_cpp", mode = "function")) {
+      f <- cov_gaps_cpp
     } else {
-      return(list(ZZt))
+      f <- cov_gaps
+    }
+    out <- f(Delta*scaling, u*scaling, gaps, log(sampling), deriv)
+    if (deriv) {
+      out
+    } else {
+      list(out[[1]])
     }
   }
   #
@@ -18199,28 +18203,35 @@ server <- function(input,output,session) {
     Re(fft(fft(c(a, rep(0, n))) * fft(c(b, rep(0, n))), inverse = TRUE))[1:n] / N
   }
   #
-  cov_zzt <- function(d) {
-    n <- length(d)
+  cov_gaps <- function(d, u, gaps, log_s, deriv) {
+    N <- length(d)
+    rk <- cumsum(gaps)
+    n <- rk[N]
     C <- matrix(0, n, n)
-    for (l in 0:(n - 1)) {
-      m <- n - l
-      v <- cumsum(d[1:m] * d[(1 + l):n])
-      i <- (1:m) + l
-      j <- 1:m
-      C[i + (j - 1) * n] <- v
-      C[j + (i - 1) * n] <- v
+    if (deriv) {
+      D <- matrix(0, n, n)
+    } else {
+      D <- NULL
     }
-    C
-  }
-  #
-  cov_uzt <- function(u, d) {
-    n <- length(d); C <- matrix(0, n, n)
-    for (l in 0:(n - 1)) {
-      m <- n - l; j <- 1:m
-      C[(j + l) + (j - 1) * n] <- cumsum(u[(1 + l):n] * d[1:m])
-      if (l > 0) C[j + (j + l - 1) * n] <- cumsum(u[1:m] * d[(1 + l):n])
+    for (l in 0:(N - 1)) {
+      m <- N - l
+      i <- which(gaps[1:m] & gaps[(1 + l):N])
+      if (!length(i)) next
+      mx <- i[length(i)]
+      s0 <- cumsum(d[1:mx] * d[(1 + l):(mx + l)])[i]
+      lo <- rk[i + l] + (rk[i] - 1) * n
+      up <- rk[i] + (rk[i + l] - 1) * n
+      C[lo] <- s0
+      C[up] <- s0
+      if (deriv) {
+        sl <- cumsum(u[(1 + l):(mx + l)] * d[1:mx])[i]
+        su <- cumsum(u[1:mx] * d[(1 + l):(mx + l)])[i]
+        v <- -0.5 * log_s * s0 + sl + su
+        D[lo] <- v
+        D[up] <- v
+      }
     }
-    C
+    list(C, D)
   }
   #
   getEigen <- function(k, n_all, gaps, sampling) {
@@ -18259,10 +18270,8 @@ server <- function(input,output,session) {
   }
   #
   print_max_used_memory <- function() {
-    if (!info$local) {
-      rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
-      cat(file = stderr(), mySession, "MLE", rss(), "\n")
-    }
+    rss <- function() paste(grep("^VmRSS|^VmHWM", readLines("/proc/self/status"), value = T), collapse = " ")
+    cat(file = stderr(), mySession, "MLE", rss(), "\n")
   }
   #
   reset_max_used_memory <- function() {

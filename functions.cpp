@@ -47,3 +47,28 @@ arma::mat conv_cpp(const arma::vec& a, const arma::vec& b) {
   }
   return M;
 }
+
+// [[Rcpp::export]]
+List cov_gaps_cpp(NumericVector d, NumericVector u, LogicalVector gaps, double log_s, bool deriv) {
+  const int N = d.size();
+  if (gaps.size() != N) stop("gaps and d have different lengths");
+  if (deriv && u.size() != N) stop("u and d have different lengths");
+  std::vector<int> rk(N);
+  int n = 0;
+  for (int i = 0; i < N; i++) { rk[i] = n; if (gaps[i]) n++; }
+  NumericMatrix C(n, n), D(deriv ? n : 0, deriv ? n : 0);
+  for (int l = 0; l < N; l++) {
+    double s0 = 0.0, sl = 0.0, su = 0.0;
+    for (int i = 0; i + l < N; i++) {
+      const int j = i + l;
+      s0 += d[i] * d[j];
+      if (deriv) { sl += u[j] * d[i]; su += u[i] * d[j]; }
+      if (gaps[i] && gaps[j]) {
+        const int a = rk[j], b = rk[i];
+        C(a, b) = s0; C(b, a) = s0;
+        if (deriv) { const double v = -0.5 * log_s * s0 + sl + su; D(a, b) = v; D(b, a) = v; }
+      }
+    }
+  }
+  return List::create(C, D);
+}
