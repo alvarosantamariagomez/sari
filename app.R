@@ -7711,7 +7711,7 @@ server <- function(input,output,session) {
               file$secondary <- NULL
               info$last_optionSecondary <- 0
               updateRadioButtons(inputId = "optionSecondary", selected = 0)
-              updateSelectInput(session, inputId = "station2", label = "Station", choices = NULL)
+              updateSelectizeInput(session, inputId = "station2", choices = character(0), selected = "", options = list(placeholder = character(0)), server = F)
               disable("station2")
             }
           } else {
@@ -8394,7 +8394,7 @@ server <- function(input,output,session) {
     } else if (input$server1 == "DORIS") {
       updateSelectizeInput(session, inputId = "product1", choices = list("ESA", "GOP", "GRG", "GSC", "IDS", "IGN"), selected = "")
     }
-    updateSelectInput(session, inputId = "station1", label = "Station", choices = NULL)
+    updateSelectizeInput(session, inputId = "station1", choices = character(0), selected = "", options = list(placeholder = character(0)), server = F)
   })
   observeEvent(input$server2, {
     req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
@@ -8427,7 +8427,7 @@ server <- function(input,output,session) {
     } else if (input$server2 == "DORIS") {
       updateSelectizeInput(session, inputId = "product2", choices = list("ESA", "GOP", "GRG", "GSC", "IDS", "IGN"), selected = "")
     }
-    updateSelectInput(session, inputId = "station2", label = "Station", choices = NULL)
+    updateSelectizeInput(session, inputId = "station2", choices = character(0), selected = "", options = list(placeholder = character(0)), server = F)
     if (input$server2 != "") {
       file$secondary <- NULL
     }
@@ -16905,28 +16905,32 @@ server <- function(input,output,session) {
           shinyjs::delay(100, updateCheckboxInput(inputId = "traceCustom", value = T))
         }
       } else {
-        if (file.exists(listFile)) {
-          stations_available <- readLines(listFile, warn = F)
-        } else {
-          dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
-            writeLines(stations_available, listFile, sep = "\n")
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-            return(NULL)
-          }
-        }
-        if (series == 1) {
-          updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-        } else if (series == 2) {
-          updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-          if (input$sunits == 2) {
-            updateTextInput(session, inputId = "scaleFactor", value = "1000")
-          } else {
-            updateTextInput(session, inputId = "scaleFactor", value = "1")
-          }
-        }
+        withProgress(message = 'Loading the list of stations.',
+                     detail = "", value = 1, {
+                       if (file.exists(listFile)) {
+                         stations_available <- readLines(listFile, warn = F)
+                       } else {
+                         dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
+                         if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                           stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
+                           writeLines(stations_available, listFile, sep = "\n")
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                           return(NULL)
+                         }
+                       }
+                       if (series == 1) {
+                         updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                       } else if (series == 2) {
+                         updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                         if (input$sunits == 2) {
+                           updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                         } else {
+                           updateTextInput(session, inputId = "scaleFactor", value = "1")
+                         }
+                       }
+                       setProgress(value = 1)
+                     })
         return(NULL)
       }
     ## RENAG ####
@@ -16941,22 +16945,26 @@ server <- function(input,output,session) {
           url_log <- "ftp://webrenag.unice.fr/sitelogs/"
           logfile <- paste0(url_log,toupper(station),"00FRA.log")
         } else {
-          dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
-            if (series == 1) {
-              updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-            } else if (series == 2) {
-              updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              if (input$sunits == 2) {
-                updateTextInput(session, inputId = "scaleFactor", value = "1000")
-              } else {
-                updateTextInput(session, inputId = "scaleFactor", value = "1")
-              }
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
+                         if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                           stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
+                           if (series == 1) {
+                             updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                           } else if (series == 2) {
+                             updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             if (input$sunits == 2) {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                             } else {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1")
+                             }
+                           }
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -16988,9 +16996,9 @@ server <- function(input,output,session) {
           }
           stations_available <- read.table("www/JPL_database.txt")$V1
           if (series == 1) {
-            updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+            updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
           } else if (series == 2) {
-            updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+            updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
             if (input$sunits == 2) {
               updateTextInput(session, inputId = "scaleFactor", value = "1000")
             } else {
@@ -17019,22 +17027,26 @@ server <- function(input,output,session) {
             shinyjs::delay(100, updateCheckboxInput(inputId = "traceSoln", value = T))
           }
         } else {
-          dir_contents <- try(getURL(url, ftp.use.epsv = F, ftplistonly = T, crlf = T), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
-            if (series == 1) {
-              updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-            } else if (series == 2) {
-              updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              if (input$sunits == 2) {
-                updateTextInput(session, inputId = "scaleFactor", value = "1000")
-              } else {
-                updateTextInput(session, inputId = "scaleFactor", value = "1")
-              }
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         dir_contents <- try(getURL(url, ftp.use.epsv = F, ftplistonly = T, crlf = T), silent = T)
+                         if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                           stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
+                           if (series == 1) {
+                             updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                           } else if (series == 2) {
+                             updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             if (input$sunits == 2) {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                             } else {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1")
+                             }
+                           }
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17059,25 +17071,29 @@ server <- function(input,output,session) {
           }
         } else {
           url <- "https://api.sonel.org/v1/products/vlm/gnss/meta?mode=solution"
-          dir_contents <- try(fromJSON(txt = url), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            code <- which(dir_contents$code == product)
-            if (code > 0) {
-              stations_available <- dir_contents$stations[[code]]
-              if (series == 1) {
-                updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              } else if (series == 2) {
-                updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-                if (input$sunits == 2) {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
-                } else {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1")
-                }
-              }
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         dir_contents <- try(fromJSON(txt = url), silent = T)
+                         if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                           code <- which(dir_contents$code == product)
+                           if (code > 0) {
+                             stations_available <- dir_contents$stations[[code]]
+                             if (series == 1) {
+                               updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             } else if (series == 2) {
+                               updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                               if (input$sunits == 2) {
+                                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                               } else {
+                                 updateTextInput(session, inputId = "scaleFactor", value = "1")
+                               }
+                             }
+                           }
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17096,24 +17112,28 @@ server <- function(input,output,session) {
             return(NULL)
           }
         } else {
-          if (file.exists("www/UNAVCO_database.txt")) {
-            stations_available <- readLines("www/UNAVCO_database.txt", warn = F)
-          } else {
-            tmp_unavco <- tempfile()
-            download.file("https://web-services.unavco.org/gps/metadata/sites/v1?minlatitude=-90&maxlatitude=90&minlongitude=-180&maxlongitude=180&starttime=&endtime=&summary=false", destfile = tmp_unavco, method = "curl", extra = "-X GET", headers = c(accept = "text/csv"), quiet = T, cacheOK = F)
-            stations_available <- sort(unique(read.csv(tmp_unavco, comment.char = "#")[,1]))
-            writeLines(stations_available, "www/UNAVCO_database.txt", sep = "\n")
-          }
-          if (series == 1) {
-            updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-          } else if (series == 2) {
-            updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-            if (input$sunits == 2) {
-              updateTextInput(session, inputId = "scaleFactor", value = "1000")
-            } else {
-              updateTextInput(session, inputId = "scaleFactor", value = "1")
-            }
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         if (file.exists("www/UNAVCO_database.txt")) {
+                           stations_available <- readLines("www/UNAVCO_database.txt", warn = F)
+                         } else {
+                           tmp_unavco <- tempfile()
+                           download.file("https://web-services.unavco.org/gps/metadata/sites/v1?minlatitude=-90&maxlatitude=90&minlongitude=-180&maxlongitude=180&starttime=&endtime=&summary=false", destfile = tmp_unavco, method = "curl", extra = "-X GET", headers = c(accept = "text/csv"), quiet = T, cacheOK = F)
+                           stations_available <- sort(unique(read.csv(tmp_unavco, comment.char = "#")[,1]))
+                           writeLines(stations_available, "www/UNAVCO_database.txt", sep = "\n")
+                         }
+                         if (series == 1) {
+                           updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                         } else if (series == 2) {
+                           updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                           if (input$sunits == 2) {
+                             updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                           } else {
+                             updateTextInput(session, inputId = "scaleFactor", value = "1")
+                           }
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17137,21 +17157,25 @@ server <- function(input,output,session) {
             }
           }
         } else {
-          stations_available <- download_EUREF(NULL)
-          if (isTruthy(stations_available) && !inherits(stations_available,"try-error") && length(stations_available) > 0) {
-            if (series == 1) {
-              updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-            } else if (series == 2) {
-              updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              if (input$sunits == 1) {
-                updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-              } else {
-                updateTextInput(session, inputId = "scaleFactor", value = "1")
-              }
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         stations_available <- download_EUREF(NULL)
+                         if (isTruthy(stations_available) && !inherits(stations_available,"try-error") && length(stations_available) > 0) {
+                           if (series == 1) {
+                             updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                           } else if (series == 2) {
+                             updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             if (input$sunits == 1) {
+                               updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+                             } else {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1")
+                             }
+                           }
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17226,26 +17250,30 @@ server <- function(input,output,session) {
           }
         } else {
           url <- paste0(url,"api/1.0/products/?output=csv")
-          dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- sort(as.character(dir_contents$STATION[grepl(solution, dir_contents$SOLUTION)]))
-            if (length(stations_available) > 0) {
-              if (series == 1) {
-                updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              } else if (series == 2) {
-                updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-                if (input$sunits == 2) {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
-                } else {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1")
-                }
-              }
-            } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         dir_contents <- try(read.csv(url, skip = 2, header = T), silent = T)
+                         if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                           stations_available <- sort(as.character(dir_contents$STATION[grepl(solution, dir_contents$SOLUTION)]))
+                           if (length(stations_available) > 0) {
+                             if (series == 1) {
+                               updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             } else if (series == 2) {
+                               updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                               if (input$sunits == 2) {
+                                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                               } else {
+                                 updateTextInput(session, inputId = "scaleFactor", value = "1")
+                               }
+                             }
+                           } else {
+                             showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                           }
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17268,32 +17296,36 @@ server <- function(input,output,session) {
             }
           }
         } else {
-          if (file.exists("www/EPOS_database.txt")) {
-            stationsFromEPOS <- read.table(file = "www/EPOS_database.txt", header = T)
-            stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
-          } else {
-            url <- "https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/stations/v2/station/bbox/-25.664/35.60371874069731/27.07/68.0075?with=2"
-            stationsFromEPOS.json <- jsonlite::fromJSON(readLines(url, ok = T, warn = F))
-            if (isTruthy(stationsFromEPOS.json)) {
-              stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$properties$`GNSS Station ID`, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
-              stationsFromEPOS$provider <- gsub(" ", "|", stationsFromEPOS$provider)
-              stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
-              write.table(stationsFromEPOS, file = "www/EPOS_database.txt", append = F, quote = F, row.names = F)
-            } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-              return(NULL)
-            }
-          }
-          if (series == 1) {
-            updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-          } else if (series == 2) {
-            updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-            if (input$sunits == 1) {
-              updateTextInput(session, inputId = "scaleFactor", value = "0.001")
-            } else {
-              updateTextInput(session, inputId = "scaleFactor", value = "1")
-            }
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         if (file.exists("www/EPOS_database.txt")) {
+                           stationsFromEPOS <- read.table(file = "www/EPOS_database.txt", header = T)
+                           stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
+                         } else {
+                           url <- "https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/stations/v2/station/bbox/-25.664/35.60371874069731/27.07/68.0075?with=2"
+                           stationsFromEPOS.json <- jsonlite::fromJSON(readLines(url, ok = T, warn = F))
+                           if (isTruthy(stationsFromEPOS.json)) {
+                             stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$properties$`GNSS Station ID`, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
+                             stationsFromEPOS$provider <- gsub(" ", "|", stationsFromEPOS$provider)
+                             stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
+                             write.table(stationsFromEPOS, file = "www/EPOS_database.txt", append = F, quote = F, row.names = F)
+                           } else {
+                             showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                             return(NULL)
+                           }
+                         }
+                         if (series == 1) {
+                           updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                         } else if (series == 2) {
+                           updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                           if (input$sunits == 1) {
+                             updateTextInput(session, inputId = "scaleFactor", value = "0.001")
+                           } else {
+                             updateTextInput(session, inputId = "scaleFactor", value = "1")
+                           }
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17377,9 +17409,9 @@ server <- function(input,output,session) {
           database <- read.table("www/EOSTLS_database.txt", fill = T, comment.char = "!", header = F)
           stations_available <- paste(paste(database$V1,database$V2,sep = "_"),database$V7,database$V6)
           if (series == 1) {
-            updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+            updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
           } else if (series == 2) {
-            updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+            updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
             if (!any(tolower(product) == "grace")) {
               if (isTruthy(inputs$step) && info$db1 == "resampled") {
                 step <- info$step
@@ -17423,34 +17455,38 @@ server <- function(input,output,session) {
             }
           }
         } else {
-          url <- "https://www.sirgas.org/en/stations/station-list/"
-          url2 <- "https://sirgas.ipgh.org/maps/stations/stations-list.php"
-          dir_contents <- try(httr::GET(url), silent = T)
-          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-            stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
-            if (series == 1) {
-              updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-            } else if (series == 2) {
-              updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              if (input$sunits == 2) {
-                updateTextInput(session, inputId = "scaleFactor", value = "1000")
-              } else {
-                updateTextInput(session, inputId = "scaleFactor", value = "1")
-              }
-            }
-          } else {
-            dir_contents <- try(httr::GET(url2), silent = T)
-            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-              stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
-              if (series == 1) {
-                updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              } else if (series == 2) {
-                updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              }
-            } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-            }
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         url <- "https://www.sirgas.org/en/stations/station-list/"
+                         url2 <- "https://sirgas.ipgh.org/maps/stations/stations-list.php"
+                         dir_contents <- try(httr::GET(url), silent = T)
+                         if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                           stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
+                           if (series == 1) {
+                             updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                           } else if (series == 2) {
+                             updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             if (input$sunits == 2) {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                             } else {
+                               updateTextInput(session, inputId = "scaleFactor", value = "1")
+                             }
+                           }
+                         } else {
+                           dir_contents <- try(httr::GET(url2), silent = T)
+                           if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                             stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
+                             if (series == 1) {
+                               updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+                             } else if (series == 2) {
+                               updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+                             }
+                           } else {
+                             showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                           }
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17491,32 +17527,36 @@ server <- function(input,output,session) {
         if (isTruthy(station)) {
           filepath <- paste0(url,name)
         } else {
-          if (file.exists(listFile)) {
-            dorisStations <- read.table(listFile, sep = ";")
-            colnames(dorisStations) <- c("id","lat","lon","altitude","domes","mnemonic","startDate","endDate","technique","site.id","site.name","site.country","site.lat","site.lon","site.altitude")
-          } else {
-            dorisStations <- try(fromJSON(txt = "https://apps.ids-doris.org/api/v1/station"), silent = T)
-            write.table(dorisStations[dorisStations$technique == "DORIS",], "www/DORIS_database.txt", append = F, row.names = F, col.names = F, sep = ";")
-          }
-          if (isTruthy(dorisStations) && !inherits(dorisStations,"try-error")) {
-            stations_available <- sort(dorisStations[dorisStations$technique == "DORIS",]$mnemonic)
-            if (length(stations_available) > 0) {
-              if (series == 1) {
-                updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-              } else if (series == 2) {
-                updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
-                if (input$sunits == 2) {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
-                } else {
-                  updateTextInput(session, inputId = "scaleFactor", value = "1")
-                }
-              }
-            } else {
-              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-            }
-          } else {
-            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-          }
+          withProgress(message = 'Loading the list of stations.',
+                       detail = "", value = 1, {
+                         if (file.exists(listFile)) {
+                           dorisStations <- read.table(listFile, sep = ";")
+                           colnames(dorisStations) <- c("id","lat","lon","altitude","domes","mnemonic","startDate","endDate","technique","site.id","site.name","site.country","site.lat","site.lon","site.altitude")
+                         } else {
+                           dorisStations <- try(fromJSON(txt = "https://apps.ids-doris.org/api/v1/station"), silent = T)
+                           write.table(dorisStations[dorisStations$technique == "DORIS",], "www/DORIS_database.txt", append = F, row.names = F, col.names = F, sep = ";")
+                         }
+                         if (isTruthy(dorisStations) && !inherits(dorisStations,"try-error")) {
+                           stations_available <- sort(dorisStations[dorisStations$technique == "DORIS",]$mnemonic)
+                           if (length(stations_available) > 0) {
+                             if (series == 1) {
+                               updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                             } else if (series == 2) {
+                               updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                               if (input$sunits == 2) {
+                                 updateTextInput(session, inputId = "scaleFactor", value = "1000")
+                               } else {
+                                 updateTextInput(session, inputId = "scaleFactor", value = "1")
+                               }
+                             }
+                           } else {
+                             showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                           }
+                         } else {
+                           showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                         }
+                         setProgress(value = 1)
+                       })
           return(NULL)
         }
       } else {
@@ -17551,9 +17591,9 @@ server <- function(input,output,session) {
           table <- read.table("www/PSMSL_database.txt", sep = ";", quote = "@")[,c(1,2)]
           stations_available <- do.call(paste, c(table[order(table$V1),], sep = ": "))
           if (series == 1) {
-            updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+            updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
           } else if (series == 2) {
-            updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+            updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
           }
         } else {
           showNotification(HTML("The list of PSMSL stations is not found.<br>It is not possible to get the list of available stations."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
