@@ -8565,12 +8565,12 @@ server <- function(input,output,session) {
         } else {
           removeNotification("parsing_url1")
           showNotification(HTML(paste0("File ",file$primary$name," is empty or is not found in ",toupper(input$server1),".<br>No file was downloaded.")), action = NULL, duration = 10, closeButton = T, id = "bad_url", type = "error", session = getDefaultReactiveDomain())
-          updateSelectInput(session, inputId = "station1", choices = "")
+          updateSelectizeInput(session, inputId = "station1", selected = "")
           file$primary <- NULL
         }
       } else {
         showNotification(paste0("Product ", input$product1, "for station ", inputs$station1," not found in ",toupper(input$server1)," server"), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
-        updateSelectInput(session, inputId = "station1", choices = "")
+        updateSelectizeInput(session, inputId = "station1", selected = "")
       }
     }
   })
@@ -8671,12 +8671,12 @@ server <- function(input,output,session) {
             digest(2)
           })
         } else {
-          updateSelectInput(session, inputId = "station2", choices = "")
+          updateSelectInput(session, inputId = "station2", selected = "")
           file$secondary <- NULL
         }
       } else {
         showNotification(paste("Product", input$product2, "for station", inputs$station2, "not found in", input$server2, "server."), action = NULL, duration = 10, closeButton = T, id = "bad_remote", type = "error", session = getDefaultReactiveDomain())
-        updateSelectInput(session, inputId = "station2", choices = "")
+        updateSelectInput(session, inputId = "station2", selected = "")
       }
     } else {
       url$station2 <- url$file2 <- url$server2 <- file$secondary$name <- info$format2 <- file$secondary$datapath <- NULL
@@ -17534,9 +17534,9 @@ server <- function(input,output,session) {
                            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
                              stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
                              if (series == 1) {
-                               updateSelectInput(session, inputId = "station1", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+                               updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                              } else if (series == 2) {
-                               updateSelectInput(session, inputId = "station2", label = "Station", choices = c("Available stations" = "", stations_available), selected = "")
+                               updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                              }
                            } else {
                              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -17603,7 +17603,7 @@ server <- function(input,output,session) {
                              if (series == 1) {
                                updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                              } else if (series == 2) {
-                               updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
+                               updateSelectizeInput(session, inputId = "station2", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                                if (input$sunits == 2) {
                                  updateTextInput(session, inputId = "scaleFactor", value = "1000")
                                } else {
