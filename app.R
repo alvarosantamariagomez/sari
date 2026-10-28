@@ -6199,6 +6199,7 @@ server <- function(input,output,session) {
         print_max_used_memory()
         reset_max_used_memory()
       }
+      memoryUse$close()
     }, add = T)
     
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
@@ -6244,7 +6245,10 @@ server <- function(input,output,session) {
           }
         }
         withProgress(message = 'Fitting the noise model.',
-                     detail = message, value = 0, {
+                     detail = message, {
+                       setProgress(0)
+                       if (!info$local) memoryUse <- shiny::Progress$new(session = session, min = 0, max = 1)
+                       if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                        if (!info$local && as.numeric(n) > 16000) {
                          showNotification("The series is too long for a dense covariance matrix.", type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
                          if (verbosity > 0) cat(file = stderr(), mySession, "MLE: the series is too long for a dense covariance matrix. Stop.\n")
@@ -6289,6 +6293,7 @@ server <- function(input,output,session) {
                        } else {
                          info$powerl <- F
                        }
+                       if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
 
                        # Noise optimization
                        CPL <- NULL # this and next two are updated inside loglik_global and used inside grad_global
@@ -6317,18 +6322,27 @@ server <- function(input,output,session) {
                              Zr <- resS
                              ZX <- trans$design
                              logdetC <- 0
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            } else {
                              C <- if (isTruthy(info$flicker)) Cfl else Crw
                              setProgress(0.25)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              L  <- chol(C)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              Zr <- backsolve(L, resS, transpose = T)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              ZX <- backsolve(L, trans$design,   transpose = T)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              logdetC <- 2*sum(log(diag(L)))
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              setProgress(0.75)
                            }
                            qrX <- qr(ZX)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            VtPV <- sum(qr.resid(qrX, Zr)^2)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            logdetXCX <- 2*sum(log(abs(diag(qr.R(qrX)))))
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            nr <- n - nPar
                            variance <- VtPV/nr
                            fitmle$value <- 0.5*(nr*log(2*pi*variance) + logdetC + logdetXCX - logdetXtX + nr)
@@ -6340,10 +6354,14 @@ server <- function(input,output,session) {
                              fitmle$value <- 0.5*(n*log(2*pi*variance) + n)
                            } else {
                              C <- if (isTruthy(info$flicker)) Cfl else Crw
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              setProgress(0.25)
                              L <- chol(C)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              VtPV <- sum(backsolve(L, resS, transpose = T)^2)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              logdet <- 2*sum(log(diag(L)))
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              setProgress(0.75)
                              variance <- VtPV/n
                              fitmle$value <- 0.5*(n*log(2*pi*variance) + logdet + n)
@@ -6365,13 +6383,17 @@ server <- function(input,output,session) {
                            req(info$stop)
                          }
                          lam  <- ev$values
+                         if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          setProgress(0.25)
                          if (rmle) {
                            Z    <- crossprod(ev$vectors, trans$design)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            b    <- as.vector(crossprod(ev$vectors, resS))
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            beta <- b^2  
                          } else {
                            beta <- as.vector(crossprod(ev$vectors, resS))^2
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          }
                          setProgress(0.5)
                          
@@ -6379,14 +6401,22 @@ server <- function(input,output,session) {
                          if (rmle) {
                            rv <- 1/lam
                            Mi <- chol2inv(chol(crossprod(Z, rv*Z)))
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            g0 <- crossprod(Z, rv*b)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            f0 <- (sum(rv*beta) - drop(crossprod(g0, Mi %*% g0)))/(n - nPar)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            w0 <- as.vector(rv*(b - Z %*% (Mi %*% g0)))
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            s  <- (sum(rv) - sum(Mi * crossprod(Z*rv))) - sum(w0^2)/f0
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          } else {
                            e <- inv_coefs(k, n, info$sampling)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            z <- lconv(e, resS)
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            Cinvr <- rev(lconv(e, rev(z)))
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            trCinv <- sum((n - 0:(n - 1)) * e^2)
                            f0 <- sum(beta/lam)/n
                            s  <- sum(1/lam) - sum(beta/lam^2)/f0
@@ -6410,6 +6440,7 @@ server <- function(input,output,session) {
                            H  <- 0.5 * matrix(c(sum(t1*t1*w), sum(t1*t2*w), sum(t1*t2*w), sum(t2*t2*w)), 2) + diag(g)
                            ll <- 0.5*(n*log(2*pi) + sum(log(1/r)) + sum(beta*r))
                            if (verbosity > 1) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(th))/scaling, " (", th, ") Index =", k, " loglik =", sprintf("%f",ll/-1), "\n")
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            list(value = ll, grad = g, hess = H)
                          }
                          
@@ -6441,6 +6472,7 @@ server <- function(input,output,session) {
                                H[j,m] <- tv[j]*tv[m]*(qjm - 0.5*trjm) + (j == m)*gr[j]
                              }
                            }
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            list(value = ll, grad = gr, hess = H)
                          }
                          
@@ -6470,6 +6502,7 @@ server <- function(input,output,session) {
                            # check for values at the bounds and the Hessian matrix
                            atBound <- fitmle$par <= lower + 1e-6 | fitmle$par >= upper - 1e-6
                            hessOK  <- !inherits(try(chol(fin$hess), silent = T), "try-error")
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            if (verbosity > 1) cat(file = stderr(), mySession, "MLE: code", fitmle$convergence, fitmle$message, "| par", fitmle$par, "| grad", fin$grad, "| hess PD", hessOK, "\n")
                            if (any(atBound) || !hessOK) {
                              reason <- c(if (any(atBound)) paste("Parameter(s) at bound:", paste(componentNames[atBound], collapse = ", ")),
@@ -6488,7 +6521,9 @@ server <- function(input,output,session) {
                          if (info$flicker) Cs$fl <- Cfl
                          if (info$randomw) Cs$rw <- Crw
                          if (info$powerl)  Cs$pl <- Cfl
+                         if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          apriori <- moment_apriori(res, Cs, which(trans$gaps), n_all)
+                         if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          typsize <- rep(3, length(apriori))
                          setProgress(0.25)
                          apriori <- log(apriori*scaling^2)
@@ -6563,6 +6598,7 @@ server <- function(input,output,session) {
                            if (method == "NLM") {
                              attr(ll, "gradient") <- grad_global(x)
                            }
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            rm(Q, ll_out)
                            invisible(gc())
                            if (rmle) {
@@ -6574,6 +6610,7 @@ server <- function(input,output,session) {
                              ll  <- ll - sum(log(diag(Lm))) + 0.5*drop(crossprod(g, Mi %*% g)) + 0.5*nPar*log(2*pi) + 0.5*logdetXtX
                              QinvR <<- QinvR - A %*% (Mi %*% g)
                              Qinv  <<- Qinv - A %*% tcrossprod(Mi, A)
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            }
                            if (verbosity > 1) cat(file = stderr(), mySession, "Std Dev noises =", sqrt(exp(x))/scaling, " (", x, ") Index =", k, " loglik =", sprintf("%f",ll), "\n")
                            ll/-1
@@ -6626,6 +6663,7 @@ server <- function(input,output,session) {
                                grad <- c(grad, -0.5*(sum(dot(Qinv,k_deriv)) - sum(dot(trQinv, k_deriv %*% QinvR)))[1])
                              }
                            }
+                           if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            if (verbosity > 1) cat(file = stderr(), mySession, "Grads =", grad/-1, "\n")
                            grad/-1
                          }
@@ -6720,9 +6758,11 @@ server <- function(input,output,session) {
                              if (input$wiener) {
                                d    <- exp(fitmle$par[1]) + exp(fitmle$par[2]) * ev$values
                                Qinv <- ev$vectors %*% (t(ev$vectors) / d)
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                if (rmle) {
                                  QX <- Qinv %*% trans$design
                                  Qinv <- Qinv - QX %*% tcrossprod(chol2inv(chol(crossprod(trans$design, QX))), QX)
+                                 if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                }
                              }
                              if (input$flicker) {
@@ -6730,6 +6770,7 @@ server <- function(input,output,session) {
                              } else {
                                Crw <- ev$vectors %*% (ev$values * t(ev$vectors))
                              }
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              if (verbosity > 1) cat(file = stderr(), mySession, "MLE: reconstructing the covariance matrix of the estimated noise model\n")
                            }
                            
@@ -6739,14 +6780,18 @@ server <- function(input,output,session) {
                            if (input$noise_unc) {
                              if (!is.null(fitmle$hessian_exact)) {
                                fitmle$hessian <- fitmle$hessian_exact
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              } else {
                                gr_fresh <- function(x) { loglik_global(x); grad_global(x) }
                                fitmle$hessian <- optimHess(fitmle$par, loglik_global, gr_fresh)
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              }
                              sd_noises <- suppressWarnings(sqrt(diag(solve(fitmle$hessian))))
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            }
                            if (is.null(fitmle$hessian_exact)) {
                              loglik_global(fitmle$par)  # restore CPL, Qinv, QinvR at the optimum
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            }
                            
                            # showing the results of the noise model fit on screen
@@ -6780,8 +6825,10 @@ server <- function(input,output,session) {
                              if (input$wiener) {
                                qQ <- exp(fitmle$par[i]) * Qinv
                                trans$white <- unlist(as.list(res %*% qQ))
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                if (input$sigmas && length(resError) > 0) {
                                  trans$white_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                                 if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                }
                              }
                              output$est.white <- renderUI({
@@ -6802,6 +6849,7 @@ server <- function(input,output,session) {
                              sigmaFL <- sqrt(exp(fitmle$par[i]))/scaling
                              trans$noise[3] <- sigmaFL
                              trans$noiseQ <- sigmaFL^2 * Cfl
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              if (input$noise_unc) {
                                seParmsFL <- sd_noises[i] * sigmaFL / 2
                                trans$noise[4] <- seParmsFL
@@ -6816,8 +6864,10 @@ server <- function(input,output,session) {
                              if (input$wiener) {
                                qQ <- (exp(fitmle$par[i])*Cfl) %*% Qinv
                                trans$flicker <- unlist(as.list(res %*% qQ))
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                if (input$sigmas && length(resError) > 0) {
                                  trans$flicker_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                                 if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                }
                              }
                              output$est.flicker <- renderUI({
@@ -6843,6 +6893,7 @@ server <- function(input,output,session) {
                              } else {
                                trans$noiseQ <- trans$noiseQ + sigmaRW^2 * Crw
                              }
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              if (input$noise_unc) {
                                seParmsRW <- sd_noises[i] * sigmaRW / 2
                                trans$noise[6] <- seParmsRW
@@ -6857,8 +6908,10 @@ server <- function(input,output,session) {
                              if (input$wiener) {
                                qQ <- (exp(fitmle$par[i])*Crw) %*% Qinv
                                trans$randomw <- unlist(as.list(res %*% qQ))
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                if (input$sigmas && length(resError) > 0) {
                                  trans$randomw_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                                 if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                }
                              }
                              output$est.randomw <- renderUI({
@@ -6884,6 +6937,7 @@ server <- function(input,output,session) {
                              } else {
                                trans$noiseQ <- trans$noiseQ + sigmaPL^2 * CPL[[1]]
                              }
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                              if (input$noise_unc) {
                                seParmsPL <- sd_noises[i] * sigmaPL / 2
                                trans$noise[8] <- seParmsPL
@@ -6898,8 +6952,10 @@ server <- function(input,output,session) {
                              if (input$wiener) {
                                qQ <- (exp(fitmle$par[i])*CPL[[1]]) %*% Qinv
                                trans$powerl <- unlist(as.list(res %*% qQ))
+                               if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                if (input$sigmas && length(resError) > 0) {
                                  trans$powerl_sig <- unlist(as.list(sqrt(diag(qQ %*% diag(resError^2) %*% t(qQ)))))
+                                 if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                                }
                              }
                              output$est.powerl <- renderUI({
@@ -6951,6 +7007,7 @@ server <- function(input,output,session) {
                              } else {
                                diag(trans$noiseQ) <- diag(trans$noiseQ) + sigmaWH^2
                              }
+                             if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                            }
                            end.time <- Sys.time()
                            if (verbosity > 1) cat(file = stderr(), mySession, "MLE fit end:", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), "\n")
@@ -17499,13 +17556,17 @@ server <- function(input,output,session) {
       if (isTruthy(info$dorisol)) {
         solution <- info$dorisol
       } else {
-        dir_contents <- try(getURL("ftp://doris.ensg.ign.fr/pub/doris/products/stcd/", verbose = F, ftp.use.epsv = F, dirlistonly = T, crlf = T), silent = T)
-        if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-          solution <- info$dorisol <- sub("ids", "", tail(grep("^ids[0-9]{2}wd[0-9]{2}", strsplit(dir_contents, "\r*\n")[[1]], ignore.case = F, perl = T, value = T), n = 1))
-        } else {
-          solution <- info$dorisol <- "25wd04"
-          showNotification(paste0("Unable to access the list of available IDS solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
-        }
+        withProgress(message = 'Loading the list of solutions',
+                     detail = "", value = 1, {
+                       dir_contents <- try(getURL("ftp://doris.ensg.ign.fr/pub/doris/products/stcd/", verbose = F, ftp.use.epsv = F, dirlistonly = T, crlf = T), silent = T)
+                       if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
+                         solution <- info$dorisol <- sub("ids", "", tail(grep("^ids[0-9]{2}wd[0-9]{2}", strsplit(dir_contents, "\r*\n")[[1]], ignore.case = F, perl = T, value = T), n = 1))
+                       } else {
+                         solution <- info$dorisol <- "25wd04"
+                         showNotification(paste0("Unable to access the list of available IDS solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
+                       }
+                       setProgress(value = 1)
+                     })
       }
       if (product == "ESA") {
         pattern <- "esa"
