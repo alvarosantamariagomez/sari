@@ -6198,8 +6198,8 @@ server <- function(input,output,session) {
       if (!info$local) {
         print_max_used_memory()
         reset_max_used_memory()
+        memoryUse$close()
       }
-      memoryUse$close()
     }, add = T)
     
     if (length(trans$res) > 0 || length(trans$filterRes) > 0) {
