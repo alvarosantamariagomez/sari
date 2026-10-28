@@ -17558,11 +17558,11 @@ server <- function(input,output,session) {
       } else {
         withProgress(message = 'Loading the list of solutions',
                      detail = "", value = 1, {
-                       dir_contents <- try(getURL("ftp://doris.ensg.ign.fr/pub/doris/products/stcd/", verbose = F, ftp.use.epsv = F, dirlistonly = T, crlf = T), silent = T)
+                       dir_contents <- try(getURL("ftp://doris.ign.fr/pub/doris/products/stcd/", verbose = F, dirlistonly = T, ftp.use.epsv = F, crlf = T, userpwd = "anonymous:anonymous"), silent = T)
                        if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
                          solution <- info$dorisol <- sub("ids", "", tail(grep("^ids[0-9]{2}wd[0-9]{2}", strsplit(dir_contents, "\r*\n")[[1]], ignore.case = F, perl = T, value = T), n = 1))
                        } else {
-                         solution <- info$dorisol <- "25wd04"
+                         solution <- info$dorisol <- "26wd04"
                          showNotification(paste0("Unable to access the list of available IDS solutions. Using the solution ", solution," in the current session."), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
                        }
                        setProgress(value = 1)
