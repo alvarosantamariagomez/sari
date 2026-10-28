@@ -16965,11 +16965,11 @@ server <- function(input,output,session) {
         withProgress(message = 'Loading the list of stations.',
                      detail = "", value = 1, {
                        if (file.exists(listFile)) {
-                         stations_available <- readLines(listFile, warn = F)
+                         stations_available <- sort(readLines(listFile, warn = F))
                        } else {
                          dir_contents <- try(XML::readHTMLTable(url, skip.rows = 1:2, trim = T)[[1]]$Name, silent = T)
                          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-                           stations_available <- sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T))
+                           stations_available <- sort(sub(pattern, "", grep(pattern, dir_contents, fixed = T, value = T)))
                            writeLines(stations_available, listFile, sep = "\n")
                          } else {
                            showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -17006,7 +17006,7 @@ server <- function(input,output,session) {
                        detail = "", value = 1, {
                          dir_contents <- try(getURL(url, ftp.use.epsv = FALSE, ftplistonly = TRUE, crlf = TRUE), silent = T)
                          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-                           stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
+                           stations_available <- sort(sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1))
                            if (series == 1) {
                              updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                            } else if (series == 2) {
@@ -17051,7 +17051,7 @@ server <- function(input,output,session) {
               return(NULL)
             }
           }
-          stations_available <- read.table("www/JPL_database.txt")$V1
+          stations_available <- sort(read.table("www/JPL_database.txt")$V1)
           if (series == 1) {
             updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
           } else if (series == 2) {
@@ -17088,7 +17088,7 @@ server <- function(input,output,session) {
                        detail = "", value = 1, {
                          dir_contents <- try(getURL(url, ftp.use.epsv = F, ftplistonly = T, crlf = T), silent = T)
                          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-                           stations_available <- sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1)
+                           stations_available <- sort(sapply(strsplit(grep(pattern, strsplit(dir_contents, "\r*\n")[[1]], perl = F, value = T, fixed = T), split = pattern, fixed = T), "[[", 1))
                            if (series == 1) {
                              updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                            } else if (series == 2) {
@@ -17134,7 +17134,7 @@ server <- function(input,output,session) {
                          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
                            code <- which(dir_contents$code == product)
                            if (code > 0) {
-                             stations_available <- dir_contents$stations[[code]]
+                             stations_available <- sort(dir_contents$stations[[code]])
                              if (series == 1) {
                                updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                              } else if (series == 2) {
@@ -17172,7 +17172,7 @@ server <- function(input,output,session) {
           withProgress(message = 'Loading the list of stations.',
                        detail = "", value = 1, {
                          if (file.exists("www/UNAVCO_database.txt")) {
-                           stations_available <- readLines("www/UNAVCO_database.txt", warn = F)
+                           stations_available <- sort(readLines("www/UNAVCO_database.txt", warn = F))
                          } else {
                            tmp_unavco <- tempfile()
                            download.file("https://web-services.unavco.org/gps/metadata/sites/v1?minlatitude=-90&maxlatitude=90&minlongitude=-180&maxlongitude=180&starttime=&endtime=&summary=false", destfile = tmp_unavco, method = "curl", extra = "-X GET", headers = c(accept = "text/csv"), quiet = T, cacheOK = F)
@@ -17216,7 +17216,7 @@ server <- function(input,output,session) {
         } else {
           withProgress(message = 'Loading the list of stations.',
                        detail = "", value = 1, {
-                         stations_available <- download_EUREF(NULL)
+                         stations_available <- sort(download_EUREF(NULL))
                          if (isTruthy(stations_available) && !inherits(stations_available,"try-error") && length(stations_available) > 0) {
                            if (series == 1) {
                              updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
@@ -17357,14 +17357,14 @@ server <- function(input,output,session) {
                        detail = "", value = 1, {
                          if (file.exists("www/EPOS_database.txt")) {
                            stationsFromEPOS <- read.table(file = "www/EPOS_database.txt", header = T)
-                           stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
+                           stations_available <- sort(stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1])
                          } else {
                            url <- "https://gnssproducts.epos.ubi.pt/GlassFramework/webresources/stations/v2/station/bbox/-25.664/35.60371874069731/27.07/68.0075?with=2"
                            stationsFromEPOS.json <- jsonlite::fromJSON(readLines(url, ok = T, warn = F))
                            if (isTruthy(stationsFromEPOS.json)) {
                              stationsFromEPOS <- data.frame(id = stationsFromEPOS.json$features$properties$`GNSS Station ID`, lat = stationsFromEPOS.json$features$properties$Latitude, lon = stationsFromEPOS.json$features$properties$Longitude, provider = stationsFromEPOS.json$features$properties$`TimeSeries Data Providers`)
                              stationsFromEPOS$provider <- gsub(" ", "|", stationsFromEPOS$provider)
-                             stations_available <- stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1]
+                             stations_available <- sort(stationsFromEPOS[grepl(product, stationsFromEPOS$provider), 1])
                              write.table(stationsFromEPOS, file = "www/EPOS_database.txt", append = F, quote = F, row.names = F)
                            } else {
                              showNotification(HTML(paste("Server", server, "seems to be unreachable.<br>It is not possible to get the list of available stations.")), action = NULL, duration = 10, closeButton = T, id = "no_answer", type = "warning", session = getDefaultReactiveDomain())
@@ -17464,7 +17464,7 @@ server <- function(input,output,session) {
       } else {
         if (file.exists("www/EOSTLS_database.txt")) {
           database <- read.table("www/EOSTLS_database.txt", fill = T, comment.char = "!", header = F)
-          stations_available <- paste(paste(database$V1,database$V2,sep = "_"),database$V7,database$V6)
+          stations_available <- sort(paste(paste(database$V1,database$V2,sep = "_"),database$V7,database$V6))
           if (series == 1) {
             updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
           } else if (series == 2) {
@@ -17518,7 +17518,7 @@ server <- function(input,output,session) {
                          url2 <- "https://sirgas.ipgh.org/maps/stations/stations-list.php"
                          dir_contents <- try(httr::GET(url), silent = T)
                          if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-                           stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
+                           stations_available <- sort(strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4))
                            if (series == 1) {
                              updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                            } else if (series == 2) {
@@ -17532,7 +17532,7 @@ server <- function(input,output,session) {
                          } else {
                            dir_contents <- try(httr::GET(url2), silent = T)
                            if (isTruthy(dir_contents) && !inherits(dir_contents,"try-error")) {
-                             stations_available <- strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4)
+                             stations_available <- sort(strtrim(readHTMLTable(rawToChar(dir_contents$content))[[1]]$ID, 4))
                              if (series == 1) {
                                updateSelectizeInput(session, inputId = "station1", choices = stations_available, selected = "", options = list(placeholder = "Available stations", onInitialize = I('function() { this.setValue(""); }')), server = T)
                              } else if (series == 2) {
