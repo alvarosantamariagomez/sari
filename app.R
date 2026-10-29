@@ -2357,19 +2357,19 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                                                                                 )
                                                                               )
                                                                             ),
-                                                                            fluidRow(
-                                                                              conditionalPanel(
-                                                                                condition = "input.mle == true",
-                                                                                column(2, style = "padding: 0px 0px 0px 10px;",
+                                                                            conditionalPanel(
+                                                                              condition = "input.mle == true",
+                                                                              fluidRow(
+                                                                                column(2,
                                                                                        checkboxInput(inputId = "white", label = "White", value = F, width = '25%') |> autoCompleteOff()
                                                                                 ),
-                                                                                column(2, style = "padding: 0px 0px 0px 0px;",
+                                                                                column(2,
                                                                                        checkboxInput(inputId = "flicker", label = "Flicker", value = F, width = '25%') |> autoCompleteOff()
                                                                                 ),
-                                                                                column(4, style = "padding: 0px 0px 0px 0px;",
+                                                                                column(4,
                                                                                        checkboxInput(inputId = "randomw", label = "Random walk", value = F, width = '200%') |> autoCompleteOff()
                                                                                 ),
-                                                                                column(4, style = "padding: 0px 10px 0px 10px;",
+                                                                                column(4,
                                                                                        checkboxInput(inputId = "powerl", label = "Power-law", value = F, width = '150%') |> autoCompleteOff()
                                                                                 )
                                                                               )
@@ -6529,7 +6529,11 @@ server <- function(input,output,session) {
                          if (info$powerl)  Cs$pl <- Cfl # may not match the a priori spectral index below; this is just for a faster a priori value
                          if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          #fitting the empirical variance of second differences of the residuals, at several lags, to the variance those differences have from each noise component separately (method of moments)
-                         apriori <- moment_apriori(res, Cs, which(trans$gaps), n_all)
+                         apriori <- try(moment_apriori(res, Cs, which(trans$gaps), n_all), silent = T)
+                         if (inherits(apriori, "try-error") || any(!is.numeric(apriori))) {
+                           showNotification("Unable to set the a priori noise variances.", type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
+                           req(info$stop)
+                         }
                          if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
                          typsize <- rep(3, length(apriori)) # only used for the NLM method
                          setProgress(0.25)
@@ -16403,8 +16407,10 @@ server <- function(input,output,session) {
     if (!is.null(mod$JW) | !is.null(mod$JV))
       warning("Time varying V or W matrix will not be used in the UKF")
 
-    if (!(sqrtMethod == "Cholesky" | sqrtMethod == "svd"))
-      stop("Name of sqrtMethod is incorrect")
+    if (!(sqrtMethod == "Cholesky" | sqrtMethod == "svd")) {
+      if (verbosity > 0) cat(file = stderr(), mySession, "KF: Name of sqrtMethod is incorrect\n")
+      req(info$stop)
+    }
 
     m <- rbind(mod$m0, matrix(0, nrow = nrow(y), ncol = length(mod$m0))) # a posteriori estimated state
     a <- matrix(0, nrow = nrow(y), ncol = length(mod$m0)) # a priori state in time update
@@ -16881,7 +16887,8 @@ server <- function(input,output,session) {
     has2 <- !is.null(y2)
     has3 <- !is.null(y3)
     if (!second && (is.null(st1) || (has2 && is.null(st2)) || (has3 && is.null(st3)))) {
-      stop("average(): status vectors are required for the primary series")
+      if (verbosity > 0) cat(file = stderr(), mySession, "average: status vectors are required for the primary series\n")
+      req(info$stop)
     }
     index <- x >= x[1] + (p - 1)*s - tol & x < x[1] + p*s - tol * 2/3
     n <- sum(index)
@@ -18077,7 +18084,8 @@ server <- function(input,output,session) {
       if (silent) {
         return(NULL)
       } else {
-        stop("NA's in x")
+        if (verbosity > 0) cat(file = stderr(), mySession, "matInv: there are NA's in x\n")
+        req(info$stop)
       }
     }
     if (length(x) == 1) {
@@ -18087,7 +18095,8 @@ server <- function(input,output,session) {
       if (silent) {
         return(NULL)
       } else {
-        stop("x is not a matrix")
+        if (verbosity > 0) cat(file = stderr(), mySession, "matInv: x is not a matrix\n")
+        req(info$stop)
       }
     }
     u <- try(chol(x, pivot = FALSE), silent = silent)
@@ -18095,7 +18104,8 @@ server <- function(input,output,session) {
       if (silent) {
         return(NULL)
       } else {
-        stop("x appears to be not positive definite")
+        if (verbosity > 0) cat(file = stderr(), mySession, "matInv: x appears to be not positive definite\n")
+        req(info$stop)
       }
     }
     inv <- chol2inv(u)
@@ -18459,14 +18469,16 @@ server <- function(input,output,session) {
     # one row per lag
     A <- do.call(rbind, rows)
     if (is.null(A) || nrow(A) < length(Cs)) {
-      stop("Not enough scales to estimate the a priori noise variances")
+      if (verbosity > 0) cat(file = stderr(), mySession, "MLE: not enough scales to estimate the a priori noise variances\n")
+      return(NULL)
     }
     b <- A[, ncol(A)]
     A <- A[, -ncol(A), drop = F]
     # fitting the second differences: residuals vs noise model
     x <- pracma::lsqnonneg(A/b, rep(1, length(b)))$x
     if (all(x <= 0)) {
-      stop("Method of moments returned no positive variance")
+      if (verbosity > 0) cat(file = stderr(), mySession, "MLE: no positive variance for the a priori values\n")
+      return(NULL)
     }
     # avoiding null or too small values
     pmax(x, 1e-4*max(x))
