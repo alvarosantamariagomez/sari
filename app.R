@@ -6301,17 +6301,21 @@ server <- function(input,output,session) {
                        QinvR <- NULL
                        fitmle <- NULL
                        apriori <- NULL
+                       lower <- NULL
+                       upper <- NULL
                        cl <- NULL
+                       # normalizing residuals
                        scaling <- 1/sdRes
                        resS <- res*scaling
                        if (isTruthy(input$noise_unc)) {
+                         # only used with the NLM method
                          hessian <- T
                        } else {
                          hessian <- F
                        }
                        # computing the relative tolerance on the increase of the log-lik (factr)
-                       loglik_stop <- 1 # min log-lik change to stop the optimization
-                       sample <- info$points * 1.3 # empirical conversion from number of points to optimal log-ML
+                       loglik_stop <- 1 # log-likelihood improvement to stop the optimization
+                       sample <- info$points * 1.3 # empirical rough conversion from number of points to optimal log-likelihood
                        factr <- loglik_stop / (.Machine$double.eps * sample)
                        if (verbosity > 1) cat(file = stderr(), mySession, "Log-lik tolerance = ", factr*100*.Machine$double.eps, "% ( factr =", format(factr, scientific = T, digits = 2), ")\n")
 
@@ -6371,11 +6375,11 @@ server <- function(input,output,session) {
                          fitmle$par <- log(variance)
                          convergence <- 0
                        }
-                       #* more than one noise variance with fixed index ####
+                       #* more than one noise variance with fixed spectral index ####
                        else if (eigPath) {
                          k <- ifelse(info$flicker, -1, -2)
                          
-                         # Computing the eigen values of the noise covariance matrix
+                         # Computing the eigen values of the FL/RW noise covariance matrix
                          ev <- getEigen(k, n_all, trans$gaps, info$sampling)
                          if (is.null(ev)) {
                            showNotification("The covariance matrix is not positive semi-definite.", type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
@@ -6423,7 +6427,7 @@ server <- function(input,output,session) {
                          }
                          if (verbosity > 1) cat(file = stderr(), mySession, "WH pre-check: s =", s, "\n")
                          if (s >= 0) {
-                           showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Uncheck White and fit the coloured noise alone."), type = "error", id = "no_mle", duration = 10, session = getDefaultReactiveDomain())
+                           showNotification(HTML("The white noise is not identifiable in this series (its variance goes to zero).<br>Unchecking White and fitting the coloured noise alone."), type = "error", id = "redo_mle", duration = 10, session = getDefaultReactiveDomain())
                            if (verbosity > 0) cat(file = stderr(), mySession, "MLE: the white noise is not identifiable in this series.\n")
                            updateCheckboxInput(session, inputId = "white", value = F)
                            shinyjs::delay(1000, shinyjs::click("runmle"))
@@ -6478,6 +6482,7 @@ server <- function(input,output,session) {
                          
                          # running optimization
                          apriori <- log(c(1/sqrt(2), f0/sqrt(2)))
+                         # setting loose constraints
                          lower <- apriori - log(1e4)
                          upper <- apriori + log(1e2)
                          if (verbosity > 1) cat(file = stderr(), mySession, "MLE: a priori", apriori, "| lower", lower, "| upper", upper, "\n")
@@ -6520,13 +6525,15 @@ server <- function(input,output,session) {
                          if (info$white)   Cs$wh <- 1
                          if (info$flicker) Cs$fl <- Cfl
                          if (info$randomw) Cs$rw <- Crw
-                         if (info$powerl)  Cs$pl <- Cfl
+                         if (info$powerl)  Cs$pl <- Cfl # may not match the a priori spectral index below; this is just for a faster a priori value
                          if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
+                         #fitting the empirical variance of second differences of the residuals, at several lags, to the variance those differences have from each noise component separately (method of moments)
                          apriori <- moment_apriori(res, Cs, which(trans$gaps), n_all)
                          if (!info$local) memoryUse$set(message = "Available memory in use", value = as.numeric(unlist(strsplit(grep("^VmHWM", readLines("/proc/self/status"), value = T), "\\s+"))[2])/8388608)
-                         typsize <- rep(3, length(apriori))
+                         typsize <- rep(3, length(apriori)) # only used for the NLM method
                          setProgress(0.25)
                          apriori <- log(apriori*scaling^2)
+                         # setting loose constraints
                          lower <- apriori - log(1e4)
                          upper <- apriori + log(1e2)
                          if (isTruthy(info$powerl)) {
@@ -18430,29 +18437,37 @@ server <- function(input,output,session) {
   }
   #
   moment_apriori <- function(res, Cs, pos, n_all) {
+    # log-spaced lags/scales
     ms <- unique(round(2^seq(0, log2((n_all - 1)/2), by = 0.5)))
     rows <- lapply(ms, function(m) {
+      # points at lag m and 2m
       i1 <- match(pos + m, pos)
       i2 <- match(pos + 2*m, pos)
       ok <- !is.na(i1) & !is.na(i2)
+      # dropping the lag if less than 30 points
       if (sum(ok) < 30) return(NULL)
       i0 <- which(ok)
       i1 <- i1[ok]
       i2 <- i2[ok]
+      # second differences of residuals at the lag m
       d <- res[i2] - 2*res[i1] + res[i0]
+      # second differences of the noise model at lag m
       e <- sapply(Cs, function(C) { if (is.matrix(C)) { mean(C[cbind(i0,i0)] + 4*C[cbind(i1,i1)] + C[cbind(i2,i2)] - 4*C[cbind(i0,i1)] + 2*C[cbind(i0,i2)] - 4*C[cbind(i1,i2)]) } else { 6 } } )
       c(e, mean(d^2))
     })
+    # one row per lag
     A <- do.call(rbind, rows)
     if (is.null(A) || nrow(A) < length(Cs)) {
       stop("Not enough scales to estimate the a priori noise variances")
     }
     b <- A[, ncol(A)]
     A <- A[, -ncol(A), drop = F]
+    # fitting the second differences: residuals vs noise model
     x <- pracma::lsqnonneg(A/b, rep(1, length(b)))$x
     if (all(x <= 0)) {
       stop("Method of moments returned no positive variance")
     }
+    # avoiding null or too small values
     pmax(x, 1e-4*max(x))
   }
   #
