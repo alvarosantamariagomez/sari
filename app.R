@@ -5748,6 +5748,7 @@ server <- function(input,output,session) {
           temp <- color[6]
           color[6] <- color[1]
           color[1] <- temp
+          title <- paste(title, "secondary (green)", sep = ", ")
         } else {
           spectrum_y[,6] <- NA
         }
