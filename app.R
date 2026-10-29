@@ -3526,7 +3526,7 @@ server <- function(input,output,session) {
 
   # Load SARI file ####
   observeEvent(input$loadSARI, {
-    req(db1[[info$db1]], isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     removeNotification("sari_version")
     removeNotification("format_not_compatible")
     removeNotification("no_model")
@@ -4071,7 +4071,7 @@ server <- function(input,output,session) {
 
   # MIDAS ####
   observeEvent(c(input$midas, trans$y, trans$offsetEpochs, input$tunits), {
-    req(trans$x, trans$y, info$tol, ranges$y1)
+    req(trans$x, trans$y, info$tol, isTruthy(input$tab < 4))
     if (isTruthy(input$midas)) {
       # setting lag period
       if (input$tunits == 1) {
@@ -4142,7 +4142,7 @@ server <- function(input,output,session) {
 
   # Plot MIDAS histogram ####
   output$midas_hist1 <- output$midas_hist2 <- output$midas_hist3 <- renderPlot({
-    req(db1[[info$db1]], input$midas, trans$midas_all, ranges$y1)
+    req(db1[[info$db1]], input$midas, trans$midas_all, isTruthy(input$tab < 4))
     if (verbosity > 0) cat(file = stderr(), mySession, "MIDAS histogram", "\n")
     if (input$tunits == 1) {
       period <- "day"
@@ -4171,7 +4171,7 @@ server <- function(input,output,session) {
     removeNotification("bad_entropy")
     removeNotification("different_offsets")
     removeNotification("bad_offset_epoch")
-    req(trans$x, trans$y, ranges$y1)
+    req(trans$x, trans$y, isTruthy(input$tab < 4))
     if (isTruthy(input$entropy)) {
       # checking offset epochs provided for the entropy analysis
       offsetEpoch.entropy <- NULL
@@ -4273,7 +4273,7 @@ server <- function(input,output,session) {
 
   # Offset verification ####
   observeEvent(c(input$runVerif), {
-    req(trans$res, trans$x, trans$offsetEpochs, ranges$y1)
+    req(trans$res, trans$x, trans$offsetEpochs, isTruthy(input$tab < 4))
     if (isTruthy(input$verif_offsets) &&
         ((nchar(inputs$verif_white) > 0 && !is.na(inputs$verif_white) && inputs$verif_white > 0) ||
         (nchar(input$verif_pl) > 0 && nchar(input$verif_k) > 0 && !is.na(inputs$verif_pl) && !is.na(inputs$verif_k) && inputs$verif_pl > 0 && inputs$verif_k <= 0) ||
@@ -4373,7 +4373,7 @@ server <- function(input,output,session) {
                  trans$y, trans$sy,
                  trans$breakEpochs, input$trendType, input$sinusoidType, input$polyType,
                  info$LStol), {
-    req(trans$x, trans$y, trans$sy, trans$ordinate, ranges$y1)
+    req(trans$x, trans$y, trans$sy, trans$ordinate, isTruthy(input$tab < 4))
     removeNotification("bad_errorbar")
     removeNotification("bad_sinusoidal")
     removeNotification("bad_LS")
@@ -4638,7 +4638,7 @@ server <- function(input,output,session) {
 
   # KF fit ####
   observeEvent(input$runKF, {
-    req(input$model, trans$x, trans$y, ranges$y1)
+    req(input$model, trans$x, trans$y, isTruthy(input$tab < 4))
     removeNotification("no_weighting")
     removeNotification("bad_model")
     removeNotification("not_even")
@@ -5507,7 +5507,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumOriginal), {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[1])) {
       trans$psd[,1] <- trans$psd[,6] <- NA
@@ -5527,7 +5527,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumModel), {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[2])) {
       trans$psd[,2] <- NA
@@ -5547,7 +5547,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumResiduals), {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[3])) {
       trans$psd[,3] <- NA
@@ -5567,7 +5567,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumFilter), {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[4])) {
       trans$psd[,4] <- NA
@@ -5587,7 +5587,7 @@ server <- function(input,output,session) {
     }
   })
   observeEvent(c(input$spectrumFilterRes), {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     info$clickX <- info$clickY <- info$closestX <- info$closestY <- NULL
     if (isTruthy(trans$spectra_old[5])) {
       trans$psd[,5] <- NA
@@ -7156,7 +7156,7 @@ server <- function(input,output,session) {
 
   # Search offsets ####
   observeEvent(input$search, {
-    req(db1$original, ranges$y1)
+    req(db1$original, isTruthy(input$tab < 4))
     removeNotification("bad_search")
     removeNotification("no_search")
     if (length(trans$res) > 0) {
@@ -8461,7 +8461,7 @@ server <- function(input,output,session) {
     updateSelectizeInput(session, inputId = "station1", choices = character(0), selected = "", options = list(placeholder = character(0)), server = F)
   })
   observeEvent(input$server2, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1$original)
     info$last_optionSecondary <- 0
     updateRadioButtons(inputId = "optionSecondary", selected = 0)
     if (input$server2 == "RENAG") {
@@ -8701,7 +8701,7 @@ server <- function(input,output,session) {
 
   # Observe Euler ####
   observeEvent(c(input$euler), {
-    req(db1[[info$db1]], ranges$y3D12)
+    req(db1[[info$db1]])
     if (input$euler) {
       runjs("
         let element = document.getElementById('euler');
@@ -9099,7 +9099,7 @@ server <- function(input,output,session) {
     }
   }, priority = 200)
   observeEvent(input$eulerType, {
-    req(db1[[info$db1]], ranges$y3D12)
+    req(db1[[info$db1]])
     if (input$eulerType == 2 || info$last_eulerType == 2) {
       db1[[info$db1]]$mod1 <- db1[[info$db1]]$mod2 <- NULL
       db1[[info$db1]]$res1 <- db1[[info$db1]]$res2 <- NULL
@@ -9114,7 +9114,7 @@ server <- function(input,output,session) {
 
   # Observe GIA ####
   observeEvent(c(input$gia), {
-    req(db1[[info$db1]], ranges$y3D12)
+    req(db1[[info$db1]])
     if (input$gia) {
       runjs("
         let element = document.getElementById('gia');
@@ -9285,7 +9285,7 @@ server <- function(input,output,session) {
 
   # Observe time units ####
   observeEvent(input$tunits, {
-    req(db1[[info$db1]], input$tunits != info$tunits.last, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1[[info$db1]], input$tunits != info$tunits.last)
     if (input$tunits == 1) {
       x1 <- db1[[info$db1]]$x1
       x2 <- db2[[info$db2]]$x1
@@ -9513,7 +9513,7 @@ server <- function(input,output,session) {
 
   # Observe tab ####
   observeEvent(input$tab, {
-    req(db1$original, ranges$y3D12)
+    req(db1$original)
     ranges$y1 <- NULL
     ranges$y2 <- NULL
     ranges$y12 <- NULL
@@ -10118,7 +10118,7 @@ server <- function(input,output,session) {
   }, priority = 8)
 
   observeEvent(input$format2, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1$original)
     if (input$optionSecondary > 0) {
       if (verbosity > 1) cat(file = stderr(), mySession, "From: observe secondary format\n")
       db2$original <- db2$resampled <- NULL
@@ -10127,7 +10127,7 @@ server <- function(input,output,session) {
   }, priority = 6)
 
   observeEvent(input$separator2, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1$original)
     if (input$optionSecondary > 0) {
       if (verbosity > 1) cat(file = stderr(), mySession, "From: observe secondary separator\n")
       db2$original <- db2$resampled <- NULL
@@ -10464,7 +10464,7 @@ server <- function(input,output,session) {
     })
   }, priority = 6)
   observeEvent(c(input$series2, input$separator2, input$format2, input$optionSecondary), {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1$original)
     if (input$optionSecondary > 0 && !isTruthy(db2[[info$db2]])) {
       info$last_optionSecondary <- 0
       updateRadioButtons(session, inputId = "optionSecondary", selected = 0)
@@ -10658,7 +10658,7 @@ server <- function(input,output,session) {
 
   # Observe fit type ####
   observeEvent(input$fitType, {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     if (input$fitType > 0) {
       runjs("
         let element = document.getElementById('fitType');
@@ -12132,7 +12132,7 @@ server <- function(input,output,session) {
     }
   }, priority = 1)
   observeEvent(c(input$printLog),{
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1$original)
     output$changes_ant1 <- output$changes_ant2 <- output$changes_ant3 <- renderText({
       if (length(info$log[[1]]) > 0) {
         sprintf("Antenna changes from log file at\n%s",paste(unlist(info$log[[1]]), collapse = ", "))
@@ -12338,7 +12338,7 @@ server <- function(input,output,session) {
 
   # Observe scrolling ####
   observeEvent(input$overflow, {
-    req(db1$original, isTruthy(ranges$y1) || isTruthy(ranges$y3D11))
+    req(db1$original)
     if (isTruthy(input$overflow)) {
       runjs("document.getElementById('side-panel').style.overflowY='auto';")
       runjs("document.getElementById('side-panel').style.position='fixed';")
@@ -12525,7 +12525,7 @@ server <- function(input,output,session) {
   # Observe draconitics ####
   ## GPS ####
   observeEvent(input$GPSdrac, {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     draconiticPeriod <- 350.9
     text_in_default <- paste0(draconiticPeriod, "dx4")
     text_in_generic <- paste0(draconiticPeriod, "dx")
@@ -12563,7 +12563,7 @@ server <- function(input,output,session) {
   })
   ## Galileo ####
   observeEvent(input$GALdrac, {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     draconiticPeriod <- 355.7
     text_in_default <- paste0(draconiticPeriod, "dx4")
     text_in_generic <- paste0(draconiticPeriod, "dx")
@@ -12601,7 +12601,7 @@ server <- function(input,output,session) {
   })
   ## BeiDou ####
   observeEvent(input$BDSdrac, {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     draconiticPeriod <- 353.1
     text_in_default <- paste0(draconiticPeriod, "dx4")
     text_in_generic <- paste0(draconiticPeriod, "dx")
@@ -12639,7 +12639,7 @@ server <- function(input,output,session) {
   })
   ## GLONASS ####
   observeEvent(input$GLOdrac, {
-    req(db1[[info$db1]], ranges$y1)
+    req(db1[[info$db1]], isTruthy(input$tab < 4))
     draconiticPeriod <- 353.0
     text_in_default <- paste0(draconiticPeriod, "dx4")
     text_in_generic <- paste0(draconiticPeriod, "dx")
