@@ -457,6 +457,7 @@ options(scipen = 4)
 Sys.setlocale('LC_ALL','C')
 options(shiny.reactlog = F)
 Sys.setenv(TZ = "UTC")
+bot_pattern <- "HeadlessChrome|PhantomJS|Selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS|Lighthouse|python-requests|python-urllib|Go-http-client|node-fetch|axios|scrapy|curl|wget|crawl|spider|slurp|bot|facebookexternalhit|preview|monitor|uptime"
 
 # version ####
 version <- "SARI noviembre 2026"
@@ -506,6 +507,7 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                       ['mousemove','mousedown','keydown','touchstart','wheel'].forEach(function(e) {
                           document.addEventListener(e, human, {once: true, passive: true});
                       });
+                      Shiny.setInputValue('clientUA', navigator.userAgent);
                    });"
                 ),
 
@@ -2516,12 +2518,26 @@ server <- function(input,output,session) {
   
   # reject bots/headless clients before doing anything
   ua <- session$request$HTTP_USER_AGENT
-  bot_pattern <- "HeadlessChrome|PhantomJS|Selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS|Lighthouse|python-requests|python-urllib|Go-http-client|node-fetch|axios|scrapy|curl|wget|crawl|spider|slurp|bot|facebookexternalhit|preview|monitor|uptime"
-  if (is.null(ua) || !nzchar(ua) || grepl(bot_pattern, ua, ignore.case = TRUE)) {
-    cat(file = stderr(), "Rejected bot/headless connection, UA:", ua, "\n")
+  if (!is.null(ua) && (!nzchar(ua) || grepl(bot_pattern, ua, ignore.case = T))) {
+    cat(file = stderr(), "Rejected bot/headless connection, UA:", deparse(ua), "\n")
     session$close()
     return(invisible(NULL))
   }
+  # browser-reported UA
+  observeEvent(input$clientUA, {
+    if (!nzchar(input$clientUA) || grepl(bot_pattern, input$clientUA, ignore.case = T)) {
+      cat(file = stderr(), "Rejected bot/headless connection, client UA:", input$clientUA, "\n")
+      session$close()
+    }
+  }, priority = 3000, once = T)
+  
+  # clients that open the websocket but never run the page JS (raw websocket tools)
+  later::later(function() {
+    if (is.null(isolate(input$clientUA))) {
+      cat(file = stderr(), "No client UA received, closing session\n")
+      session$close()
+    }
+  }, 30)
   
   # GitHub & local version
   sid <- NULL
