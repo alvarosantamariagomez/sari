@@ -496,11 +496,16 @@ ui <- fluidPage(theme = shinytheme("spacelab"),
                     });"
                 ),
                 
-                # catching navigator.webdriver (UA-spoofing automation)
+                # catching navigator.webdriver (UA-spoofing automation) and not human
                 tags$script(
                   "$(document).on('shiny:connected', function() {
                       var bot = navigator.webdriver === true || /HeadlessChrome/i.test(navigator.userAgent);
                       Shiny.setInputValue('isHeadless', bot);
+                      var seen = false;
+                      function human() { if (!seen) { seen = true; Shiny.setInputValue('humanSeen', true); } }
+                      ['mousemove','mousedown','keydown','touchstart','wheel'].forEach(function(e) {
+                          document.addEventListener(e, human, {once: true, passive: true});
+                      });
                    });"
                 ),
 
@@ -2511,7 +2516,7 @@ server <- function(input,output,session) {
   
   # reject bots/headless clients before doing anything
   ua <- session$request$HTTP_USER_AGENT
-  bot_pattern <- "HeadlessChrome|PhantomJS|Selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS|Lighthouse|python-requests|python-urllib|Go-http-client|node-fetch|axios|scrapy|curl|wget|crawl|spider|slurp"
+  bot_pattern <- "HeadlessChrome|PhantomJS|Selenium|puppeteer|Playwright|wkhtmltopdf|HtmlUnit|SlimerJS|Lighthouse|python-requests|python-urllib|Go-http-client|node-fetch|axios|scrapy|curl|wget|crawl|spider|slurp|bot|facebookexternalhit|preview|monitor|uptime"
   if (is.null(ua) || !nzchar(ua) || grepl(bot_pattern, ua, ignore.case = TRUE)) {
     cat(file = stderr(), "Rejected bot/headless connection, UA:", ua, "\n")
     session$close()
@@ -8269,6 +8274,15 @@ server <- function(input,output,session) {
       session$close()
     }
   }, priority = 3000)
+  if (Sys.getenv('SHINY_PORT') != "") { # remote only, info$local does not work out here
+    shinyjs::delay(120000, { # 2 min
+      if (!isTRUE(isolate(input$humanSeen))) {
+        showNotification(HTML("No interaction.<br>Closing the session."), action = NULL, duration = NULL, closeButton = F, type = "error", session = getDefaultReactiveDomain())
+        cat(file = stderr(), mySession, "No human interaction, closing session\n")
+        session$close()
+      }
+    })
+  }
   
   # Observe screen ####
   observeEvent(c(session$clientData$pixelratio, session$clientData$output_plot1_width, session$clientData$output_plot41_width, session$clientData$output_plot51_width), {
