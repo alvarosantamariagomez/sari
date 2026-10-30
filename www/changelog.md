@@ -1,6 +1,37 @@
 # **SARI changelog**
 
 
+# noviembre 2026 [2026.11]
+
+### Fixed
+- checking the coordinates extracted from a series in PBO format
+- preventing an empty column separator when loading remote series
+- avoiding extracting the series metadata when changing to the help tab
+- checking the oversampling value when clicking on the periodogram
+- avoiding re-rendering the periodogram plot before releasing the mouse button
+
+### Changed
+- optimizing the processing time of the offset verification
+- optimizing the processing time of the automatic offset search
+- optimizing the processing time of the noise analysis
+- removing the pop up with the expected processing time of the noise analysis for local sessions
+- improving the noise model periodogram
+- improving the noise analysis with data gaps
+- improved assessment of the necessary decimal places in the downloaded results file
+- optimizing the processing time of the time series averaging
+- improving the reactivity of the remote server, product, and series options
+- correcting the URL of the DORIS FTP server
+- sorting the list of available remote stations alphabetically
+- adding the secondary series to the periodogram title
+
+### Added
+- adding an option to synchronize changes of the columns of the primary and secondary series if both are 1D
+- restoring the downloading of series from the EUREF server
+- adding the fitted noise model to the downloaded periodogram file
+- adding the restricted MLE to the noise analysis
+- adding a pop up with information of the memory used by the remote server during a noise analysis
+
+
 # octubre 2026 [2026.10]
 
 ### Fixed
